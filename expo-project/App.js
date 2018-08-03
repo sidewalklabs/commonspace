@@ -1,6 +1,6 @@
-import { AppLoading } from "expo";
 import React from "react";
 import { Platform, StatusBar, StyleSheet, View } from "react-native";
+import { AppLoading, Asset, Font, Icon } from "expo";
 import AppNavigator from "./navigation/AppNavigator";
 
 import * as firebase from "firebase";
@@ -18,7 +18,7 @@ export default class App extends React.Component {
   state = { isLoadingComplete: false };
 
   render() {
-    if (!this.state.isLoadingComplete) {
+    if (!this.state.isLoadingComplete && !this.props.skipLoadingScreen) {
       return (
         <AppLoading
           startAsync={this._loadResourcesAsync}
@@ -36,9 +36,19 @@ export default class App extends React.Component {
     }
   }
 
-  _loadResourcesAsync = async () => Promise.resolve();
+  _loadResourcesAsync = async () => {
+    // This is from the boilerplate. We might not need it
+    return Font.loadAsync({
+      ...Icon.Ionicons.font,
+      "space-mono": require("./assets/fonts/SpaceMono-Regular.ttf")
+    });
+  };
 
-  _handleLoadingError = (error: any) => console.warn(error);
+  _handleLoadingError = error => {
+    // In this case, you might want to report the error to your error
+    // reporting service, for example Sentry
+    console.warn(error);
+  };
 
   _handleFinishLoading = () => {
     this.setState({ isLoadingComplete: true });

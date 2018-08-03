@@ -1,29 +1,25 @@
-import { MapView } from "expo";
 import React from "react";
 import {
   Picker,
+  StyleSheet,
+  Text,
+  View,
   ScrollView,
   Slider,
-  StyleSheet,
-  Switch,
-  Text,
-  View
+  Switch
 } from "react-native";
+import { Haptic, MapView } from "expo";
 import { Button } from "react-native";
-import { withNavigation, NavigationScreenProp } from "react-navigation";
+import { withNavigation } from "react-navigation";
 
 import * as firebase from "firebase";
 
-interface Props {
-  navigation: NavigationScreenProp<any, any>;
-}
-
-class SurveyScreen extends React.Component<Props, any> {
+class SurveyScreen extends React.Component {
   static navigationOptions = {
     title: "Survey"
   };
 
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
 
     this.state = {
@@ -41,6 +37,7 @@ class SurveyScreen extends React.Component<Props, any> {
       gender: "female",
       mode: "pedestrian",
       group: "alone",
+      group: "alone",
       posture: "standing"
     };
 
@@ -57,10 +54,11 @@ class SurveyScreen extends React.Component<Props, any> {
       .database()
       .ref("users/" + randomId)
       .set({ ...this.state, latitude, longitude });
+    Haptic.notification(Haptic.NotificationTypes.Success);
     this.props.navigation.navigate("Home");
   }
 
-  setSurveyData(key: string, value: string | number | boolean) {
+  setSurveyData(key, value) {
     this.setState({ [key]: value });
   }
 
@@ -250,6 +248,7 @@ class SurveyScreen extends React.Component<Props, any> {
           </View>
         </ScrollView>
         <Button
+          style={styles.submitButton}
           onPress={this.onSubmit}
           title="Submit"
           color="green"
@@ -303,6 +302,9 @@ const styles = StyleSheet.create({
   cell: {
     flexBasis: "50%",
     alignItems: "center"
+  },
+  submitButton: {
+    borderColor: "green"
   }
 });
 

@@ -1,34 +1,25 @@
-import { MapView } from "expo";
 import React from "react";
-import { Platform, StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, Text, View } from "react-native";
+import { KeepAwake, MapView, Constants, Location, Permissions } from "expo";
 import { Button } from "react-native";
-import { withNavigation, NavigationScreenProp } from "react-navigation";
+import { withNavigation } from "react-navigation";
 
-interface Props {
-  navigation: NavigationScreenProp<any, any>;
-}
-
-interface State {
-  markerLocation: any;
-  errorMessage?: string;
-}
-
-class HomeScreen extends React.Component<Props, State> {
+class HomeScreen extends React.Component {
   static navigationOptions = {
-    title: "Tap map to add a pins"
+    title: "Tap map to add a pin"
   };
 
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
 
     this.state = {
       markerLocation: null,
-      errorMessage: undefined
+      errorMessage: null
     };
     this.setMarkerLocation = this.setMarkerLocation.bind(this);
   }
 
-  setMarkerLocation(e: any) {
+  setMarkerLocation(e) {
     this.setState({ markerLocation: e.nativeEvent.coordinate });
   }
 
@@ -51,7 +42,7 @@ class HomeScreen extends React.Component<Props, State> {
           )}
         </MapView>
         {this.state.markerLocation && (
-          <View style={styles.buttonWrapper}>
+          <View style={styles.tabBarInfoContainer}>
             <Button
               onPress={() => {
                 this.props.navigation.navigate("Survey", {
@@ -74,7 +65,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff"
   },
-  buttonWrapper: {
+  tabBarInfoContainer: {
     position: "absolute",
     bottom: 0,
     left: 0,
@@ -82,18 +73,22 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: "black",
+        shadowOffset: { height: -3 },
         shadowOpacity: 0.1,
         shadowRadius: 3
       },
       android: {
-        shadowColor: "black",
-        shadowOpacity: 0.1,
-        shadowRadius: 3
+        elevation: 20
       }
     }),
     alignItems: "center",
     backgroundColor: "#fbfbfb",
     paddingVertical: 20
+  },
+  tabBarInfoText: {
+    fontSize: 17,
+    color: "rgba(96,100,109, 1)",
+    textAlign: "center"
   }
 });
 
