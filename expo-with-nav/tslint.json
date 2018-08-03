@@ -1,0 +1,49 @@
+{
+  "rules": {
+    "no-var-keyword": true,
+    "triple-equals": true,
+    "class-name": true,
+    "ordered-imports": [
+      true,
+      {
+        "named-imports-order": "lowercase-first"
+      }
+    ],
+    "no-shadowed-variable": true,
+    "variable-name": [
+      "check-format",
+      "allow-leading-underscore",
+      "allow-pascal-case"
+    ],
+    "comment-format": [true, "check-space"],
+    "jsdoc-format": true,
+    "label-position": true,
+    "no-arg": true,
+    "no-angle-bracket-type-assertion": true,
+    "no-construct": true,
+    "no-unused-expression": true,
+    "prefer-const": true,
+    "array-type": [true, "array-simple"],
+    "arrow-return-shorthand": [true, "multiline"],
+    "interface-over-type-literal": true,
+    "no-string-throw": true,
+    "object-literal-shorthand": true,
+    "space-before-function-paren": [
+      true,
+      {
+        "anonymous": "never",
+        "asyncArrow": "always",
+        "constructor": "never",
+        "method": "never",
+        "named": "never"
+      }
+    ],
+    "only-arrow-functions": [true, "allow-named-functions"],
+    "no-unnecessary-callback-wrapper": true,
+    "radix": true,
+    "no-invalid-template-strings": true
+  },
+  "linterOptions": {
+    "typeCheck": true
+  }
+}
