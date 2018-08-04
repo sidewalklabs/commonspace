@@ -12,7 +12,7 @@ module.exports = {
     rules: [
       {
         test: /\.(t|j)sx?$/,
-        exclude: /node_modules/,
+        exclude: /(node_modules|expo_project)/,
         use: {
           loader: 'babel-loader',
           options: {
