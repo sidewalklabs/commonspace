@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "esnext", 
+    "module": "system",
+    "moduleResolution": "node",
+    "declaration": true, 
+    "strict": true,
+    "allowSyntheticDefaultImports": true, 
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "outDir": "dist",
+    "sourceMap": true
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ]
+}
