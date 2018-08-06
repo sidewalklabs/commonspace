@@ -24,6 +24,12 @@ export interface Study {
     notes?: string;
 }
 
+export interface User {
+    user_id: string;
+    email: string;
+    name: string;
+}
+
 // export function saveStudy(db, study: Study) {
 //     db.collection('study').add({
 //         ...study
@@ -46,4 +52,10 @@ const pool = new pg.Pool({
 export async function insertStudy(callback: any) {
     const result = await pool.query('SELECT NOW() as now');
     console.log(result);
+}
+
+export async function insertUser(pool: pg.Pool, user: User) {
+    const query = `INSERT INTO users (user_id, email, name)
+                  VALUES ('${user.user_id}', '${user.email}', '${user.name}')`;
+    const result = await pool.query(query);
 }
