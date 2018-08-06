@@ -36,7 +36,7 @@
     [
       {
         "type": "docker-tag",
-        "repository": "swl/data-collector",
+        "repository": "swl-eng/gehl-data-collector",
         "tag": "v0.0.1"
       }
     ]

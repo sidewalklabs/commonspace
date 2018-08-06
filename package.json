@@ -7,10 +7,12 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn webpack",
+    "build-scripts": "tsc -m commonJS --rootDir src --outDir js_scripts",
     "clean": "rm -rf dist/",
     "lint": "tsc --noEmit"
   },
   "devDependencies": {
+    "@babel/cli": "^7.0.0-beta.56",
     "@babel/core": "^7.0.0-beta.55",
     "@babel/preset-env": "^7.0.0-beta.55",
     "@babel/preset-typescript": "^7.0.0-beta.55",
@@ -22,6 +24,8 @@
   },
   "dependencies": {
     "@types/pg": "^7.4.10",
-    "pg": "^7.4.3"
+    "@types/uuid": "^3.4.3",
+    "pg": "^7.4.3",
+    "uuid": "^3.3.2"
   }
 }

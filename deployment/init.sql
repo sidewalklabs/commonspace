@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE IF NOT EXISTS users
 (
     user_id UUID PRIMARY KEY,
@@ -25,3 +27,10 @@ CREATE TABLE IF NOT EXISTS data_collection.study
     protocolVersion TEXT NOT NULL,
     notes TEXT
 );
+
+
+-- INSERT INTO datacollection.study (study_id, title, userId, protocolVersion)
+--   VALUES (
+--     uuid_generate_v4(),
+--     'Throncliffe Park Friday Night Markets',
+--   )
