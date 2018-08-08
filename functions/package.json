@@ -9,10 +9,14 @@
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log"
   },
-  "main": "lib/index.js",
+  "main": "lib/functions/src/index.js",
   "dependencies": {
-    "firebase-admin": "~5.13.0",
-    "firebase-functions": "^2.0.0"
+    "@types/pg": "^7.4.10",
+    "@types/uuid": "^3.4.3",
+    "firebase-admin": "^5.13.1",
+    "firebase-functions": "^2.0.2",
+    "pg": "^7.4.3",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "tslint": "~5.8.0",

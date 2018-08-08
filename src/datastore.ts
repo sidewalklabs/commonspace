@@ -1,4 +1,4 @@
-import pg from 'pg';
+import * as pg from 'pg';
 
 export enum StudyScale {
     district,
@@ -30,16 +30,18 @@ export interface User {
     name: string;
 }
 
-// export function saveStudy(db, study: Study) {
-//     db.collection('study').add({
-//         ...study
-//     }).then(function(docRef) {
-//         const study_id = docRef.id;
-//         console.log("Document written with ID: ", docRef.id);
-//     }).catch(function(error) {
-//         console.error("Error adding document: ", error);
-//     });
-// }
+export interface Survey {
+    study_id: string;
+    location_id: string;
+    survey_id: string;
+    time_character?: string;
+    representation: string;
+    microclimate?: string;
+    temperature_c?: number;
+    method: string;
+    user_id?: string;
+    notes?: string;
+}
 
 const pool = new pg.Pool({
     max: 1,
@@ -49,13 +51,29 @@ const pool = new pg.Pool({
     database: dbName
 });
 
-export async function insertStudy(callback: any) {
-    const result = await pool.query('SELECT NOW() as now');
+export async function createStudy(callback: any) {
+    const result = await pool.query('');
     console.log(result);
 }
 
-export async function insertUser(pool: pg.Pool, user: User) {
+export async function createUser(pool: pg.Pool, user: User) {
     const query = `INSERT INTO users (user_id, email, name)
-                  VALUES ('${user.user_id}', '${user.email}', '${user.name}')`;
+                  VALUES ('${user.user_id}', '${user.email}', '${user.name}');`;
     const result = await pool.query(query);
+    return result;
+}
+
+export async function giveUserSurveyAcess(pool: pg.Pool, user: User) {
+    const query = `INSERT INTO survey_users (survey_id, user_id)
+                  VALUES ();`;
+    const result = await pool.query(query);
+    return result;
+}
+
+export async function createNewSurvey() {
+    return 'hi';
+}
+
+export async function addDataPointToSurvey() {
+
 }
