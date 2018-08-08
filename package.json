@@ -23,8 +23,11 @@
     "webpack-cli": "^3.1.0"
   },
   "dependencies": {
+    "@types/dotenv": "^4.0.3",
     "@types/pg": "^7.4.10",
     "@types/uuid": "^3.4.3",
+    "dotenv": "^6.0.0",
+    "firebase": "^5.3.1",
     "pg": "^7.4.3",
     "uuid": "^3.3.2"
   }
