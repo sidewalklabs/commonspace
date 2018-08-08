@@ -7,7 +7,7 @@
   "builders": [
     {
       "type": "docker",
-      "image": "postgres:9.6",
+      "image": "mdillon/postgis:9.6",
       "commit": true,
       "changes": [
         "ENV POSTGRES_PASSWORD {{ user `pg_pass` }}",

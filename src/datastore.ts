@@ -10,6 +10,7 @@ export enum StudyScale {
 
 }
 
+// TODO: should each objet contain reference Ids?
 export interface Study {
     studyId: string;
     title?: string;
@@ -25,40 +26,86 @@ export interface Study {
 }
 
 export interface User {
-    user_id: string;
+    userId: string;
     email: string;
     name: string;
 }
 
 export interface Survey {
-    study_id: string;
-    location_id: string;
-    survey_id: string;
-    time_character?: string;
+    studyId: string;
+    locationId: string;
+    surveyId: string;
+    timeCharacter?: string;
     representation: string;
     microclimate?: string;
-    temperature_c?: number;
+    temperatureCelcius?: number;
     method: string;
-    user_id?: string;
+    userId?: string;
     notes?: string;
 }
 
-const pool = new pg.Pool({
-    max: 1,
-    host: '/cloudsql/' + connectionName,
-    user: dbUser,
-    password: dbPass,
-    database: dbName
-});
+export type GehlFields = 'gender' | 'location';
 
-export async function createStudy(callback: any) {
-    const result = await pool.query('');
-    console.log(result);
+function setString(s: any) {
+    return Array.from(s).toString();
+}
+
+function digitToString(d: string) {
+    switch (d) {
+        case '0': return 'zero';
+        case '1': return 'one';
+        case '2': return 'two';
+        case '3': return 'three';
+        case '4': return 'four';
+        case '5': return 'five';
+        case '6': return 'six';
+        case '7': return 'seven';
+        case '8': return 'eight';
+        case '9': return 'nine';
+        default: return d;
+    }
+}
+
+function replaceDigits(s: string) {
+    const asArr = s.split('-');
+    const lastTwelve = asArr[asArr.length - 1];
+    return Array.from(lastTwelve).slice(1).reduce((acc, curr) => acc.concat(digitToString(curr)), digitToString(lastTwelve[0]));
+}
+
+const genderLocation: any = new Set(['gender', 'location']);
+
+function createNewTableFromGehlFields(study: Study, fields: GehlFields[]) {
+    const asSet = new Set(fields);
+    const comparisionString = setString(asSet);
+    switch (comparisionString) {
+        case setString(genderLocation):
+            return `CREATE TABLE data_collection.${replaceDigits(study.studyId)} (
+                       survey_id UUID references data_collection.survey(survey_id),
+                       gender data_collection.gender,
+                       location geography
+                   )`;
+        default:
+            console.error(new Set(fields));
+            throw new Error(`no table possible for selected fields: ${fields}`);
+    }
+}
+
+// TODO an orm would be great for these .... or maybe interface magic? but an orm won't also express the relation between user and study right? we need normalized data for security reasons
+// in other words the study already has the userId references, where should the idea of the study belonging to a user live? in the relationship model it's with a reference id
+export async function createStudy(pool: pg.Pool, user: User, study: Study, fields: GehlFields[]) {
+    const newStudyMetadataQuery = `INSERT INTO data_collection.study (study_id, title, user_id, protocol_version)
+                   VALUES ('${study.studyId}', '${study.title}', '${user.userId}', '1.0')`;
+    const studyResult = await pool.query(newStudyMetadataQuery);
+    console.log('study result: ', studyResult);
+    const newStudyDataTableQuery = createNewTableFromGehlFields(study, fields);
+    const newStudyDataTable = await pool.query(newStudyDataTableQuery);
+    console.log('new table: ', newStudyDataTable);
+    return [studyResult, newStudyDataTable];
 }
 
 export async function createUser(pool: pg.Pool, user: User) {
     const query = `INSERT INTO users (user_id, email, name)
-                  VALUES ('${user.user_id}', '${user.email}', '${user.name}');`;
+                  VALUES ('${user.userId}', '${user.email}', '${user.name}');`;
     const result = await pool.query(query);
     return result;
 }

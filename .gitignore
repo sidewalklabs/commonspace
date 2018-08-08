@@ -1,2 +1,5 @@
 dist/
 functions/lib/
+js_scripts/
+.env
+

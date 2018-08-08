@@ -1,6 +1,8 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "postgis";
 
+CREATE ROLE data_collection_admin;
+
 CREATE TABLE IF NOT EXISTS users
 (
     user_id UUID PRIMARY KEY,
@@ -11,6 +13,7 @@ CREATE TABLE IF NOT EXISTS users
 CREATE UNIQUE INDEX users_lower_email_unique_idx ON users (lower(email));
 
 CREATE SCHEMA IF NOT EXISTS data_collection;
+ALTER ROLE data_collection_admin SET search_path TO data_collection,"$user",public;
 -- ALTER ROLE <your_login_role> SET search_path TO data_collection,"$user",public;
 set search_path TO data_collection;
 
@@ -22,11 +25,11 @@ CREATE TABLE IF NOT EXISTS study
     title TEXT,
     project TEXT,
     project_phase TEXT,
-    stateDate TIMESTAMP,
-    endDate TIMESTAMP,
+    state_date TIMESTAMP,
+    end_date TIMESTAMP,
     scale studyScale,
-    userId UUID REFERENCES users(user_id) NOT NULL,
-    protocolVersion TEXT NOT NULL,
+    user_id UUID REFERENCES public.users(user_id) NOT NULL,
+    protocol_version TEXT NOT NULL,
     notes TEXT
 );
 
@@ -37,26 +40,20 @@ CREATE TABLE IF NOT EXISTS study
 CREATE TABLE survey (
     study_id UUID references study(study_id) NOT NULL,
     location_id UUID,
-    survey_id UUID,
+    survey_id UUID PRIMARY KEY,
     time_character TEXT,
-    representation NOT NULL,
+    representation TEXT NOT NULL,
     microclimate TEXT,
     temperature_c FLOAT,
     method TEXT NOT NULL,
-    user_id UUID references users(user_id),
-    notes
+    user_id UUID references public.users(user_id),
+    notes TEXT
 );
 
 CREATE TYPE gender AS ENUM ('male', 'female', 'unknown');
 
-CREATE TABLE IF NOT EXISTS study_uui
-(
-    survey_id UUID references survey(survey_id),
-    gender gender,
-    location geography 
-);
 
--- the protocol doesn't make use of what 
+-- the protocol doesn't make use of what
 
 -- respond to an email that allows someone with super special rights to grant access to a user
 -- that user must have their own password to postgres that is super secret and kept hashed in some public databse
