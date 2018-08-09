@@ -92,9 +92,9 @@ function createNewTableFromGehlFields(study: Study, fields: GehlFields[]) {
 
 // TODO an orm would be great for these .... or maybe interface magic? but an orm won't also express the relation between user and study right? we need normalized data for security reasons
 // in other words the study already has the userId references, where should the idea of the study belonging to a user live? in the relationship model it's with a reference id
-export async function createStudy(pool: pg.Pool, user: User, study: Study, fields: GehlFields[]) {
+export async function createStudy(pool: pg.Pool, study: Study, fields: GehlFields[]) {
     const newStudyMetadataQuery = `INSERT INTO data_collection.study (study_id, title, user_id, protocol_version)
-                   VALUES ('${study.studyId}', '${study.title}', '${user.userId}', '1.0')`;
+                   VALUES ('${study.studyId}', '${study.title}', '${study.userId}', '1.0')`;
     const studyResult = await pool.query(newStudyMetadataQuery);
     console.log('study result: ', studyResult);
     const newStudyDataTableQuery = createNewTableFromGehlFields(study, fields);

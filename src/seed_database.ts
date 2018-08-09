@@ -41,7 +41,7 @@ const studyFields = ['gender', 'location'];
 async function testSqlFunctions() {
     const user = await createUser(pool, sebastian);
     console.log(`User: ${user}`);
-    const study = await createStudy(pool, sebastian, thorncliffeParkStudy, ['gender', 'location']);
+    const study = await createStudy(pool, thorncliffeParkStudy, ['gender', 'location']);
     console.log(`study: ${study}`);
 }
 
