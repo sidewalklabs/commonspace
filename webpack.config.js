@@ -1,13 +1,17 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
 
 module.exports = {
   mode: 'development',
-  entry: './main.ts',
+  entry: {
+    sql_database: path.resolve(__dirname, 'src/sql_database.ts')
+  },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js'
+    filename: '[name].js'
   },
+  target: "node",
   module: {
     rules: [
       {
@@ -26,6 +30,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       title: 'Public Life Protocol Data Colletor',
       template: 'index.html'
-    })
+    }),
+    new webpack.IgnorePlugin(/^pg-native$/)
   ]
 };

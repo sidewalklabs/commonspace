@@ -9,6 +9,7 @@
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log"
   },
+  "engines": { "node": "8" },
   "main": "lib/functions/src/index.js",
   "dependencies": {
     "@types/pg": "^7.4.10",

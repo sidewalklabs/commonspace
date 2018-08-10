@@ -106,8 +106,8 @@ export async function createStudy(pool: pg.Pool, study: Study, fields: GehlField
 export async function createUser(pool: pg.Pool, user: User) {
     const query = `INSERT INTO users (user_id, email, name)
                   VALUES ('${user.userId}', '${user.email}', '${user.name}');`;
-    const result = await pool.query(query);
-    return result;
+    console.log('query:', query);
+    return pool.query(query);
 }
 
 export async function giveUserSurveyAcess(pool: pg.Pool, user: User) {
