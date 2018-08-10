@@ -7,9 +7,12 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn webpack",
+    "build-gcp": "cat config/cloud.env | sed 's/=/: /' > .env.yml && tsc",
     "build-scripts": "tsc -m commonJS --rootDir src --outDir js_scripts",
     "clean": "rm -rf dist/",
-    "lint": "tsc --noEmit"
+    "deploy": "npm run build-gcp && cp package.json dist/sql_database && gcloud beta functions deploy getUuid --env-vars-file .env.yml --trigger-http --runtime nodejs8 --source dist/sql_database",
+    "lint": "tsc --noEmit",
+    "pg-func": "cat config/cloud.env | sed 's/=/: /' > .env.yml && gcloud beta functions deploy newUserSaveToPostgres --runtime nodejs8 --trigger-http"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.56",
@@ -24,6 +27,7 @@
   },
   "dependencies": {
     "@types/dotenv": "^4.0.3",
+    "@types/express": "^4.16.0",
     "@types/pg": "^7.4.10",
     "@types/uuid": "^3.4.3",
     "dotenv": "^6.0.0",

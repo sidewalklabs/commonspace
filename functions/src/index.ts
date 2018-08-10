@@ -9,35 +9,40 @@ import { createStudy, createUser, Study, User } from '../../src/datastore';
 // https://firebase.google.com/docs/functions/typescript
 
 // @ts-ignore: global variable
-const host = functions.config().pg.db_host;
-// @ts-ignore: global variable
-const dbUser = functions.config().pg.db_user;
-// @ts-ignore: global variable
-const dbPass = functions.config().pg.db_pass;
-// @ts-ignore: global variable
-const dbName = functions.config().pg.db_name;
+// firebase environment vars are different than cloud function variables
+let pgConnectionInfo;
+if (process.env && process.env.NODE_ENV === 'cloud-function-production') {
+    pgConnectionInfo = {
+        connectionLimit: 1,
+        host: process.env.db_host,
+        user: process.env.db_user,
+        password: process.env.db_pass,
+        database: process.env.db_name
+    }
+} else {
+    pgConnectionInfo = {
+        connectionLimit: 1,
+        host: functions.config().pg.db_host,
+        user: functions.config().pg.db_user,
+        password: functions.config().pg.db_pass,
+        database: functions.config().pg.db_name
+    }
+}
 
-const pool = new pg.Pool({
-    max: 1,
-    host: host,
-    user: dbUser,
-    password: dbPass,
-    database: dbName
-});
+const pool = new pg.Pool(pgConnectionInfo);
 
-export const newlyAuthenticatedUser = functions.auth.user().onCreate((user: admin.auth.UserRecord) => {
+export const newlyAuthenticatedUser = functions.auth.user().onCreate(async (user: admin.auth.UserRecord) => {
     const sqlUser: User = {
         userId: uuidv4(),
         email: user.email,
         name: user.displayName
     };
-    console.log(`new user-id: ${sqlUser.userId}, email: ${sqlUser.email}, name: ${sqlUser.name}`)
-    createUser(pool, sqlUser).then(res => {
-        console.log(`successfully added user: ${sqlUser} to sql database`);
-    }).catch(err => {
-        console.error(err)
-    });
+    // make http request to cloud function to save to postgresql
 })
+
+
+// }
+
 
 export const newStudyCreated = functions.firestore.document('/study/{studyId}').onCreate((snapshot: FirebaseFirestore.DocumentSnapshot, ctx: functions.EventContext) => {
     const newStudy = snapshot.data() as Study;
@@ -47,3 +52,20 @@ export const newStudyCreated = functions.firestore.document('/study/{studyId}').
         console.error(err)
     });
 });
+
+export async function newUserSaveToPostgres(request, response) {
+    const user = request.body as User;
+    const sqlUser: User = {
+        userId: uuidv4(),
+        email: user.email,
+        name: user.name
+    };
+    console.log(`new user-id: ${sqlUser.userId}, email: ${sqlUser.email}, name: ${sqlUser.name}`)
+    console.log(`password: ${pgConnectionInfo.password}`);
+    console.log(`user: ${pgConnectionInfo.user}`);
+    console.log(`database: ${pgConnectionInfo.database}`);
+    const result = await pool.query('SELECT NOW() as now');
+    console.log(`result: ${result}`);
+    const userInsertResult = await createUser(pool, sqlUser);
+    return result;
+}

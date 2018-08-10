@@ -1,5 +1,5 @@
 ## Installation
 
 ``` bash
-yarn global add 
+yarn global add expo-cli
 ```
