@@ -1,5 +1,7 @@
+import "babel-polyfill";
+
 import { Request, Response } from 'express';
-import pg from 'pg';
+import * as pg from 'pg';
 import * as uuid from 'uuid';
 
 import { createUser, User } from './datastore';
@@ -15,11 +17,9 @@ const pgConnectionInfo = {
 const pool = new pg.Pool(pgConnectionInfo);
 
 // Return a newly generated UUID in the HTTP response.
-export async function getUuid(req: Request, res: Response) {
+export async function saveNewUser(req: Request, res: Response) {
     const { userId, email, name } = req.body;
     const insertQuery = `INSERT INTO users (user_id, email, name) VALUES ('${userId}', '${email}', '${name}')`
-    console.log(insertQuery);
-    const resultFromSave = createUser(pool, { userId, email, name });
-    console.log('no way it works: ', resultFromSave);
-    res.send(uuid.v4());
+    const resultFromSave = await createUser(pool, { userId, email, name });
+    res.send(req.body);
 };

@@ -1,15 +1,14 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 
 module.exports = {
-  mode: 'development',
   entry: {
-    sql_database: path.resolve(__dirname, 'src/sql_database.ts')
+    sql_database: ['babel-polyfill', path.resolve(__dirname, 'src/sql_database.ts')]
   },
   output: {
+    libraryTarget: 'umd',
     path: path.resolve(__dirname, 'dist'),
-    filename: '[name].js'
+    filename: 'index.js'
   },
   target: "node",
   module: {
@@ -17,6 +16,10 @@ module.exports = {
       {
         test: /\.(t|j)sx?$/,
         exclude: /(node_modules|expo_project)/,
+        resolve: {
+          // Add `.ts` and `.tsx` as a resolvable extension.
+          extensions: [".ts", ".tsx", ".js"]
+        },
         use: {
           loader: 'babel-loader',
           options: {
@@ -27,10 +30,6 @@ module.exports = {
     ]
   },
   plugins: [
-    new HtmlWebpackPlugin({
-      title: 'Public Life Protocol Data Colletor',
-      template: 'index.html'
-    }),
     new webpack.IgnorePlugin(/^pg-native$/)
   ]
 };
