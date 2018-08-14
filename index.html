@@ -12,8 +12,8 @@
     </head>
     <body>
       <div id="firebaseui-auth-container"></div>
-      <div id="new study" class="Container">
-        <form id="new-study-form">
+      <div id="new-study" class="Container" hidden>
+        <form id="new-study-form"">
           <label for="study-title">Study Title</label>
           <input id="study-title" type="text" name="text">
           </br>
@@ -33,16 +33,5 @@
         </form>
       </div>
     </body>
-    <script src="index.js"><script/>
-    <script>
-      function createNewStudy(event) {
-        event.preventDefault();
-        const newStudy = {
-          title: document.getElementById("study-title").value,
-          protocol_version: document.getElementById("protocol-version-selection").value
-        }
-      }
-      document.getElementById("new-study-form").addEventListener('submit', createNewStudy);
-    </script>
-
+    <script src="index.js"></script/>
 </html>
