@@ -14,11 +14,13 @@ const firestore = firebase.firestore();
 const auth = firebase.auth();
 
 const ui = new firebaseui.auth.AuthUI(auth);
+let myUserId;
 
 ui.start('#firebaseui-auth-container', {
   callbacks: {
     signInSuccessWithAuthResult: (authResult) => {
       console.log('sign in is a succes: ', authResult);
+      document.getElementById('new-study').hidden = false;
     }
   },
   signInOptions: [
@@ -30,29 +32,37 @@ ui.start('#firebaseui-auth-container', {
 
 auth.onAuthStateChanged(function(user) {
   if (user) {
+    userId = user.uid;
     console.log('user: ', user);
   }
 });
 
-const ThorneCliffParkStudy = {
-
-}
-
-function saveStudy(db, study) {
-  db.collection('study').add({
-   ...study
+function saveStudy(study) {
+  firestore.collection('study').add({
+    ...study
   }).then(function(docRef) {
     study_id = docRef.id;
     console.log("Document written with ID: ", docRef.id);
-  })
-    .catch(function(error) {
-      console.error("Error adding document: ", error);
-    });
-
+  }).catch(function(error) {
+    console.error("Error adding document: ", error);
+  });
 }
 
 function saveUser(db, user) {
   db.collection('user').add({
-   ...user
+    ...user
   })
 }
+
+
+window.addEventListener("load", function () {
+  document.getElementById("new-study-form").addEventListener('submit', function (event) {
+    event.preventDefault();
+    const newStudy = {
+      title: document.getElementById('study-title').value,
+      protocolVersion: document.getElementById('protocol-version-selection').value
+    };
+    console.log(JSON.stringify(newStudy));
+    saveStudy(newStudy);
+  });
+});

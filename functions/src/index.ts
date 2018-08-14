@@ -1,11 +1,9 @@
-import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-const pg = require('pg');
 import * as uuidv4 from 'uuid/v4';
 import * as https from 'https';
 
 
-import { createStudy, createUser, Study, User } from '../../src/datastore';
+import { Study, User } from '../../src/datastore';
 
 
 async function saveUserToSqlApi(apiHost: string, userRecord: { email: string, displayName: string }) {
@@ -48,11 +46,53 @@ async function saveUserToSqlApi(apiHost: string, userRecord: { email: string, di
 // https://firebase.google.com/docs/functions/typescript
 export const newlyAuthenticatedUser = functions.auth.user().onCreate((user) => saveUserToSqlApi(functions.config().pg.url, user));
 
+async function saveStudyToSqlApi(apiHost: string, study: Study) {
+    const options = {
+        host: apiHost,
+        path: "/saveNewStudy",
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    };
+    const req = https.request(options, (res) => {
+        const logObject = {
+            url: res.url,
+            status_code: res.statusCode,
+            method: res.method,
+            headers: res.headers
+        };
+        console.log(JSON.stringify(logObject));
+
+        res.on('data', (d) => {
+            process.stdout.write(d);
+        });
+
+    });
+    req.on('error', (e) => {
+        console.error('catch error: ', e);
+    });
+
+    console.log('sending payload: ', JSON.stringify({
+        ...study
+    }));
+    req.write(JSON.stringify(study));
+    req.end();
+
+}
+
 export const newStudyCreated = functions.firestore.document('/study/{studyId}').onCreate((snapshot: FirebaseFirestore.DocumentSnapshot, ctx: functions.EventContext) => {
     const newStudy = snapshot.data() as Study;
-    // createStudy(pool, newStudy, ['gender', 'location']).then(res => {
-    //     console.log(`successfully added study: ${newStudy} to sql database`);
-    // }).catch(err => {
-    //     console.error(err)
-    // });
+    saveStudyToSqlApi(functions.config().pg.url, {
+        studyId: uuidv4(),
+        userId: 'f1f8fdb1-dbdc-4f44-99d3-44695df74fee',
+        ...newStudy
+    }).then(result => {
+        console.log('saved new study to gcp: ', result);
+    }).catch(err => console.error(err));
 });
+
+const myStudy = {
+    title: 'my title',
+    protocolVersion: '1.0'
+}

@@ -94,7 +94,7 @@ function createNewTableFromGehlFields(study: Study, fields: GehlFields[]) {
 // in other words the study already has the userId references, where should the idea of the study belonging to a user live? in the relationship model it's with a reference id
 export async function createStudy(pool: pg.Pool, study: Study, fields: GehlFields[]) {
     const newStudyMetadataQuery = `INSERT INTO data_collection.study (study_id, title, user_id, protocol_version)
-                   VALUES ('${study.studyId}', '${study.title}', '${study.userId}', '1.0')`;
+                   VALUES ('${study.studyId}', '${study.title}', '${study.userId}', ${study.protocolVersion})`;
     const studyResult = await pool.query(newStudyMetadataQuery);
     console.log('study result: ', studyResult);
     const newStudyDataTableQuery = createNewTableFromGehlFields(study, fields);

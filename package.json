@@ -10,7 +10,7 @@
     "build-gcp": "cat config/cloud.env | sed 's/=/: /' > .env.yml",
     "build-scripts": "tsc -m commonJS --rootDir src --outDir js_scripts",
     "clean": "rm -rf dist/",
-    "deploy-gcp": "npm run build-gcp && npm run build && cp package.json dist/ && gcloud beta functions deploy saveNewUser --env-vars-file .env.yml --trigger-http --runtime nodejs8 --source dist/",
+    "deploy-gcp": "npm run build-gcp && npm run build && cp package.json dist/ && gcloud beta functions deploy saveNewStudy --env-vars-file .env.yml --trigger-http --runtime nodejs8 --source dist/",
     "lint": "tsc --noEmit"
   },
   "devDependencies": {

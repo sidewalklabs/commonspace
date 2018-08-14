@@ -3,7 +3,7 @@ const webpack = require('webpack');
 
 module.exports = {
   entry: {
-    sql_database: ['babel-polyfill', path.resolve(__dirname, 'src/sql_database.ts')]
+    gcp: ['babel-polyfill', path.resolve(__dirname, 'src/gcp.ts')]
   },
   output: {
     libraryTarget: 'umd',
