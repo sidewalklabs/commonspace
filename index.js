@@ -1,5 +1,3 @@
-import { init } from 'main';
-
 const apiKey = 'AIzaSyD_6-qVGk9CiFyhv6wmGp-PWb1b8-sCytc';
 
 const config = {
@@ -16,7 +14,6 @@ const firestore = firebase.firestore();
 const auth = firebase.auth();
 
 const ui = new firebaseui.auth.AuthUI(auth);
-console.log(ui);
 
 ui.start('#firebaseui-auth-container', {
   callbacks: {
@@ -38,23 +35,12 @@ auth.onAuthStateChanged(function(user) {
 });
 
 const ThorneCliffParkStudy = {
-  
+
 }
 
-
-//creator_id : '',
-    // protocol_id: '',
-    // title?: '',
-    // project?: '',
-    // project_phase?: '',
-    // start_date?: '',
-    // end_date?: ''
-    // scale?: '',
-    // areas?: '',
-    // notes?:
 function saveStudy(db, study) {
   db.collection('study').add({
-   ...study 
+   ...study
   }).then(function(docRef) {
     study_id = docRef.id;
     console.log("Document written with ID: ", docRef.id);
@@ -67,8 +53,6 @@ function saveStudy(db, study) {
 
 function saveUser(db, user) {
   db.collection('user').add({
-   ...user 
+   ...user
   })
 }
-
-console.log('we are done: ', init());
