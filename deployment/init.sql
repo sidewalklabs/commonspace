@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS study
 -- survey metadata
 --  no user tied to this? I guess anonymous surveys are a thing, what about fake data?
 -- TODO should id have default uuid function call?
-CREATE TABLE survey (
+CREATE TABLE IF NOT EXISTS survey (
     study_id UUID references study(study_id) NOT NULL,
     location_id UUID,
     survey_id UUID PRIMARY KEY,
@@ -52,6 +52,11 @@ CREATE TABLE survey (
 
 CREATE TYPE gender AS ENUM ('male', 'female', 'unknown');
 
+CREATE TABLE IF NOT EXISTS surveyors(
+    survey_id references survey(survey_id) NOT NULL,
+    user_id references users(user_id) NOT NULL,
+    PRIMARY KEY(survey_id, user_id)
+)
 
 -- the protocol doesn't make use of what
 

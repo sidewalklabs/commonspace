@@ -92,7 +92,16 @@ export const newStudyCreated = functions.firestore.document('/study/{studyId}').
     }).catch(err => console.error(err));
 });
 
-const myStudy = {
-    title: 'my title',
-    protocolVersion: '1.0'
+export function inviteSurveyor(email: string) {
+    const mailOptions = {
+        from: `Gehl Data Collector <noreply@firebase.com>`,
+        to: email
+    };
+
+    // The user subscribed to the newsletter.
+    mailOptions.subject = `Invite to Survey`;
+    mailOptions.text = `Hello! You've been invited to collaborate on a service.`;
+    return mailTransport.sendMail(mailOptions).then(() => {
+        console.log('mail sent!')
+    })
 }
