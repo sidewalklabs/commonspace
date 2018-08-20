@@ -110,9 +110,9 @@ export async function createUser(pool: pg.Pool, user: User) {
     return pool.query(query);
 }
 
-export async function giveUserSurveyAcess(pool: pg.Pool, user: User) {
-    const query = `INSERT INTO survey_users (survey_id, user_id)
-                  VALUES ();`;
+export async function giveUserSurveyAcess(pool: pg.Pool, user: User, survey: Survey) {
+    const query = `INSERT INTO surveyors(survey_id, user_id)
+                  VALUES ('${user.userId}', '${survey.surveyId}'); `;
     const result = await pool.query(query);
     return result;
 }
