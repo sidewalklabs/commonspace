@@ -13,6 +13,14 @@ yarn
 expo-cli start
 ```
 
+### Admin App
+There are really basic html forms that allow a user to interact and experiment with firestore.
+It's a simple static website, with javascript form index.js, and html in index.html. Use your
+favorite http server from the root directory.
+
+``` bash
+python -m http.server
+```
 
 ### SQL
 
