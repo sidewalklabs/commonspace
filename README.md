@@ -42,10 +42,13 @@ cloud_sql_proxy -instances=<INSTANCE_CONNECTION_NAME>=tcp:5432 -credential_file=
 ```
 
 ### Cloud functions
-Updating the environment variables used by cloud functions
+Fillout the provided templates in the config directory and rename the files to not include -template.
+run the following commands to set up enviroment variables, and deploy the functions to your firebase
+cloud instance.
 
 ``` bash
-cat $path-to-dotenv-file | sed 's/^/pg./' | xargs firebase functions:config:set
+cat config/firebase-gcp.yml | sed 's/^/gcp./' | sed 's/: /=/' | xargs firebase functions:config:set
+cat config/firebase-gmail.yml | sed 's/^/email./' | sed 's/: /=/' | xargs firebase functions:config:set
 firebase deploy --only functions
 
 ```

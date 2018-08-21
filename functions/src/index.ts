@@ -7,8 +7,8 @@ import * as uuidv4 from 'uuid/v4';
 import { Study, User } from '../../src/datastore';
 
 
-const gmailEmail = functions.config().gmail.email;
-const gmailPassword = functions.config().gmail.password;
+const gmailEmail = functions.config().email.email;
+const gmailPassword = functions.config().email.password;
 const mailTransport = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -111,12 +111,16 @@ export const studyUpdated = functions.firestore.document('/study/{studyId}').onU
     const previousValue = change.before.data();
     const previousUsers = new Set(previousValue.surveyors);
     const newUsers = newValue.surveyors.filter(x => !previousUsers.has(x));
-    newUsers.forEach(newSurveyor => {
-        console.log(' new users added to survey: ', newSurveyor);
-    });
-});
+    newUsers.forEach(async (newSurveyor) => {
+        const sendmailResult = inviteSurveyor(newSurveyor).then((result) => {
+            console.log('Sent email to: ', newSurveyor);
+        }).catch((error) => {
+            console.error(`failure to send email to surveyor ${newSurveyor}|{error}`);
+        });
+    })
+})
 
-export function inviteSurveyor(email: string) {
+function inviteSurveyor(email: string) {
     const mailOptions: nodemailer.SendMailOptions = {
         from: `Gehl Data Collector <thorncliffeparkpubliclifepilot@gmail.com>`,
         to: email,
@@ -124,8 +128,7 @@ export function inviteSurveyor(email: string) {
         text: `Hello! You've been invited to collaborate on a p33p.`
     };
 
+    console.log('attempting to send email: ', JSON.stringify(mailOptions));
     // The user subscribed to the newsletter.
-    return mailTransport.sendMail(mailOptions).then(() => {
-        console.log('mail sent!')
-    })
+    return mailTransport.sendMail(mailOptions);
 }
