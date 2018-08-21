@@ -105,14 +105,24 @@ window.addEventListener("load", function () {
     });
   });
 
-  document.getElementById("add-surveyor").addEventListener('submit', function (event) {
+  document.getElementById("add-surveyor").addEventListener('submit', async function (event) {
     event.preventDefault();
-    const study = document.getElementById("new-surveyor").value;
-    console.log('study selected: ', study);
-    firestore.collection.doc(study).get(function(doc) {
+    const study = document.getElementById("study-select").value;
+    const email = document.getElementById("surveyor-email").value;
+    console.log('email: ', email);
+    if (!email || !study) {
+      alert('must select a study and enter an email');
+    }
+    const firestoreStudyRef = await firestore.collection('study').doc(study);
+    firestoreStudyRef.get().then(function(doc) {
       if (doc.exists) {
-        console.log(doc.data())
+        const currentData = doc.data();
+        currentData.surveyors = currentData.surveyors ? currentData.surveyors : [];
+        currentData.surveyors.push(email);
+        firestoreStudyRef.set(currentData);
       }
+    }).catch((error) => {
+      console.error(`failure to save surveyor "${email}" to study with id: ${study}, error: ${error}`);
     });
     //const email = document.getElementById("surveyor-email").value
     // update study information by adding this surveyor to the list of authorized surveyors
