@@ -11,18 +11,22 @@
     "build-scripts": "tsc -m commonJS --rootDir src --outDir js_scripts",
     "clean": "rm -rf dist/",
     "deploy-gcp": "npm run build-gcp && npm run build && cp package.json dist/ && gcloud beta functions deploy saveNewStudy --env-vars-file .env.yml --trigger-http --runtime nodejs8 --source dist/",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test": "jest"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.56",
     "@babel/core": "^7.0.0-beta.55",
     "@babel/preset-env": "^7.0.0-beta.55",
     "@babel/preset-typescript": "^7.0.0-beta.55",
+    "@types/jest": "^23.3.1",
     "babel-loader": "^8.0.0-beta",
     "babel-plugin-transform-async-to-generator": "^6.24.1",
     "babel-polyfill": "^6.26.0",
     "firebase-tools": "^4.0.2",
     "html-webpack-plugin": "^3.2.0",
+    "jest": "^23.5.0",
+    "ts-jest": "^23.1.4",
     "webpack": "^4.16.4",
     "webpack-cli": "^3.1.0"
   },

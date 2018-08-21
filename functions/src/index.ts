@@ -106,21 +106,7 @@ export const newStudyCreated = functions.firestore.document('/study/{studyId}').
     })
 });
 
-export const studyUpdated = functions.firestore.document('/study/{studyId}').onUpdate((change, ctx) => {
-    const newValue = change.after.data();
-    const previousValue = change.before.data();
-    const previousUsers = new Set(previousValue.surveyors);
-    const newUsers = newValue.surveyors.filter(x => !previousUsers.has(x));
-    newUsers.forEach(async (newSurveyor) => {
-        const sendmailResult = inviteSurveyor(newSurveyor).then((result) => {
-            console.log('Sent email to: ', newSurveyor);
-        }).catch((error) => {
-            console.error(`failure to send email to surveyor ${newSurveyor}|{error}`);
-        });
-    })
-})
-
-function inviteSurveyor(email: string) {
+function inviteSurveyorEmail(email: string) {
     const mailOptions: nodemailer.SendMailOptions = {
         from: `Gehl Data Collector <thorncliffeparkpubliclifepilot@gmail.com>`,
         to: email,
@@ -132,3 +118,16 @@ function inviteSurveyor(email: string) {
     // The user subscribed to the newsletter.
     return mailTransport.sendMail(mailOptions);
 }
+
+async function authorizeNewSurveyorAndEmail(newUsers, previousUsers) {
+    return Promise.all(newUsers.map((newSurveyor) => inviteSurveyorEmail(newSurveyor)));
+}
+
+export const studyUpdated = functions.firestore.document('/study/{studyId}').onUpdate((change, ctx) => {
+    const newValue = change.after.data();
+    const previousValue = change.before.data();
+    const previousUsers = new Set(previousValue.surveyors);
+    const newUsers = newValue.surveyors.filter(x => !previousUsers.has(x));
+    console.log('new users: ', newUsers);
+    return authorizeNewSurveyorAndEmail(previousUsers, newUsers);
+})
