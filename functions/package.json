@@ -12,10 +12,12 @@
   "engines": { "node": "8" },
   "main": "lib/functions/src/index.js",
   "dependencies": {
+    "@types/nodemailer": "^4.6.2",
     "@types/pg": "^7.4.10",
     "@types/uuid": "^3.4.3",
     "firebase-admin": "^5.13.1",
     "firebase-functions": "^2.0.2",
+    "nodemailer": "^4.6.8",
     "pg": "^7.4.3",
     "uuid": "^3.3.2"
   },
