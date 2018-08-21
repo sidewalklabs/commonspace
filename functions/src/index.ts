@@ -122,9 +122,8 @@ function inviteSurveyorEmail(email: string) {
 function authorizeNewSurveyorAndEmail(latestSurveyors: string[], previousSurveyors: string[]) {
     const previousUsers = new Set(previousSurveyors);
     const newUsers = latestSurveyors.filter(x => !previousUsers.has(x));
-    console.log(typeof newUsers);
     if (newUsers.length) {
-        return Promise.all(newUsers.map((newSurveyor) => inviteSurveyorEmail(newSurveyor)));
+        return newUsers.map((newSurveyor) => inviteSurveyorEmail(newSurveyor));
     } else {
         return Promise.resolve();
     }
