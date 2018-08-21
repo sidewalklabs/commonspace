@@ -119,15 +119,19 @@ function inviteSurveyorEmail(email: string) {
     return mailTransport.sendMail(mailOptions);
 }
 
-async function authorizeNewSurveyorAndEmail(newUsers, previousUsers) {
-    return Promise.all(newUsers.map((newSurveyor) => inviteSurveyorEmail(newSurveyor)));
+function authorizeNewSurveyorAndEmail(latestSurveyors: string[], previousSurveyors: string[]) {
+    const previousUsers = new Set(previousSurveyors);
+    const newUsers = latestSurveyors.filter(x => !previousUsers.has(x));
+    console.log(typeof newUsers);
+    if (newUsers.length) {
+        return Promise.all(newUsers.map((newSurveyor) => inviteSurveyorEmail(newSurveyor)));
+    } else {
+        return Promise.resolve();
+    }
 }
 
 export const studyUpdated = functions.firestore.document('/study/{studyId}').onUpdate((change, ctx) => {
     const newValue = change.after.data();
     const previousValue = change.before.data();
-    const previousUsers = new Set(previousValue.surveyors);
-    const newUsers = newValue.surveyors.filter(x => !previousUsers.has(x));
-    console.log('new users: ', newUsers);
-    return authorizeNewSurveyorAndEmail(previousUsers, newUsers);
+    return authorizeNewSurveyorAndEmail(previousValue.surveyors as string[], newValue.surveyors as string[]);
 })
