@@ -13,7 +13,7 @@
         "ENV POSTGRES_PASSWORD {{ user `pg_pass` }}",
         "ENV POSTGRES_USER {{ user `pg_user` }}",
         "ENV POSTGRES_DB {{ user `db_name` }}",
-        "EXPOSE 5432 5432"
+        "EXPOSE 5431 5431"
       ]
     }
   ],
