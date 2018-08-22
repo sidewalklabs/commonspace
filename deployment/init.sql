@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS study
     scale studyScale,
     user_id UUID REFERENCES public.users(user_id) NOT NULL,
     protocol_version TEXT NOT NULL,
+    dsl_definition JSON,
+    tablename VARCHAR(63),
     notes TEXT
 );
 
@@ -52,9 +54,9 @@ CREATE TABLE IF NOT EXISTS survey (
 
 CREATE TYPE gender AS ENUM ('male', 'female', 'unknown');
 
-CREATE TABLE IF NOT EXISTS surveyors(
-    survey_id references survey(survey_id) NOT NULL,
-    user_id references users(user_id) NOT NULL,
+CREATE TABLE IF NOT EXISTS surveyors (
+    survey_id UUID references survey(survey_id) NOT NULL,
+    user_id UUID references public.users(user_id) NOT NULL,
     PRIMARY KEY(survey_id, user_id)
 )
 

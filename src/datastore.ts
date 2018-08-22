@@ -74,12 +74,12 @@ function replaceDigits(s: string) {
 
 const genderLocation: any = new Set(['gender', 'location']);
 
-function createNewTableFromGehlFields(study: Study, fields: GehlFields[]) {
+function createNewTableFromGehlFields(study: Study, tablename: string, fields: GehlFields[]) {
     const asSet = new Set(fields);
     const comparisionString = setString(asSet);
     switch (comparisionString) {
         case setString(genderLocation):
-            return `CREATE TABLE data_collection.${replaceDigits(study.studyId)} (
+            return `CREATE TABLE data_collection.${tablename} (
                        survey_id UUID references data_collection.survey(survey_id),
                        gender data_collection.gender,
                        location geography
@@ -93,32 +93,26 @@ function createNewTableFromGehlFields(study: Study, fields: GehlFields[]) {
 // TODO an orm would be great for these .... or maybe interface magic? but an orm won't also express the relation between user and study right? we need normalized data for security reasons
 // in other words the study already has the userId references, where should the idea of the study belonging to a user live? in the relationship model it's with a reference id
 export async function createStudy(pool: pg.Pool, study: Study, fields: GehlFields[]) {
-    const newStudyMetadataQuery = `INSERT INTO data_collection.study (study_id, title, user_id, protocol_version)
-                   VALUES ('${study.studyId}', '${study.title}', '${study.userId}', ${study.protocolVersion})`;
-    const studyResult = await pool.query(newStudyMetadataQuery);
-    console.log('study result: ', studyResult);
-    const newStudyDataTableQuery = createNewTableFromGehlFields(study, fields);
+    const studyTablename = replaceDigits(study.studyId);
+    const newStudyDataTableQuery = createNewTableFromGehlFields(study, studyTablename, fields);
+    const newStudyMetadataQuery = `INSERT INTO data_collection.study (study_id, title, user_id, protocol_version, dsl_definition, tablename)
+                   VALUES ('${study.studyId}', '${study.title}', '${study.userId}', '${study.protocolVersion}', '${JSON.stringify(fields)}', '${studyTablename}')`;
     const newStudyDataTable = await pool.query(newStudyDataTableQuery);
-    console.log('new table: ', newStudyDataTable);
+    // TODO create a new role for this?
+    const studyResult = await pool.query(newStudyMetadataQuery);
     return [studyResult, newStudyDataTable];
 }
 
 export async function createUser(pool: pg.Pool, user: User) {
     const query = `INSERT INTO users (user_id, email, name)
                   VALUES ('${user.userId}', '${user.email}', '${user.name}');`;
-    console.log('query:', query);
     return pool.query(query);
 }
 
 export async function giveUserSurveyAcess(pool: pg.Pool, user: User, survey: Survey) {
-    const query = `INSERT INTO surveyors(survey_id, user_id)
+    const query = `INSERT INTO data_collection.surveyors (survey_id, user_id)
                   VALUES ('${user.userId}', '${survey.surveyId}'); `;
-    const result = await pool.query(query);
-    return result;
-}
-
-export async function createNewSurvey() {
-    return 'hi';
+    return pool.query(query);
 }
 
 export async function addDataPointToSurvey() {
