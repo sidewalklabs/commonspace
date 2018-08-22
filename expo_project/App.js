@@ -34,6 +34,8 @@ export default class App extends React.Component {
       const { type, idToken, user } = await Expo.Google.logInAsync({
         iosClientId:
           "8677857213-j9dn9ebe425td60q8c9tc20gomjbojip.apps.googleusercontent.com",
+        iosStandaloneAppClientId:
+          "8677857213-s1rosh2e597b3nccpqv67dbfpmc3q53o.apps.googleusercontent.com",
         scopes: ["profile", "email"]
       });
 
@@ -72,18 +74,26 @@ export default class App extends React.Component {
     } else {
       return (
         <View style={styles.container}>
+          {Platform.OS === "ios" && <StatusBar barStyle="light-content" />}
           {this.state.userIsAuthenticated ? (
             <View style={styles.container}>
-              {Platform.OS === "ios" && <StatusBar barStyle="light-content" />}
               <AppNavigator />
             </View>
           ) : (
-            <Button
-              onPress={this._signIn}
-              title="Log In"
-              color="#841584"
-              accessibilityLabel="sign in"
-            />
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center"
+              }}
+            >
+              <Button
+                onPress={this._signIn}
+                title="Log In"
+                color="green"
+                accessibilityLabel="sign in"
+              />
+            </View>
           )}
         </View>
       );
