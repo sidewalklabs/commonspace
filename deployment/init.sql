@@ -53,6 +53,12 @@ CREATE TABLE IF NOT EXISTS survey (
 );
 
 CREATE TYPE gender AS ENUM ('male', 'female', 'unknown');
+CREATE TYPE age AS ENUM ('0-14', '15-24', '25-64');
+CREATE TYPE mode AS ENUM ('pedestrian', 'bicyclist');
+CREATE TYPE group_size AS ENUM ('1', '2', '3+');
+CREATE TYPE posture AS ('leaning', 'lying', 'sitting', 'sitting on the ground', 'standing');
+CREATE TYPE activity AS ('commerical', 'consuming', 'conversing', 'electronics', 'pets', 'idle', 'running');
+CREATE TYPE object AS ('luggage', 'push cart', 'stroller');
 
 CREATE TABLE IF NOT EXISTS surveyors (
     survey_id UUID references survey(survey_id) NOT NULL,
