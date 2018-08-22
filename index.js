@@ -12,15 +12,20 @@ firebase.initializeApp(config);
 const database = firebase.database();
 const firestore = firebase.firestore();
 const auth = firebase.auth();
+let studies;
 
 const ui = new firebaseui.auth.AuthUI(auth);
-let myUserId;
+let userId;
 
 ui.start('#firebaseui-auth-container', {
   callbacks: {
     signInSuccessWithAuthResult: (authResult) => {
       console.log('sign in is a succes: ', authResult);
-      document.getElementById('new-study').hidden = false;
+      getAvailableStudies();
+      const elements = document.getElementsByClassName('container')
+      Array.prototype.forEach.call(elements, element => {
+         element.hidden = false;
+      });
     }
   },
   signInOptions: [
@@ -33,7 +38,7 @@ ui.start('#firebaseui-auth-container', {
 auth.onAuthStateChanged(function(user) {
   if (user) {
     userId = user.uid;
-    console.log('user: ', user);
+    getAvailableStudies();
   }
 });
 
@@ -49,20 +54,79 @@ function saveStudy(study) {
 }
 
 function saveUser(db, user) {
-  db.collection('user').add({
+  firestore.collection('user').add({
     ...user
   })
+}
+
+function getAvailableStudies() {
+  if (userId) {
+    firestore.collection('study')
+      .where("firebase_uid", "==", userId)
+      .get()
+      .then(function(querySnapshot) {
+        studies = []
+        querySnapshot.forEach(function(doc) {
+          // doc.data() is never undefined for query doc snapshots
+          const data = doc.data();
+          console.log(doc.id, " => ", data);
+          studies.push({
+            studyId: doc.id,
+            title: data.title
+          });
+          const selectElement = document.getElementById('study-select');
+          while (selectElement.firstChild) {
+            selectElement.removeChild(selectElement.firstChild)
+          }
+          studies.forEach((study) => {
+            const newOption = document.createElement('option');
+            newOption.value = study.studyId;
+            newOption.innerHTML = study.title;
+            selectElement.appendChild(newOption);
+          });
+        });
+      });
+  }
 }
 
 
 window.addEventListener("load", function () {
   document.getElementById("new-study-form").addEventListener('submit', function (event) {
     event.preventDefault();
-    const newStudy = {
-      title: document.getElementById('study-title').value,
-      protocolVersion: document.getElementById('protocol-version-selection').value
-    };
-    console.log(JSON.stringify(newStudy));
-    saveStudy(newStudy);
+    firebase.auth().currentUser.getIdToken(true).then((token) => {
+      const newStudy = {
+        title: document.getElementById('study-title').value,
+        protocolVersion: document.getElementById('protocol-version-selection').value,
+        firebase_uid: userId,
+        token
+      };
+      console.log('new study being sent to firestore: ', JSON.stringify(newStudy));
+      saveStudy(newStudy);
+    });
   });
+
+  document.getElementById("add-surveyor").addEventListener('submit', async function (event) {
+    event.preventDefault();
+    const study = document.getElementById("study-select").value;
+    const email = document.getElementById("surveyor-email").value;
+    console.log('email: ', email);
+    if (!email || !study) {
+      alert('must select a study and enter an email');
+    }
+    const firestoreStudyRef = await firestore.collection('study').doc(study);
+    firestoreStudyRef.get().then(function(doc) {
+      if (doc.exists) {
+        const currentData = doc.data();
+        currentData.surveyors = currentData.surveyors ? currentData.surveyors : [];
+        currentData.surveyors.push(email);
+        firestoreStudyRef.set(currentData);
+      }
+    }).catch((error) => {
+      console.error(`failure to save surveyor "${email}" to study with id: ${study}, error: ${error}`);
+    });
+    //const email = document.getElementById("surveyor-email").value
+    // update study information by adding this surveyor to the list of authorized surveyors
+
+  });
+
 });
