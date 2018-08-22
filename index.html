@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
       <title>Site Template - Welcome!</title>
       <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-app.js"></script>
       <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-firestore.js"></script>
@@ -12,7 +13,7 @@
     </head>
     <body>
       <div id="firebaseui-auth-container"></div>
-      <div id="new-study" class="Container" hidden>
+      <div id="new-study" class="container" hidden>
         <form id="new-study-form"">
           <label for="study-title">Study Title</label>
           <input id="study-title" type="text" name="text">
@@ -29,7 +30,19 @@
             <option value="beta">Beta</option>
           </select>
           </br>
-          <input type="submit" value="Save User" >
+          <input type="submit" value="Create Study" >
+        </form>
+      </div>
+      </br>
+      <div id="add-surveyor" class="container" hidden>
+        <h4>Invite Surveyor</h4>
+        <form id="new-surveyor">
+          <select id="study-select">
+          </br>
+          <label for="surveyor-email">Surveyor Email</label>
+          <input id="surveyor-email" type="text">
+          </br>
+          <input type="submit" value="Authorize Surveyor" >
         </form>
       </div>
     </body>

@@ -1,0 +1,100 @@
+import PropTypes from "prop-types";
+import React from "react";
+
+import {
+  View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity
+} from "react-native";
+import colors from "../constants/Colors";
+
+import * as _ from "lodash";
+
+class Selectable extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      height: 0
+    };
+    this.onLayout = this.onLayout.bind(this);
+  }
+
+  // TODO (Ananta): Make this more React-y
+  // Currently Selectable passes back its height when pressed, since the parent wants to scrol the amount
+  // But that's a weird API for a child that should function without knowledge of its parents' desires
+  onLayout(event) {
+    this.setState({ height: event.nativeEvent.layout.height });
+  }
+
+  render() {
+    const { onSelectablePress, selectedValue, title, options } = this.props;
+    return (
+      <View style={styles.container} onLayout={this.onLayout}>
+        <Text style={styles.title}>{title}</Text>
+        <ScrollView style={styles.selectable} horizontal>
+          {_.map(options, option => {
+            const { value, label } = option;
+            const selected = value === selectedValue;
+            return (
+              <TouchableOpacity
+                key={value}
+                style={[styles.selectableCell, selected && styles.selected]}
+                onPress={e => {
+                  onSelectablePress(value, this.state.height);
+                }}
+              >
+                <Text style={[styles.pillText, selected && { color: "white" }]}>
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    paddingVertical: 10
+  },
+  selectable: {
+    flexDirection: "row"
+  },
+  selectableCell: {
+    borderWidth: 1,
+    backgroundColor: "#FAFAFA",
+    borderRadius: 3,
+    borderColor: "rgba(0, 0, 0, 0.0980392)",
+    padding: 5,
+    marginRight: 5,
+    marginTop: 10
+  },
+  selected: {
+    backgroundColor: colors.colorSecondary
+  },
+  pillText: {
+    fontFamily: "monaco"
+  },
+  title: {
+    marginBottom: 5
+  }
+});
+
+Selectable.propTypes = {
+  onSelectablePress: PropTypes.func.isRequired,
+  selectedValue: PropTypes.string,
+  title: PropTypes.string.isRequired,
+  options: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string,
+      value: PropTypes.string
+    })
+  ).isRequired
+};
+
+export default Selectable;

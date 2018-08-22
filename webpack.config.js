@@ -15,7 +15,7 @@ module.exports = {
     rules: [
       {
         test: /\.(t|j)sx?$/,
-        exclude: /(node_modules|expo_project)/,
+        exclude: /(node_modules|expo_project|.test.ts$)/,
         resolve: {
           // Add `.ts` and `.tsx` as a resolvable extension.
           extensions: [".ts", ".tsx", ".js"]

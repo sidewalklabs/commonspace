@@ -1,15 +1,22 @@
 import React from "react";
 import { createStackNavigator } from "react-navigation";
-
+import colors from "../constants/Colors";
 import HomeScreen from "../screens/HomeScreen";
-import SurveyScreen from "../screens/SurveyScreen";
 
 export default createStackNavigator(
   {
-    Home: HomeScreen,
-    Survey: SurveyScreen
+    Home: HomeScreen
   },
   {
-    initialRouteName: "Home"
+    initialRouteName: "Home",
+    navigationOptions: {
+      headerStyle: {
+        backgroundColor: colors.colorPrimary
+      },
+      headerTintColor: "#fff",
+      headerTitleStyle: {
+        fontWeight: "bold"
+      }
+    }
   }
 );
