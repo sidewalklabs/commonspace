@@ -8,6 +8,7 @@ import {
   Animated
 } from "react-native";
 import { withNavigation } from "react-navigation";
+import { firestore } from 'firebase';
 import * as _ from "lodash";
 import Colors, { iconColors } from "../constants/Colors";
 import { ScrollView } from "../node_modules/react-native-gesture-handler";
@@ -26,6 +27,25 @@ const MIN_DRAWER_OFFSET = 0; // fix this
 const DRAWER_HEIGHT = height - HEADER_HEIGHT;
 const INITIAL_DRAWER_OFFSET = DRAWER_HEIGHT;
 
+const studyId = '50Kb9Jfa1ejkURIIE3T2'; // todo should be dynamically set
+const surveyId = 'UaAyBbLNOobGO2prwpsT'; // todo should be dynamically set
+
+
+function _markerToDataPoint(marker) {
+  const dataPoint = {}
+  fields = [ 'gender', 'groupSize', 'mode', 'object', 'posture', 'timestamp' ];
+  fields.forEach((field) => {
+    if (marker[field]) {
+      dataPoint[field] = marker[field]
+    }
+  });
+
+  if (marker.coordinate) {
+    dataPoint.location = marker.coordinate;
+  }
+  return dataPoint;
+}
+
 class HomeScreen extends React.Component {
   static navigationOptions = {
     title: "Long press map to add a pin"
@@ -36,6 +56,9 @@ class HomeScreen extends React.Component {
 
     this.drawerOffsetY = new Animated.Value(INITIAL_DRAWER_OFFSET);
     this.drawerOffsetY.addListener(({ value }) => (this._value = value));
+    // firestore has its own timestamp type
+    this.firestore = this.props.screenProps.firebase.firestore();
+    this.firestore.settings({ timestampsInSnapshots: true });
 
     this.state = {
       activeMarkerId: null,
@@ -138,7 +161,6 @@ class HomeScreen extends React.Component {
   }
 
   setFormResponse(id, key, value, selectableHeight) {
-    // TODO: add logic for updating in db
     const markersCopy = [...this.state.markers];
     const marker = _.find(markersCopy, {
       id
@@ -149,6 +171,11 @@ class HomeScreen extends React.Component {
       this.setState({
         markers: markersCopy
       });
+      this.firestore
+        .collection('study').doc(studyId)
+        .collection('survey').doc(surveyId)
+        .collection('dataPoints').doc(marker.id)
+        .set(_markerToDataPoint(marker));
 
       const currentScrollPosition = this.state.formScrollPosition;
       const currentDrawerOffset = this.drawerOffsetY._value;
@@ -186,30 +213,36 @@ class HomeScreen extends React.Component {
   }
 
   createNewMarker(e) {
-    // TODO: add logic for inserting into db
     const markersCopy = [...this.state.markers];
     const date = moment();
     const dateLabel = date.format("HH:mm");
     const timestamp = date.format("x");
-    const id = timestamp + ""; // placeholder
     const title = "Person " + (markersCopy.length + 1);
 
     const marker = {
       coordinate: e.nativeEvent.coordinate,
       color: this.getRandomIconColor(),
-      gender: null,
-      position: null,
       title,
-      dateLabel,
-      id
+      dateLabel
     };
 
-    markersCopy.push(marker);
-    this.setState(
-      { markers: markersCopy, activeMarkerId: id },
-      this.resetDrawer
-    );
-  }
+    this.firestore
+      .collection('study').doc(studyId)
+      .collection('survey').doc(surveyId)
+      .collection('dataPoints')
+      .add(_markerToDataPoint(marker))
+      .then((doc) => {
+        const { id, timestamp } = doc;
+        marker.id = id;
+        marker.timestamp = timestamp;
+        markersCopy.push(marker);
+        this.setState(
+          { markers: markersCopy, activeMarkerId: id },
+          this.resetDrawer
+        );
+      });
+
+      }
 
   setMarkerLocation(e) {
     // TODO: add logic for updating in db
@@ -222,6 +255,12 @@ class HomeScreen extends React.Component {
       this.setState({
         markers: markersCopy
       });
+
+      this.firestore
+        .collection('study').doc(studyId)
+        .collection('survey').doc(surveyId)
+        .collection('dataPoints').doc(marker.firestoreId)
+        .update({location: marker.coordinate});
     }
   }
 

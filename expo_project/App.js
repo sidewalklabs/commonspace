@@ -2,16 +2,7 @@ import React from "react";
 import { Button, Platform, StatusBar, StyleSheet, View } from "react-native";
 import { AppLoading, Font, Icon } from "expo";
 import AppNavigator from "./navigation/AppNavigator";
-
-import * as firebase from "firebase";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyD_6-qVGk9CiFyhv6wmGp-PWb1b8-sCytc",
-  authDomain: "gehl-921be.firebaseapp.com",
-  projectId: "gehl-921be"
-};
-
-firebase.initializeApp(firebaseConfig);
+import firebase from "./lib/firebaseSingleton";
 
 // todo this.state.userIsAuthenticated = null
 export default class App extends React.Component {
@@ -70,7 +61,7 @@ export default class App extends React.Component {
           {Platform.OS === "ios" && <StatusBar barStyle="light-content" />}
           {this.state.userIsAuthenticated ? (
             <View style={styles.container}>
-              <AppNavigator />
+              <AppNavigator screenProps={{firebase}}/>
             </View>
           ) : (
             <View
