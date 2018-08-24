@@ -28,7 +28,7 @@ const INITIAL_DRAWER_OFFSET = DRAWER_HEIGHT;
 
 class HomeScreen extends React.Component {
   static navigationOptions = {
-    title: "Tap map to add a pin"
+    title: "Long press map to add a pin"
   };
 
   constructor(props) {

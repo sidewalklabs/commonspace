@@ -1,13 +1,6 @@
-import React, { Component } from "react";
-import {
-  Button,
-  Platform,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View
-} from "react-native";
-import { AppLoading, Asset, Font, Icon } from "expo";
+import React from "react";
+import { Button, Platform, StatusBar, StyleSheet, View } from "react-native";
+import { AppLoading, Font, Icon } from "expo";
 import AppNavigator from "./navigation/AppNavigator";
 
 import * as firebase from "firebase";
@@ -24,7 +17,7 @@ firebase.initializeApp(firebaseConfig);
 export default class App extends React.Component {
   state = {
     isLoadingComplete: false,
-    userIsAuthenticated: false
+    userIsAuthenticated: true
   };
 
   // https://github.com/hasura/react-native-auth-boilerplate/issues/11
