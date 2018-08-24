@@ -12,7 +12,6 @@ firebase.initializeApp(config);
 const database = firebase.database();
 const firestore = firebase.firestore();
 const auth = firebase.auth();
-let studies;
 
 const ui = new firebaseui.auth.AuthUI(auth);
 let userId;
@@ -46,15 +45,8 @@ auth.onAuthStateChanged(function(user) {
   }
 });
 
-function saveStudy(study) {
-  firestore.collection('study').add({
-    ...study
-  }).then(function(docRef) {
-    study_id = docRef.id;
-    console.log("Document written with ID: ", docRef.id);
-  }).catch(function(error) {
-    console.error("Error adding document: ", error);
-  });
+function save_study(study) {
+  saveStudy(firestore, study);
 }
 
 function saveUser(db, user) {
@@ -65,20 +57,8 @@ function saveUser(db, user) {
 
 function getAvailableStudies(elementId) {
   if (userId) {
-    firestore.collection('study')
-      .where("firebase_uid", "==", userId)
-      .get()
-      .then(function(querySnapshot) {
-        studies = []
-        querySnapshot.forEach(function(doc) {
-          // doc.data() is never undefined for query doc snapshots
-          const data = doc.data();
-          console.log(doc.id, " => ", data);
-          studies.push({
-            studyId: doc.id,
-            title: data.title
-          });
-          const selectElement = document.getElementById(elementId);
+    getAvailableStudiesForUserId(firestore, userId).then((studies) => {
+      const selectElement = document.getElementById(elementId);
           while (selectElement.firstChild) {
             selectElement.removeChild(selectElement.firstChild)
           }
@@ -88,8 +68,7 @@ function getAvailableStudies(elementId) {
             newOption.innerHTML = study.title;
             selectElement.appendChild(newOption);
           });
-        });
-      });
+    });
   }
 }
 
@@ -97,15 +76,14 @@ function getAvailableStudies(elementId) {
 window.addEventListener("load", function () {
   document.getElementById("new-study-form").addEventListener('submit', function (event) {
     event.preventDefault();
-    firebase.auth().currentUser.getIdToken(true).then((token) => {
-      const newStudy = {
-        title: document.getElementById('study-title').value,
-        protocolVersion: document.getElementById('protocol-version-selection').value,
-        firebase_uid: userId,
-        token
-      };
-      console.log('new study being sent to firestore: ', JSON.stringify(newStudy));
-      saveStudy(newStudy);
+    const newStudy = {
+      title: document.getElementById('study-title').value,
+      protocolVersion: document.getElementById('protocol-version-selection').value
+    };
+    console.log('new study being sent to firestore: ', JSON.stringify(newStudy));
+    saveStudy(firebase.auth(), firestore, newStudy).then(([study, id]) => {
+      console.log('study: ', study);
+      console.log('id: ', id);
     });
   });
 
