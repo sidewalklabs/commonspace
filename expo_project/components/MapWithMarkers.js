@@ -3,11 +3,42 @@ import React from "react";
 import { StyleSheet } from "react-native";
 import { MapView } from "expo";
 import PersonIcon from "./PersonIcon";
+import { Location, Permissions } from "expo";
+
+import MapConfig from "../constants/Map";
 
 class MapWithMarkers extends React.Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      initialRegion: null
+    };
   }
+
+  componentDidMount() {
+    this._getLocationAsync();
+  }
+
+  _getLocationAsync = async () => {
+    let region = MapConfig.defaultRegion;
+    // react native maps (the belly of expo's MapView ) requests location permissions for us
+    // so here we are only retrieving permission, not asking for it
+    const { status } = await Permissions.getAsync(Permissions.LOCATION);
+    if (status === "granted") {
+      const location = await Location.getCurrentPositionAsync({
+        enableHighAccuracy: true
+      });
+      const { latitude, longitude } = location.coords;
+      region = {
+        latitude,
+        longitude,
+        latitudeDelta: 0.0043,
+        longitudeDelta: 0.0034
+      };
+    }
+    this.setState({ region });
+  };
 
   render() {
     const {
@@ -18,15 +49,17 @@ class MapWithMarkers extends React.Component {
       onMapPress,
       onMapLongPress
     } = this.props;
-    return (
+    return this.state.region ? (
       <MapView
         style={styles.mapStyle}
         onPress={onMapPress}
         onLongPress={onMapLongPress}
+        initialRegion={this.state.region}
         showsUserLocation
-        followsUserLocation
+        scrollEnabled
         zoomEnabled
         rotateEnabled
+        showsCompass
         pitchEnabled={false}
       >
         {markers.map(marker => {
@@ -54,7 +87,7 @@ class MapWithMarkers extends React.Component {
           );
         })}
       </MapView>
-    );
+    ) : null;
   }
 }
 
