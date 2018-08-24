@@ -16,6 +16,7 @@ export function saveStudy(db: firestore.Firestore, study: Study) {
 }
 
 
+
 /**
  * we need to separately add the survey location, for the prototype we only need one location.
  */
@@ -33,3 +34,4 @@ export function saveSurvey(db: firestore.Firestore, study: Study, location: Loca
             console.error("Error adding document: ", error);
         });
 }
+

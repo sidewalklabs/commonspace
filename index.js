@@ -16,12 +16,14 @@ let studies;
 
 const ui = new firebaseui.auth.AuthUI(auth);
 let userId;
+let userEmail;
 
 ui.start('#firebaseui-auth-container', {
   callbacks: {
     signInSuccessWithAuthResult: (authResult) => {
       console.log('sign in is a succes: ', authResult);
-      getAvailableStudies();
+      getAvailableStudies('study-select');
+      getAvailableStudies('study-select-2');
       const elements = document.getElementsByClassName('container')
       Array.prototype.forEach.call(elements, element => {
          element.hidden = false;
@@ -38,7 +40,9 @@ ui.start('#firebaseui-auth-container', {
 auth.onAuthStateChanged(function(user) {
   if (user) {
     userId = user.uid;
-    getAvailableStudies();
+    userEmail = user.email;
+    getAvailableStudies('study-select');
+    getAvailableStudies('study-select-2');
   }
 });
 
@@ -59,7 +63,7 @@ function saveUser(db, user) {
   })
 }
 
-function getAvailableStudies() {
+function getAvailableStudies(elementId) {
   if (userId) {
     firestore.collection('study')
       .where("firebase_uid", "==", userId)
@@ -74,7 +78,7 @@ function getAvailableStudies() {
             studyId: doc.id,
             title: data.title
           });
-          const selectElement = document.getElementById('study-select');
+          const selectElement = document.getElementById(elementId);
           while (selectElement.firstChild) {
             selectElement.removeChild(selectElement.firstChild)
           }
@@ -109,7 +113,6 @@ window.addEventListener("load", function () {
     event.preventDefault();
     const study = document.getElementById("study-select").value;
     const email = document.getElementById("surveyor-email").value;
-    console.log('email: ', email);
     if (!email || !study) {
       alert('must select a study and enter an email');
     }
@@ -127,6 +130,34 @@ window.addEventListener("load", function () {
     //const email = document.getElementById("surveyor-email").value
     // update study information by adding this surveyor to the list of authorized surveyors
 
+  });
+
+  document.getElementById("start-survey").addEventListener('submit', async function (event) {
+    event.preventDefault();
+    const study = document.getElementById("study-select-2").value;
+    if (!study) {
+      alert('must select a study and enter an email');
+    }
+    console.log('study to start survey under: ', study);
+    const firestoreStudyRef = await firestore.collection('study').doc(study);
+    firestoreStudyRef.get().then(function(doc) {
+      if (doc.exists) {
+        const surveyors = doc.data().surveyors;
+        if (surveyors.filter(surveyorEmail => surveyorEmail === userEmail).length > 0) {
+          const newSurvey = {
+            locationId: 'not relevant yet',
+            studyId: study,
+            representation: 'absolute',
+            method: 'analog',
+            userId
+          };
+          console.log('creating new survey in firestore: ', newSurvey);
+          firestoreStudyRef.collection('survey').add(newSurvey);
+        }
+      }
+    }).catch((error) => {
+      console.error(`failure to save surveyor "${email}" to study with id: ${study}, error: ${error}`);
+    });
   });
 
 });
