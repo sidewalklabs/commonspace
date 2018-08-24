@@ -3,12 +3,13 @@ const webpack = require('webpack');
 
 module.exports = {
   entry: {
-    gcp: ['babel-polyfill', path.resolve(__dirname, 'src/gcp.ts')]
+    firestore: ['babel-polyfill', path.resolve(__dirname, 'src/firestore_client.ts')],
+    index: ['babel-polyfill', path.resolve(__dirname, 'src/gcp.ts')]
   },
   output: {
     libraryTarget: 'umd',
     path: path.resolve(__dirname, 'dist'),
-    filename: 'index.js'
+    filename: '[name].js'
   },
   target: "node",
   module: {

@@ -1,21 +1,34 @@
-import { firestore } from 'firebase';
+import { auth, firestore } from 'firebase';
 
 import { Study, Survey } from './datastore';
 
 
-export function saveStudy(db: firestore.Firestore, study: Study) {
+export async function saveStudy(auth: firebase.auth.Auth, db: firestore.Firestore, study: Study) {
     // create new study
-    db.collection('study').add({
+    const token = await auth.currentUser.getIdToken(true);
+    const studyWithToken: Study & { token: string } = {
+        token,
         ...study
-    }).then(function(docRef) {
-        const study_id = docRef.id;
-        console.log("Document written with ID: ", docRef.id);
-    }).catch(function(error) {
-        console.error("Error adding document: ", error);
-    });
+    }
+    const docRef = await db.collection('study').add(studyWithToken);
+    const firebaseId = docRef.id;
+    return [studyWithToken, firebaseId];
 }
 
-
+export async function getAvailableStudiesForUserId(db: firestore.Firestore, userId: string) {
+    const querySnapshot = await db.collection('study')
+        .where("firebaseUserId", "==", userId)
+        .get();
+    const studies = [];
+    querySnapshot.forEach(function(doc) {
+        const { title } = doc.data();
+        studies.push({
+            studyId: doc.id,
+            title
+        });
+    })
+    return studies;
+}
 
 /**
  * we need to separately add the survey location, for the prototype we only need one location.
@@ -34,4 +47,3 @@ export function saveSurvey(db: firestore.Firestore, study: Study, location: Loca
             console.error("Error adding document: ", error);
         });
 }
-

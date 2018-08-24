@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS users
 (
     user_id UUID PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
-    name TEXT NOT NULL
+    name TEXT
 );
 
 CREATE UNIQUE INDEX users_lower_email_unique_idx ON users (lower(email));
@@ -30,11 +30,25 @@ CREATE TABLE IF NOT EXISTS study
     scale studyScale,
     user_id UUID REFERENCES public.users(user_id) NOT NULL,
     protocol_version TEXT NOT NULL,
-    dsl_definition JSON,
+    table_definition JSON,
     tablename VARCHAR(63),
     notes TEXT
 );
 
+
+CREATE TYPE gender AS ENUM ('male', 'female', 'unknown');
+CREATE TYPE age AS ENUM ('0-14', '15-24', '25-64');
+CREATE TYPE mode AS ENUM ('pedestrian', 'bicyclist');
+CREATE TYPE posture AS ENUM ('leaning', 'lying', 'sitting', 'sitting on the ground', 'standing');
+CREATE TYPE activities AS ENUM ('commerical', 'consuming', 'conversing', 'electronics', 'pets', 'idle', 'running');
+CREATE TYPE groups AS ENUM ('1', '2', '3+');
+CREATE TYPE objects AS ENUM ('animal', 'bag_carried', 'clothing_cultural', 'clothing_activity', 'goods_carried', 'equipment_construction', 'equipment_receational', 'equipment_sport', 'protection_safety', 'protection_weather', 'furniture_carried', 'transportation_carried', 'transportation_stationary', 'push_cart', 'stroller', 'luggage');
+
+CREATE TABLE IF NOT EXISTS surveyors (
+    study_id UUID references study(study_id) NOT NULL,
+    user_id UUID references public.users(user_id) NOT NULL,
+    PRIMARY KEY(study_id, user_id)
+);
 
 -- survey metadata
 --  no user tied to this? I guess anonymous surveys are a thing, what about fake data?
@@ -49,22 +63,12 @@ CREATE TABLE IF NOT EXISTS survey (
     temperature_c FLOAT,
     method TEXT NOT NULL,
     user_id UUID references public.users(user_id),
+    FOREIGN KEY (study_id, user_id) references surveyors (study_id, user_id),
     notes TEXT
 );
 
-CREATE TYPE gender AS ENUM ('male', 'female', 'unknown');
-CREATE TYPE age AS ENUM ('0-14', '15-24', '25-64');
-CREATE TYPE mode AS ENUM ('pedestrian', 'bicyclist');
-CREATE TYPE group_size AS ENUM ('1', '2', '3+');
-CREATE TYPE posture AS ('leaning', 'lying', 'sitting', 'sitting on the ground', 'standing');
-CREATE TYPE activity AS ('commerical', 'consuming', 'conversing', 'electronics', 'pets', 'idle', 'running');
-CREATE TYPE object AS ('luggage', 'push cart', 'stroller');
 
-CREATE TABLE IF NOT EXISTS surveyors (
-    survey_id UUID references survey(survey_id) NOT NULL,
-    user_id UUID references public.users(user_id) NOT NULL,
-    PRIMARY KEY(survey_id, user_id)
-)
+
 
 -- the protocol doesn't make use of what
 

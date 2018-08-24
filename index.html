@@ -54,5 +54,8 @@
         </form>
       </div>
     </body>
+    <!-- we use UMD modules in our webpack for gcp cloud function reasons, yes, we can do otherwise -->
+    <script> if (global === undefined) { var global = window; } </script>
+    <script src="dist/firestore.js"></script>
     <script src="index.js"></script/>
 </html>

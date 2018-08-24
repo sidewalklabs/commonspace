@@ -1,2 +1,2 @@
-DROP TABLES users CASCADE;
+DROP TABLE users CASCADE;
 DROP SCHEMA data_collection CASCADE;
