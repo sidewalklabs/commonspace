@@ -24,6 +24,7 @@ class Survey extends React.Component {
                 onSelect(activeMarker.id, questionKey, value, selectableHeight)
               }
               selectedValue={activeMarker[questionKey]}
+              selectedColor={activeMarker.color}
               title={questionLabel}
               options={options}
             />
@@ -35,7 +36,7 @@ class Survey extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  titleContainer: { paddingVertical: 10 },
+  titleContainer: { paddingVertical: 10, paddingHorizontal: 20 },
   title: { fontWeight: "bold" }
 });
 

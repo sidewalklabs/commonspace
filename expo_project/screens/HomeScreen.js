@@ -1,42 +1,39 @@
 import React from "react";
 import {
-  Dimensions,
   PanResponder,
   Platform,
   StyleSheet,
   View,
-  Animated
+  Animated,
+  TouchableOpacity
 } from "react-native";
 import { withNavigation } from "react-navigation";
-import { firestore } from 'firebase';
 import * as _ from "lodash";
-import Colors, { iconColors } from "../constants/Colors";
+import { iconColors } from "../constants/Colors";
 import { ScrollView } from "../node_modules/react-native-gesture-handler";
-const { height } = Dimensions.get("window");
 import moment from "moment";
-import { Header } from "react-navigation";
+import Layout from "../constants/Layout";
 
 import MapWithMarkers from "../components/MapWithMarkers";
 import MarkerCarousel from "../components/MarkerCarousel";
 import Survey from "../components/Survey";
 import ColoredButton from "../components/ColoredButton";
 
-const HEADER_HEIGHT = Header.HEIGHT;
-const MIN_DRAWER_OFFSET = 0; // fix this
+// TODO (Ananta): shouold be dynamically set
+const INITIAL_DRAWER_TRANSLATE_Y = Layout.drawer.height;
+const MIN_DRAWER_TRANSLATE_Y = 0;
+const MID_DRAWER_TRANSLATE_Y = Layout.drawer.height - 300;
+const MAX_DRAWER_TRANSLATE_Y = Layout.drawer.height - 95; // mostly collapsed, with just the header peaking out
 
-const DRAWER_HEIGHT = height - HEADER_HEIGHT;
-const INITIAL_DRAWER_OFFSET = DRAWER_HEIGHT;
-
-const studyId = '50Kb9Jfa1ejkURIIE3T2'; // todo should be dynamically set
-const surveyId = 'UaAyBbLNOobGO2prwpsT'; // todo should be dynamically set
-
+const studyId = "50Kb9Jfa1ejkURIIE3T2"; // todo should be dynamically set
+const surveyId = "UaAyBbLNOobGO2prwpsT"; // todo should be dynamically set
 
 function _markerToDataPoint(marker) {
-  const dataPoint = {}
-  fields = [ 'gender', 'groupSize', 'mode', 'object', 'posture', 'timestamp' ];
-  fields.forEach((field) => {
+  const dataPoint = {};
+  fields = ["gender", "groupSize", "mode", "object", "posture", "timestamp"];
+  fields.forEach(field => {
     if (marker[field]) {
-      dataPoint[field] = marker[field]
+      dataPoint[field] = marker[field];
     }
   });
 
@@ -44,6 +41,16 @@ function _markerToDataPoint(marker) {
     dataPoint.location = marker.coordinate;
   }
   return dataPoint;
+}
+
+class Indicator extends React.Component {
+  render() {
+    return (
+      <TouchableOpacity onPress={this.props.onPress}>
+        <View style={styles.indicator} />
+      </TouchableOpacity>
+    );
+  }
 }
 
 class HomeScreen extends React.Component {
@@ -54,8 +61,6 @@ class HomeScreen extends React.Component {
   constructor(props) {
     super(props);
 
-    this.drawerOffsetY = new Animated.Value(INITIAL_DRAWER_OFFSET);
-    this.drawerOffsetY.addListener(({ value }) => (this._value = value));
     // firestore has its own timestamp type
     this.firestore = this.props.screenProps.firebase.firestore();
     this.firestore.settings({ timestampsInSnapshots: true });
@@ -64,99 +69,110 @@ class HomeScreen extends React.Component {
       activeMarkerId: null,
       markers: [],
       formScrollPosition: 0,
-      drawerHeaderHeight: 0
+      pan: new Animated.ValueXY({ x: 0, y: INITIAL_DRAWER_TRANSLATE_Y })
     };
+    this._drawerY = INITIAL_DRAWER_TRANSLATE_Y;
+    this.state.pan.addListener(value => (this._drawerY = value.y));
+
     this.resetDrawer = this.resetDrawer.bind(this);
+    this.toggleDrawer = this.toggleDrawer.bind(this);
     this.selectMarker = this.selectMarker.bind(this);
     this.getRandomIconColor = this.getRandomIconColor.bind(this);
     this.createNewMarker = this.createNewMarker.bind(this);
     this.setMarkerLocation = this.setMarkerLocation.bind(this);
     this.setFormResponse = this.setFormResponse.bind(this);
+  }
 
-    // TODO (Ananta): Make this easier to understand
-    // TODO (Ananta): use a "top" value instead of an offset from top, so + / - is a consistent direction between pan responder and scrollview
+  componentWillMount() {
     this._panResponder = PanResponder.create({
-      // Ask to be the responder:
       onStartShouldSetPanResponder: (evt, gestureState) => false,
       onStartShouldSetPanResponderCapture: (evt, gestureState) => false,
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Respond to downward drags if they are a long distance or the scrollview is at the top
-        // Upward drags are handled in onMoveShouldSetPanResponderCapture because they override all child gestures
-
-        const verticalDistance = Math.abs(gestureState.dy);
-        const horizontalDistance = Math.abs(gestureState.dx);
-        const isVerticalPan = verticalDistance > horizontalDistance;
-
-        if (isVerticalPan) {
-          // only pan if it's a long distance or you can't scroll any more
-          const directionDown = gestureState.dy > 0;
-          const scrolledToTop = !this.state.formScrollPosition;
-          const isLongDistance = gestureState.dy > 50;
-          return directionDown && (scrolledToTop || isLongDistance);
-        }
-        return false;
-      },
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
-        // Respond and capture (disallow children from responding) if panning upward
-        // Returning true here will skip onMoveShouldSetPanResponder
-
+        // This method captures gestures, (which means the scrollview will not scroll)
+        // For drags that should not block other gesture responses, use onMoveShouldSetPanResponder instead
         const verticalDistance = Math.abs(gestureState.dy);
         const horizontalDistance = Math.abs(gestureState.dx);
         const isVerticalPan = verticalDistance > horizontalDistance;
 
         if (isVerticalPan) {
           const directionUp = gestureState.dy < 0;
-          const hasSpaceToPanUp = this.drawerOffsetY._value > MIN_DRAWER_OFFSET;
-          return directionUp && hasSpaceToPanUp;
+          if (directionUp) {
+            // Respond to upward drags so long as there is room to expand the drawer
+            const hasSpaceToPanUp = this._drawerY > MIN_DRAWER_TRANSLATE_Y;
+            return hasSpaceToPanUp;
+          } else {
+            // Respond to downward drags if they are a long distance / high velocity or the scrollview is at the top
+            const hasSpaceToPanDown = this._drawerY <= MAX_DRAWER_TRANSLATE_Y;
+            const isScrolledToTop = !this.state.formScrollPosition;
+            const isHeavyScroll =
+              Math.abs(gestureState.dy) > 80 || Math.abs(gestureState.vy) > 1.2;
+            return hasSpaceToPanDown && (isScrolledToTop || isHeavyScroll);
+          }
         }
         return false;
       },
-      onPanResponderMove: (evt, gestureState) => {
-        const directionDown = gestureState.dy > 0;
-        const currentDrawerOffset = this.drawerOffsetY._value;
+      // set store current value as offset, and set value to 0,
+      // since onPanResponderMove converts delta offset into value and starts from 0 on every new gesture
+      onPanResponderGrant: (evt, gestureState) => {
+        this.state.pan.setOffset({ x: 0, y: this.state.pan.y._value });
+        this.state.pan.setValue({ x: 0, y: 0 });
+      },
+      // Follow the gesture
+      onPanResponderMove: Animated.event([null, { dy: this.state.pan.y }]),
 
-        // TODO: Make the drawer follow user's gesture
-        const canMoveDown =
-          directionDown &&
-          currentDrawerOffset <
-            INITIAL_DRAWER_OFFSET - this.state.drawerHeaderHeight;
-        const canMoveUp =
-          !directionDown && currentDrawerOffset > MIN_DRAWER_OFFSET;
+      // Snap to a breakpoint when the gesture is release
+      onPanResponderRelease: (evt, gestureState) => {
+        // look at velocity on release, instead of direction
+        // If user wiggles back and forth, we want to snap in the direction of terminal velocity
+        const directionUp = gestureState.vy < 0;
+        this.state.pan.flattenOffset();
+        const y = directionUp ? MIN_DRAWER_TRANSLATE_Y : MAX_DRAWER_TRANSLATE_Y;
 
-        if (canMoveUp || canMoveDown) {
-          const toValue = canMoveUp
-            ? MIN_DRAWER_OFFSET
-            : INITIAL_DRAWER_OFFSET - this.state.drawerHeaderHeight;
-          Animated.spring(this.drawerOffsetY, {
-            toValue,
-            useNativeDriver: true
-          }).start();
-          if (canMoveDown && this.state.formScrollPosition) {
-            this.scrollView.scrollTo({
-              x: 0,
-              y: 0,
-              animated: false
-            });
-          }
+        Animated.spring(this.state.pan, {
+          toValue: {
+            x: 0,
+            y
+          },
+          useNativeDriver: true,
+          friction: 5
+        }).start();
+
+        if (this.state.formScrollPosition) {
+          this.scrollView.scrollTo({
+            y: 0,
+            animated: false
+          });
         }
-        return true;
       }
     });
   }
 
-  resetDrawer() {
-    const isEmpty = this.state.markers.length === 0;
-    const offsetVal = isEmpty ? INITIAL_DRAWER_OFFSET : DRAWER_HEIGHT - 250; //fix this
-    if (this.drawerOffsetY._value !== offsetVal) {
-      Animated.timing(this.drawerOffsetY, {
-        toValue: offsetVal,
+  toggleDrawer() {
+    const y =
+      this._drawerY === MIN_DRAWER_TRANSLATE_Y
+        ? MAX_DRAWER_TRANSLATE_Y
+        : MIN_DRAWER_TRANSLATE_Y;
+    Animated.timing(this.state.pan, {
+      toValue: { x: 0, y },
+      duration: 200,
+      useNativeDriver: true
+    }).start();
+
+    if (this.state.formScrollPosition) {
+      this.scrollView.scrollTo({ y: 0, animated: false });
+    }
+  }
+
+  resetDrawer(y = MID_DRAWER_TRANSLATE_Y) {
+    if (this._drawerY !== y) {
+      Animated.timing(this.state.pan, {
+        toValue: { x: 0, y },
         duration: 200,
         useNativeDriver: true
       }).start();
     }
-
     if (this.state.formScrollPosition) {
-      this.scrollView.scrollTo({ x: 0, y: 0, animated: false });
+      this.scrollView.scrollTo({ y: 0, animated: false });
     }
   }
 
@@ -172,27 +188,30 @@ class HomeScreen extends React.Component {
         markers: markersCopy
       });
       this.firestore
-        .collection('study').doc(studyId)
-        .collection('survey').doc(surveyId)
-        .collection('dataPoints').doc(marker.id)
+        .collection("study")
+        .doc(studyId)
+        .collection("survey")
+        .doc(surveyId)
+        .collection("dataPoints")
+        .doc(marker.id)
         .set(_markerToDataPoint(marker));
 
       const currentScrollPosition = this.state.formScrollPosition;
-      const currentDrawerOffset = this.drawerOffsetY._value;
+      const currentDrawerOffset = this._drawerY;
       const newDrawerOffset = currentDrawerOffset - selectableHeight;
 
-      if (newDrawerOffset >= MIN_DRAWER_OFFSET) {
-        Animated.timing(this.drawerOffsetY, {
-          toValue: newDrawerOffset,
+      if (newDrawerOffset >= MIN_DRAWER_TRANSLATE_Y) {
+        Animated.timing(this.state.pan, {
+          toValue: { x: 0, y: newDrawerOffset },
           duration: 200,
           useNativeDriver: true
         }).start();
-      } else if (currentDrawerOffset > MIN_DRAWER_OFFSET) {
+      } else if (currentDrawerOffset > MIN_DRAWER_TRANSLATE_Y) {
         // Animate drawer to the top
         // then scroll the remaining amount to ensure next question is visible
-        const remainder = currentDrawerOffset - MIN_DRAWER_OFFSET;
-        Animated.timing(this.drawerOffsetY, {
-          toValue: MIN_DRAWER_OFFSET,
+        const remainder = currentDrawerOffset - MIN_DRAWER_TRANSLATE_Y;
+        Animated.timing(this.state.pan, {
+          toValue: { x: 0, y: MIN_DRAWER_TRANSLATE_Y },
           duration: 200,
           useNativeDriver: true
         }).start();
@@ -208,15 +227,18 @@ class HomeScreen extends React.Component {
   }
 
   selectMarker(activeMarkerId) {
-    this.setState({ activeMarkerId });
-    this.resetDrawer();
+    if (activeMarkerId === this.state.activeMarkerId) {
+      this.toggleDrawer();
+    } else {
+      this.setState({ activeMarkerId });
+      this.resetDrawer(MIN_DRAWER_TRANSLATE_Y);
+    }
   }
 
   createNewMarker(e) {
     const markersCopy = [...this.state.markers];
     const date = moment();
     const dateLabel = date.format("HH:mm");
-    const timestamp = date.format("x");
     const title = "Person " + (markersCopy.length + 1);
 
     const marker = {
@@ -227,11 +249,13 @@ class HomeScreen extends React.Component {
     };
 
     this.firestore
-      .collection('study').doc(studyId)
-      .collection('survey').doc(surveyId)
-      .collection('dataPoints')
+      .collection("study")
+      .doc(studyId)
+      .collection("survey")
+      .doc(surveyId)
+      .collection("dataPoints")
       .add(_markerToDataPoint(marker))
-      .then((doc) => {
+      .then(doc => {
         const { id, timestamp } = doc;
         marker.id = id;
         marker.timestamp = timestamp;
@@ -241,8 +265,7 @@ class HomeScreen extends React.Component {
           this.resetDrawer
         );
       });
-
-      }
+  }
 
   setMarkerLocation(e) {
     // TODO: add logic for updating in db
@@ -257,10 +280,13 @@ class HomeScreen extends React.Component {
       });
 
       this.firestore
-        .collection('study').doc(studyId)
-        .collection('survey').doc(surveyId)
-        .collection('dataPoints').doc(marker.firestoreId)
-        .update({location: marker.coordinate});
+        .collection("study")
+        .doc(studyId)
+        .collection("survey")
+        .doc(surveyId)
+        .collection("dataPoints")
+        .doc(marker.firestoreId)
+        .update({ location: marker.coordinate });
     }
   }
 
@@ -285,18 +311,12 @@ class HomeScreen extends React.Component {
         <Animated.View
           style={[
             styles.drawer,
-            { transform: [{ translateY: this.drawerOffsetY }] }
+            { transform: this.state.pan.getTranslateTransform() }
           ]}
           {...this._panResponder.panHandlers}
         >
-          <View
-            style={[styles.drawerHeader]}
-            onLayout={e =>
-              this.setState({
-                drawerHeaderHeight: e.nativeEvent.layout.height
-              })
-            }
-          >
+          <View style={[styles.drawerHeader]}>
+            <Indicator onPress={this.toggleDrawer} />
             <MarkerCarousel
               markers={this.state.markers}
               activeMarkerId={this.state.activeMarkerId}
@@ -313,19 +333,23 @@ class HomeScreen extends React.Component {
                 });
               }}
               scrollEventThrottle={0}
+              showsHorizontalScrollIndicator={false}
+              showsVerticalScrollIndicator={false}
             >
               <Survey
                 activeMarker={activeMarker}
                 onSelect={this.setFormResponse}
               />
               <ColoredButton
-                backgroundColor={Colors.colorPrimary}
+                style={{ marginHorizontal: 20 }}
+                backgroundColor={activeMarker.color}
                 color="white"
-                onPress={this.resetDrawer}
+                onPress={() => this.resetDrawer()}
                 label="Done"
               />
             </ScrollView>
           )}
+          <View style={styles.bottomGuard} />
         </Animated.View>
       </View>
     );
@@ -345,7 +369,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     backgroundColor: "white",
-    height: DRAWER_HEIGHT,
+    height: Layout.drawer.height,
     ...Platform.select({
       ios: {
         shadowColor: "black",
@@ -359,12 +383,27 @@ const styles = StyleSheet.create({
     })
   },
   drawerHeader: {
-    alignSelf: "stretch",
-    marginTop: 10
+    alignSelf: "stretch"
   },
   formContainer: {
-    paddingHorizontal: 20,
     alignSelf: "stretch"
+  },
+  indicator: {
+    width: 30,
+    height: 5,
+    alignSelf: "center",
+    marginTop: 10,
+    backgroundColor: "#D8D8D8",
+    borderRadius: 10
+  },
+  bottomGuard: {
+    // This view adds whitespace below the drawer, in case the user over-pans it
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: -500,
+    height: 500,
+    backgroundColor: "white"
   }
 });
 

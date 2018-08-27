@@ -30,9 +30,9 @@ export default [
     questionKey: "groupSize",
     questionLabel: "Group Size",
     options: [
-      { value: "alone", label: "1" },
-      { value: "pair", label: "2" },
-      { value: "group", label: "3+" }
+      { value: "pair", label: "pair" },
+      { value: "group", label: "group" },
+      { value: "crowd", label: "crowd" }
     ]
   },
   {
@@ -66,48 +66,6 @@ export default [
       { value: "luggage", label: "luggage" },
       { value: "pushcart", label: "Push Cart" },
       { value: "stroller", label: "Stroller" }
-    ]
-  },
-  {
-    questionKey: "blahgender",
-    questionLabel: "Fake Question (for demo purposes)",
-    options: [
-      { value: "male", label: "1" },
-      { value: "female", label: "2" },
-      { value: "unknown", label: "3" }
-    ]
-  },
-  {
-    questionKey: "genderblah",
-    questionLabel: "Fake Question (for demo purposes)",
-    options: [
-      { value: "male", label: "4" },
-      { value: "female", label: "5" },
-      { value: "unknown", label: "6" },
-      { value: "male1", label: "7" },
-      { value: "female2", label: "8" },
-      { value: "unknown3", label: "9" },
-      { value: "male4", label: "10" },
-      { value: "female5", label: "11" },
-      { value: "unknown6", label: "12" }
-    ]
-  },
-  {
-    questionKey: "adfsasdfgender",
-    questionLabel: "Fake Question (for demo purposes)",
-    options: [
-      { value: "male", label: "fakefakeffake" },
-      { value: "female", label: "reallylongword" },
-      { value: "unknown", label: "thisshouldmakeyouscroll" }
-    ]
-  },
-  {
-    questionKey: "genafdsafdsder",
-    questionLabel: "Fake Question (for demo purposes)",
-    options: [
-      { value: "male", label: "100" },
-      { value: "female", label: "99" },
-      { value: "unknown", label: "98" }
     ]
   }
 ];
