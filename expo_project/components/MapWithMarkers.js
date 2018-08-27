@@ -50,17 +50,23 @@ class MapWithMarkers extends React.Component {
     return this.state.region ? (
       <MapView
         style={styles.mapStyle}
-        onPress={onMapPress}
-        onLongPress={onMapLongPress}
+        provider="google"
+        onPress={() => onMapPress()}
+        onLongPress={e => onMapLongPress(e.nativeEvent.coordinate)}
         initialRegion={this.state.region}
         showsUserLocation
         scrollEnabled
         zoomEnabled
         pitchEnabled={false}
       >
+        <MapView.Polyline
+          coordinates={MapConfig.polylineCoordinates}
+          strokeColor="#000"
+          strokeWidth={6}
+        />
         {markers.map(marker => {
           const selected = marker.id === activeMarkerId;
-          const key = marker.id;
+          const key = marker.id + (selected ? "-selected" : ""); //trigger a re render when switching states, so it recenters itself
           return (
             <MapView.Marker
               coordinate={marker.coordinate}
@@ -76,7 +82,6 @@ class MapWithMarkers extends React.Component {
               <PersonIcon
                 backgroundColor={marker.color}
                 size={selected ? 24 : 16}
-                shadow
               />
             </MapView.Marker>
           );

@@ -164,7 +164,7 @@ class HomeScreen extends React.Component {
   }
 
   resetDrawer(y = MID_DRAWER_TRANSLATE_Y) {
-    if (this._drawerY !== y) {
+    if (this._drawerY !== y && this.state.markers.length) {
       Animated.timing(this.state.pan, {
         toValue: { x: 0, y },
         duration: 200,
@@ -235,14 +235,14 @@ class HomeScreen extends React.Component {
     }
   }
 
-  createNewMarker(e) {
+  createNewMarker(coordinate) {
     const markersCopy = [...this.state.markers];
     const date = moment();
     const dateLabel = date.format("HH:mm");
     const title = "Person " + (markersCopy.length + 1);
 
     const marker = {
-      coordinate: e.nativeEvent.coordinate,
+      coordinate: coordinate,
       color: this.getRandomIconColor(),
       title,
       dateLabel
