@@ -30,18 +30,32 @@ class Selectable extends React.Component {
   }
 
   render() {
-    const { onSelectablePress, selectedValue, title, options } = this.props;
+    const {
+      onSelectablePress,
+      selectedValue,
+      selectedColor,
+      title,
+      options
+    } = this.props;
     return (
       <View style={styles.container} onLayout={this.onLayout}>
         <Text style={styles.title}>{title}</Text>
-        <ScrollView style={styles.selectable} horizontal>
-          {_.map(options, option => {
+        <ScrollView
+          style={styles.selectable}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+        >
+          {_.map(options, (option, index) => {
             const { value, label } = option;
             const selected = value === selectedValue;
             return (
               <TouchableOpacity
                 key={value}
-                style={[styles.selectableCell, selected && styles.selected]}
+                style={[
+                  styles.selectableCell,
+                  index === 0 && styles.firstCell,
+                  selected && { backgroundColor: selectedColor }
+                ]}
                 onPress={e => {
                   onSelectablePress(value, this.state.height);
                 }}
@@ -74,20 +88,22 @@ const styles = StyleSheet.create({
     marginRight: 5,
     marginTop: 10
   },
-  selected: {
-    backgroundColor: colors.colorSecondary
+  firstCell: {
+    marginLeft: 20
   },
   pillText: {
     fontFamily: "monaco"
   },
   title: {
-    marginBottom: 5
+    marginBottom: 5,
+    paddingHorizontal: 20
   }
 });
 
 Selectable.propTypes = {
   onSelectablePress: PropTypes.func.isRequired,
   selectedValue: PropTypes.string,
+  selectedColor: PropTypes.string,
   title: PropTypes.string.isRequired,
   options: PropTypes.arrayOf(
     PropTypes.shape({
@@ -95,6 +111,10 @@ Selectable.propTypes = {
       value: PropTypes.string
     })
   ).isRequired
+};
+
+Selectable.defaultProps = {
+  selectedColor: colors.colorSecondary
 };
 
 export default Selectable;

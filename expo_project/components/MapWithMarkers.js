@@ -1,9 +1,9 @@
 import PropTypes from "prop-types";
 import React from "react";
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import { MapView } from "expo";
 import PersonIcon from "./PersonIcon";
-import { Location, Permissions } from "expo";
+// import { Location, Permissions } from "expo";
 
 import MapConfig from "../constants/Map";
 
@@ -11,34 +11,32 @@ class MapWithMarkers extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      initialRegion: null
-    };
+    this.state = { region: MapConfig.defaultRegion };
   }
 
-  componentDidMount() {
-    this._getLocationAsync();
-  }
+  // componentDidMount() {
+  //   this._getLocationAsync();
+  // }
 
-  _getLocationAsync = async () => {
-    let region = MapConfig.defaultRegion;
-    // react native maps (the belly of expo's MapView ) requests location permissions for us
-    // so here we are only retrieving permission, not asking for it
-    const { status } = await Permissions.getAsync(Permissions.LOCATION);
-    if (status === "granted") {
-      const location = await Location.getCurrentPositionAsync({
-        enableHighAccuracy: true
-      });
-      const { latitude, longitude } = location.coords;
-      region = {
-        latitude,
-        longitude,
-        latitudeDelta: 0.0043,
-        longitudeDelta: 0.0034
-      };
-    }
-    this.setState({ region });
-  };
+  // _getLocationAsync = async () => {
+  //   let region = MapConfig.defaultRegion;
+  //   // react native maps (the belly of expo's MapView ) requests location permissions for us
+  //   // so here we are only retrieving permission, not asking for it
+  //   const { status } = await Permissions.askAsync(Permissions.LOCATION);
+  //   if (status === "granted") {
+  //     const location = await Location.getCurrentPositionAsync({
+  //       enableHighAccuracy: true
+  //     });
+  //     const { latitude, longitude } = location.coords;
+  //     region = {
+  //       latitude,
+  //       longitude,
+  //       latitudeDelta: 0.0043,
+  //       longitudeDelta: 0.0034
+  //     };
+  //   }
+  //   this.setState({ region });
+  // };
 
   render() {
     const {
@@ -58,14 +56,11 @@ class MapWithMarkers extends React.Component {
         showsUserLocation
         scrollEnabled
         zoomEnabled
-        rotateEnabled
-        showsCompass
         pitchEnabled={false}
       >
         {markers.map(marker => {
           const selected = marker.id === activeMarkerId;
-          // Update the key when selected or delected, so the marker re renders and centers itself based on the new child size
-          const key = marker.id + (selected ? "-selected" : "");
+          const key = marker.id;
           return (
             <MapView.Marker
               coordinate={marker.coordinate}
@@ -92,7 +87,20 @@ class MapWithMarkers extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  mapStyle: { flex: 1 }
+  mapStyle: {
+    ...Platform.select({
+      ios: {
+        flex: 1
+      },
+      android: {
+        position: "absolute",
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0
+      }
+    })
+  }
 });
 
 MapWithMarkers.propTypes = {
