@@ -1,44 +1,46 @@
+import { MapView } from "expo";
 import PropTypes from "prop-types";
 import React from "react";
-import { Platform, StyleSheet } from "react-native";
-import { MapView } from "expo";
-import PersonIcon from "./PersonIcon";
-// import { Location, Permissions } from "expo";
-
+import { Platform, StyleSheet, TouchableOpacity } from "react-native";
+import { AnimatedCircularProgress } from "react-native-circular-progress";
+import { iconColors } from "../constants/Colors";
 import MapConfig from "../constants/Map";
+import PersonIcon from "../components/PersonIcon";
+
+// NOTE: A longPress is more like 500ms,
+// however there's a delay between when the longPress is registered
+// and when a new marker is created in firestore and thereafter rendered
+// Currently setting halo animation to 1000 to account for that
+// but that might confuse users who release early (e.g. at 600ms) which still ends up creating a marker
+const CIRCULAR_PROGRESS_ANIMATION_DURATION = 1000;
+const CIRCULAR_PROGRESS_SIZE = 100;
 
 class MapWithMarkers extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = { region: MapConfig.defaultRegion };
+    this.state = {
+      region: MapConfig.defaultRegion,
+      circularProgressLocation: null,
+      nextMarkerColor: this.getRandomIconColor()
+    };
   }
 
-  // componentDidMount() {
-  //   this._getLocationAsync();
-  // }
+  getRandomIconColor = () => {
+    const iconOptions = Object.values(iconColors);
+    return iconOptions[Math.floor(Math.random() * iconOptions.length)];
+  };
 
-  // _getLocationAsync = async () => {
-  //   let region = MapConfig.defaultRegion;
-  //   // react native maps (the belly of expo's MapView ) requests location permissions for us
-  //   // so here we are only retrieving permission, not asking for it
-  //   const { status } = await Permissions.askAsync(Permissions.LOCATION);
-  //   if (status === "granted") {
-  //     const location = await Location.getCurrentPositionAsync({
-  //       enableHighAccuracy: true
-  //     });
-  //     const { latitude, longitude } = location.coords;
-  //     region = {
-  //       latitude,
-  //       longitude,
-  //       latitudeDelta: 0.0043,
-  //       longitudeDelta: 0.0034
-  //     };
-  //   }
-  //   this.setState({ region });
-  // };
+  setNextColor = () => {
+    this.setState({ nextMarkerColor: this.getRandomIconColor() });
+  };
 
   render() {
+    /* 
+      Note: we're taking advantage of the fact that AnimatedCircularProgress animates on mount
+      by mounting on pressIn and unmounting on pressOut. 
+      Unmounting so often might give us a noticeable performance hit, so if that happens, we can instead manage fill in state.
+    */
     const {
       markers,
       activeMarkerId,
@@ -48,50 +50,95 @@ class MapWithMarkers extends React.Component {
       onMapLongPress
     } = this.props;
     return this.state.region ? (
-      <MapView
-        style={styles.mapStyle}
-        provider="google"
-        onPress={() => onMapPress()}
-        onLongPress={e => onMapLongPress(e.nativeEvent.coordinate)}
-        initialRegion={this.state.region}
-        showsUserLocation
-        scrollEnabled
-        zoomEnabled
-        pitchEnabled={false}
+      <TouchableOpacity
+        activeOpacity={1}
+        onPressIn={e => {
+          const { nativeEvent } = e;
+          this.setState({
+            circularProgressLocation: {
+              top: nativeEvent.locationY - CIRCULAR_PROGRESS_SIZE / 2,
+              left: nativeEvent.locationX - CIRCULAR_PROGRESS_SIZE / 2
+            }
+          });
+        }}
+        onPressOut={e => {
+          this.setState({
+            circularProgressLocation: null,
+            nextMarkerColor: this.getRandomIconColor()
+          });
+        }}
+        style={styles.container}
       >
-        <MapView.Polyline
-          coordinates={MapConfig.polylineCoordinates}
-          strokeColor="#000"
-          strokeWidth={6}
-        />
-        {markers.map(marker => {
-          const selected = marker.id === activeMarkerId;
-          const key = marker.id + (selected ? "-selected" : ""); //trigger a re render when switching states, so it recenters itself
-          return (
-            <MapView.Marker
-              coordinate={marker.coordinate}
-              key={key}
-              identifier={marker.id}
-              stopPropagation
-              draggable
-              onDragEnd={onMarkerDragEnd}
-              onPress={() => onMarkerPress(marker.id)}
-              anchor={{ x: 0, y: 0 }}
-              calloutAnchor={{ x: 0, y: 0 }}
-            >
-              <PersonIcon
-                backgroundColor={marker.color}
-                size={selected ? 24 : 16}
-              />
-            </MapView.Marker>
-          );
-        })}
-      </MapView>
+        <MapView
+          style={styles.mapStyle}
+          provider="google"
+          onPress={() => onMapPress()}
+          onLongPress={e =>
+            onMapLongPress(e.nativeEvent.coordinate, this.state.nextMarkerColor)
+          }
+          initialRegion={this.state.region}
+          showsUserLocation
+          scrollEnabled
+          zoomEnabled
+          pitchEnabled={false}
+        >
+          <MapView.Polyline
+            coordinates={MapConfig.polylineCoordinates}
+            strokeColor="#000"
+            strokeWidth={6}
+          />
+          {markers.map(marker => {
+            const selected = marker.id === activeMarkerId;
+            const key = marker.id + (selected ? "-selected" : ""); //trigger a re render when switching states, so it recenters itself
+            return (
+              <MapView.Marker
+                coordinate={marker.coordinate}
+                key={key}
+                identifier={marker.id}
+                stopPropagation
+                draggable
+                onDragEnd={e =>
+                  onMarkerDragEnd(e.nativeEvent.id, e.nativeEvent.coordinate)
+                }
+                onPress={() => onMarkerPress(marker.id)}
+                anchor={{ x: 0.5, y: 0.5 }}
+              >
+                <PersonIcon
+                  backgroundColor={marker.color}
+                  size={selected ? 24 : 16}
+                />
+              </MapView.Marker>
+            );
+          })}
+        </MapView>
+        {this.state.circularProgressLocation && (
+          <AnimatedCircularProgress
+            ref={ref => (this.circularProgress = ref)}
+            style={[
+              styles.circularProgress,
+              {
+                top: this.state.circularProgressLocation.top,
+                left: this.state.circularProgressLocation.left
+              }
+            ]}
+            size={CIRCULAR_PROGRESS_SIZE}
+            width={3}
+            tintColor={this.state.nextMarkerColor}
+            backgroundColor="transparent"
+            duration={CIRCULAR_PROGRESS_ANIMATION_DURATION}
+            fill={100}
+          />
+        )}
+      </TouchableOpacity>
     ) : null;
   }
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    position: "relative"
+  },
   mapStyle: {
     ...Platform.select({
       ios: {
@@ -105,6 +152,11 @@ const styles = StyleSheet.create({
         right: 0
       }
     })
+  },
+  circularProgress: {
+    alignSelf: "center",
+    position: "absolute",
+    backgroundColor: "transparent"
   }
 });
 
