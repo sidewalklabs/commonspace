@@ -1,23 +1,21 @@
 import React from "react";
 import {
+  Animated,
   PanResponder,
   Platform,
   StyleSheet,
+  ScrollView,
   View,
-  Animated,
   TouchableOpacity
 } from "react-native";
 import { withNavigation } from "react-navigation";
 import * as _ from "lodash";
-import { iconColors } from "../constants/Colors";
-import { ScrollView } from "../node_modules/react-native-gesture-handler";
 import moment from "moment";
-import Layout from "../constants/Layout";
-
 import MapWithMarkers from "../components/MapWithMarkers";
 import MarkerCarousel from "../components/MarkerCarousel";
 import Survey from "../components/Survey";
 import ColoredButton from "../components/ColoredButton";
+import Layout from "../constants/Layout";
 
 // TODO (Ananta): shouold be dynamically set
 const INITIAL_DRAWER_TRANSLATE_Y = Layout.drawer.height;
@@ -77,7 +75,6 @@ class HomeScreen extends React.Component {
     this.resetDrawer = this.resetDrawer.bind(this);
     this.toggleDrawer = this.toggleDrawer.bind(this);
     this.selectMarker = this.selectMarker.bind(this);
-    this.getRandomIconColor = this.getRandomIconColor.bind(this);
     this.createNewMarker = this.createNewMarker.bind(this);
     this.setMarkerLocation = this.setMarkerLocation.bind(this);
     this.setFormResponse = this.setFormResponse.bind(this);
@@ -235,7 +232,7 @@ class HomeScreen extends React.Component {
     }
   }
 
-  createNewMarker(coordinate) {
+  createNewMarker(coordinate, color) {
     const markersCopy = [...this.state.markers];
     const date = moment();
     const dateLabel = date.format("HH:mm");
@@ -243,11 +240,13 @@ class HomeScreen extends React.Component {
 
     const marker = {
       coordinate: coordinate,
-      color: this.getRandomIconColor(),
+      color,
       title,
       dateLabel
     };
 
+    // TODO (Seabass or Ananta): Figure out a way to get faster UI feedback
+    // Would be nice for UI to optimistically render before firestore returns
     this.firestore
       .collection("study")
       .doc(studyId)
@@ -267,9 +266,8 @@ class HomeScreen extends React.Component {
       });
   }
 
-  setMarkerLocation(e) {
+  setMarkerLocation(id, coordinate) {
     // TODO: add logic for updating in db
-    const { id, coordinate } = e.nativeEvent;
     const markersCopy = [...this.state.markers];
     const marker = _.find(markersCopy, { id });
 
@@ -288,11 +286,6 @@ class HomeScreen extends React.Component {
         .doc(marker.firestoreId)
         .update({ location: marker.coordinate });
     }
-  }
-
-  getRandomIconColor() {
-    const iconOptions = Object.values(iconColors);
-    return iconOptions[Math.floor(Math.random() * iconOptions.length)];
   }
 
   render() {
