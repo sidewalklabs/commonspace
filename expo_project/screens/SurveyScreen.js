@@ -14,17 +14,15 @@ import moment from "moment";
 import MapWithMarkers from "../components/MapWithMarkers";
 import MarkerCarousel from "../components/MarkerCarousel";
 import Survey from "../components/Survey";
-import ColoredButton from "../components/ColoredButton";
 import Layout from "../constants/Layout";
+
+import { Button } from "react-native-paper";
 
 // TODO (Ananta): shouold be dynamically set
 const INITIAL_DRAWER_TRANSLATE_Y = Layout.drawer.height;
 const MIN_DRAWER_TRANSLATE_Y = 0;
 const MID_DRAWER_TRANSLATE_Y = Layout.drawer.height - 300;
 const MAX_DRAWER_TRANSLATE_Y = Layout.drawer.height - 95; // mostly collapsed, with just the header peaking out
-
-const studyId = "50Kb9Jfa1ejkURIIE3T2"; // todo should be dynamically set
-const surveyId = "UaAyBbLNOobGO2prwpsT"; // todo should be dynamically set
 
 function _markerToDataPoint(marker) {
   const dataPoint = {};
@@ -51,7 +49,7 @@ class Indicator extends React.Component {
   }
 }
 
-class HomeScreen extends React.Component {
+class SurveyScreen extends React.Component {
   static navigationOptions = {
     title: "Long press map to add a pin"
   };
@@ -178,6 +176,8 @@ class HomeScreen extends React.Component {
     const marker = _.find(markersCopy, {
       id
     });
+    const studyId = this.props.navigation.getParam("studyId");
+    const surveyId = this.props.navigation.getParam("surveyId");
 
     if (marker) {
       marker[key] = value;
@@ -233,6 +233,8 @@ class HomeScreen extends React.Component {
   }
 
   createNewMarker(coordinate, color) {
+    const studyId = this.props.navigation.getParam("studyId");
+    const surveyId = this.props.navigation.getParam("surveyId");
     const markersCopy = [...this.state.markers];
     const date = moment();
     const dateLabel = date.format("HH:mm");
@@ -268,6 +270,8 @@ class HomeScreen extends React.Component {
 
   setMarkerLocation(id, coordinate) {
     // TODO: add logic for updating in db
+    const studyId = this.props.navigation.getParam("studyId");
+    const surveyId = this.props.navigation.getParam("surveyId");
     const markersCopy = [...this.state.markers];
     const marker = _.find(markersCopy, { id });
 
@@ -333,13 +337,15 @@ class HomeScreen extends React.Component {
                 activeMarker={activeMarker}
                 onSelect={this.setFormResponse}
               />
-              <ColoredButton
-                style={{ marginHorizontal: 20 }}
-                backgroundColor={activeMarker.color}
-                color="white"
+              <Button
+                primary
+                raised
+                dark
                 onPress={() => this.resetDrawer()}
-                label="Done"
-              />
+                style={{ margin: 20 }}
+              >
+                Done
+              </Button>
             </ScrollView>
           )}
           <View style={styles.bottomGuard} />
@@ -400,4 +406,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default withNavigation(HomeScreen);
+export default withNavigation(SurveyScreen);

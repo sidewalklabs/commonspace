@@ -1,14 +1,16 @@
 import React from "react";
 import { createStackNavigator } from "react-navigation";
 import colors from "../constants/Colors";
-import HomeScreen from "../screens/HomeScreen";
+import SurveyScreen from "../screens/SurveyScreen";
+import StudyIndexScreen from "../screens/StudyIndexScreen";
 
 export default createStackNavigator(
   {
-    Home: HomeScreen
+    SurveyScreen,
+    StudyIndexScreen
   },
   {
-    initialRouteName: "Home",
+    initialRouteName: "StudyIndexScreen",
     navigationOptions: {
       headerStyle: {
         backgroundColor: colors.colorPrimary

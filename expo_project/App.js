@@ -3,6 +3,17 @@ import { Button, Platform, StatusBar, StyleSheet, View } from "react-native";
 import { AppLoading, Font, Icon } from "expo";
 import AppNavigator from "./navigation/AppNavigator";
 import firebase from "./lib/firebaseSingleton";
+import { DefaultTheme, Provider as PaperProvider } from "react-native-paper";
+
+const theme = {
+  ...DefaultTheme,
+  roundness: 5,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: "#5B93D9",
+    accent: "#1C4442"
+  }
+};
 
 // todo this.state.userIsAuthenticated = null
 export default class App extends React.Component {
@@ -57,29 +68,25 @@ export default class App extends React.Component {
       );
     } else {
       return (
-        <View style={styles.container}>
-          {Platform.OS === "ios" && <StatusBar barStyle="light-content" />}
-          {this.state.userIsAuthenticated ? (
-            <View style={styles.container}>
-              <AppNavigator screenProps={{firebase}}/>
-            </View>
-          ) : (
-            <View
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center"
-              }}
-            >
-              <Button
-                onPress={this._signIn}
-                title="Log In"
-                color="green"
-                accessibilityLabel="sign in"
-              />
-            </View>
-          )}
-        </View>
+        <PaperProvider theme={theme}>
+          <View style={styles.container}>
+            {Platform.OS === "ios" && <StatusBar barStyle="light-content" />}
+            {this.state.userIsAuthenticated ? (
+              <View style={styles.container}>
+                <AppNavigator screenProps={{ firebase }} />
+              </View>
+            ) : (
+              <View style={styles.onboardingContainer}>
+                <Button
+                  onPress={this._signIn}
+                  title="Log In"
+                  color="green"
+                  accessibilityLabel="sign in"
+                />
+              </View>
+            )}
+          </View>
+        </PaperProvider>
       );
     }
   }
@@ -107,5 +114,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff"
+  },
+  onboardingContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center"
   }
 });
