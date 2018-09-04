@@ -1,7 +1,11 @@
+CREATE SCHEMA IF NOT EXISTS public;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO public;
+
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "postgis";
 
-CREATE ROLE data_collection_admin;
+CREATE ROLE data_collector;
 
 CREATE TABLE IF NOT EXISTS users
 (
@@ -13,9 +17,9 @@ CREATE TABLE IF NOT EXISTS users
 CREATE UNIQUE INDEX users_lower_email_unique_idx ON users (lower(email));
 
 CREATE SCHEMA IF NOT EXISTS data_collection;
-ALTER ROLE data_collection_admin SET search_path TO data_collection,"$user",public;
+ALTER ROLE data_collector SET search_path TO data_collection,"$user",public;
 -- ALTER ROLE <your_login_role> SET search_path TO data_collection,"$user",public;
-set search_path TO data_collection;
+SET search_path TO data_collection;
 
 CREATE TYPE studyScale AS ENUM ('district', 'city', 'cityCentre', 'neighborhood', 'blockScale', 'singleSite');
 
@@ -25,8 +29,8 @@ CREATE TABLE IF NOT EXISTS study
     title TEXT,
     project TEXT,
     project_phase TEXT,
-    state_date TIMESTAMP,
-    end_date TIMESTAMP,
+    state_date TIMESTAMP WITH TIME ZONE,
+    end_date TIMESTAMP WITH TIME ZONE,
     scale studyScale,
     user_id UUID REFERENCES public.users(user_id) NOT NULL,
     protocol_version TEXT NOT NULL,
@@ -45,8 +49,8 @@ CREATE TYPE groups AS ENUM ('1', '2', '3+');
 CREATE TYPE objects AS ENUM ('animal', 'bag_carried', 'clothing_cultural', 'clothing_activity', 'goods_carried', 'equipment_construction', 'equipment_receational', 'equipment_sport', 'protection_safety', 'protection_weather', 'furniture_carried', 'transportation_carried', 'transportation_stationary', 'push_cart', 'stroller', 'luggage');
 
 CREATE TABLE IF NOT EXISTS surveyors (
-    study_id UUID references study(study_id) NOT NULL,
     user_id UUID references public.users(user_id) NOT NULL,
+    study_id UUID references study(study_id) NOT NULL,
     PRIMARY KEY(study_id, user_id)
 );
 
@@ -57,6 +61,8 @@ CREATE TABLE IF NOT EXISTS survey (
     study_id UUID references study(study_id) NOT NULL,
     location_id UUID,
     survey_id UUID PRIMARY KEY,
+    time_start TIMESTAMP WITH TIME ZONE,
+    time_stop TIMESTAMP WITH TIME ZONE,
     time_character TEXT,
     representation TEXT NOT NULL,
     microclimate TEXT,

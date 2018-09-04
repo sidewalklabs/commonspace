@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import * as pg from 'pg';
 import * as uuidv4 from 'uuid/v4';
 
-import { createStudy, createUser, giveUserStudyAcess } from './datastore';
+import { createNewSurveyForStudy, createStudy, createUser, giveUserStudyAcess, recordStudyStart } from './datastore';
 
 const pgConnectionInfo = {
     connectionLimit: 1,
@@ -18,22 +18,31 @@ const pool = new pg.Pool(pgConnectionInfo);
 
 // Return a newly generated UUID in the HTTP response.
 export async function saveNewUser(req: Request, res: Response) {
+    const user = req.body;
     const { userId, email, name } = req.body;
-    console.log(req.body);
+    user.userId = user.userdId ? user.userId : uuidv4();
     const resultFromSave = await createUser(pool, { userId, email, name });
-    res.send(req.body);
+    res.send(user);
 };
 
 export async function saveNewStudy(req: Request, res: Response) {
     const study = req.body;
     study.studyId = study.studyId ? study.studyId : uuidv4();
-    await createStudy(pool, study, ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'objects', 'location'])
-    res.send({ study });
+    await createStudy(pool, study, ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'objects', 'location']);
+    res.send(study);
 }
 
 export async function saveNewSurvey(req: Request, res: Response) {
-    const { user, survey } = req.body;
-    survey.surveyId = survey.surveyId ? survey.surveyId : uuidv4();
+    try {
+        const survey = req.body;
+        survey.surveyId = survey.surveyId ? survey.surveyId : uuidv4();
+        await createNewSurveyForStudy(pool, survey);
+        res.send(survey);
+    } catch (error) {
+        console.error(`failure to give user access for : ${req.body}| pg connection: ${JSON.stringify(pgConnectionInfo)}`);
+        throw error;
+    }
+
 }
 
 export async function addSurveyorToStudy(req: Request, res: Response) {
