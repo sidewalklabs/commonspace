@@ -116,3 +116,11 @@ test('create new user if added to study without existsing account', async () => 
     expect(rowCount).toBe(1);
     expect(command).toBe('INSERT');
 })
+
+afterAll(async () => {
+    try {
+        await pool.end();
+    } catch (error) {
+        console.error(`${error}`);
+    }
+});

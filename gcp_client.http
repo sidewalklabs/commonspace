@@ -1,11 +1,4 @@
 ###
-​
-:save_user_to_postgres_endpoint = https://us-central1-nyc-tlc-1225.cloudfunctions.net/getUuid  
-GET https://us-central1-nyc-tlc-1225.cloudfunctions.net/getUuid 
-Accept-Encoding: application/json
-​User-Agent: Emacs Restclient
-
-###
 :save_user_to_postgres_endpoint = https://us-central1-nyc-tlc-1225.cloudfunctions.net/saveNewUser
 POST :save_user_to_postgres_endpoint
 Accept-Encoding: application/json
@@ -35,7 +28,22 @@ Accept-Encoding: application/json
 Content-Type: application/json
 
 {
- "userEmail": "sebastian@sidewalklabs.com",
+ "userEmail": "squirtle@somemail.io",
  "studyId": "42eac5cb-0885-40a4-8010-16fb5246d8c8"
+}
+#
+:create_new_survey = https://us-central1-nyc-tlc-1225.cloudfunctions.net/saveNewSurvey
+POST :create_new_survey
+Accept-Encoding: application/json
+Content-Type: application/json
+
+{
+ "studyId": "42eac5cb-0885-40a4-8010-16fb5246d8c8",
+ "surveyId": "17f32eae-01c5-463c-aabf-686de95607bf",
+ "startDate": "2018-09-14T17:00:00Z",
+ "endDate": "2018-09-14T19:00:00Z",
+ "representation": "absolute",
+ "method": "analog",
+ "userId": "3b30e3d5-158a-4670-b6b8-7ffc328dcac5"
 }
 #
