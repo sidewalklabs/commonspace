@@ -8,15 +8,16 @@ import {
   View,
   TouchableOpacity
 } from "react-native";
+import { Button } from "react-native-paper";
 import { withNavigation } from "react-navigation";
 import * as _ from "lodash";
 import moment from "moment";
 import MapWithMarkers from "../components/MapWithMarkers";
 import MarkerCarousel from "../components/MarkerCarousel";
 import Survey from "../components/Survey";
+import { iconColors } from "../constants/Colors";
 import Layout from "../constants/Layout";
-
-import { Button } from "react-native-paper";
+import firebase from "../lib/firebaseSingleton";
 
 // TODO (Ananta): shouold be dynamically set
 const INITIAL_DRAWER_TRANSLATE_Y = Layout.drawer.height;
@@ -26,16 +27,21 @@ const MAX_DRAWER_TRANSLATE_Y = Layout.drawer.height - 95; // mostly collapsed, w
 
 function _markerToDataPoint(marker) {
   const dataPoint = {};
-  fields = ["gender", "groupSize", "mode", "object", "posture", "timestamp"];
+  fields = [
+    "gender",
+    "groupSize",
+    "mode",
+    "object",
+    "posture",
+    "timestamp",
+    "location"
+  ];
   fields.forEach(field => {
     if (marker[field]) {
       dataPoint[field] = marker[field];
     }
   });
 
-  if (marker.coordinate) {
-    dataPoint.location = marker.coordinate;
-  }
   return dataPoint;
 }
 
@@ -58,7 +64,7 @@ class SurveyScreen extends React.Component {
     super(props);
 
     // firestore has its own timestamp type
-    this.firestore = this.props.screenProps.firebase.firestore();
+    this.firestore = firebase.firestore();
     this.firestore.settings({ timestampsInSnapshots: true });
 
     this.state = {
@@ -76,6 +82,33 @@ class SurveyScreen extends React.Component {
     this.createNewMarker = this.createNewMarker.bind(this);
     this.setMarkerLocation = this.setMarkerLocation.bind(this);
     this.setFormResponse = this.setFormResponse.bind(this);
+  }
+
+  componentDidMount() {
+    // Query for saved data
+    const studyId = this.props.navigation.getParam("studyId");
+    const surveyId = this.props.navigation.getParam("surveyId");
+
+    this.firestore
+      .collection("study")
+      .doc(studyId)
+      .collection("survey")
+      .doc(surveyId)
+      .collection("dataPoints")
+      .get()
+      .then(querySnapshot => {
+        const markers = [];
+
+        querySnapshot.forEach(function(doc) {
+          const marker = {
+            id: doc.id,
+            ...doc.data(),
+            color: _.sample(_.values(iconColors))
+          };
+          markers.push(marker);
+        });
+        this.setState({ markers });
+      });
   }
 
   componentWillMount() {
@@ -232,7 +265,7 @@ class SurveyScreen extends React.Component {
     }
   }
 
-  createNewMarker(coordinate, color) {
+  createNewMarker(location, color) {
     const studyId = this.props.navigation.getParam("studyId");
     const surveyId = this.props.navigation.getParam("surveyId");
     const markersCopy = [...this.state.markers];
@@ -241,7 +274,7 @@ class SurveyScreen extends React.Component {
     const title = "Person " + (markersCopy.length + 1);
 
     const marker = {
-      coordinate: coordinate,
+      location,
       color,
       title,
       dateLabel
@@ -268,7 +301,7 @@ class SurveyScreen extends React.Component {
       });
   }
 
-  setMarkerLocation(id, coordinate) {
+  setMarkerLocation(id, location) {
     // TODO: add logic for updating in db
     const studyId = this.props.navigation.getParam("studyId");
     const surveyId = this.props.navigation.getParam("surveyId");
@@ -276,7 +309,7 @@ class SurveyScreen extends React.Component {
     const marker = _.find(markersCopy, { id });
 
     if (marker) {
-      marker.coordinate = coordinate;
+      marker.location = location;
       this.setState({
         markers: markersCopy
       });
@@ -288,7 +321,7 @@ class SurveyScreen extends React.Component {
         .doc(surveyId)
         .collection("dataPoints")
         .doc(marker.firestoreId)
-        .update({ location: marker.coordinate });
+        .update({ location: marker.location });
     }
   }
 
