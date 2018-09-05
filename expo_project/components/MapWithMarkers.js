@@ -92,7 +92,7 @@ class MapWithMarkers extends React.Component {
             const key = marker.id + (selected ? "-selected" : ""); //trigger a re render when switching states, so it recenters itself
             return (
               <MapView.Marker
-                coordinate={marker.coordinate}
+                coordinate={marker.location}
                 key={key}
                 identifier={marker.id}
                 stopPropagation
@@ -122,7 +122,7 @@ class MapWithMarkers extends React.Component {
               }
             ]}
             size={CIRCULAR_PROGRESS_SIZE}
-            width={3}
+            width={5}
             tintColor={this.state.nextMarkerColor}
             backgroundColor="transparent"
             duration={CIRCULAR_PROGRESS_ANIMATION_DURATION}

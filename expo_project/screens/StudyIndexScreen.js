@@ -1,8 +1,8 @@
 import React from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { AsyncStorage, ScrollView, StyleSheet, Text, View } from "react-native";
 import { withNavigation } from "react-navigation";
-
 import studies from "../config/studies";
+import Theme from "../constants/Theme";
 import {
   Button,
   Caption,
@@ -18,10 +18,15 @@ class SurveyIndexScreen extends React.Component {
     title: "Studies"
   };
 
+  _signOut = async () => {
+    await AsyncStorage.clear();
+    this.props.navigation.navigate("Auth");
+  };
+
   render() {
     return (
       <View style={[styles.container]}>
-        <ScrollView stickyHeaderIndices={[0]}>
+        <ScrollView style={[styles.container]} stickyHeaderIndices={[0]}>
           <Caption style={styles.sectionTitle}>Your studies</Caption>
           {studies.map(study => (
             <Card elevation={3}>
@@ -59,6 +64,15 @@ class SurveyIndexScreen extends React.Component {
             </Card>
           ))}
         </ScrollView>
+        <Button
+          raised
+          primary
+          dark
+          theme={{ ...Theme, roundness: 100 }}
+          onPress={this._signOut}
+        >
+          Log Out
+        </Button>
       </View>
     );
   }
