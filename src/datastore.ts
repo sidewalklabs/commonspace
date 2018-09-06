@@ -87,6 +87,8 @@ function studyIdToTablename(studyId: string) {
 
 const genderLocationArray: GehlFields[] = ['gender', 'location'];
 const genderLocation: Set<GehlFields> = new Set(genderLocationArray);
+// to do this is very brittle, how do you now mess up objects vs object?
+// also how about the connection between the enums defined at database creation time?
 const allGehlFieldsArray: GehlFields[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'objects', 'location']
 const allGehlFields: Set<GehlFields> = new Set(allGehlFieldsArray);
 
@@ -96,20 +98,20 @@ function createNewTableFromGehlFields(study: Study, tablename: string, fields: G
     switch (comparisionString) {
         case setString(genderLocation):
             return `CREATE TABLE ${tablename} (
-                       survey_id UUID references data_collection.survey(survey_id),
+                       survey_id UUID references data_collection.survey(survey_id) NOT NULL,
                        gender data_collection.gender,
                        location geometry
                    )`;
         case setString(allGehlFields):
             return `CREATE TABLE ${tablename} (
-                       survey_id UUID references data_collection.survey(survey_id),
+                       survey_id UUID references data_collection.survey(survey_id) NOT NULL,
                        gender data_collection.gender,
                        age data_collection.age,
                        mode data_collection.mode,
                        posture data_collection.posture,
                        activities data_collection.activities,
                        groups data_collection.groups,
-                       objects data_collection.objects,
+                       object data_collection.objects,
                        location geometry
                )`;
         default:
@@ -191,11 +193,52 @@ export async function giveUserStudyAcess(pool: pg.Pool, userEmail: string, study
 
 export async function createNewSurveyForStudy(pool: pg.Pool, survey: Survey) {
     const query = `INSERT INTO data_collection.survey
-            (study_id, survey_id, time_start, time_stop, representation, method, user_id)
-        VALUES('${survey.studyId}', '${survey.surveyId}', '${survey.startDate}', '${survey.endDate}', 'absolute', 'analog', '${survey.userId}')`;
+                   (study_id, survey_id, time_start, time_stop, representation, method, user_id)
+                   VALUES('${survey.studyId}', '${survey.surveyId}', '${survey.startDate}', '${survey.endDate}', '${survey.representation}', '${survey.method}', '${survey.userId}')`;
     return pool.query(query);
 }
 
-export async function addDataPointToSurvey(pool: pg.Pool, surveyId: string) {
-    const query = `INSERT INTO "data_collection.${surveyId}"`;
+function transformToPostgresInsert(dataPoint) {
+    const columns = Object.keys(dataPoint).map(key => {
+        if (key === 'groupSize') {
+            return 'groups';
+        } else {
+            return key;
+        }
+    });
+    const values = Object.keys(dataPoint).map(key => {
+        if (key === 'location') {
+            const longitude = dataPoint['location']['longitude'];
+            const latitude = dataPoint['location']['latitude'];
+            return `ST_GeomFromText('POINT(${longitude} ${latitude})', 4326)`;
+        } else if (key === 'groupSize') {
+            switch (dataPoint['groupSize']) {
+                case 'single':
+                    return '\'group_1\'';
+                case 'pair':
+                    return '\'group_2\'';
+                case 'group':
+                    return '\'group_3-7\'';
+                case 'crowd':
+                    return '\'group_8+\'';
+                default:
+                    throw new Error(`invalid value for groupSize: ${dataPoint['groupSize']}`)
+            }
+        } else {
+            return `'${dataPoint[key]}'`;
+        }
+    })
+    return `(${(columns.join(', '))}) VALUES (${values.join(', ')})`;
+}
+
+export async function addDataPointToSurvey(pool: pg.Pool, studyId: string, surveyId: string, dataPoint: any) {
+    const tablename = studyIdToTablename(studyId);
+    const query = `INSERT INTO ${tablename}
+                   ${transformToPostgresInsert({ survey_id: surveyId, ...dataPoint })}`;
+    try {
+        return pool.query(query);
+    } catch (error) {
+        console.error(`error executing sql query: ${query}`)
+        throw error;
+    }
 }

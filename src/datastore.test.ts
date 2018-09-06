@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 import * as pg from 'pg';
 import * as uuidv4 from 'uuid/v4';
 
-import { createStudy, createUser, giveUserSurveyAcess, Study, User, giveUserStudyAcess } from './datastore';
+import { createStudy, createNewSurveyForStudy, createUser, addDataPointToSurvey, Study, User, giveUserStudyAcess } from './datastore';
 
 dotenv.config();
 
@@ -56,6 +56,30 @@ const simpleStudyInvalidUserId: Study = {
     studyId: uuidv4(),
     protocolVersion: '1.0',
     userId: uuidv4(),
+}
+export interface Survey {
+    studyId: string;
+    locationId: string;
+    surveyId: string;
+    startDate?: string,
+    endDate?: string,
+    timeCharacter?: string;
+    representation: string;
+    microclimate?: string;
+    temperatureCelcius?: number;
+    method: string;
+    userId?: string;
+    notes?: string;
+}
+const surveyNearGarbage: Survey = {
+    studyId: thorncliffeParkStudy.studyId,
+    locationId: uuidv4(),
+    surveyId: uuidv4(),
+    startDate: '2018-09-14T17:00:00Z',
+    endDate: '2018-09-14T19:00:00Z',
+    representation: 'absolute',
+    method: 'analog',
+    userId: sebastian.userId
 }
 
 const studyFields = ['gender', 'location'];
@@ -115,7 +139,47 @@ test('create new user if added to study without existsing account', async () => 
     expect(userId).toBeTruthy();
     expect(rowCount).toBe(1);
     expect(command).toBe('INSERT');
-})
+});
+
+test('save new survey', async () => {
+    const { rowCount, command } = await createNewSurveyForStudy(pool, surveyNearGarbage);
+    expect(rowCount).toBe(1);
+    expect(command).toBe('INSERT');
+});
+
+test('can save a data point', async () => {
+    const dataPoint = {
+        "location": {
+            "latitude": "43.70396934170554",
+            "longitude": "-79.3432493135333"
+        },
+        "object": "pushcart",
+        "posture": "sitting"
+    }
+    const { rowCount, command } = await addDataPointToSurvey(pool, surveyNearGarbage.studyId, surveyNearGarbage.surveyId, dataPoint);
+    expect(rowCount).toBe(1);
+    expect(command).toBe('INSERT');
+});
+
+
+test('transform another example of a data point', async () => {
+    const dataPoint = {
+        "gender": "male",
+        "groupSize": "pair",
+        "location": {
+            "latitude": "43.70416809098892",
+            "longitude": "-79.34354536235332"
+        },
+        "mode": "pedestrian",
+        "object": "luggage",
+        "posture": "leaning"
+    };
+    const { rowCount, command } = await addDataPointToSurvey(pool, surveyNearGarbage.studyId, surveyNearGarbage.surveyId, dataPoint);
+    expect(rowCount).toBe(1);
+    expect(command).toBe('INSERT');
+});
+
+
 
 afterAll(async () => {
     try {

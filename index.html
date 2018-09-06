@@ -18,12 +18,6 @@
           <label for="study-title">Study Title</label>
           <input id="study-title" type="text" name="text">
           </br>
-          <label for="study-start-date">Start Date</label>
-          <input id="study-start-date" type="text" name="text">
-          </br>
-          <label for="study-end-date">End Date</label>
-          <input id="study-end-date" type="text" name="text">
-          </br>
           <label for="protocol-version-selection">Choose a version of the gehl protocol:</label>
           <select id="protocol-version-selection">
             <option value="1.0">1.0</option>
@@ -41,6 +35,14 @@
           </br>
           <label for="surveyor-email">Surveyor Email</label>
           <input id="surveyor-email" type="text">
+          </br>
+          <label for="study-start-date">Start Time:</label>
+          <input type="time" id="study-start-date" name="appt-time"
+               min="9:00" max="18:00" required />
+          </br>
+          <label for="study-end-date">End Time:</label>
+          <input type="time" id="study-end-date" name="appt-time"
+               min="9:00" max="18:00" required />
           </br>
           <input type="submit" value="Authorize Surveyor" >
         </form>

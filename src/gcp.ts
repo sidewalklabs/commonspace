@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import * as pg from 'pg';
 import * as uuidv4 from 'uuid/v4';
 
-import { createNewSurveyForStudy, createStudy, createUser, giveUserStudyAcess, recordStudyStart } from './datastore';
+import { createNewSurveyForStudy, createStudy, createUser, giveUserStudyAcess } from './datastore';
 
 const pgConnectionInfo = {
     connectionLimit: 1,
@@ -42,7 +42,6 @@ export async function saveNewSurvey(req: Request, res: Response) {
         console.error(`failure to give user access for : ${req.body}| pg connection: ${JSON.stringify(pgConnectionInfo)}`);
         throw error;
     }
-
 }
 
 export async function addSurveyorToStudy(req: Request, res: Response) {
