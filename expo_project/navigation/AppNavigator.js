@@ -3,6 +3,7 @@ import colors from "../constants/Colors";
 import Theme from "../constants/Theme";
 import AuthScreen from "../screens/AuthScreen";
 import AuthLoadingScreen from "../screens/AuthLoadingScreen";
+import ComingSoonScreen from "../screens/ComingSoonScreen";
 import SurveyScreen from "../screens/SurveyScreen";
 import StudyIndexScreen from "../screens/StudyIndexScreen";
 import PrivacyScreen from "../screens/PrivacyScreen";
@@ -21,7 +22,8 @@ const navigationOptions = {
 const AppStack = createStackNavigator(
   {
     StudyIndexScreen,
-    SurveyScreen
+    SurveyScreen,
+    ComingSoonScreen
   },
   {
     initialRouteName: "StudyIndexScreen",

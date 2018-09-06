@@ -39,24 +39,28 @@ class SurveyIndexScreen extends React.Component {
                   <View>
                     <Divider />
                     <CardContent style={styles.surveyRow}>
-                      <Text style={styles.surveyTitle}>{survey.title}</Text>
-                      <Button
-                        dark
-                        raised
-                        primary
-                        onPress={() =>
-                          this.props.navigation.navigate("SurveyScreen", {
-                            studyId: study.studyId,
-                            surveyId: study.surveyId,
-                            studyName: study.studyName,
-                            studyAuthor: study.studyAuthor,
-                            surveyType: survey.type,
-                            surveyTitle: survey.title
-                          })
-                        }
-                      >
-                        Start
-                      </Button>
+                      <View style={styles.contentWrapper}>
+                        <Text style={styles.surveyTitle}>{survey.title}</Text>
+                      </View>
+                      <View style={styles.buttonWrapper}>
+                        <Button
+                          dark
+                          raised
+                          primary
+                          onPress={() =>
+                            this.props.navigation.navigate(survey.routeName, {
+                              studyId: study.studyId,
+                              surveyId: study.surveyId,
+                              studyName: study.studyName,
+                              studyAuthor: study.studyAuthor,
+                              surveyType: survey.type,
+                              surveyTitle: survey.title
+                            })
+                          }
+                        >
+                          Start
+                        </Button>
+                      </View>
                     </CardContent>
                   </View>
                 );
@@ -100,6 +104,12 @@ const styles = StyleSheet.create({
   },
   surveyTitle: {
     fontWeight: "bold"
+  },
+  contentWrapper: {
+    flex: 1
+  },
+  buttonWrapper: {
+    marginLeft: 10
   }
 });
 
