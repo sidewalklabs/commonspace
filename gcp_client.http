@@ -1,25 +1,46 @@
-###
+:adminEmail = "sebastian@sidewalklabs.com" 
+:adminUserId = "3b30e3d5-158a-4670-b6b8-7ffc328dcac5"
+
+:studyId = "42eac5cb-0885-40a4-8010-16fb5246d8c8"
+:surveyId = "17f32eae-01c5-463c-aabf-686de95607bf"
+
+:dataCollectorId = "7566b7ca-0372-46c6-9d2c-0e9fb38bebfb"
+:dataCollectorEmail = "thorncliffeparkpubliclifepilot@gmail.com"
+
+#
 :save_user_to_postgres_endpoint = https://us-central1-nyc-tlc-1225.cloudfunctions.net/saveNewUser
 POST :save_user_to_postgres_endpoint
 Accept-Encoding: application/json
 Content-Type: application/json
 
 {
- "userId": "3b30e3d5-158a-4670-b6b8-7ffc328dcac5",
- "email": "squirtle@somemail.io",
- "name": "Squirtle"
+ "userId": :adminUserId,
+ "email": :adminEmail,
+ "name": "Seabreezy"
 }
 #
+:save_user_to_postgres_endpoint = https://us-central1-nyc-tlc-1225.cloudfunctions.net/saveNewUser
+POST :save_user_to_postgres_endpoint
+Accept-Encoding: application/json
+Content-Type: application/json
+
+{
+ "userId": :dataCollectorId,
+ "email": :dataCollectorEmail,
+ "name": "Thorncliffe park data colllector" 
+}
+#
+:studyTitle = "Sea Bass Fish Count"
 :save_study_to_postgres_endpoint = https://us-central1-nyc-tlc-1225.cloudfunctions.net/saveNewStudy
 POST :save_study_to_postgres_endpoint
 Accept-Encoding: application/json
 Content-Type: application/json
 
 {
- "userId": "3b30e3d5-158a-4670-b6b8-7ffc328dcac5",
- "title": "Sea Bass Fish Count",
+ "userId": :adminUserId,
+ "title": "Stationary Counts RV Burgess",
  "protocolVersion": "1.0",
- "studyId": "42eac5cb-0885-40a4-8010-16fb5246d8c8"
+ "studyId": :studyId 
 }
 #
 :authorize_user_for_study_endpoint = https://us-central1-nyc-tlc-1225.cloudfunctions.net/addSurveyorToStudy
@@ -28,8 +49,8 @@ Accept-Encoding: application/json
 Content-Type: application/json
 
 {
- "userEmail": "squirtle@somemail.io",
- "studyId": "42eac5cb-0885-40a4-8010-16fb5246d8c8"
+ "userEmail": :dataCollectorEmail,
+ "studyId": :studyId
 }
 #
 :create_new_survey = https://us-central1-nyc-tlc-1225.cloudfunctions.net/saveNewSurvey
@@ -38,12 +59,13 @@ Accept-Encoding: application/json
 Content-Type: application/json
 
 {
- "studyId": "42eac5cb-0885-40a4-8010-16fb5246d8c8",
- "surveyId": "17f32eae-01c5-463c-aabf-686de95607bf",
+ "studyId": :studyId,
+ "locationId": "ab91643b-3bd5-41f5-a9ab-a59e9a20bfe7",
+ "surveyId": :surveyId,
  "startDate": "2018-09-14T17:00:00Z",
  "endDate": "2018-09-14T19:00:00Z",
  "representation": "absolute",
  "method": "analog",
- "userId": "3b30e3d5-158a-4670-b6b8-7ffc328dcac5"
+ "userId": :dataCollectorId
 }
 #
