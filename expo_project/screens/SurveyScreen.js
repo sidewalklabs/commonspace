@@ -320,7 +320,7 @@ class SurveyScreen extends React.Component {
         .collection("survey")
         .doc(surveyId)
         .collection("dataPoints")
-        .doc(marker.firestoreId)
+        .doc(marker.id)
         .update({ location: marker.location });
     }
   }
