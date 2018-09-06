@@ -1,9 +1,9 @@
 export default {
   defaultRegion: {
-    latitude: 43.703805,
-    longitude: -79.343568,
+    latitude: 43.703816,
+    longitude: -79.343754,
     latitudeDelta: 0.00043,
-    longitudeDelta: 0.0012
+    longitudeDelta: 0.00072
   },
   polylineCoordinates: [
     { latitude: 43.703354, longitude: -79.343594 },

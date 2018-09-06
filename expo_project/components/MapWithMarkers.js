@@ -35,6 +35,22 @@ class MapWithMarkers extends React.Component {
     this.setState({ nextMarkerColor: this.getRandomIconColor() });
   };
 
+  startProgressAnimation = (locationX, locationY) => {
+    this.setState({
+      circularProgressLocation: {
+        top: locationY - CIRCULAR_PROGRESS_SIZE / 2,
+        left: locationX - CIRCULAR_PROGRESS_SIZE / 2
+      }
+    });
+  };
+
+  stopProgressAnimation = () => {
+    this.setState({
+      circularProgressLocation: null,
+      nextMarkerColor: this.getRandomIconColor()
+    });
+  };
+
   render() {
     /* 
       Note: we're taking advantage of the fact that AnimatedCircularProgress animates on mount
@@ -53,19 +69,13 @@ class MapWithMarkers extends React.Component {
       <TouchableOpacity
         activeOpacity={1}
         onPressIn={e => {
-          const { nativeEvent } = e;
-          this.setState({
-            circularProgressLocation: {
-              top: nativeEvent.locationY - CIRCULAR_PROGRESS_SIZE / 2,
-              left: nativeEvent.locationX - CIRCULAR_PROGRESS_SIZE / 2
-            }
-          });
+          this.startProgressAnimation(
+            e.nativeEvent.locationX,
+            e.nativeEvent.locationY
+          );
         }}
         onPressOut={e => {
-          this.setState({
-            circularProgressLocation: null,
-            nextMarkerColor: this.getRandomIconColor()
-          });
+          this.stopProgressAnimation();
         }}
         style={styles.container}
       >
@@ -78,13 +88,13 @@ class MapWithMarkers extends React.Component {
           }
           initialRegion={this.state.region}
           showsUserLocation
-          scrollEnabled
           zoomEnabled
           pitchEnabled={false}
+          mapType="satellite"
         >
           <MapView.Polyline
             coordinates={MapConfig.polylineCoordinates}
-            strokeColor="#000"
+            strokeColor="#D77C61"
             strokeWidth={6}
           />
           {markers.map(marker => {
