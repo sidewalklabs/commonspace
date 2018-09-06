@@ -45,8 +45,8 @@ CREATE TYPE age AS ENUM ('0-14', '15-24', '25-64');
 CREATE TYPE mode AS ENUM ('pedestrian', 'bicyclist');
 CREATE TYPE posture AS ENUM ('leaning', 'lying', 'sitting', 'sitting on the ground', 'standing');
 CREATE TYPE activities AS ENUM ('commerical', 'consuming', 'conversing', 'electronics', 'pets', 'idle', 'running');
-CREATE TYPE groups AS ENUM ('1', '2', '3+');
-CREATE TYPE objects AS ENUM ('animal', 'bag_carried', 'clothing_cultural', 'clothing_activity', 'goods_carried', 'equipment_construction', 'equipment_receational', 'equipment_sport', 'protection_safety', 'protection_weather', 'furniture_carried', 'transportation_carried', 'transportation_stationary', 'push_cart', 'stroller', 'luggage');
+CREATE TYPE groups AS ENUM ('group_1', 'group_2', 'group_3-7', 'group_8+');
+CREATE TYPE objects AS ENUM ('animal', 'bag_carried', 'clothing_cultural', 'clothing_activity', 'goods_carried', 'equipment_construction', 'equipment_receational', 'equipment_sport', 'protection_safety', 'protection_weather', 'furniture_carried', 'transportation_carried', 'transportation_stationary', 'pushcart', 'stroller', 'luggage');
 
 CREATE TABLE IF NOT EXISTS surveyors (
     user_id UUID references public.users(user_id) NOT NULL,
