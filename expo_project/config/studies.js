@@ -6,9 +6,21 @@ export default [
     studyName: "Thorncliffe Park",
     studyAuthor: "Park People",
     surveys: [
-      { type: "activity", title: "Stationary Mapping" },
-      { type: "lineOfSight", title: "Line of Sight (coming soon!)" },
-      { type: "intercept", title: "Intercepts (coming soon!)" }
+      {
+        type: "activity",
+        title: "Stationary Mapping tool",
+        routeName: "SurveyScreen"
+      },
+      {
+        type: "lineOfSight",
+        title: "Line of Sight tool",
+        routeName: "ComingSoonScreen"
+      },
+      {
+        type: "intercept",
+        title: "Intercept study tool",
+        routeName: "ComingSoonScreen"
+      }
     ]
   }
 ];
