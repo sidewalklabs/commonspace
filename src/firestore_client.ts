@@ -1,4 +1,5 @@
 import { auth, firestore } from 'firebase';
+import * as uuid from 'uuid';
 
 import { Study, Survey } from './datastore';
 
@@ -10,8 +11,8 @@ export async function saveStudy(auth: firebase.auth.Auth, db: firestore.Firestor
         token,
         ...study
     }
-    const docRef = await db.collection('study').add(studyWithToken);
-    const firebaseId = docRef.id;
+    const firebaseId = uuid.v4();
+    const docRef = await db.collection('study').doc(firebaseId).set(studyWithToken);
     return [studyWithToken, firebaseId];
 }
 
@@ -34,16 +35,28 @@ export async function getAvailableStudiesForUserId(db: firestore.Firestore, user
  * we need to separately add the survey location, for the prototype we only need one location.
  */
 export function saveSurvey(db: firestore.Firestore, study: Study, location: Location, survey: Survey) {
-    db.collection('study')
-        .doc(study.studyId)
-        .collection('survey')
-        .add({
-            ...survey
-        }).then(function(surveyRef: any) {
-            surveyRef.collection('location').add({
-                ...location
-            });
-        }).catch(function(error: any) {
-            console.error("Error adding document: ", error);
-        });
+    const surveyId = uuid.v4();
+    // db.collection('study')
+    //     .doc(study.studyId)
+    //     .collection('survey')
+    //     .doc(surveyId)
+    //     .set({
+    //         ...survey
+    //     }).then(function(surveyRef: any) {
+    //         surveyRef.collection('location').add({
+    //             ...location
+    //         });
+    //     }).catch(function(error: any) {
+    //         console.error("Error adding document: ", error);
+    //     });
+    try {
+        db.collection('study')
+            .doc(study.studyId)
+            .collection('survey')
+            .doc(surveyId)
+            .set(survey)
+        return surveyId;
+    } catch (error) {
+        console.error("Error adding document: ", error);
+    };
 }
