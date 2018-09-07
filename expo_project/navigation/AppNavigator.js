@@ -1,5 +1,4 @@
 import { createStackNavigator, createSwitchNavigator } from "react-navigation";
-import colors from "../constants/Colors";
 import Theme from "../constants/Theme";
 import AuthScreen from "../screens/AuthScreen";
 import AuthLoadingScreen from "../screens/AuthLoadingScreen";
@@ -10,7 +9,7 @@ import PrivacyScreen from "../screens/PrivacyScreen";
 
 const navigationOptions = {
   headerStyle: {
-    backgroundColor: colors.colorPrimary
+    backgroundColor: Theme.colors.primary
   },
   headerTintColor: "#fff",
   headerTitleStyle: {
