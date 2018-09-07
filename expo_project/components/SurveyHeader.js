@@ -26,13 +26,9 @@ class SurveyHeader extends React.Component {
   }
 
   render() {
-    const { timer } = this.state;
-    // for flat numbers (e.g. 60000) seconds = 0, but we want to render "00"
-    const seconds = moment.duration(timer).seconds() || "00";
-    const minutes = moment.duration(timer).minutes() || "00";
     return (
       <Text style={styles.text}>
-        {minutes}:{seconds}
+        {moment.utc(this.state.timer).format("mm:ss")}
       </Text>
     );
   }
