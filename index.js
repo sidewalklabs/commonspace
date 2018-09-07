@@ -81,9 +81,8 @@ window.addEventListener("load", function () {
       protocolVersion: document.getElementById('protocol-version-selection').value
     };
     console.log('new study being sent to firestore: ', JSON.stringify(newStudy));
-    saveStudy(firebase.auth(), firestore, newStudy).then(([study, id]) => {
-      console.log('study: ', study);
-      console.log('id: ', id);
+    saveStudy(firebase.auth(), firestore, newStudy).then( => {
+      console.log('new study id: ', id);
     });
   });
 

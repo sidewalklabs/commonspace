@@ -173,3 +173,13 @@ export const newSurveyCreated = functions.firestore.document('/study/{studyId}/s
     const survey = snapshot.data() as Survey;
     console.log('survey: ', survey);
 })
+
+export const addDataPointToSurvey = functions.firestore.document('/study/{studyId}/survey/{surveyId}/dataPoints/{dataPointId}').onCreate(async (snapshot: FirebaseFirestore.DocumentSnapshot, ctx: functions.EventContext) => {
+    const dataPoint = snapshot.data();
+    const surveyRef = snapshot.ref.parent.parent;
+    const surveySnapshot = await surveyRef.get()
+    const survey = surveySnapshot.data() as Survey;
+    const studySnapshot = await surveyRef.parent.parent.get();
+    const study = studySnapshot.data() as Study;
+    //await callGcp(functions.config().gcp.cloud_functions_url, ''
+});
