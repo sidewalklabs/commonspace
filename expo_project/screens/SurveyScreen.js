@@ -1,3 +1,4 @@
+import { Icon } from "expo";
 import React from "react";
 import {
   Animated,
@@ -8,7 +9,7 @@ import {
   View,
   TouchableOpacity
 } from "react-native";
-import { Button } from "react-native-paper";
+import { Button, Paragraph } from "react-native-paper";
 import { withNavigation } from "react-navigation";
 import * as _ from "lodash";
 import moment from "moment";
@@ -19,11 +20,13 @@ import { iconColors } from "../constants/Colors";
 import Layout from "../constants/Layout";
 import firebase from "../lib/firebaseSingleton";
 
+import SurveyHeader from "../components/SurveyHeader";
+
 // TODO (Ananta): shouold be dynamically set
-const INITIAL_DRAWER_TRANSLATE_Y = Layout.drawer.height;
 const MIN_DRAWER_TRANSLATE_Y = 0;
 const MID_DRAWER_TRANSLATE_Y = Layout.drawer.height - 300;
-const MAX_DRAWER_TRANSLATE_Y = Layout.drawer.height - 95; // mostly collapsed, with just the header peaking out
+const MAX_DRAWER_TRANSLATE_Y = Layout.drawer.height - 100; // mostly collapsed, with just the header peaking out
+const INITIAL_DRAWER_TRANSLATE_Y = MAX_DRAWER_TRANSLATE_Y;
 
 function _markerToDataPoint(marker) {
   const dataPoint = {};
@@ -55,9 +58,26 @@ class Indicator extends React.Component {
   }
 }
 
+class Instructions extends React.Component {
+  render() {
+    return (
+      <View style={styles.instructionsContainer}>
+        <View style={styles.instructionsIcon}>
+          <Icon.Ionicons name="md-finger-print" color="#787878" size={24} />
+        </View>
+        <View style={styles.instructions}>
+          <Paragraph>
+            Hold down your finger on the map to create a new marker
+          </Paragraph>
+        </View>
+      </View>
+    );
+  }
+}
+
 class SurveyScreen extends React.Component {
   static navigationOptions = {
-    title: "Long press map to add a pin"
+    headerTitle: <SurveyHeader />
   };
 
   constructor(props) {
@@ -347,11 +367,15 @@ class SurveyScreen extends React.Component {
         >
           <View style={[styles.drawerHeader]}>
             <Indicator onPress={this.toggleDrawer} />
-            <MarkerCarousel
-              markers={this.state.markers}
-              activeMarkerId={this.state.activeMarkerId}
-              onMarkerPress={this.selectMarker}
-            />
+            {activeMarkerId ? (
+              <MarkerCarousel
+                markers={this.state.markers}
+                activeMarkerId={this.state.activeMarkerId}
+                onMarkerPress={this.selectMarker}
+              />
+            ) : (
+              <Instructions />
+            )}
           </View>
           {activeMarker && (
             <ScrollView
@@ -420,14 +444,6 @@ const styles = StyleSheet.create({
   formContainer: {
     alignSelf: "stretch"
   },
-  indicator: {
-    width: 30,
-    height: 5,
-    alignSelf: "center",
-    marginTop: 10,
-    backgroundColor: "#D8D8D8",
-    borderRadius: 10
-  },
   bottomGuard: {
     // This view adds whitespace below the drawer, in case the user over-pans it
     position: "absolute",
@@ -436,6 +452,30 @@ const styles = StyleSheet.create({
     bottom: -500,
     height: 500,
     backgroundColor: "white"
+  },
+  indicator: {
+    width: 30,
+    height: 5,
+    alignSelf: "center",
+    marginTop: 10,
+    backgroundColor: "#D8D8D8",
+    borderRadius: 10
+  },
+  instructionsContainer: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "center",
+    margin: 10,
+    padding: 10,
+    borderRadius: 20,
+    backgroundColor: "#E6E4E0"
+  },
+  instructionsIcon: {
+    marginRight: 10
+  },
+  instructions: {
+    flexShrink: 1
   }
 });
 
