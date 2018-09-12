@@ -3,7 +3,7 @@ GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO public;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "postgis";
+CREATE EXTENSION IF NOT EXISTS postgis;
 
 CREATE ROLE data_collector;
 
@@ -39,6 +39,15 @@ CREATE TABLE IF NOT EXISTS study
     notes TEXT
 );
 
+CREATE TABLE IF NOT EXISTS location
+(
+    location_id UUID PRIMARY KEY,
+    country TEXT,
+    city TEXT,
+    name_primary TEXT,
+    subdivision TEXT,
+    geometry public.geometry
+);
 
 CREATE TYPE gender AS ENUM ('male', 'female', 'unknown');
 CREATE TYPE age AS ENUM ('0-14', '15-24', '25-64');

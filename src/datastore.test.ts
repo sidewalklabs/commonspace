@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 import * as pg from 'pg';
 import * as uuidv4 from 'uuid/v4';
 
-import { createStudy, createNewSurveyForStudy, createUser, addDataPointToSurvey, Study, User, giveUserStudyAcess } from './datastore';
+import { createLocation, createStudy, createNewSurveyForStudy, createUser, addDataPointToSurvey, Location, Study, Survey, User, giveUserStudyAcess } from './datastore';
 
 dotenv.config();
 
@@ -57,20 +57,52 @@ const simpleStudyInvalidUserId: Study = {
     protocolVersion: '1.0',
     userId: uuidv4(),
 }
-export interface Survey {
-    studyId: string;
-    locationId: string;
-    surveyId: string;
-    startDate?: string,
-    endDate?: string,
-    timeCharacter?: string;
-    representation: string;
-    microclimate?: string;
-    temperatureCelcius?: number;
-    method: string;
-    userId?: string;
-    notes?: string;
+
+const location: Location = {
+    "locationId": "07ab155a-2b38-44a7-ad73-b6711b3d46b9",
+    "country": "canada",
+    "city": "Toronto",
+    "namePrimary": "Zone 3",
+    "subdivision": "west",
+    "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                -79.34435606002809,
+                43.70395407191628
+            ],
+            [
+                -79.34425145387651,
+                43.70387845004543
+            ],
+            [
+                -79.34404492378236,
+                43.70362637645357
+            ],
+            [
+                -79.3438357114792,
+                43.70356820547418
+            ],
+            [
+                -79.34322685003282,
+                43.703548815135164
+            ],
+            [
+                -79.34306591749193,
+                43.70346931467964
+            ],
+            [
+                -79.3434950709343,
+                43.70313967751972
+            ],
+            [
+                -79.34463769197465,
+                43.70377955976265
+            ]
+        ]
+    }
 }
+
 const surveyNearGarbage: Survey = {
     studyId: thorncliffeParkStudy.studyId,
     locationId: uuidv4(),
@@ -110,13 +142,19 @@ test('save new study', async () => {
     expect(newTablePgResult.command).toBe('CREATE');
 });
 
-test('save new study', async () => {
+test('save new study with all possible fields', async () => {
     const [studyPgResult, newTablePgResult] = await createStudy(pool, thorncliffeParkStudy, ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'objects', 'location']);
 
     let { rowCount, command } = studyPgResult;
     expect(rowCount).toBe(1);
     expect(command).toBe('INSERT');
     expect(newTablePgResult.command).toBe('CREATE');
+});
+
+test('save location', async () => {
+    const { rowCount, command } = await createLocation(pool, location);
+    expect(rowCount).toBe(1);
+    expect(command).toBe('INSERT');
 });
 
 test('saving study with a nonexistent user errors', async () => {
