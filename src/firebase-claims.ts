@@ -12,5 +12,4 @@ export async function addClaimToUser(credentialFile: string, claim: string, uid:
     console.log(`set claim ${claim} for uid: ${uid}`);
 }
 
-
 addClaimToUser('gehl-921be-firebase-adminsdk-46n9l-0d6437a6d4.json', 'studyCreator', 'EeGkw2WJX2PVbhxuojhFflWEuKi2')

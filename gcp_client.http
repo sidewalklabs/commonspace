@@ -1,4 +1,4 @@
-:adminEmail = "sebastian@sidewalklabs.com" 
+:adminEmail = "sebastian@sidewalklabs.com"
 :adminUserId = "3b30e3d5-158a-4670-b6b8-7ffc328dcac5"
 
 :studyId = "42eac5cb-0885-40a4-8010-16fb5246d8c8"
@@ -27,7 +27,7 @@ Content-Type: application/json
 {
  "userId": :dataCollectorId,
  "email": :dataCollectorEmail,
- "name": "Thorncliffe park data colllector" 
+ "name": "Thorncliffe park data colllector"
 }
 #
 :studyTitle = "Sea Bass Fish Count"
@@ -40,7 +40,7 @@ Content-Type: application/json
  "userId": :adminUserId,
  "title": "Stationary Counts RV Burgess",
  "protocolVersion": "1.0",
- "studyId": :studyId 
+ "studyId": :studyId
 }
 #
 :authorize_user_for_study_endpoint = https://us-central1-nyc-tlc-1225.cloudfunctions.net/addSurveyorToStudy
@@ -67,5 +67,55 @@ Content-Type: application/json
  "representation": "absolute",
  "method": "analog",
  "userId": :dataCollectorId
+}
+#
+:create_new_location = https://us-central1-nyc-tlc-1225.cloudfunctions.net/saveNewLocation
+POST :create_new_location
+Accept-Encoding: application/json
+Content-Type: application/json
+
+{
+    "locationId": "07ab155a-2b38-44a7-ad73-b6711b3d46b9",
+    "country": "Canada",
+    "city": "Toronto",
+    "namePrimary": "Zone 3",
+    "subdivision": "west",
+    "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                -79.34435606002809,
+                43.70395407191628
+            ],
+            [
+                -79.34425145387651,
+                43.70387845004543
+            ],
+            [
+                -79.34404492378236,
+                43.70362637645357
+            ],
+            [
+                -79.3438357114792,
+                43.70356820547418
+            ],
+            [
+                -79.34322685003282,
+                43.703548815135164
+            ],
+            [
+                -79.34306591749193,
+                43.70346931467964
+            ],
+            [
+                -79.3434950709343,
+                43.70313967751972
+            ],
+            [
+                -79.34463769197465,
+                43.70377955976265
+            ]
+        ]
+    }
 }
 #

@@ -3,7 +3,7 @@ const webpack = require('webpack');
 
 module.exports = {
   entry: {
-    firestore: ['babel-polyfill', path.resolve(__dirname, 'src/firestore_client.ts')],
+    firestore: ['babel-polyfill', path.resolve(__dirname, 'src/firestore-client.ts')],
     index: ['babel-polyfill', path.resolve(__dirname, 'src/gcp.ts')]
   },
   output: {

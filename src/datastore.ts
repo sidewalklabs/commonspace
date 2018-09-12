@@ -32,6 +32,20 @@ export interface User {
     name: string;
 }
 
+export interface PolygonGeometry {
+    type: string;
+    coordinates: number[][];
+}
+
+export interface Location {
+    locationId: string;
+    country: string;
+    city: string;
+    namePrimary: string;
+    subdivision: string;
+    geometry: PolygonGeometry;
+}
+
 export interface Survey {
     studyId: string;
     locationId: string;
@@ -101,7 +115,7 @@ function createNewTableFromGehlFields(study: Study, tablename: string, fields: G
                        survey_id UUID references data_collection.survey(survey_id) NOT NULL,
                        gender data_collection.gender,
                        location geometry
-                   )`;
+                    )`;
         case setString(allGehlFields):
             return `CREATE TABLE ${tablename} (
                        survey_id UUID references data_collection.survey(survey_id) NOT NULL,
@@ -113,7 +127,7 @@ function createNewTableFromGehlFields(study: Study, tablename: string, fields: G
                        groups data_collection.groups,
                        object data_collection.objects,
                        location geometry
-               )`;
+                    )`;
         default:
             console.error(new Set(fields));
             throw new Error(`no table possible for selected fields: ${fields}`);
@@ -128,7 +142,7 @@ function executeQueryInSearchPath(searchPath: string[], query: string) {
 // TODO an orm would be great for these .... or maybe interface magic? but an orm won't also express the relation between user and study right? we need normalized data for security reasons
 // in other words the study already has the userId references, where should the idea of the study belonging to a user live? in the relationship model it's with a reference id
 export async function createStudy(pool: pg.Pool, study: Study, fields: GehlFields[]) {
-    // for some unknown reason uuidv4() fails in gcp, saying that it's not a function call
+    // for some unknown reason import * as uuidv4 from 'uuid/v4'; uuidv4(); fails in gcp, saying that it's not a function call
     const studyTablename = studyIdToTablename(study.studyId);
     const newStudyDataTableQuery = createNewTableFromGehlFields(study, studyTablename, fields);
     const newStudyMetadataQuery = `INSERT INTO data_collection.study (study_id, title, user_id, protocol_version, table_definition, tablename)
@@ -138,22 +152,21 @@ export async function createStudy(pool: pg.Pool, study: Study, fields: GehlField
     try {
         studyResult = await pool.query(newStudyMetadataQuery);
     } catch (error) {
-        console.error(error);
-        console.error(`failed to save new study: ${newStudyDataTableQuery}`);
+        console.error(`for studyId: ${study.studyId}, ${error}, ${newStudyMetadataQuery}`);
         throw error;
     }
     try {
         newStudyDataTable = await pool.query(newStudyDataTableQuery);
     } catch (error) {
-        console.error(error);
-        console.error(`${newStudyDataTable}`);
+        console.error(`for studyId: ${study.studyId}, ${error}, ${newStudyDataTableQuery}`);
+        throw error;
     }
     return [studyResult, newStudyDataTable];
 }
 
 export async function createUser(pool: pg.Pool, user: User) {
     const query = `INSERT INTO users(user_id, email, name)
-                   VALUES('${user.userId}', '${user.email}', '${user.name}'); `;
+                   VALUES('${user.userId}', '${user.email}', '${user.name}') `;
     return pool.query(query);
 }
 
@@ -168,6 +181,18 @@ export async function createUserFromEmail(pool: pg.Pool, email: string) {
         console.error(error);
         console.error(`could not add user with email:  ${email}, with query: ${query}`);
         throw error;
+    }
+}
+
+export async function createLocation(pool: pg.Pool, location: Location) {
+    const query = `INSERT INTO data_collection.location
+                   (location_id, country, city, name_primary, subdivision, geometry)
+                   VALUES ('${location.locationId}', '${location.country}', '${location.city}', '${location.namePrimary}', '${location.subdivision}', ST_GeomFromGeoJSON('${JSON.stringify(location.geometry)}'))`;
+    try {
+        return await pool.query(query)
+    } catch (error) {
+        console.error(error);
+        console.error(`could not add location: ${JSON.stringify(location)} with query ${query}`);
     }
 }
 
@@ -195,7 +220,11 @@ export async function createNewSurveyForStudy(pool: pg.Pool, survey: Survey) {
     const query = `INSERT INTO data_collection.survey
                    (study_id, survey_id, time_start, time_stop, representation, method, user_id)
                    VALUES('${survey.studyId}', '${survey.surveyId}', '${survey.startDate}', '${survey.endDate}', '${survey.representation}', '${survey.method}', '${survey.userId}')`;
-    return pool.query(query);
+    try {
+        return pool.query(query);
+    } catch (error) {
+        console.error(`postgres error: ${error} for query: ${query}`);
+    }
 }
 
 function transformToPostgresInsert(dataPoint) {
