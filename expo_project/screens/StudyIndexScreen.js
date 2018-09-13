@@ -1,38 +1,72 @@
 import React from 'react';
 import { AsyncStorage, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
-import studies from '../config/studies';
 import Theme from '../constants/Theme';
 import { Button, Caption, Card, CardContent, Divider, Title, Paragraph } from 'react-native-paper';
 
+import { firestore } from '../lib/firebaseSingleton';
+import { getAuthorizedStudiesForEmail, getSurveysForStudy } from '../lib/firestore';
+
+
+function typeToRouteName(type) {
+  switch (type) {
+    case 'activity':
+      return 'SurveyScreen';
+    default:
+      return 'ComingSoonScreen';
+  }
+}
+
+
 class SurveyIndexScreen extends React.Component {
-  static navigationOptions = {
+  state = {
+    studies: [],
+  }
+
+  navigationOptions = {
     title: 'Studies',
-  };
+  }
 
   _signOut = async () => {
     await AsyncStorage.clear();
     this.props.navigation.navigate('Auth');
-  };
+  }
+
+  async componentDidMount() {
+    const userEmail = await AsyncStorage.getItem('userEmail');
+    let studies = await getAuthorizedStudiesForEmail(firestore, userEmail);
+    studies = await Promise.all(studies.map(async (study) => {
+      try {
+        study.surveys = await getSurveysForStudy(firestore, study.studyId);
+      } catch (error) {
+        console.error(error);
+      }
+      return study;
+    }));
+    this.setState({studies});
+  }
 
   render() {
     return (
       <View style={[styles.container]}>
         <ScrollView style={[styles.container]} stickyHeaderIndices={[0]}>
           <Caption style={styles.sectionTitle}>Your studies</Caption>
-          {studies.map(study => (
-            <Card elevation={3} key={study.studyId}>
+          {this.state.studies.map(study => {
+            const {studyId, title: studyName, authorName: studyAuthor, surveys} = study;
+            return (
+              <Card elevation={3} key={study.studyId}>
               <CardContent style={styles.studyHeader}>
-                <Title>{study.studyName}</Title>
-                <Paragraph>by {study.studyAuthor}</Paragraph>
+                <Title>{studyName}</Title>
+                <Paragraph>by {studyAuthor}</Paragraph>
               </CardContent>
-              {study.surveys.map(survey => {
+              {surveys.map(survey => {
+                const {surveyId, type: surveyType, title: surveyTitle } = survey;
                 return (
-                  <View key={survey.title}>
+                  <View key={surveyId}>
                     <Divider />
                     <CardContent style={styles.surveyRow}>
                       <View style={styles.contentWrapper}>
-                        <Text style={styles.surveyTitle}>{survey.title}</Text>
+                        <Text style={styles.surveyTitle}>{surveyTitle}</Text>
                       </View>
                       <View style={styles.buttonWrapper}>
                         <Button
@@ -40,13 +74,13 @@ class SurveyIndexScreen extends React.Component {
                           raised
                           primary
                           onPress={() =>
-                            this.props.navigation.navigate(survey.routeName, {
-                              studyId: study.studyId,
-                              surveyId: study.surveyId,
-                              studyName: study.studyName,
-                              studyAuthor: study.studyAuthor,
-                              surveyType: survey.type,
-                              surveyTitle: survey.title,
+                            this.props.navigation.navigate(typeToRouteName(surveyType), {
+                              studyId,
+                              surveyId,
+                              studyName,
+                              studyAuthor,
+                              surveyType,
+                              surveyTitle
                             })
                           }>
                           Start
@@ -57,7 +91,7 @@ class SurveyIndexScreen extends React.Component {
                 );
               })}
             </Card>
-          ))}
+          )})}
         </ScrollView>
         <Button raised primary dark theme={{ ...Theme, roundness: 100 }} onPress={this._signOut}>
           Log Out

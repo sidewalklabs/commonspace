@@ -4,7 +4,19 @@ import * as uuid from 'uuid';
 import { Location, Study, Survey } from './datastore';
 
 
-export async function saveStudyWithToken(auth: firebase.auth.Auth, db: firestore.Firestore, study: Study) {
+function getCollectionAsArray(ref: firestore.CollectionReference | firestore.Query) {
+    return new Promise(async (resolve, reject) => {
+        const snapshots = await ref.get();
+        const xs = [];
+        snapshots.forEach(s => {
+            xs.push(s.data());
+        });
+        resolve(xs);
+    })
+}
+
+
+export async function saveStudyWithToken(auth: auth.Auth, db: firestore.Firestore, study: Study) {
     // create new study
     const token = await auth.currentUser.getIdToken(true);
     const studyWithToken: Study & { token: string } = {
@@ -40,18 +52,16 @@ export async function saveStudy(db: firestore.Firestore, study: FirestoreStudy) 
 }
 
 export async function getAvailableStudiesForUserId(db: firestore.Firestore, userId: string) {
-    const querySnapshot = await db.collection('study')
-        .where("firebaseUserId", "==", userId)
-        .get();
-    const studies = [];
-    querySnapshot.forEach(function(doc) {
-        const { title } = doc.data();
-        studies.push({
-            studyId: doc.id,
-            title
-        });
-    })
-    return studies;
+    return getCollectionAsArray(db.collection('study').where("firebaseUserId", "==", userId));
+}
+
+
+export async function getSurveysForStudy(db: firestore.Firestore, studyId: string) {
+    return getCollectionAsArray(db.collection('study').doc(studyId).collection('survey'));
+}
+
+export function getAuthorizedStudiesForEmail(db: firestore.Firestore, email: string) {
+    return getCollectionAsArray(db.collection('study').where('surveyors', 'array-contains', email));
 }
 
 
