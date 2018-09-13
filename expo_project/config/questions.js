@@ -5,8 +5,8 @@ export default [
     options: [
       { value: 'male', label: 'Male' },
       { value: 'female', label: 'Female' },
-      { value: 'unknown', label: 'Unknown' }
-    ]
+      { value: 'unknown', label: 'Unknown' },
+    ],
   },
   {
     questionKey: 'age',
@@ -15,16 +15,16 @@ export default [
       { value: 'child', label: '0-14' },
       { value: 'young', label: '15-24' },
       { value: 'adult', label: '25-64' },
-      { value: 'elderly', label: '65+' }
-    ]
+      { value: 'elderly', label: '65+' },
+    ],
   },
   {
     questionKey: 'mode',
     questionLabel: 'Mode',
     options: [
       { value: 'pedestrian', label: 'Pedestrian' },
-      { value: 'bicyclist', label: 'Bicyclist' }
-    ]
+      { value: 'bicyclist', label: 'Bicyclist' },
+    ],
   },
   {
     questionKey: 'groupSize',
@@ -32,8 +32,8 @@ export default [
     options: [
       { value: 'pair', label: 'pair' },
       { value: 'group', label: 'group' },
-      { value: 'crowd', label: 'crowd' }
-    ]
+      { value: 'crowd', label: 'crowd' },
+    ],
   },
   {
     questionKey: 'posture',
@@ -43,8 +43,8 @@ export default [
       { value: 'lying', label: 'Lying' },
       { value: 'sitting', label: 'Sitting' },
       { value: 'groundSitting', label: 'Sitting on the Ground' },
-      { value: 'standing', label: 'Standing' }
-    ]
+      { value: 'standing', label: 'Standing' },
+    ],
   },
   {
     questionKey: 'activity',
@@ -56,8 +56,8 @@ export default [
       { value: 'electronics', label: 'Electronics' },
       { value: 'pets', label: 'Pets' },
       { value: 'idle', label: 'Idle' },
-      { value: 'running', label: 'Running' }
-    ]
+      { value: 'running', label: 'Running' },
+    ],
   },
   {
     questionKey: 'object',
@@ -65,7 +65,7 @@ export default [
     options: [
       { value: 'luggage', label: 'luggage' },
       { value: 'pushcart', label: 'Push Cart' },
-      { value: 'stroller', label: 'Stroller' }
-    ]
-  }
+      { value: 'stroller', label: 'Stroller' },
+    ],
+  },
 ];

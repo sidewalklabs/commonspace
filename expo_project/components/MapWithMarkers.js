@@ -22,7 +22,7 @@ class MapWithMarkers extends React.Component {
     this.state = {
       region: MapConfig.defaultRegion,
       circularProgressLocation: null,
-      nextMarkerColor: this.getRandomIconColor()
+      nextMarkerColor: this.getRandomIconColor(),
     };
   }
 
@@ -39,15 +39,15 @@ class MapWithMarkers extends React.Component {
     this.setState({
       circularProgressLocation: {
         top: locationY - CIRCULAR_PROGRESS_SIZE / 2,
-        left: locationX - CIRCULAR_PROGRESS_SIZE / 2
-      }
+        left: locationX - CIRCULAR_PROGRESS_SIZE / 2,
+      },
     });
   };
 
   stopProgressAnimation = () => {
     this.setState({
       circularProgressLocation: null,
-      nextMarkerColor: this.getRandomIconColor()
+      nextMarkerColor: this.getRandomIconColor(),
     });
   };
 
@@ -63,7 +63,7 @@ class MapWithMarkers extends React.Component {
       onMarkerDragEnd,
       onMarkerPress,
       onMapPress,
-      onMapLongPress
+      onMapLongPress,
     } = this.props;
     return this.state.region ? (
       <TouchableOpacity
@@ -74,8 +74,7 @@ class MapWithMarkers extends React.Component {
         onPressOut={e => {
           this.stopProgressAnimation();
         }}
-        style={styles.container}
-      >
+        style={styles.container}>
         <MapView
           style={styles.mapStyle}
           provider="google"
@@ -85,8 +84,7 @@ class MapWithMarkers extends React.Component {
           showsUserLocation
           zoomEnabled
           pitchEnabled={false}
-          mapType="satellite"
-        >
+          mapType="satellite">
           <MapView.Polyline
             coordinates={MapConfig.polylineCoordinates}
             strokeColor="#D77C61"
@@ -104,8 +102,7 @@ class MapWithMarkers extends React.Component {
                 draggable
                 onDragEnd={e => onMarkerDragEnd(e.nativeEvent.id, e.nativeEvent.coordinate)}
                 onPress={() => onMarkerPress(marker.id)}
-                anchor={{ x: 0.5, y: 0.5 }}
-              >
+                anchor={{ x: 0.5, y: 0.5 }}>
                 <PersonIcon backgroundColor={marker.color} size={selected ? 24 : 16} />
               </MapView.Marker>
             );
@@ -118,8 +115,8 @@ class MapWithMarkers extends React.Component {
               styles.circularProgress,
               {
                 top: this.state.circularProgressLocation.top,
-                left: this.state.circularProgressLocation.left
-              }
+                left: this.state.circularProgressLocation.left,
+              },
             ]}
             size={CIRCULAR_PROGRESS_SIZE}
             width={5}
@@ -137,27 +134,27 @@ class MapWithMarkers extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    position: 'relative'
+    position: 'relative',
   },
   mapStyle: {
     ...Platform.select({
       ios: {
-        flex: 1
+        flex: 1,
       },
       android: {
         position: 'absolute',
         top: 0,
         bottom: 0,
         left: 0,
-        right: 0
-      }
-    })
+        right: 0,
+      },
+    }),
   },
   circularProgress: {
     alignSelf: 'center',
     position: 'absolute',
-    backgroundColor: 'transparent'
-  }
+    backgroundColor: 'transparent',
+  },
 });
 
 MapWithMarkers.propTypes = {
@@ -167,14 +164,14 @@ MapWithMarkers.propTypes = {
       color: PropTypes.string,
       title: PropTypes.string,
       dateLabel: PropTypes.string,
-      id: PropTypes.string
-    })
+      id: PropTypes.string,
+    }),
   ).isRequired,
   activeMarkerId: PropTypes.string,
   onMarkerDragEnd: PropTypes.func.isRequired,
   onMarkerPress: PropTypes.func.isRequired,
   onMapPress: PropTypes.func.isRequired,
-  onMapLongPress: PropTypes.func.isRequired
+  onMapLongPress: PropTypes.func.isRequired,
 };
 
 export default MapWithMarkers;

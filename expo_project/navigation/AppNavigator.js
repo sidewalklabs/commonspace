@@ -9,44 +9,44 @@ import PrivacyScreen from '../screens/PrivacyScreen';
 
 const navigationOptions = {
   headerStyle: {
-    backgroundColor: Theme.colors.primary
+    backgroundColor: Theme.colors.primary,
   },
   headerTintColor: '#fff',
   headerTitleStyle: {
     fontWeight: '600',
-    fontFamily: Theme.fonts.medium
-  }
+    fontFamily: Theme.fonts.medium,
+  },
 };
 
 const AppStack = createStackNavigator(
   {
     StudyIndexScreen,
     SurveyScreen,
-    ComingSoonScreen
+    ComingSoonScreen,
   },
   {
     initialRouteName: 'StudyIndexScreen',
-    navigationOptions
-  }
+    navigationOptions,
+  },
 );
 const AuthStack = createStackNavigator(
   {
     AuthScreen,
-    PrivacyScreen
+    PrivacyScreen,
   },
   {
     initialRouteName: 'AuthScreen',
-    navigationOptions
-  }
+    navigationOptions,
+  },
 );
 
 export default createSwitchNavigator(
   {
     AuthLoading: AuthLoadingScreen,
     App: AppStack,
-    Auth: AuthStack
+    Auth: AuthStack,
   },
   {
-    initialRouteName: 'AuthLoading'
-  }
+    initialRouteName: 'AuthLoading',
+  },
 );

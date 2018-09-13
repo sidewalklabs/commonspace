@@ -6,6 +6,6 @@ export default {
   colors: {
     ...DefaultTheme.colors,
     primary: '#5B93D9',
-    accent: '#1C4442'
-  }
+    accent: '#1C4442',
+  },
 };

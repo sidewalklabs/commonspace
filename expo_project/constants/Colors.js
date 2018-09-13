@@ -22,7 +22,7 @@ export default {
   warningBackground: '#EAEB5E',
   warningText: '#666804',
   noticeBackground: colorPrimary,
-  noticeText: '#fff'
+  noticeText: '#fff',
 };
 
 export const iconColors = {
@@ -32,5 +32,5 @@ export const iconColors = {
   indigo,
   lightBlue,
   pink,
-  orange
+  orange,
 };

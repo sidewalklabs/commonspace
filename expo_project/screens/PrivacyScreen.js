@@ -6,7 +6,7 @@ import { Button, Divider, withTheme } from 'react-native-paper';
 
 class PrivacyScreen extends Component {
   static navigationOptions = {
-    title: 'Privacy & Terms'
+    title: 'Privacy & Terms',
   };
 
   render() {
@@ -20,8 +20,7 @@ class PrivacyScreen extends Component {
             primary
             dark
             theme={{ ...this.props.theme, roundness: 100 }}
-            onPress={() => this.props.navigation.goBack()}
-          >
+            onPress={() => this.props.navigation.goBack()}>
             Done
           </Button>
         </View>
@@ -33,11 +32,11 @@ class PrivacyScreen extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff'
+    backgroundColor: '#fff',
   },
   footer: {
-    padding: 20
-  }
+    padding: 20,
+  },
 });
 
 export default withNavigation(withTheme(PrivacyScreen));

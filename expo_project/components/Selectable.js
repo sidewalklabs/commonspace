@@ -11,7 +11,7 @@ class Selectable extends React.Component {
     super(props);
 
     this.state = {
-      height: 0
+      height: 0,
     };
     this.onLayout = this.onLayout.bind(this);
   }
@@ -38,12 +38,11 @@ class Selectable extends React.Component {
                 style={[
                   styles.selectableCell,
                   index === 0 && styles.firstCell,
-                  selected && { backgroundColor: selectedColor }
+                  selected && { backgroundColor: selectedColor },
                 ]}
                 onPress={e => {
                   onSelectablePress(value, this.state.height);
-                }}
-              >
+                }}>
                 <Text style={[styles.pillText, selected && { color: 'white' }]}>{label}</Text>
               </TouchableOpacity>
             );
@@ -56,10 +55,10 @@ class Selectable extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 10
+    paddingVertical: 10,
   },
   selectable: {
-    flexDirection: 'row'
+    flexDirection: 'row',
   },
   selectableCell: {
     borderWidth: 1,
@@ -68,18 +67,18 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.0980392)',
     padding: 5,
     marginRight: 5,
-    marginTop: 10
+    marginTop: 10,
   },
   firstCell: {
-    marginLeft: 20
+    marginLeft: 20,
   },
   pillText: {
-    fontFamily: 'monaco'
+    fontFamily: 'monaco',
   },
   title: {
     marginBottom: 5,
-    paddingHorizontal: 20
-  }
+    paddingHorizontal: 20,
+  },
 });
 
 Selectable.propTypes = {
@@ -90,13 +89,13 @@ Selectable.propTypes = {
   options: PropTypes.arrayOf(
     PropTypes.shape({
       label: PropTypes.string,
-      value: PropTypes.string
-    })
-  ).isRequired
+      value: PropTypes.string,
+    }),
+  ).isRequired,
 };
 
 Selectable.defaultProps = {
-  selectedColor: colors.colorSecondary
+  selectedColor: colors.colorSecondary,
 };
 
 export default Selectable;

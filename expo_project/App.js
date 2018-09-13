@@ -7,7 +7,7 @@ import Theme from './constants/Theme';
 
 export default class App extends React.Component {
   state = {
-    isLoadingComplete: false
+    isLoadingComplete: false,
   };
 
   render() {
@@ -30,7 +30,7 @@ export default class App extends React.Component {
   _loadResourcesAsync = async () => {
     return Font.loadAsync({
       ...Icon.Ionicons.font,
-      monaco: require('./assets/fonts/monaco.ttf')
+      monaco: require('./assets/fonts/monaco.ttf'),
     });
   };
 

@@ -9,18 +9,18 @@ export default [
       {
         type: 'activity',
         title: 'Stationary Mapping tool',
-        routeName: 'SurveyScreen'
+        routeName: 'SurveyScreen',
       },
       {
         type: 'lineOfSight',
         title: 'Line of Sight tool',
-        routeName: 'ComingSoonScreen'
+        routeName: 'ComingSoonScreen',
       },
       {
         type: 'intercept',
         title: 'Intercept study tool',
-        routeName: 'ComingSoonScreen'
-      }
-    ]
-  }
+        routeName: 'ComingSoonScreen',
+      },
+    ],
+  },
 ];
