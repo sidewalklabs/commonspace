@@ -48,8 +48,12 @@ const styles = StyleSheet.create({
 
 PersonIcon.propTypes = {
   size: PropTypes.number.isRequired,
-  backgroundColor: PropTypes.string.isRequired,
+  backgroundColor: PropTypes.string,
   shadow: PropTypes.bool,
+};
+
+PropTypes.defaultProps = {
+  backgroundColor: 'white',
 };
 
 export default PersonIcon;

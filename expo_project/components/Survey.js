@@ -11,10 +11,6 @@ class Survey extends React.Component {
     const { activeMarker, onSelect } = this.props;
     return (
       <View>
-        <View style={styles.titleContainer}>
-          <Text style={styles.title}>{activeMarker.title}</Text>
-          <Text>{activeMarker.dateLabel}</Text>
-        </View>
         {_.map(QUESTION_CONFIG, question => {
           const { questionKey, questionLabel, options } = question;
           return (
@@ -30,14 +26,31 @@ class Survey extends React.Component {
             />
           );
         })}
+        {activeMarker.note && (
+          <View style={styles.noteContainer}>
+            <Text style={styles.noteTitle}>Note</Text>
+            <Text style={[styles.noteBody, { color: activeMarker.color }]}>
+              {activeMarker.note}
+            </Text>
+          </View>
+        )}
       </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  titleContainer: { paddingVertical: 10, paddingHorizontal: 20 },
-  title: { fontWeight: 'bold' },
+  noteContainer: { paddingVertical: 10 },
+  noteTitle: {
+    // match selectable style
+    marginBottom: 5,
+    paddingHorizontal: 20,
+  },
+  noteBody: {
+    fontFamily: 'monaco',
+    marginVertical: 10,
+    marginHorizontal: 20,
+  },
 });
 
 Survey.propTypes = {

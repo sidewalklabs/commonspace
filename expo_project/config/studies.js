@@ -8,18 +8,8 @@ export default [
     surveys: [
       {
         type: 'activity',
-        title: 'Stationary Mapping tool',
+        title: '2pm - 3pm shift',
         routeName: 'SurveyScreen',
-      },
-      {
-        type: 'lineOfSight',
-        title: 'Line of Sight tool',
-        routeName: 'ComingSoonScreen',
-      },
-      {
-        type: 'intercept',
-        title: 'Intercept study tool',
-        routeName: 'ComingSoonScreen',
       },
     ],
   },

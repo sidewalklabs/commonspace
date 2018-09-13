@@ -6,6 +6,7 @@ import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { iconColors } from '../constants/Colors';
 import MapConfig from '../constants/Map';
 import PersonIcon from '../components/PersonIcon';
+import * as _ from 'lodash';
 
 // NOTE: A longPress is more like 500ms,
 // however there's a delay between when the longPress is registered
@@ -22,21 +23,22 @@ class MapWithMarkers extends React.Component {
     this.state = {
       region: MapConfig.defaultRegion,
       circularProgressLocation: null,
-      nextMarkerColor: this.getRandomIconColor(),
+      nextMarkerColor: null,
     };
   }
 
   getRandomIconColor = () => {
-    const iconOptions = Object.values(iconColors);
-    return iconOptions[Math.floor(Math.random() * iconOptions.length)];
-  };
-
-  setNextColor = () => {
-    this.setState({ nextMarkerColor: this.getRandomIconColor() });
+    // enforce next color is not current color
+    const iconColorOptions = _.filter(
+      _.values(iconColors),
+      color => color !== this.state.nextMarkerColor,
+    );
+    return _.sample(iconColorOptions);
   };
 
   startProgressAnimation = (locationX, locationY) => {
     this.setState({
+      nextMarkerColor: this.getRandomIconColor(),
       circularProgressLocation: {
         top: locationY - CIRCULAR_PROGRESS_SIZE / 2,
         left: locationX - CIRCULAR_PROGRESS_SIZE / 2,
@@ -47,7 +49,6 @@ class MapWithMarkers extends React.Component {
   stopProgressAnimation = () => {
     this.setState({
       circularProgressLocation: null,
-      nextMarkerColor: this.getRandomIconColor(),
     });
   };
 
