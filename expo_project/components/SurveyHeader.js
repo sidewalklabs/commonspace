@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   text: {
     color: '#fff',
     fontWeight: '600',
-    fontSize: 24,
+    fontSize: 18,
     fontFamily: Theme.fonts.medium,
   },
 });

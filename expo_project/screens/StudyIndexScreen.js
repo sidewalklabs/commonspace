@@ -21,14 +21,14 @@ class SurveyIndexScreen extends React.Component {
         <ScrollView style={[styles.container]} stickyHeaderIndices={[0]}>
           <Caption style={styles.sectionTitle}>Your studies</Caption>
           {studies.map(study => (
-            <Card elevation={3}>
+            <Card elevation={3} key={study.studyId}>
               <CardContent style={styles.studyHeader}>
                 <Title>{study.studyName}</Title>
                 <Paragraph>by {study.studyAuthor}</Paragraph>
               </CardContent>
               {study.surveys.map(survey => {
                 return (
-                  <View>
+                  <View key={survey.title}>
                     <Divider />
                     <CardContent style={styles.surveyRow}>
                       <View style={styles.contentWrapper}>
@@ -78,7 +78,6 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     backgroundColor: 'white',
-    fontWeight: 'bold',
     marginBottom: 10,
   },
   surveyRow: {

@@ -6,21 +6,22 @@ import {
   Platform,
   StyleSheet,
   ScrollView,
-  View,
+  Text,
   TouchableOpacity,
+  View,
 } from 'react-native';
-import { Button, Paragraph } from 'react-native-paper';
+import { Button, Paragraph, Divider } from 'react-native-paper';
 import { withNavigation } from 'react-navigation';
 import * as _ from 'lodash';
 import moment from 'moment';
 import MapWithMarkers from '../components/MapWithMarkers';
-import MarkerCarousel from '../components/MarkerCarousel';
+import PersonIcon from '../components/PersonIcon';
 import Survey from '../components/Survey';
-import { iconColors } from '../constants/Colors';
 import Layout from '../constants/Layout';
 import firebase from '../lib/firebaseSingleton';
 
-import SurveyHeader from '../components/SurveyHeader';
+import Theme from '../constants/Theme';
+import NoteModal from '../components/NoteModal';
 
 // TODO (Ananta): shouold be dynamically set
 const MIN_DRAWER_TRANSLATE_Y = 0;
@@ -28,25 +29,9 @@ const MID_DRAWER_TRANSLATE_Y = Layout.drawer.height - 300;
 const MAX_DRAWER_TRANSLATE_Y = Layout.drawer.height - 100; // mostly collapsed, with just the header peaking out
 const INITIAL_DRAWER_TRANSLATE_Y = MAX_DRAWER_TRANSLATE_Y;
 
-function _markerToDataPoint(marker) {
-  const dataPoint = {};
-  fields = ['gender', 'groupSize', 'mode', 'object', 'posture', 'timestamp', 'location'];
-  fields.forEach(field => {
-    if (marker[field]) {
-      dataPoint[field] = marker[field];
-    }
-  });
-
-  return dataPoint;
-}
-
 class Indicator extends React.Component {
   render() {
-    return (
-      <TouchableOpacity onPress={this.props.onPress}>
-        <View style={styles.indicator} />
-      </TouchableOpacity>
-    );
+    return <View style={styles.indicator} />;
   }
 }
 
@@ -66,9 +51,25 @@ class Instructions extends React.Component {
 }
 
 class SurveyScreen extends React.Component {
-  static navigationOptions = {
-    headerTitle: <SurveyHeader />,
-  };
+  static navigationOptions = ({ navigation }) => ({
+    headerTitle: navigation.getParam('surveyTitle'),
+    headerLeft: (
+      <Button
+        onPress={() => {
+          navigation.goBack();
+        }}
+        primary
+        style={{
+          backgroundColor: 'white',
+          minWidth: 0,
+          padding: 0,
+          marginLeft: 10,
+        }}
+        theme={{ ...Theme, roundness: 100 }}>
+        <Text style={{ fontSize: 14 }}>Exit</Text>
+      </Button>
+    ),
+  });
 
   constructor(props) {
     super(props);
@@ -80,6 +81,7 @@ class SurveyScreen extends React.Component {
     this.state = {
       activeMarkerId: null,
       markers: [],
+      modalVisible: false,
       formScrollPosition: 0,
       pan: new Animated.ValueXY({ x: 0, y: INITIAL_DRAWER_TRANSLATE_Y }),
     };
@@ -87,6 +89,7 @@ class SurveyScreen extends React.Component {
     this.state.pan.addListener(value => (this._drawerY = value.y));
 
     this.resetDrawer = this.resetDrawer.bind(this);
+    this.getToggleDirection = this.getToggleDirection.bind(this);
     this.toggleDrawer = this.toggleDrawer.bind(this);
     this.selectMarker = this.selectMarker.bind(this);
     this.createNewMarker = this.createNewMarker.bind(this);
@@ -113,11 +116,12 @@ class SurveyScreen extends React.Component {
           const marker = {
             id: doc.id,
             ...doc.data(),
-            color: _.sample(_.values(iconColors)),
           };
           markers.push(marker);
         });
-        this.setState({ markers });
+        if (markers.length) {
+          this.setState({ markers, activeMarkerId: markers[0].id });
+        }
       });
   }
 
@@ -171,8 +175,8 @@ class SurveyScreen extends React.Component {
             y,
           },
           useNativeDriver: true,
-          friction: 5,
-        }).start();
+          friction: 6,
+        }).start(() => this.setState(this.state));
 
         if (this.state.formScrollPosition) {
           this.scrollView.scrollTo({
@@ -184,14 +188,22 @@ class SurveyScreen extends React.Component {
     });
   }
 
+  getToggleDirection() {
+    const direction = this._drawerY === MIN_DRAWER_TRANSLATE_Y ? 'down' : 'up';
+    return direction;
+  }
+
   toggleDrawer() {
     const y =
-      this._drawerY === MIN_DRAWER_TRANSLATE_Y ? MAX_DRAWER_TRANSLATE_Y : MIN_DRAWER_TRANSLATE_Y;
+      this.getToggleDirection() === 'down' ? MAX_DRAWER_TRANSLATE_Y : MIN_DRAWER_TRANSLATE_Y;
     Animated.timing(this.state.pan, {
       toValue: { x: 0, y },
       duration: 200,
       useNativeDriver: true,
-    }).start();
+    }).start(() => {
+      // hack to trigger a re-render
+      this.setState(this.state);
+    });
 
     if (this.state.formScrollPosition) {
       this.scrollView.scrollTo({ y: 0, animated: false });
@@ -211,7 +223,7 @@ class SurveyScreen extends React.Component {
     }
   }
 
-  setFormResponse(id, key, value, selectableHeight) {
+  setFormResponse(id, key, value, heightToScroll) {
     const markersCopy = [...this.state.markers];
     const marker = _.find(markersCopy, {
       id,
@@ -231,34 +243,36 @@ class SurveyScreen extends React.Component {
         .doc(surveyId)
         .collection('dataPoints')
         .doc(marker.id)
-        .set(_markerToDataPoint(marker));
+        .set(marker);
 
-      const currentScrollPosition = this.state.formScrollPosition;
-      const currentDrawerOffset = this._drawerY;
-      const newDrawerOffset = currentDrawerOffset - selectableHeight;
+      if (heightToScroll) {
+        const currentScrollPosition = this.state.formScrollPosition;
+        const currentDrawerOffset = this._drawerY;
+        const newDrawerOffset = currentDrawerOffset - heightToScroll;
 
-      if (newDrawerOffset >= MIN_DRAWER_TRANSLATE_Y) {
-        Animated.timing(this.state.pan, {
-          toValue: { x: 0, y: newDrawerOffset },
-          duration: 200,
-          useNativeDriver: true,
-        }).start();
-      } else if (currentDrawerOffset > MIN_DRAWER_TRANSLATE_Y) {
-        // Animate drawer to the top
-        // then scroll the remaining amount to ensure next question is visible
-        const remainder = currentDrawerOffset - MIN_DRAWER_TRANSLATE_Y;
-        Animated.timing(this.state.pan, {
-          toValue: { x: 0, y: MIN_DRAWER_TRANSLATE_Y },
-          duration: 200,
-          useNativeDriver: true,
-        }).start();
-        this.scrollView.scrollTo({
-          y: currentScrollPosition + selectableHeight - remainder,
-        });
-      } else {
-        this.scrollView.scrollTo({
-          y: currentScrollPosition + selectableHeight,
-        });
+        if (newDrawerOffset >= MIN_DRAWER_TRANSLATE_Y) {
+          Animated.timing(this.state.pan, {
+            toValue: { x: 0, y: newDrawerOffset },
+            duration: 200,
+            useNativeDriver: true,
+          }).start();
+        } else if (currentDrawerOffset > MIN_DRAWER_TRANSLATE_Y) {
+          // Animate drawer to the top
+          // then scroll the remaining amount to ensure next question is visible
+          const remainder = currentDrawerOffset - MIN_DRAWER_TRANSLATE_Y;
+          Animated.timing(this.state.pan, {
+            toValue: { x: 0, y: MIN_DRAWER_TRANSLATE_Y },
+            duration: 200,
+            useNativeDriver: true,
+          }).start();
+          this.scrollView.scrollTo({
+            y: currentScrollPosition + heightToScroll - remainder,
+          });
+        } else {
+          this.scrollView.scrollTo({
+            y: currentScrollPosition + heightToScroll,
+          });
+        }
       }
     }
   }
@@ -295,11 +309,10 @@ class SurveyScreen extends React.Component {
       .collection('survey')
       .doc(surveyId)
       .collection('dataPoints')
-      .add(_markerToDataPoint(marker))
+      .add(marker)
       .then(doc => {
-        const { id, timestamp } = doc;
+        const { id } = doc;
         marker.id = id;
-        marker.timestamp = timestamp;
         markersCopy.push(marker);
         this.setState({ markers: markersCopy, activeMarkerId: id }, this.resetDrawer);
       });
@@ -332,6 +345,11 @@ class SurveyScreen extends React.Component {
   render() {
     const { activeMarkerId, markers } = this.state;
     const activeMarker = _.find(markers, { id: activeMarkerId });
+    const note = _.get(activeMarker, 'note', '');
+    const noteButtonLabel = note ? 'Edit note' : 'Add note';
+    const direction = this.getToggleDirection();
+    const chevronIconName = `ios-arrow-${direction}`;
+
     return (
       <View style={styles.container}>
         <MapWithMarkers
@@ -345,18 +363,27 @@ class SurveyScreen extends React.Component {
         <Animated.View
           style={[styles.drawer, { transform: this.state.pan.getTranslateTransform() }]}
           {...this._panResponder.panHandlers}>
-          <View style={[styles.drawerHeader]}>
+          <TouchableOpacity
+            style={[styles.drawerHeader]}
+            activeOpacity={1}
+            onPress={this.toggleDrawer}>
             <Indicator onPress={this.toggleDrawer} />
-            {activeMarkerId ? (
-              <MarkerCarousel
-                markers={this.state.markers}
-                activeMarkerId={this.state.activeMarkerId}
-                onMarkerPress={this.selectMarker}
-              />
-            ) : (
-              <Instructions />
+            {activeMarker && (
+              <View style={styles.headerContent}>
+                <View style={styles.personIconWrapper}>
+                  <PersonIcon backgroundColor={activeMarker.color} size={50} />
+                </View>
+                <View style={styles.titleContainer}>
+                  <Text style={styles.title}>{activeMarker.title}</Text>
+                  <Text>{activeMarker.dateLabel}</Text>
+                </View>
+                <View style={styles.chevron}>
+                  <Icon.Ionicons name={chevronIconName} color="#D8D8D8" size={30} />
+                </View>
+              </View>
             )}
-          </View>
+            {!activeMarker && <Instructions />}
+          </TouchableOpacity>
           {activeMarker && (
             <ScrollView
               style={styles.formContainer}
@@ -370,13 +397,38 @@ class SurveyScreen extends React.Component {
               showsHorizontalScrollIndicator={false}
               showsVerticalScrollIndicator={false}>
               <Survey activeMarker={activeMarker} onSelect={this.setFormResponse} />
-              <Button primary raised dark onPress={() => this.resetDrawer()} style={{ margin: 20 }}>
-                Done
-              </Button>
+              <Divider style={{ marginTop: 10 }} />
+              <View style={styles.drawerFooter}>
+                <Button
+                  onPress={() =>
+                    this.setState({
+                      modalVisible: true,
+                    })
+                  }
+                  style={styles.greyButton}
+                  theme={{ ...Theme, roundness: 20 }}>
+                  <Text>{noteButtonLabel}</Text>
+                </Button>
+                <Button
+                  onPress={() => this.toggleDrawer()}
+                  theme={{ ...Theme, roundness: 20 }}
+                  style={styles.greyButton}>
+                  <Text>Back to Map</Text>
+                </Button>
+              </View>
             </ScrollView>
           )}
           <View style={styles.bottomGuard} />
         </Animated.View>
+        {this.state.modalVisible && (
+          <NoteModal
+            initialValue={note}
+            onClose={note => {
+              this.setFormResponse(activeMarker.id, 'note', note, 0);
+              this.setState({ modalVisible: false });
+            }}
+          />
+        )}
       </View>
     );
   }
@@ -411,8 +463,30 @@ const styles = StyleSheet.create({
   drawerHeader: {
     alignSelf: 'stretch',
   },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  titleContainer: { paddingVertical: 10, paddingHorizontal: 20 },
+  title: { fontWeight: 'bold' },
+  personIconWrapper: {
+    padding: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   formContainer: {
     alignSelf: 'stretch',
+  },
+  drawerFooter: {
+    padding: 10,
+    flexDirection: 'row',
+  },
+  greyButton: {
+    width: Layout.window.width,
+    flexShrink: 1,
+    backgroundColor: '#FAFAFA',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.12)',
   },
   bottomGuard: {
     // This view adds whitespace below the drawer, in case the user over-pans it
@@ -430,6 +504,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
     backgroundColor: '#D8D8D8',
     borderRadius: 10,
+  },
+  chevron: {
+    position: 'absolute',
+    right: 20,
   },
   instructionsContainer: {
     display: 'flex',
