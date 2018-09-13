@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 
 import * as admin from 'firebase-admin';
-import { addUserToStudyByEmail, saveStudy } from './firestore-client';
+import { getSurveysForStudy, getAuthorizedStudiesForEmail, addUserToStudyByEmail, saveStudy } from './firestore-client';
 
 const adminUserId = "b44a8bc3-b136-428e-bee5-32837aee9ca2"
 const adminEmail = "sebastian@sidewalklabs.com"
@@ -29,7 +29,9 @@ const dataCollectorUser = {
 
 const newStudy = {
     "userId": adminUserId,
+    "authorName": "Park People",
     "title": "Stationary Counts RV Burgess",
+    "type": "activity",
     "protocolVersion": "1.0",
     "studyId": studyId,
     "locations": [
@@ -278,7 +280,17 @@ admin.initializeApp({ credential: admin.credential.cert(serviceAccountKey) })
 const firestore = admin.firestore();
 firestore.settings({ timestampsInSnapshots: true });
 
-setupBackend().then(() => {
+async function test() {
+    // @ts-ignore
+    const studies = await getAuthorizedStudiesForEmail(firestore, 'thorncliffeparkpubliclifepilot@gmail.com');
+    console.log(studies);
+    // @ts-ignore
+    const surveys = await getSurveysForStudy(firestore, studies[0].studyId);
+    console.log(surveys);
+    return
+}
+
+test().then(() => {
     console.log('done');
     process.exit(0);
 });

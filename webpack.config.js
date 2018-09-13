@@ -3,12 +3,13 @@ const webpack = require('webpack');
 
 module.exports = {
   entry: {
-    firestore: ['babel-polyfill', path.resolve(__dirname, 'src/firestore-client.ts')],
-    index: ['babel-polyfill', path.resolve(__dirname, 'src/gcp.ts')]
+    'dist/firestore': ['babel-polyfill', path.resolve(__dirname, 'src/firestore-client.ts')],
+    'expo_project/lib/firestore': ['babel-polyfill', path.resolve(__dirname, 'src/firestore-client.ts')],
+    'dist/index': ['babel-polyfill', path.resolve(__dirname, 'src/gcp.ts')]
   },
   output: {
     libraryTarget: 'umd',
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname),
     filename: '[name].js'
   },
   target: "node",

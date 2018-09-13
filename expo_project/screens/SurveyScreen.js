@@ -18,7 +18,7 @@ import MapWithMarkers from '../components/MapWithMarkers';
 import PersonIcon from '../components/PersonIcon';
 import Survey from '../components/Survey';
 import Layout from '../constants/Layout';
-import firebase from '../lib/firebaseSingleton';
+import { firestore } from '../lib/firebaseSingleton';
 
 import Theme from '../constants/Theme';
 import NoteModal from '../components/NoteModal';
@@ -74,9 +74,7 @@ class SurveyScreen extends React.Component {
   constructor(props) {
     super(props);
 
-    // firestore has its own timestamp type
-    this.firestore = firebase.firestore();
-    this.firestore.settings({ timestampsInSnapshots: true });
+    this.firestore = firestore;
 
     this.state = {
       activeMarkerId: null,
