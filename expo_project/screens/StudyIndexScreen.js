@@ -1,26 +1,18 @@
-import React from "react";
-import { AsyncStorage, ScrollView, StyleSheet, Text, View } from "react-native";
-import { withNavigation } from "react-navigation";
-import studies from "../config/studies";
-import Theme from "../constants/Theme";
-import {
-  Button,
-  Caption,
-  Card,
-  CardContent,
-  Divider,
-  Title,
-  Paragraph
-} from "react-native-paper";
+import React from 'react';
+import { AsyncStorage, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { withNavigation } from 'react-navigation';
+import studies from '../config/studies';
+import Theme from '../constants/Theme';
+import { Button, Caption, Card, CardContent, Divider, Title, Paragraph } from 'react-native-paper';
 
 class SurveyIndexScreen extends React.Component {
   static navigationOptions = {
-    title: "Studies"
+    title: 'Studies'
   };
 
   _signOut = async () => {
     await AsyncStorage.clear();
-    this.props.navigation.navigate("Auth");
+    this.props.navigation.navigate('Auth');
   };
 
   render() {
@@ -68,13 +60,7 @@ class SurveyIndexScreen extends React.Component {
             </Card>
           ))}
         </ScrollView>
-        <Button
-          raised
-          primary
-          dark
-          theme={{ ...Theme, roundness: 100 }}
-          onPress={this._signOut}
-        >
+        <Button raised primary dark theme={{ ...Theme, roundness: 100 }} onPress={this._signOut}>
           Log Out
         </Button>
       </View>
@@ -84,7 +70,7 @@ class SurveyIndexScreen extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "white",
+    backgroundColor: 'white',
     flex: 1,
     padding: 10
   },
@@ -92,18 +78,18 @@ const styles = StyleSheet.create({
     paddingBottom: 10
   },
   sectionTitle: {
-    backgroundColor: "white",
-    fontWeight: "bold",
+    backgroundColor: 'white',
+    fontWeight: 'bold',
     marginBottom: 10
   },
   surveyRow: {
     paddingVertical: 10,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center"
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
   },
   surveyTitle: {
-    fontWeight: "bold"
+    fontWeight: 'bold'
   },
   contentWrapper: {
     flex: 1

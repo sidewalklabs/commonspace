@@ -1,11 +1,11 @@
-import PropTypes from "prop-types";
-import React from "react";
+import PropTypes from 'prop-types';
+import React from 'react';
 
-import PersonIcon from "./PersonIcon";
+import PersonIcon from './PersonIcon';
 
-import { FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import { FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 
-import * as _ from "lodash";
+import * as _ from 'lodash';
 
 const CAROUSEL_ICON_SIZE = 50;
 const CAROUSEL_ITEM_PADDING = 12;
@@ -24,7 +24,7 @@ class MarkerCarousel extends React.Component {
   }
 
   onViewableItemsChanged({ viewableItems }) {
-    const viewableIndices = _.map(viewableItems, "index");
+    const viewableIndices = _.map(viewableItems, 'index');
     this.setState({ viewableIndices });
   }
 
@@ -82,16 +82,10 @@ class MarkerCarousel extends React.Component {
           return (
             <TouchableOpacity
               Index={index}
-              style={[
-                styles.cell,
-                selected && { borderBottomColor: item.color }
-              ]}
+              style={[styles.cell, selected && { borderBottomColor: item.color }]}
               onPress={() => onMarkerPress(item.id)}
             >
-              <PersonIcon
-                backgroundColor={item.color}
-                size={CAROUSEL_ICON_SIZE}
-              />
+              <PersonIcon backgroundColor={item.color} size={CAROUSEL_ICON_SIZE} />
             </TouchableOpacity>
           );
         }}
@@ -102,16 +96,16 @@ class MarkerCarousel extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    borderBottomColor: "rgba(0, 0, 0, 0.12)",
+    borderBottomColor: 'rgba(0, 0, 0, 0.12)',
     borderBottomWidth: 1
   },
   cell: {
     padding: CAROUSEL_ITEM_PADDING,
     // there's a border on selected cells, so put an inivisble border on all cells to keep cell height consistent
-    borderBottomColor: "transparent",
+    borderBottomColor: 'transparent',
     borderBottomWidth: 4,
-    justifyContent: "center",
-    alignItems: "center"
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 });
 

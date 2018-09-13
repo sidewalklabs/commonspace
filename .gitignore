@@ -1,6 +1,9 @@
 dist/
 functions/lib/
 js_scripts/
-.env
+.env*
 config/firebase-gcp.yml
 config/firebase-gmail.yml
+config/env.yml
+.expo/
+.DS_Store

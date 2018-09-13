@@ -1,18 +1,18 @@
-import React, { Component } from "react";
-import { StyleSheet, View, WebView } from "react-native";
-import { withNavigation } from "react-navigation";
+import React, { Component } from 'react';
+import { StyleSheet, View, WebView } from 'react-native';
+import { withNavigation } from 'react-navigation';
 
-import { Button, Divider, withTheme } from "react-native-paper";
+import { Button, Divider, withTheme } from 'react-native-paper';
 
 class PrivacyScreen extends Component {
   static navigationOptions = {
-    title: "Privacy & Terms"
+    title: 'Privacy & Terms'
   };
 
   render() {
     return (
       <View style={styles.container}>
-        <WebView source={{ uri: "http://www.sidewalktoronto.com/privacy" }} />
+        <WebView source={{ uri: 'http://www.sidewalktoronto.com/privacy' }} />
         <Divider />
         <View elevation={4} style={styles.footer}>
           <Button
@@ -33,7 +33,7 @@ class PrivacyScreen extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff"
+    backgroundColor: '#fff'
   },
   footer: {
     padding: 20

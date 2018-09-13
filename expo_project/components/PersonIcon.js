@@ -1,8 +1,8 @@
-import { Icon } from "expo";
-import PropTypes from "prop-types";
-import React from "react";
+import { Icon } from 'expo';
+import PropTypes from 'prop-types';
+import React from 'react';
 
-import { Platform, View, StyleSheet } from "react-native";
+import { Platform, View, StyleSheet } from 'react-native';
 
 class PersonIcon extends React.Component {
   render() {
@@ -28,13 +28,13 @@ class PersonIcon extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: "center",
-    alignItems: "center"
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   shadow: {
     ...Platform.select({
       ios: {
-        shadowColor: "black",
+        shadowColor: 'black',
         shadowOffset: { height: 3 },
         shadowOpacity: 0.5,
         shadowRadius: 3

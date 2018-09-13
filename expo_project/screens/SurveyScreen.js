@@ -1,5 +1,5 @@
-import { Icon } from "expo";
-import React from "react";
+import { Icon } from 'expo';
+import React from 'react';
 import {
   Animated,
   PanResponder,
@@ -8,19 +8,19 @@ import {
   ScrollView,
   View,
   TouchableOpacity
-} from "react-native";
-import { Button, Paragraph } from "react-native-paper";
-import { withNavigation } from "react-navigation";
-import * as _ from "lodash";
-import moment from "moment";
-import MapWithMarkers from "../components/MapWithMarkers";
-import MarkerCarousel from "../components/MarkerCarousel";
-import Survey from "../components/Survey";
-import { iconColors } from "../constants/Colors";
-import Layout from "../constants/Layout";
-import firebase from "../lib/firebaseSingleton";
+} from 'react-native';
+import { Button, Paragraph } from 'react-native-paper';
+import { withNavigation } from 'react-navigation';
+import * as _ from 'lodash';
+import moment from 'moment';
+import MapWithMarkers from '../components/MapWithMarkers';
+import MarkerCarousel from '../components/MarkerCarousel';
+import Survey from '../components/Survey';
+import { iconColors } from '../constants/Colors';
+import Layout from '../constants/Layout';
+import firebase from '../lib/firebaseSingleton';
 
-import SurveyHeader from "../components/SurveyHeader";
+import SurveyHeader from '../components/SurveyHeader';
 
 // TODO (Ananta): shouold be dynamically set
 const MIN_DRAWER_TRANSLATE_Y = 0;
@@ -30,15 +30,7 @@ const INITIAL_DRAWER_TRANSLATE_Y = MAX_DRAWER_TRANSLATE_Y;
 
 function _markerToDataPoint(marker) {
   const dataPoint = {};
-  fields = [
-    "gender",
-    "groupSize",
-    "mode",
-    "object",
-    "posture",
-    "timestamp",
-    "location"
-  ];
+  fields = ['gender', 'groupSize', 'mode', 'object', 'posture', 'timestamp', 'location'];
   fields.forEach(field => {
     if (marker[field]) {
       dataPoint[field] = marker[field];
@@ -66,9 +58,7 @@ class Instructions extends React.Component {
           <Icon.Ionicons name="md-finger-print" color="#787878" size={24} />
         </View>
         <View style={styles.instructions}>
-          <Paragraph>
-            Hold down your finger on the map to create a new marker
-          </Paragraph>
+          <Paragraph>Hold down your finger on the map to create a new marker</Paragraph>
         </View>
       </View>
     );
@@ -106,15 +96,15 @@ class SurveyScreen extends React.Component {
 
   componentDidMount() {
     // Query for saved data
-    const studyId = this.props.navigation.getParam("studyId");
-    const surveyId = this.props.navigation.getParam("surveyId");
+    const studyId = this.props.navigation.getParam('studyId');
+    const surveyId = this.props.navigation.getParam('surveyId');
 
     this.firestore
-      .collection("study")
+      .collection('study')
       .doc(studyId)
-      .collection("survey")
+      .collection('survey')
       .doc(surveyId)
-      .collection("dataPoints")
+      .collection('dataPoints')
       .get()
       .then(querySnapshot => {
         const markers = [];
@@ -152,8 +142,7 @@ class SurveyScreen extends React.Component {
             // Respond to downward drags if they are a long distance / high velocity or the scrollview is at the top
             const hasSpaceToPanDown = this._drawerY <= MAX_DRAWER_TRANSLATE_Y;
             const isScrolledToTop = !this.state.formScrollPosition;
-            const isHeavyScroll =
-              Math.abs(gestureState.dy) > 80 || Math.abs(gestureState.vy) > 1.2;
+            const isHeavyScroll = Math.abs(gestureState.dy) > 80 || Math.abs(gestureState.vy) > 1.2;
             return hasSpaceToPanDown && (isScrolledToTop || isHeavyScroll);
           }
         }
@@ -197,9 +186,7 @@ class SurveyScreen extends React.Component {
 
   toggleDrawer() {
     const y =
-      this._drawerY === MIN_DRAWER_TRANSLATE_Y
-        ? MAX_DRAWER_TRANSLATE_Y
-        : MIN_DRAWER_TRANSLATE_Y;
+      this._drawerY === MIN_DRAWER_TRANSLATE_Y ? MAX_DRAWER_TRANSLATE_Y : MIN_DRAWER_TRANSLATE_Y;
     Animated.timing(this.state.pan, {
       toValue: { x: 0, y },
       duration: 200,
@@ -229,8 +216,8 @@ class SurveyScreen extends React.Component {
     const marker = _.find(markersCopy, {
       id
     });
-    const studyId = this.props.navigation.getParam("studyId");
-    const surveyId = this.props.navigation.getParam("surveyId");
+    const studyId = this.props.navigation.getParam('studyId');
+    const surveyId = this.props.navigation.getParam('surveyId');
 
     if (marker) {
       marker[key] = value;
@@ -238,11 +225,11 @@ class SurveyScreen extends React.Component {
         markers: markersCopy
       });
       this.firestore
-        .collection("study")
+        .collection('study')
         .doc(studyId)
-        .collection("survey")
+        .collection('survey')
         .doc(surveyId)
-        .collection("dataPoints")
+        .collection('dataPoints')
         .doc(marker.id)
         .set(_markerToDataPoint(marker));
 
@@ -286,12 +273,12 @@ class SurveyScreen extends React.Component {
   }
 
   createNewMarker(location, color) {
-    const studyId = this.props.navigation.getParam("studyId");
-    const surveyId = this.props.navigation.getParam("surveyId");
+    const studyId = this.props.navigation.getParam('studyId');
+    const surveyId = this.props.navigation.getParam('surveyId');
     const markersCopy = [...this.state.markers];
     const date = moment();
-    const dateLabel = date.format("HH:mm");
-    const title = "Person " + (markersCopy.length + 1);
+    const dateLabel = date.format('HH:mm');
+    const title = 'Person ' + (markersCopy.length + 1);
 
     const marker = {
       location,
@@ -303,28 +290,25 @@ class SurveyScreen extends React.Component {
     // TODO (Seabass or Ananta): Figure out a way to get faster UI feedback
     // Would be nice for UI to optimistically render before firestore returns
     this.firestore
-      .collection("study")
+      .collection('study')
       .doc(studyId)
-      .collection("survey")
+      .collection('survey')
       .doc(surveyId)
-      .collection("dataPoints")
+      .collection('dataPoints')
       .add(_markerToDataPoint(marker))
       .then(doc => {
         const { id, timestamp } = doc;
         marker.id = id;
         marker.timestamp = timestamp;
         markersCopy.push(marker);
-        this.setState(
-          { markers: markersCopy, activeMarkerId: id },
-          this.resetDrawer
-        );
+        this.setState({ markers: markersCopy, activeMarkerId: id }, this.resetDrawer);
       });
   }
 
   setMarkerLocation(id, location) {
     // TODO: add logic for updating in db
-    const studyId = this.props.navigation.getParam("studyId");
-    const surveyId = this.props.navigation.getParam("surveyId");
+    const studyId = this.props.navigation.getParam('studyId');
+    const surveyId = this.props.navigation.getParam('surveyId');
     const markersCopy = [...this.state.markers];
     const marker = _.find(markersCopy, { id });
 
@@ -335,11 +319,11 @@ class SurveyScreen extends React.Component {
       });
 
       this.firestore
-        .collection("study")
+        .collection('study')
         .doc(studyId)
-        .collection("survey")
+        .collection('survey')
         .doc(surveyId)
-        .collection("dataPoints")
+        .collection('dataPoints')
         .doc(marker.id)
         .update({ location: marker.location });
     }
@@ -359,10 +343,7 @@ class SurveyScreen extends React.Component {
           onMarkerDragEnd={this.setMarkerLocation}
         />
         <Animated.View
-          style={[
-            styles.drawer,
-            { transform: this.state.pan.getTranslateTransform() }
-          ]}
+          style={[styles.drawer, { transform: this.state.pan.getTranslateTransform() }]}
           {...this._panResponder.panHandlers}
         >
           <View style={[styles.drawerHeader]}>
@@ -390,17 +371,8 @@ class SurveyScreen extends React.Component {
               showsHorizontalScrollIndicator={false}
               showsVerticalScrollIndicator={false}
             >
-              <Survey
-                activeMarker={activeMarker}
-                onSelect={this.setFormResponse}
-              />
-              <Button
-                primary
-                raised
-                dark
-                onPress={() => this.resetDrawer()}
-                style={{ margin: 20 }}
-              >
+              <Survey activeMarker={activeMarker} onSelect={this.setFormResponse} />
+              <Button primary raised dark onPress={() => this.resetDrawer()} style={{ margin: 20 }}>
                 Done
               </Button>
             </ScrollView>
@@ -415,20 +387,20 @@ class SurveyScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white"
+    backgroundColor: 'white'
   },
   drawer: {
-    position: "absolute",
+    position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    backgroundColor: "white",
+    backgroundColor: 'white',
     height: Layout.drawer.height,
     ...Platform.select({
       ios: {
-        shadowColor: "black",
+        shadowColor: 'black',
         shadowOffset: { height: -3 },
         shadowOpacity: 0.2,
         shadowRadius: 3
@@ -439,37 +411,37 @@ const styles = StyleSheet.create({
     })
   },
   drawerHeader: {
-    alignSelf: "stretch"
+    alignSelf: 'stretch'
   },
   formContainer: {
-    alignSelf: "stretch"
+    alignSelf: 'stretch'
   },
   bottomGuard: {
     // This view adds whitespace below the drawer, in case the user over-pans it
-    position: "absolute",
+    position: 'absolute',
     left: 0,
     right: 0,
     bottom: -500,
     height: 500,
-    backgroundColor: "white"
+    backgroundColor: 'white'
   },
   indicator: {
     width: 30,
     height: 5,
-    alignSelf: "center",
+    alignSelf: 'center',
     marginTop: 10,
-    backgroundColor: "#D8D8D8",
+    backgroundColor: '#D8D8D8',
     borderRadius: 10
   },
   instructionsContainer: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "center",
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
     margin: 10,
     padding: 10,
     borderRadius: 20,
-    backgroundColor: "#E6E4E0"
+    backgroundColor: '#E6E4E0'
   },
   instructionsIcon: {
     marginRight: 10
