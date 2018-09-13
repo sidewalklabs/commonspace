@@ -1,10 +1,10 @@
-import PropTypes from "prop-types";
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import Selectable from "../components/Selectable";
-import * as _ from "lodash";
+import PropTypes from 'prop-types';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import Selectable from '../components/Selectable';
+import * as _ from 'lodash';
 
-import QUESTION_CONFIG from "../config/questions";
+import QUESTION_CONFIG from '../config/questions';
 
 class Survey extends React.Component {
   render() {
@@ -37,7 +37,7 @@ class Survey extends React.Component {
 
 const styles = StyleSheet.create({
   titleContainer: { paddingVertical: 10, paddingHorizontal: 20 },
-  title: { fontWeight: "bold" }
+  title: { fontWeight: 'bold' }
 });
 
 Survey.propTypes = {

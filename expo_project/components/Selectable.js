@@ -1,16 +1,10 @@
-import PropTypes from "prop-types";
-import React from "react";
+import PropTypes from 'prop-types';
+import React from 'react';
 
-import {
-  View,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity
-} from "react-native";
-import colors from "../constants/Colors";
+import { View, ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import colors from '../constants/Colors';
 
-import * as _ from "lodash";
+import * as _ from 'lodash';
 
 class Selectable extends React.Component {
   constructor(props) {
@@ -30,21 +24,11 @@ class Selectable extends React.Component {
   }
 
   render() {
-    const {
-      onSelectablePress,
-      selectedValue,
-      selectedColor,
-      title,
-      options
-    } = this.props;
+    const { onSelectablePress, selectedValue, selectedColor, title, options } = this.props;
     return (
       <View style={styles.container} onLayout={this.onLayout}>
         <Text style={styles.title}>{title}</Text>
-        <ScrollView
-          style={styles.selectable}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-        >
+        <ScrollView style={styles.selectable} horizontal showsHorizontalScrollIndicator={false}>
           {_.map(options, (option, index) => {
             const { value, label } = option;
             const selected = value === selectedValue;
@@ -60,9 +44,7 @@ class Selectable extends React.Component {
                   onSelectablePress(value, this.state.height);
                 }}
               >
-                <Text style={[styles.pillText, selected && { color: "white" }]}>
-                  {label}
-                </Text>
+                <Text style={[styles.pillText, selected && { color: 'white' }]}>{label}</Text>
               </TouchableOpacity>
             );
           })}
@@ -77,13 +59,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10
   },
   selectable: {
-    flexDirection: "row"
+    flexDirection: 'row'
   },
   selectableCell: {
     borderWidth: 1,
-    backgroundColor: "#FAFAFA",
+    backgroundColor: '#FAFAFA',
     borderRadius: 3,
-    borderColor: "rgba(0, 0, 0, 0.0980392)",
+    borderColor: 'rgba(0, 0, 0, 0.0980392)',
     padding: 5,
     marginRight: 5,
     marginTop: 10
@@ -92,7 +74,7 @@ const styles = StyleSheet.create({
     marginLeft: 20
   },
   pillText: {
-    fontFamily: "monaco"
+    fontFamily: 'monaco'
   },
   title: {
     marginBottom: 5,

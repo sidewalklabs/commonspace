@@ -1,19 +1,19 @@
-import { createStackNavigator, createSwitchNavigator } from "react-navigation";
-import Theme from "../constants/Theme";
-import AuthScreen from "../screens/AuthScreen";
-import AuthLoadingScreen from "../screens/AuthLoadingScreen";
-import ComingSoonScreen from "../screens/ComingSoonScreen";
-import SurveyScreen from "../screens/SurveyScreen";
-import StudyIndexScreen from "../screens/StudyIndexScreen";
-import PrivacyScreen from "../screens/PrivacyScreen";
+import { createStackNavigator, createSwitchNavigator } from 'react-navigation';
+import Theme from '../constants/Theme';
+import AuthScreen from '../screens/AuthScreen';
+import AuthLoadingScreen from '../screens/AuthLoadingScreen';
+import ComingSoonScreen from '../screens/ComingSoonScreen';
+import SurveyScreen from '../screens/SurveyScreen';
+import StudyIndexScreen from '../screens/StudyIndexScreen';
+import PrivacyScreen from '../screens/PrivacyScreen';
 
 const navigationOptions = {
   headerStyle: {
     backgroundColor: Theme.colors.primary
   },
-  headerTintColor: "#fff",
+  headerTintColor: '#fff',
   headerTitleStyle: {
-    fontWeight: "600",
+    fontWeight: '600',
     fontFamily: Theme.fonts.medium
   }
 };
@@ -25,7 +25,7 @@ const AppStack = createStackNavigator(
     ComingSoonScreen
   },
   {
-    initialRouteName: "StudyIndexScreen",
+    initialRouteName: 'StudyIndexScreen',
     navigationOptions
   }
 );
@@ -35,7 +35,7 @@ const AuthStack = createStackNavigator(
     PrivacyScreen
   },
   {
-    initialRouteName: "AuthScreen",
+    initialRouteName: 'AuthScreen',
     navigationOptions
   }
 );
@@ -47,6 +47,6 @@ export default createSwitchNavigator(
     Auth: AuthStack
   },
   {
-    initialRouteName: "AuthLoading"
+    initialRouteName: 'AuthLoading'
   }
 );

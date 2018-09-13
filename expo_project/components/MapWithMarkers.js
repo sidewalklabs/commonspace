@@ -1,11 +1,11 @@
-import { MapView } from "expo";
-import PropTypes from "prop-types";
-import React from "react";
-import { Platform, StyleSheet, TouchableOpacity } from "react-native";
-import { AnimatedCircularProgress } from "react-native-circular-progress";
-import { iconColors } from "../constants/Colors";
-import MapConfig from "../constants/Map";
-import PersonIcon from "../components/PersonIcon";
+import { MapView } from 'expo';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { Platform, StyleSheet, TouchableOpacity } from 'react-native';
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
+import { iconColors } from '../constants/Colors';
+import MapConfig from '../constants/Map';
+import PersonIcon from '../components/PersonIcon';
 
 // NOTE: A longPress is more like 500ms,
 // however there's a delay between when the longPress is registered
@@ -69,10 +69,7 @@ class MapWithMarkers extends React.Component {
       <TouchableOpacity
         activeOpacity={1}
         onPressIn={e => {
-          this.startProgressAnimation(
-            e.nativeEvent.locationX,
-            e.nativeEvent.locationY
-          );
+          this.startProgressAnimation(e.nativeEvent.locationX, e.nativeEvent.locationY);
         }}
         onPressOut={e => {
           this.stopProgressAnimation();
@@ -83,9 +80,7 @@ class MapWithMarkers extends React.Component {
           style={styles.mapStyle}
           provider="google"
           onPress={() => onMapPress()}
-          onLongPress={e =>
-            onMapLongPress(e.nativeEvent.coordinate, this.state.nextMarkerColor)
-          }
+          onLongPress={e => onMapLongPress(e.nativeEvent.coordinate, this.state.nextMarkerColor)}
           initialRegion={this.state.region}
           showsUserLocation
           zoomEnabled
@@ -99,7 +94,7 @@ class MapWithMarkers extends React.Component {
           />
           {markers.map(marker => {
             const selected = marker.id === activeMarkerId;
-            const key = marker.id + (selected ? "-selected" : ""); //trigger a re render when switching states, so it recenters itself
+            const key = marker.id + (selected ? '-selected' : ''); //trigger a re render when switching states, so it recenters itself
             return (
               <MapView.Marker
                 coordinate={marker.location}
@@ -107,16 +102,11 @@ class MapWithMarkers extends React.Component {
                 identifier={marker.id}
                 stopPropagation
                 draggable
-                onDragEnd={e =>
-                  onMarkerDragEnd(e.nativeEvent.id, e.nativeEvent.coordinate)
-                }
+                onDragEnd={e => onMarkerDragEnd(e.nativeEvent.id, e.nativeEvent.coordinate)}
                 onPress={() => onMarkerPress(marker.id)}
                 anchor={{ x: 0.5, y: 0.5 }}
               >
-                <PersonIcon
-                  backgroundColor={marker.color}
-                  size={selected ? 24 : 16}
-                />
+                <PersonIcon backgroundColor={marker.color} size={selected ? 24 : 16} />
               </MapView.Marker>
             );
           })}
@@ -147,7 +137,7 @@ class MapWithMarkers extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    position: "relative"
+    position: 'relative'
   },
   mapStyle: {
     ...Platform.select({
@@ -155,7 +145,7 @@ const styles = StyleSheet.create({
         flex: 1
       },
       android: {
-        position: "absolute",
+        position: 'absolute',
         top: 0,
         bottom: 0,
         left: 0,
@@ -164,9 +154,9 @@ const styles = StyleSheet.create({
     })
   },
   circularProgress: {
-    alignSelf: "center",
-    position: "absolute",
-    backgroundColor: "transparent"
+    alignSelf: 'center',
+    position: 'absolute',
+    backgroundColor: 'transparent'
   }
 });
 

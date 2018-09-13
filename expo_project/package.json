@@ -2,6 +2,7 @@
   "main": "node_modules/expo/AppEntry.js",
   "private": true,
   "scripts": {
+    "format": "prettier --config prettier.config.json --write \"**/*.js\"",
     "test": "node ./node_modules/jest/bin/jest.js --watchAll"
   },
   "jest": {
