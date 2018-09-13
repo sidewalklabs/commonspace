@@ -5,7 +5,7 @@ export default [
     options: [
       { value: 'male', label: 'Male' },
       { value: 'female', label: 'Female' },
-      { value: 'unknown', label: 'Unknown' },
+      { value: 'unknown', label: 'Other/ Unsure' },
     ],
   },
   {
@@ -19,31 +19,14 @@ export default [
     ],
   },
   {
-    questionKey: 'mode',
-    questionLabel: 'Mode',
-    options: [
-      { value: 'pedestrian', label: 'Pedestrian' },
-      { value: 'bicyclist', label: 'Bicyclist' },
-    ],
-  },
-  {
-    questionKey: 'groupSize',
-    questionLabel: 'Group Size',
-    options: [
-      { value: 'pair', label: 'pair' },
-      { value: 'group', label: 'group' },
-      { value: 'crowd', label: 'crowd' },
-    ],
-  },
-  {
     questionKey: 'posture',
     questionLabel: 'Posture',
     options: [
-      { value: 'leaning', label: 'Leaning' },
-      { value: 'lying', label: 'Lying' },
-      { value: 'sitting', label: 'Sitting' },
-      { value: 'groundSitting', label: 'Sitting on the Ground' },
       { value: 'standing', label: 'Standing' },
+      { value: 'sittingInformal', label: 'Sitting (informal)' },
+      { value: 'sittingFormal', label: 'Sitting (formal)' },
+      { value: 'lying', label: 'Lying' },
+      { value: 'multiple', label: 'Multiple' },
     ],
   },
   {
@@ -53,19 +36,11 @@ export default [
       { value: 'commercial', label: 'Commercial' },
       { value: 'consuming', label: 'Consuming' },
       { value: 'conversing', label: 'Conversing' },
-      { value: 'electronics', label: 'Electronics' },
-      { value: 'pets', label: 'Pets' },
-      { value: 'idle', label: 'Idle' },
-      { value: 'running', label: 'Running' },
-    ],
-  },
-  {
-    questionKey: 'object',
-    questionLabel: 'Object',
-    options: [
-      { value: 'luggage', label: 'luggage' },
-      { value: 'pushcart', label: 'Push Cart' },
-      { value: 'stroller', label: 'Stroller' },
+      { value: 'cultural', label: 'Cultural' },
+      { value: 'electronicEngagement', label: 'Electronic Engagement' },
+      { value: 'recreationActive', label: 'Recreation (active)' },
+      { value: 'recreationPassive', label: 'Recreation (passive)' },
+      { value: 'workingCivic', label: 'Working (civic)' },
     ],
   },
 ];
