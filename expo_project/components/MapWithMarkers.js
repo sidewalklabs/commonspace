@@ -108,6 +108,19 @@ class MapWithMarkers extends React.Component {
               </MapView.Marker>
             );
           })}
+          {MapConfig.features.map((feature, index) => {
+            const { latitude, longitude, title, description } = feature;
+            const coordinate = { latitude, longitude };
+            return (
+              <MapView.Marker
+                coordinate={coordinate}
+                key={title + index}
+                title={title}
+                description={description}
+                stopPropagation
+              />
+            );
+          })}
         </MapView>
         {this.state.circularProgressLocation && (
           <AnimatedCircularProgress
