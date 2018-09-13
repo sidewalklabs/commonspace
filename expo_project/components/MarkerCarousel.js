@@ -18,7 +18,7 @@ class MarkerCarousel extends React.Component {
     super(props);
 
     this.state = {
-      viewableIndices: []
+      viewableIndices: [],
     };
     this.onViewableItemsChanged = this.onViewableItemsChanged.bind(this);
   }
@@ -37,7 +37,7 @@ class MarkerCarousel extends React.Component {
       this.props.activeMarkerId !== prevProps.activeMarkerId
     ) {
       const index = _.findIndex(this.props.markers, {
-        id: this.props.activeMarkerId
+        id: this.props.activeMarkerId,
       });
       if (index > -1) {
         // Only scroll if the new selection isn't already visible
@@ -45,7 +45,7 @@ class MarkerCarousel extends React.Component {
           this.flatList.scrollToIndex({
             index,
             viewPosition: 0.5,
-            animated: true
+            animated: true,
           });
         }
       }
@@ -73,7 +73,7 @@ class MarkerCarousel extends React.Component {
         getItemLayout={(data, index) => ({
           length: CAROUSEL_ITEM_LENGTH,
           offset: CAROUSEL_ITEM_LENGTH * index,
-          index
+          index,
         })}
         onViewableItemsChanged={this.onViewableItemsChanged}
         viewabilityConfig={VIEWABILITY_CONFIG}
@@ -83,8 +83,7 @@ class MarkerCarousel extends React.Component {
             <TouchableOpacity
               Index={index}
               style={[styles.cell, selected && { borderBottomColor: item.color }]}
-              onPress={() => onMarkerPress(item.id)}
-            >
+              onPress={() => onMarkerPress(item.id)}>
               <PersonIcon backgroundColor={item.color} size={CAROUSEL_ICON_SIZE} />
             </TouchableOpacity>
           );
@@ -97,7 +96,7 @@ class MarkerCarousel extends React.Component {
 const styles = StyleSheet.create({
   container: {
     borderBottomColor: 'rgba(0, 0, 0, 0.12)',
-    borderBottomWidth: 1
+    borderBottomWidth: 1,
   },
   cell: {
     padding: CAROUSEL_ITEM_PADDING,
@@ -105,8 +104,8 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
     borderBottomWidth: 4,
     justifyContent: 'center',
-    alignItems: 'center'
-  }
+    alignItems: 'center',
+  },
 });
 
 MarkerCarousel.propTypes = {
@@ -116,11 +115,11 @@ MarkerCarousel.propTypes = {
       color: PropTypes.string,
       title: PropTypes.string,
       dateLabel: PropTypes.string,
-      id: PropTypes.string
-    })
+      id: PropTypes.string,
+    }),
   ).isRequired,
   activeMarkerId: PropTypes.string,
-  onMarkerPress: PropTypes.func.isRequired
+  onMarkerPress: PropTypes.func.isRequired,
 };
 
 export default MarkerCarousel;

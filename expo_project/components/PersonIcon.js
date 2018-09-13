@@ -16,10 +16,9 @@ class PersonIcon extends React.Component {
             backgroundColor,
             height: size,
             width: size,
-            borderRadius: size / 2
-          }
-        ]}
-      >
+            borderRadius: size / 2,
+          },
+        ]}>
         <Icon.Ionicons name="md-person" size={size * 0.5} color="white" />
       </View>
     );
@@ -29,7 +28,7 @@ class PersonIcon extends React.Component {
 const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   shadow: {
     ...Platform.select({
@@ -37,20 +36,20 @@ const styles = StyleSheet.create({
         shadowColor: 'black',
         shadowOffset: { height: 3 },
         shadowOpacity: 0.5,
-        shadowRadius: 3
+        shadowRadius: 3,
       },
       android: {
         // TODO: verify
-        elevation: 20
-      }
-    })
-  }
+        elevation: 20,
+      },
+    }),
+  },
 });
 
 PersonIcon.propTypes = {
   size: PropTypes.number.isRequired,
   backgroundColor: PropTypes.string.isRequired,
-  shadow: PropTypes.bool
+  shadow: PropTypes.bool,
 };
 
 export default PersonIcon;

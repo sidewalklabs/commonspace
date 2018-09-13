@@ -7,7 +7,7 @@ import {
   StyleSheet,
   ScrollView,
   View,
-  TouchableOpacity
+  TouchableOpacity,
 } from 'react-native';
 import { Button, Paragraph } from 'react-native-paper';
 import { withNavigation } from 'react-navigation';
@@ -67,7 +67,7 @@ class Instructions extends React.Component {
 
 class SurveyScreen extends React.Component {
   static navigationOptions = {
-    headerTitle: <SurveyHeader />
+    headerTitle: <SurveyHeader />,
   };
 
   constructor(props) {
@@ -81,7 +81,7 @@ class SurveyScreen extends React.Component {
       activeMarkerId: null,
       markers: [],
       formScrollPosition: 0,
-      pan: new Animated.ValueXY({ x: 0, y: INITIAL_DRAWER_TRANSLATE_Y })
+      pan: new Animated.ValueXY({ x: 0, y: INITIAL_DRAWER_TRANSLATE_Y }),
     };
     this._drawerY = INITIAL_DRAWER_TRANSLATE_Y;
     this.state.pan.addListener(value => (this._drawerY = value.y));
@@ -113,7 +113,7 @@ class SurveyScreen extends React.Component {
           const marker = {
             id: doc.id,
             ...doc.data(),
-            color: _.sample(_.values(iconColors))
+            color: _.sample(_.values(iconColors)),
           };
           markers.push(marker);
         });
@@ -168,19 +168,19 @@ class SurveyScreen extends React.Component {
         Animated.spring(this.state.pan, {
           toValue: {
             x: 0,
-            y
+            y,
           },
           useNativeDriver: true,
-          friction: 5
+          friction: 5,
         }).start();
 
         if (this.state.formScrollPosition) {
           this.scrollView.scrollTo({
             y: 0,
-            animated: false
+            animated: false,
           });
         }
-      }
+      },
     });
   }
 
@@ -190,7 +190,7 @@ class SurveyScreen extends React.Component {
     Animated.timing(this.state.pan, {
       toValue: { x: 0, y },
       duration: 200,
-      useNativeDriver: true
+      useNativeDriver: true,
     }).start();
 
     if (this.state.formScrollPosition) {
@@ -203,7 +203,7 @@ class SurveyScreen extends React.Component {
       Animated.timing(this.state.pan, {
         toValue: { x: 0, y },
         duration: 200,
-        useNativeDriver: true
+        useNativeDriver: true,
       }).start();
     }
     if (this.state.formScrollPosition) {
@@ -214,7 +214,7 @@ class SurveyScreen extends React.Component {
   setFormResponse(id, key, value, selectableHeight) {
     const markersCopy = [...this.state.markers];
     const marker = _.find(markersCopy, {
-      id
+      id,
     });
     const studyId = this.props.navigation.getParam('studyId');
     const surveyId = this.props.navigation.getParam('surveyId');
@@ -222,7 +222,7 @@ class SurveyScreen extends React.Component {
     if (marker) {
       marker[key] = value;
       this.setState({
-        markers: markersCopy
+        markers: markersCopy,
       });
       this.firestore
         .collection('study')
@@ -241,7 +241,7 @@ class SurveyScreen extends React.Component {
         Animated.timing(this.state.pan, {
           toValue: { x: 0, y: newDrawerOffset },
           duration: 200,
-          useNativeDriver: true
+          useNativeDriver: true,
         }).start();
       } else if (currentDrawerOffset > MIN_DRAWER_TRANSLATE_Y) {
         // Animate drawer to the top
@@ -250,14 +250,14 @@ class SurveyScreen extends React.Component {
         Animated.timing(this.state.pan, {
           toValue: { x: 0, y: MIN_DRAWER_TRANSLATE_Y },
           duration: 200,
-          useNativeDriver: true
+          useNativeDriver: true,
         }).start();
         this.scrollView.scrollTo({
-          y: currentScrollPosition + selectableHeight - remainder
+          y: currentScrollPosition + selectableHeight - remainder,
         });
       } else {
         this.scrollView.scrollTo({
-          y: currentScrollPosition + selectableHeight
+          y: currentScrollPosition + selectableHeight,
         });
       }
     }
@@ -284,7 +284,7 @@ class SurveyScreen extends React.Component {
       location,
       color,
       title,
-      dateLabel
+      dateLabel,
     };
 
     // TODO (Seabass or Ananta): Figure out a way to get faster UI feedback
@@ -315,7 +315,7 @@ class SurveyScreen extends React.Component {
     if (marker) {
       marker.location = location;
       this.setState({
-        markers: markersCopy
+        markers: markersCopy,
       });
 
       this.firestore
@@ -344,8 +344,7 @@ class SurveyScreen extends React.Component {
         />
         <Animated.View
           style={[styles.drawer, { transform: this.state.pan.getTranslateTransform() }]}
-          {...this._panResponder.panHandlers}
-        >
+          {...this._panResponder.panHandlers}>
           <View style={[styles.drawerHeader]}>
             <Indicator onPress={this.toggleDrawer} />
             {activeMarkerId ? (
@@ -364,13 +363,12 @@ class SurveyScreen extends React.Component {
               ref={ref => (this.scrollView = ref)}
               onScroll={e => {
                 this.setState({
-                  formScrollPosition: e.nativeEvent.contentOffset.y
+                  formScrollPosition: e.nativeEvent.contentOffset.y,
                 });
               }}
               scrollEventThrottle={0}
               showsHorizontalScrollIndicator={false}
-              showsVerticalScrollIndicator={false}
-            >
+              showsVerticalScrollIndicator={false}>
               <Survey activeMarker={activeMarker} onSelect={this.setFormResponse} />
               <Button primary raised dark onPress={() => this.resetDrawer()} style={{ margin: 20 }}>
                 Done
@@ -387,7 +385,7 @@ class SurveyScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white'
+    backgroundColor: 'white',
   },
   drawer: {
     position: 'absolute',
@@ -403,18 +401,18 @@ const styles = StyleSheet.create({
         shadowColor: 'black',
         shadowOffset: { height: -3 },
         shadowOpacity: 0.2,
-        shadowRadius: 3
+        shadowRadius: 3,
       },
       android: {
-        elevation: 20
-      }
-    })
+        elevation: 20,
+      },
+    }),
   },
   drawerHeader: {
-    alignSelf: 'stretch'
+    alignSelf: 'stretch',
   },
   formContainer: {
-    alignSelf: 'stretch'
+    alignSelf: 'stretch',
   },
   bottomGuard: {
     // This view adds whitespace below the drawer, in case the user over-pans it
@@ -423,7 +421,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: -500,
     height: 500,
-    backgroundColor: 'white'
+    backgroundColor: 'white',
   },
   indicator: {
     width: 30,
@@ -431,7 +429,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 10,
     backgroundColor: '#D8D8D8',
-    borderRadius: 10
+    borderRadius: 10,
   },
   instructionsContainer: {
     display: 'flex',
@@ -441,14 +439,14 @@ const styles = StyleSheet.create({
     margin: 10,
     padding: 10,
     borderRadius: 20,
-    backgroundColor: '#E6E4E0'
+    backgroundColor: '#E6E4E0',
   },
   instructionsIcon: {
-    marginRight: 10
+    marginRight: 10,
   },
   instructions: {
-    flexShrink: 1
-  }
+    flexShrink: 1,
+  },
 });
 
 export default withNavigation(SurveyScreen);

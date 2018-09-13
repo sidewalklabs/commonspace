@@ -10,7 +10,7 @@ class SurveyHeader extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      timer: SURVEY_LENGTH_MS
+      timer: SURVEY_LENGTH_MS,
     };
   }
 
@@ -32,8 +32,8 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
     fontSize: 24,
-    fontFamily: Theme.fonts.medium
-  }
+    fontFamily: Theme.fonts.medium,
+  },
 });
 
 export default SurveyHeader;

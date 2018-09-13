@@ -8,7 +8,7 @@ import firebase from '../lib/firebaseSingleton';
 
 class AuthScreen extends React.Component {
   static navigationOptions = {
-    header: null
+    header: null,
   };
 
   constructor(props) {
@@ -22,7 +22,7 @@ class AuthScreen extends React.Component {
         iosClientId: '8677857213-j9dn9ebe425td60q8c9tc20gomjbojip.apps.googleusercontent.com',
         iosStandaloneAppClientId:
           '8677857213-s1rosh2e597b3nccpqv67dbfpmc3q53o.apps.googleusercontent.com',
-        scopes: ['profile', 'email']
+        scopes: ['profile', 'email'],
       });
 
       if (type === 'success') {
@@ -62,8 +62,9 @@ class AuthScreen extends React.Component {
           dark
           theme={{ ...Theme, roundness: 100 }}
           onPress={this._signIn}
-          icon={({ size, color }) => <Icon.Ionicons name="logo-google" size={size} color={color} />}
-        >
+          icon={({ size, color }) => (
+            <Icon.Ionicons name="logo-google" size={size} color={color} />
+          )}>
           Connect with Google
         </Button>
         <Button primary onPress={() => this.props.navigation.navigate('PrivacyScreen')}>
@@ -79,16 +80,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   title: {
     fontSize: 25,
-    marginHorizontal: 50
+    marginHorizontal: 50,
   },
   subheading: {
     marginHorizontal: 50,
-    marginVertical: 30
-  }
+    marginVertical: 30,
+  },
 });
 
 export default withNavigation(AuthScreen);

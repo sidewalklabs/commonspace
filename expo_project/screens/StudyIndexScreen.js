@@ -7,7 +7,7 @@ import { Button, Caption, Card, CardContent, Divider, Title, Paragraph } from 'r
 
 class SurveyIndexScreen extends React.Component {
   static navigationOptions = {
-    title: 'Studies'
+    title: 'Studies',
   };
 
   _signOut = async () => {
@@ -46,10 +46,9 @@ class SurveyIndexScreen extends React.Component {
                               studyName: study.studyName,
                               studyAuthor: study.studyAuthor,
                               surveyType: survey.type,
-                              surveyTitle: survey.title
+                              surveyTitle: survey.title,
                             })
-                          }
-                        >
+                          }>
                           Start
                         </Button>
                       </View>
@@ -72,31 +71,31 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: 'white',
     flex: 1,
-    padding: 10
+    padding: 10,
   },
   studyHeader: {
-    paddingBottom: 10
+    paddingBottom: 10,
   },
   sectionTitle: {
     backgroundColor: 'white',
     fontWeight: 'bold',
-    marginBottom: 10
+    marginBottom: 10,
   },
   surveyRow: {
     paddingVertical: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   surveyTitle: {
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   contentWrapper: {
-    flex: 1
+    flex: 1,
   },
   buttonWrapper: {
-    marginLeft: 10
-  }
+    marginLeft: 10,
+  },
 });
 
 export default withNavigation(SurveyIndexScreen);
