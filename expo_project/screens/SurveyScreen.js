@@ -19,6 +19,7 @@ import PersonIcon from '../components/PersonIcon';
 import Survey from '../components/Survey';
 import Layout from '../constants/Layout';
 import { firestore } from '../lib/firebaseSingleton';
+import * as uuid from 'uuid';
 
 import Theme from '../constants/Theme';
 import NoteModal from '../components/NoteModal';
@@ -308,8 +309,10 @@ class SurveyScreen extends React.Component {
     const date = moment();
     const dateLabel = date.format('HH:mm');
     const title = 'Person ' + (markersCopy.length + 1);
+    const id = uuid.v4();
 
     const marker = {
+      dataPointId: id,
       location,
       color,
       title,

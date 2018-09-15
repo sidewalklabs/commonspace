@@ -11,7 +11,7 @@ export enum StudyScale {
     singleSite
 }
 
-// TODO: should each objet contain reference Ids?
+
 export interface Study {
     studyId: string;
     title?: string;
@@ -61,16 +61,67 @@ export interface Survey {
     notes?: string;
 }
 
-// todo use the uuid from user table, handle email matching outside of this
 export interface StudyAccess {
     userEmail: string;
     studyId: string;
 }
 
-export type GehlFields = 'gender' | 'age' | 'mode' | 'posture' | 'activities' | 'groups' | 'objects' | 'location';
+const validDataPointProperties = new Set([
+    'survey_id',
+    'data_point_id',
+    'gender',
+    'age',
+    'mode',
+    'posture',
+    'activities',
+    'groups',
+    'object',
+    'location'
+]);
+
+// export type Gender = 'male' | 'female' | 'unknown';
+// export type Age = 'age_0-14' | 'age_15-24' | 'age_25-64' | 'age_65+';
+// export type Posture = 'standing' | 'sitting_formal' | 'sitting_informal' | 'lying' | 'multiple';
+// export type Activity = 'commercial' | 'consuming' | 'conversing' |  'cultural' | 'electronic_engagement' | 'recreation_active'| 'recreation_passive'| 'working_civic';
+// export type Group ='group_1' | 'group_2' | 'group_3-7' | 'group_8+';
+
+// export interface DataPoint {
+//     gender?: Gender;
+//     age?: Age;
+//     mode?: string;
+//     posture?: Posture;
+//     activities?: Activity;
+//     groups?: Group;
+//     objects?: string;
+//     location?: string;
+// }
+
+export type GehlFields = 'gender' | 'age' | 'mode' | 'posture' | 'activities' | 'groups' | 'objects' | 'location' | 'note';
 
 function setString(s: any) {
     return Array.from(s).toString();
+}
+
+function flatMapper(someMap: any, f: any) {
+    return Object.keys(someMap).map(key => f(key)).filter(x => x !== undefined);
+}
+
+export function javascriptArrayToPostgresArray(xs) {
+    const arrayElements = xs.map(x => {
+        if (x === null) {
+            throw new Error(`Cannot convert ${JSON.stringify(xs)} into a postgres array because the array contrains the value null.`)
+        }
+        else if (typeof x === 'string') {
+            return `'${x}'`;
+        } else if (Array.isArray(x)) {
+            return `${javascriptArrayToPostgresArray(x)}`
+        } else if (typeof x === 'object') {
+            return x.toString();
+        } else {
+            return x;
+        }
+    }).join(', ');
+    return `Array[${arrayElements}]`;
 }
 
 function digitToString(d: string) {
@@ -103,8 +154,9 @@ const genderLocationArray: GehlFields[] = ['gender', 'location'];
 const genderLocation: Set<GehlFields> = new Set(genderLocationArray);
 // to do this is very brittle, how do you now mess up objects vs object?
 // also how about the connection between the enums defined at database creation time?
-const allGehlFieldsArray: GehlFields[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'objects', 'location']
+const allGehlFieldsArray: GehlFields[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'objects', 'location', 'note']
 const allGehlFields: Set<GehlFields> = new Set(allGehlFieldsArray);
+const allGehlFieldsStrings: Set<string> = allGehlFields;
 
 function createNewTableFromGehlFields(study: Study, tablename: string, fields: GehlFields[]) {
     const asSet = new Set(fields);
@@ -112,31 +164,34 @@ function createNewTableFromGehlFields(study: Study, tablename: string, fields: G
     switch (comparisionString) {
         case setString(genderLocation):
             return `CREATE TABLE ${tablename} (
-                       survey_id UUID references data_collection.survey(survey_id) NOT NULL,
-                       gender data_collection.gender,
-                       location geometry
+                    survey_id UUID references data_collection.survey(survey_id) NOT NULL,
+                    data_point_id UUID PRIMARY KEY NOT NULL,
+                    gender data_collection.gender,
+                    location geometry
                     )`;
         case setString(allGehlFields):
             return `CREATE TABLE ${tablename} (
-                       survey_id UUID references data_collection.survey(survey_id) NOT NULL,
-                       gender data_collection.gender,
-                       age data_collection.age,
-                       mode data_collection.mode,
-                       posture data_collection.posture,
-                       activities data_collection.activities,
-                       groups data_collection.groups,
-                       object data_collection.objects,
-                       location geometry
+                    survey_id UUID references data_collection.survey(survey_id) NOT NULL,
+                    data_point_id UUID PRIMARY KEY NOT NULL,
+                    gender data_collection.gender,
+                    age varchar(64),
+                    mode data_collection.mode,
+                    posture data_collection.posture,
+                    activities data_collection.activities[],
+                    groups data_collection.groups,
+                    object data_collection.objects,
+                    location geometry,
+                    note text
                     )`;
         default:
             console.error(new Set(fields));
-            throw new Error(`no table possible for selected fields: ${fields}`);
+            throw new Error(`no table possible for selected fields: ${fields} `);
     }
 }
 
 function executeQueryInSearchPath(searchPath: string[], query: string) {
-    const searchPathQuery = `SET search_path TO ${searchPath.join(', ')};`;
-    return `${searchPathQuery} ${query}`;
+    const searchPathQuery = `SET search_path TO ${searchPath.join(', ')}; `;
+    return `${searchPathQuery} ${query} `;
 }
 
 // TODO an orm would be great for these .... or maybe interface magic? but an orm won't also express the relation between user and study right? we need normalized data for security reasons
@@ -145,8 +200,8 @@ export async function createStudy(pool: pg.Pool, study: Study, fields: GehlField
     // for some unknown reason import * as uuidv4 from 'uuid/v4'; uuidv4(); fails in gcp, saying that it's not a function call
     const studyTablename = studyIdToTablename(study.studyId);
     const newStudyDataTableQuery = createNewTableFromGehlFields(study, studyTablename, fields);
-    const newStudyMetadataQuery = `INSERT INTO data_collection.study (study_id, title, user_id, protocol_version, table_definition, tablename)
-                   VALUES ('${study.studyId}', '${study.title}', '${study.userId}', '${study.protocolVersion}', '${JSON.stringify(fields)}', '${studyTablename}')`;
+    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, protocol_version, table_definition, tablename)
+                                   VALUES('${study.studyId}', '${study.title}', '${study.userId}', '${study.protocolVersion}', '${JSON.stringify(fields)}', '${studyTablename}')`;
     // we want the foreign constraint to fail if we've already created a study with the specified ID
     let studyResult, newStudyDataTable;
     try {
@@ -166,7 +221,7 @@ export async function createStudy(pool: pg.Pool, study: Study, fields: GehlField
 
 export async function createUser(pool: pg.Pool, user: User) {
     const query = `INSERT INTO users(user_id, email, name)
-                   VALUES('${user.userId}', '${user.email}', '${user.name}') `;
+                   VALUES('${user.userId}', '${user.email}', '${user.name}')`;
     return pool.query(query);
 }
 
@@ -179,7 +234,7 @@ export async function createUserFromEmail(pool: pg.Pool, email: string) {
         return userId;
     } catch (error) {
         console.error(error);
-        console.error(`could not add user with email:  ${email}, with query: ${query}`);
+        console.error(`could not add user with email: ${email}, with query: ${query} `);
         throw error;
     }
 }
@@ -198,10 +253,10 @@ export async function createLocation(pool: pg.Pool, location: Location) {
 
 export async function giveUserStudyAcess(pool: pg.Pool, userEmail: string, studyId: string) {
     const query = `INSERT INTO data_collection.surveyors
-                  (SELECT coalesce
-                     ((SELECT pu.user_id FROM public.users pu WHERE pu.email='${userEmail}'),
-                     '00000000-0000-0000-0000-000000000000'),
-                  '${studyId}');`
+                   (SELECT coalesce
+                      ((SELECT pu.user_id FROM public.users pu WHERE pu.email = '${userEmail}'),
+                      '00000000-0000-0000-0000-000000000000'),
+                   '${studyId}')`
     try {
         const pgRes = await pool.query(query);
         return [pgRes, null];
@@ -224,46 +279,113 @@ export async function createNewSurveyForStudy(pool: pg.Pool, survey: Survey) {
         return pool.query(query);
     } catch (error) {
         console.error(`postgres error: ${error} for query: ${query}`);
+        throw error;
     }
 }
 
-function transformToPostgresInsert(dataPoint) {
-    const columns = Object.keys(dataPoint).map(key => {
-        if (key === 'groupSize') {
-            return 'groups';
-        } else {
-            return key;
-        }
-    });
-    const values = Object.keys(dataPoint).map(key => {
-        if (key === 'location') {
-            const longitude = dataPoint['location']['longitude'];
-            const latitude = dataPoint['location']['latitude'];
-            return `ST_GeomFromText('POINT(${longitude} ${latitude})', 4326)`;
-        } else if (key === 'groupSize') {
-            switch (dataPoint['groupSize']) {
-                case 'single':
-                    return '\'group_1\'';
-                case 'pair':
-                    return '\'group_2\'';
-                case 'group':
-                    return '\'group_3-7\'';
-                case 'crowd':
-                    return '\'group_8+\'';
-                default:
-                    throw new Error(`invalid value for groupSize: ${dataPoint['groupSize']}`)
-            }
-        } else {
-            return `'${dataPoint[key]}'`;
-        }
-    })
-    return `(${(columns.join(', '))}) VALUES (${values.join(', ')})`;
+export async function getTablenameForSurveyId(pool: pg.Pool, surveyId: string) {
+    const query = `SELECT tablename
+                   FROM  data_collection.survey_to_tablename
+                   WHERE survey_id='${surveyId}'`;
+    let pgRes;
+    try {
+        pgRes = await pool.query(query);
+    } catch (error) {
+        console.error(`postgres error: ${error} for query: ${query}`);
+        throw error;
+    }
+    if (pgRes.rowCount == 1) {
+        return pgRes.rows[0]['tablename'];
+    } else {
+        throw new Error(`Invalid return for surveyId: ${surveyId}, ${JSON.stringify(pgRes)}`);
+    }
 }
 
-export async function addDataPointToSurvey(pool: pg.Pool, studyId: string, surveyId: string, dataPoint: any) {
-    const tablename = studyIdToTablename(studyId);
+function processKeyToColumnName(key) {
+    if (validDataPointProperties.has(key)) {
+        return key;
+    } else {
+        return undefined;
+    }
+}
+
+function processDataPointToValue(dataPoint, key) {
+    if (key === 'location') {
+        const longitude = dataPoint['location']['longitude'];
+        const latitude = dataPoint['location']['latitude'];
+        return `ST_GeomFromText('POINT(${longitude} ${latitude})', 4326)`;
+    } else if (key === 'groups') {
+        switch (dataPoint['groups']) {
+            case 'single':
+                return '\'group_1\'';
+            case 'pair':
+                return '\'group_2\'';
+            case 'group':
+                return '\'group_3-7\'';
+            case 'crowd':
+                return '\'group_8+\'';
+            default:
+                throw new Error(`invalid value for groups: ${dataPoint['groups']}`)
+        }
+    } else if (key === 'age') {
+        switch (dataPoint['age']) {
+            case 'child':
+                return `'0-14'`;
+            case 'young':
+                return `'15-24'`;
+            case 'adult':
+                return `'25-64'`;
+            case 'elderly':
+                return `'65+'`;
+            default:
+                throw new Error(`invalid value for age: ${dataPoint['age']}`)
+        }
+    } else if (key === 'activities') {
+        const { activities } = dataPoint;
+        const activitesAsArr = Array.isArray(activities) ? activities : [activities];
+        return `${javascriptArrayToPostgresArray(activitesAsArr)}::data_collection.activities[]`;
+    } else if (validDataPointProperties.has(key)) {
+        return `'${dataPoint[key]}'`;
+    } else {
+        return undefined;
+    }
+}
+
+function deleteNonGehlFields(o: any) {
+    const unwantedKeys = Object.keys(o).filter(x => allGehlFieldsStrings.has(x))
+    unwantedKeys.forEach(k => delete o[k]);
+    return o;
+}
+
+function transformToPostgresInsert(dataPoint) {
+    const columns = flatMapper(dataPoint, processKeyToColumnName);
+    const values = flatMapper(dataPoint, (key) => processDataPointToValue(dataPoint, key));
+    dataPoint = deleteNonGehlFields(dataPoint)
+    //const gehlFieldColumns = flatMapper(dataPoint, processKeyToColumnName);
+    //const gehlFieldValues = flatMapper(dataPoint, (key) => processDataPointToValue(dataPoint, key));
+    const insert_statement = `(${(columns.join(', '))}) VALUES (${values.join(', ')})`;
+    return `${insert_statement}
+            ON CONFLICT(data_point_id)
+            DO UPDATE SET(${(columns.join(', '))}) = (${values.join(', ')})`;
+}
+
+export async function addDataPointToSurveyNoStudyId(pool: pg.Pool, surveyId: string, dataPoint: any) {
+    const tablename = await getTablenameForSurveyId(pool, surveyId);
     const query = `INSERT INTO ${tablename}
-                   ${transformToPostgresInsert({ survey_id: surveyId, ...dataPoint })}`;
+                   ${ transformToPostgresInsert({ survey_id: surveyId, ...dataPoint })} `;
+    console.log('query: ', query);
+    try {
+        return pool.query(query);
+    } catch (error) {
+        console.error(`error executing sql query: ${query}`)
+        throw error;
+    }
+}
+
+export async function addDataPointToSurveyWithStudyId(pool: pg.Pool, studyId: string, surveyId: string, dataPoint: any) {
+    const tablename = await studyIdToTablename(studyId);
+    const query = `INSERT INTO ${tablename}
+                   ${ transformToPostgresInsert({ survey_id: surveyId, ...dataPoint })}`;
     try {
         return pool.query(query);
     } catch (error) {

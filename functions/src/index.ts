@@ -1,27 +1,43 @@
 import *  as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
+import * as changeCase from 'change-case';
 import * as https from 'https';
 import * as nodemailer from 'nodemailer';
 
 import { Location, Study, StudyAccess, Survey, User } from '../../src/datastore';
 import { UserRecord } from 'firebase-functions/lib/providers/auth';
 
+export function snakeCasify(x: object) {
+    const keys = Object.keys(x);
+    console.log("keys: ", keys);
+    const newKeyValuePairs = keys.map(k => {
+        const previousValue = x[k];
+        let newValue;
+        if (Array.isArray(previousValue) || typeof previousValue === 'string' || typeof previousValue === 'boolean' || typeof previousValue === 'number') {
+            newValue = previousValue;
+        } else if (typeof x[k] === 'object') {
+            newValue = snakeCasify(x[k]);
+        } else {
+            throw new Error(`Object must only contain primitive values or arrays of primitive values, error for key: ${k} in object: ${JSON.stringify(x)}`);
+        }
+        const newKey = changeCase.snakeCase(k);
+        const res = {};
+        res[newKey] = newValue;
+        return res;
+    });
+    console.log('new pairs: ', newKeyValuePairs);
+    return Object.assign({}, ...newKeyValuePairs);
+}
 
-const gmailEmail = functions.config().email.email;
-const gmailPassword = functions.config().email.password;
-const mailTransport = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: gmailEmail,
-        pass: gmailPassword,
-    },
-});
+let serviceAccountKey;
 
-const serviceAccountKey = functions.config().gcp.serviceaccountkey;
-admin.initializeApp({ credential: admin.credential.cert(serviceAccountKey) })
+if (functions.config().gcp) {
+    serviceAccountKey = functions.config().gcp.serviceaccountkey;
+    admin.initializeApp({ credential: admin.credential.cert(serviceAccountKey) })
+}
 
-function callGcp(host: string, path: string, payload: Location | Study | Survey | StudyAccess | User) {
+function callGcp(host: string, path: string, payload: Location | Study | Survey | StudyAccess | User | any): Promise<any> {
     const options = {
         method: "POST",
         headers: {
@@ -57,7 +73,7 @@ function callGcp(host: string, path: string, payload: Location | Study | Survey 
             });
 
             res.on('end', () => {
-                resolve(returnedData);
+                resolve(JSON.parse(returnedData));
             });
         });
         req.on('error', (e) => {
@@ -128,7 +144,21 @@ export const newStudyCreated = functions.firestore.document('/study/{studyId}').
     // }
 });
 
+let gmailEmail, gmailPassword, mailTransport;
+if (functions && functions.config().email) {
+    gmailEmail = functions.config().email.email;
+    gmailPassword = functions.config().email.password;
+    mailTransport = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: gmailEmail,
+            pass: gmailPassword,
+        },
+    });
+}
+
 function inviteSurveyorEmail(email: string) {
+
     const mailOptions: nodemailer.SendMailOptions = {
         from: `Gehl Data Collector <thorncliffeparkpubliclifepilot@gmail.com>`,
         to: email,
@@ -151,14 +181,20 @@ export const studyUpdated = functions.firestore.document('/study/{studyId}').onU
     console.log(`new users: ${JSON.stringify(newUsers)}`);
     return await Promise.all(newUsers.map(async (userEmail) => {
         // todo handle user hasn't used app yet
-        const user: UserRecord = await admin.auth().getUserByEmail(userEmail);
+        // const user: UserRecord = await admin.auth().getUserByEmail(userEmail);
         const { studyId } = newValue;
         const studyAccess = {
             studyId,
             userEmail
         }
         //Promise.all(newUsers.map((newSurveyor) => inviteSurveyorEmail(newSurveyor)))
-        return await callGcp(functions.config().gcp.cloud_functions_url, '/addSurveyorToStudy', studyAccess)
+        const { newUserId } = await callGcp(functions.config().gcp.cloud_functions_url, '/addSurveyorToStudy', studyAccess);
+        if (newUserId) {
+            await admin.auth().createUser({
+                uid: newUserId,
+                email: userEmail
+            })
+        }
     }));
 })
 
@@ -172,12 +208,21 @@ export const newSurveyCreated = functions.firestore.document('/study/{studyId}/s
     return await callGcp(functions.config().gcp.cloud_functions_url, '/saveNewSurvey', survey)
 });
 
-export const addDataPointToSurvey = functions.firestore.document('/study/{studyId}/survey/{surveyId}/dataPoints/{dataPointId}').onCreate(async (snapshot: FirebaseFirestore.DocumentSnapshot, ctx: functions.EventContext) => {
-    const dataPoint = snapshot.data();
+async function sendDataPointSnapshotToGcp(snapshot: FirebaseFirestore.DocumentSnapshot) {
+    const data = snapshot.data();
+    const dataPoint = snakeCasify(data);
     const surveyRef = snapshot.ref.parent.parent;
     const surveySnapshot = await surveyRef.get()
     const survey = surveySnapshot.data() as Survey;
-    const studySnapshot = await surveyRef.parent.parent.get();
-    const study = studySnapshot.data() as Study;
-    //await callGcp(functions.config().gcp.cloud_functions_url, ''
-});
+    dataPoint.surveyId = survey.surveyId;
+    await callGcp(functions.config().gcp.cloud_functions_url, '/saveDataPointToStudy', dataPoint);
+}
+export const addDataPointToSurvey = functions.firestore.document('/study/{studyId}/survey/{surveyId}/dataPoints/{dataPointId}')
+    .onCreate(async (snapshot: FirebaseFirestore.DocumentSnapshot, ctx: functions.EventContext) => {
+        await sendDataPointSnapshotToGcp(snapshot);
+    });
+
+export const updateDataPointForSurvey = functions.firestore.document('/study/{studyId}/survey/{surveyId}/dataPoints/{dataPointId}')
+    .onUpdate(async ({ after, before }, ctx) => {
+        await sendDataPointSnapshotToGcp(after);
+    });

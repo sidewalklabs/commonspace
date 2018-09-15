@@ -1,3 +1,22 @@
+## How to create your own study
+
+* Setup your firebase instance
+
+* deploy functions to your firebase instance
+
+``` bash
+firebase deploy --only functions
+```
+
+* fill out the users.csv and surveys.csv file
+
+* download a service account key from your firebase console, or get one from your admin
+
+* go over the src/tpwc-admin-script.ts and make sure that the hard coded values for the study are correct
+``` bash
+ts-node src/tpwc-admin-script.ts $path-to-service-account-json
+```
+
 
 ### Frontend and Expo
 #### Installation

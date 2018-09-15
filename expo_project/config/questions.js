@@ -26,14 +26,14 @@ export default [
     questionType: 'select',
     options: [
       { value: 'standing', label: 'Standing' },
-      { value: 'sittingInformal', label: 'Sitting (informal)' },
-      { value: 'sittingFormal', label: 'Sitting (formal)' },
+      { value: 'sitting_informal', label: 'Sitting (informal)' },
+      { value: 'sitting_formal', label: 'Sitting (formal)' },
       { value: 'lying', label: 'Lying' },
       { value: 'multiple', label: 'Multiple' },
     ],
   },
   {
-    questionKey: 'activity',
+    questionKey: 'activities',
     questionLabel: 'Activity',
     questionType: 'multiselect',
     options: [
@@ -41,10 +41,10 @@ export default [
       { value: 'consuming', label: 'Consuming' },
       { value: 'conversing', label: 'Conversing' },
       { value: 'cultural', label: 'Cultural' },
-      { value: 'electronicEngagement', label: 'Electronic Engagement' },
-      { value: 'recreationActive', label: 'Recreation (active)' },
-      { value: 'recreationPassive', label: 'Recreation (passive)' },
-      { value: 'workingCivic', label: 'Working (civic)' },
+      { value: 'electronic_engagement', label: 'Electronic Engagement' },
+      { value: 'recreation_active', label: 'Recreation (active)' },
+      { value: 'recreation_passive', label: 'Recreation (passive)' },
+      { value: 'working_civic', label: 'Working (civic)' },
     ],
   },
 ];
