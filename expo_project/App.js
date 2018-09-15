@@ -36,7 +36,7 @@ export default class App extends React.Component {
     });
   };
 
-  _handleFinishLoading = () => {
+  _handleFinishLoading = async () => {
     // TODO
     await AsyncStorage.setItem('userId', '7566b7ca-0372-46c6-9d2c-0e9fb38bebfb');
     await AsyncStorage.setItem('userEmail', 'thorncliffeparkpubliclifepilot@gmail.com');
