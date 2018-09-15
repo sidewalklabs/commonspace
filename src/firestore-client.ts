@@ -64,6 +64,16 @@ export function getAuthorizedStudiesForEmail(db: firestore.Firestore, email: str
     return getCollectionAsArray(db.collection('study').where('surveyors', 'array-contains', email));
 }
 
+export async function addDataPoint(db: firestore.Firestore, studyId: string, surveyId: string, dataPoint: any) {
+    return await db
+        .collection('study')
+        .doc(studyId)
+        .collection('survey')
+        .doc(surveyId)
+        .collection('dataPoints')
+        .doc(dataPoint.dataPointId)
+        .set(dataPoint);
+}
 
 export async function addUserToStudyByEmail(db: firestore.Firestore, studyId: string, email: string) {
     try {

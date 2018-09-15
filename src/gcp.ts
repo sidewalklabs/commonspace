@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import * as pg from 'pg';
 import * as uuid from 'uuid';
 
-import { createLocation, createNewSurveyForStudy, createStudy, createUser, giveUserStudyAcess } from './datastore';
+import { addDataPointToSurveyNoStudyId, addDataPointToSurveyWithStudyId, createLocation, createNewSurveyForStudy, createStudy, createUser, giveUserStudyAcess, GehlFields } from './datastore';
 
 const pgConnectionInfo = {
     connectionLimit: 1,
@@ -15,6 +15,9 @@ const pgConnectionInfo = {
 }
 
 const pool = new pg.Pool(pgConnectionInfo);
+
+// TODO: we only support one set of study parameters for now
+const studyFields: GehlFields[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'objects', 'location', 'note'];
 
 // Return a newly generated UUID in the HTTP response.
 export async function saveNewUser(req: Request, res: Response) {
@@ -33,7 +36,7 @@ export async function saveNewStudy(req: Request, res: Response) {
     try {
         const study = req.body;
         study.studyId = study.studyId ? study.studyId : uuid.v4();
-        await createStudy(pool, study, ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'objects', 'location']);
+        await createStudy(pool, study, studyFields);
         res.send(study);
     } catch (error) {
         console.error(`Could not save study using request body: ${JSON.stringify(req.body)}, error: ${error}`);
@@ -55,8 +58,8 @@ export async function saveNewSurvey(req: Request, res: Response) {
 export async function addSurveyorToStudy(req: Request, res: Response) {
     try {
         const { userEmail, studyId } = req.body;
-        await giveUserStudyAcess(pool, userEmail, studyId);
-        res.send({ userEmail, studyId });
+        const [_, newUserId] = await giveUserStudyAcess(pool, userEmail, studyId);
+        res.send({ userEmail, studyId, newUserId });
     } catch (error) {
         console.error(`failure to give user survey access, payload: ${JSON.stringify(req.body)}| pg connection: ${JSON.stringify(pgConnectionInfo)}`);
         throw error;
@@ -71,5 +74,21 @@ export async function saveNewLocation(req: Request, res: Response) {
         res.send(location);
     } catch (error) {
         console.error(error);
+        throw error;
     }
+}
+
+export async function saveDataPointToStudy(req: Request, res: Response) {
+    const { studyId, surveyId, ...dataPoint } = req.body;
+    try {
+        if (studyId) {
+            await addDataPointToSurveyWithStudyId(pool, studyId, surveyId, dataPoint)
+        } else {
+            await addDataPointToSurveyNoStudyId(pool, surveyId, dataPoint);
+        }
+    } catch (error) {
+        console.error(`error saving data point for payload: ${JSON.stringify(req.body)}`);
+        throw error;
+    }
+    res.send(dataPoint);
 }

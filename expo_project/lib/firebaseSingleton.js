@@ -12,22 +12,6 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-
-export async function getAuthorizedStudiesForEmail(db, email) {
-    return new Promise(async (resolve, reject) => {
-        const snapshots = await db.collection('study').where('surveyors', 'array-contains', email).get();
-        const studies = [];
-        snapshots.forEach(studySnapshot => {
-            const study = studySnapshot.data();
-            studies.push(study);
-        });
-        resolve(studies);
-    });
-}
-
-
-
-
 export const firestore = firebase.firestore();
 firestore.settings({ timestampsInSnapshots: true });
 

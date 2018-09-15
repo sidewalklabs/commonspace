@@ -50,10 +50,10 @@ CREATE TABLE IF NOT EXISTS location
 );
 
 CREATE TYPE gender AS ENUM ('male', 'female', 'unknown');
-CREATE TYPE age AS ENUM ('0-14', '15-24', '25-64');
+CREATE TYPE age AS ENUM ('0-14', '15-24', '25-64', '65+');
 CREATE TYPE mode AS ENUM ('pedestrian', 'bicyclist');
-CREATE TYPE posture AS ENUM ('leaning', 'lying', 'sitting', 'sitting on the ground', 'standing');
-CREATE TYPE activities AS ENUM ('commerical', 'consuming', 'conversing', 'electronics', 'pets', 'idle', 'running');
+CREATE TYPE posture AS ENUM ('leaning', 'lying', 'sitting', 'sitting on the ground', 'standing', 'sitting_informal', 'sitting_formal');
+CREATE TYPE activities AS ENUM ('commercial', 'consuming', 'conversing', 'electronic_engagement', 'recreation_active', 'pets', 'idle', 'running', 'recreation_passive', 'working_civic', 'cultural');
 CREATE TYPE groups AS ENUM ('group_1', 'group_2', 'group_3-7', 'group_8+');
 CREATE TYPE objects AS ENUM ('animal', 'bag_carried', 'clothing_cultural', 'clothing_activity', 'goods_carried', 'equipment_construction', 'equipment_receational', 'equipment_sport', 'protection_safety', 'protection_weather', 'furniture_carried', 'transportation_carried', 'transportation_stationary', 'pushcart', 'stroller', 'luggage');
 
@@ -83,7 +83,11 @@ CREATE TABLE IF NOT EXISTS survey (
 );
 
 
-
+CREATE VIEW survey_to_tablename AS
+ SELECT sr.survey_id, st.tablename
+ FROM study as st
+ INNER JOIN survey as sr
+ ON st.study_id = sr.study_id;
 
 -- the protocol doesn't make use of what
 

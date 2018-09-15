@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 import * as pg from 'pg';
 import * as uuidv4 from 'uuid/v4';
 
-import { createLocation, createStudy, createNewSurveyForStudy, createUser, addDataPointToSurvey, Location, Study, Survey, User, giveUserStudyAcess } from './datastore';
+import { getTablenameForSurveyId, createLocation, createStudy, createNewSurveyForStudy, createUser, addDataPointToSurveyNoStudyId, addDataPointToSurveyWithStudyId, Location, Study, Survey, User, giveUserStudyAcess } from './datastore';
 
 dotenv.config();
 
@@ -114,8 +114,6 @@ const surveyNearGarbage: Survey = {
     userId: sebastian.userId
 }
 
-const studyFields = ['gender', 'location'];
-
 async function seedDatabase() {
     const { rowCount, command } = await createUser(pool, sebastian);
     const [studyPgResult, newTablePgResult] = await createStudy(pool, thorncliffeParkStudy, ['gender', 'location']);
@@ -143,7 +141,7 @@ test('save new study', async () => {
 });
 
 test('save new study with all possible fields', async () => {
-    const [studyPgResult, newTablePgResult] = await createStudy(pool, thorncliffeParkStudy, ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'objects', 'location']);
+    const [studyPgResult, newTablePgResult] = await createStudy(pool, thorncliffeParkStudy, ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'objects', 'location', 'note']);
 
     let { rowCount, command } = studyPgResult;
     expect(rowCount).toBe(1);
@@ -192,18 +190,20 @@ test('can save a data point', async () => {
             "longitude": "-79.3432493135333"
         },
         "object": "pushcart",
-        "posture": "sitting"
+        "posture": "sitting",
+        "data_point_id": uuidv4()
     }
-    const { rowCount, command } = await addDataPointToSurvey(pool, surveyNearGarbage.studyId, surveyNearGarbage.surveyId, dataPoint);
+    const { rowCount, command } = await addDataPointToSurveyWithStudyId(pool, surveyNearGarbage.studyId, surveyNearGarbage.surveyId, dataPoint);
     expect(rowCount).toBe(1);
     expect(command).toBe('INSERT');
 });
 
 
-test('transform another example of a data point', async () => {
+test('add a data point using only the survey id', async () => {
     const dataPoint = {
+        "data_point_id": uuidv4(),
         "gender": "male",
-        "groupSize": "pair",
+        "groups": "pair",
         "location": {
             "latitude": "43.70416809098892",
             "longitude": "-79.34354536235332"
@@ -212,12 +212,78 @@ test('transform another example of a data point', async () => {
         "object": "luggage",
         "posture": "leaning"
     };
-    const { rowCount, command } = await addDataPointToSurvey(pool, surveyNearGarbage.studyId, surveyNearGarbage.surveyId, dataPoint);
+    const { rowCount, command } = await addDataPointToSurveyNoStudyId(pool, surveyNearGarbage.surveyId, dataPoint);
     expect(rowCount).toBe(1);
     expect(command).toBe('INSERT');
 });
 
+test('update a data point using it\'s own id', async () => {
+    const dataPointId = uuidv4()
+    const dataPoint = {
+        "data_point_id": dataPointId,
+        "location": {
+            "latitude": "43.70416809098892",
+            "longitude": "-79.34354536235332"
+        },
+        "posture": "leaning"
+    };
+    const dataPointUpdated = {
+        "data_point_id": dataPointId,
+        "gender": "female",
+        "groups": "pair",
+        "location": {
+            "latitude": "43.70416809098892",
+            "longitude": "-79.34354536235332"
+        },
+        "mode": "pedestrian",
+        "object": "luggage",
+        "posture": "sitting",
+        "note": "sitting pedestrian, I guess pigs can fly"
+    }
+    const { rowCount, command } = await addDataPointToSurveyNoStudyId(pool, surveyNearGarbage.surveyId, dataPoint);
+    expect(rowCount).toBe(1);
+    expect(command).toBe('INSERT');
 
+    const { rowCount: rc, command: com } = await addDataPointToSurveyNoStudyId(pool, surveyNearGarbage.surveyId, dataPointUpdated);
+    expect(rc).toBe(1);
+    expect(com).toBe('INSERT');
+})
+
+test('save a data point with a single activity', async () => {
+    const dataPoint = {
+        "data_point_id": uuidv4(),
+        "location": {
+            "latitude": "43.70416809098892",
+            "longitude": "-79.34354536235332"
+        },
+        "age": "child",
+        "activities": "commercial",
+        "posture": "leaning"
+    }
+    const { rowCount, command } = await addDataPointToSurveyNoStudyId(pool, surveyNearGarbage.surveyId, dataPoint);
+    expect(rowCount).toBe(1);
+    expect(command).toBe('INSERT');
+
+
+});
+
+
+test('save a data point with multiple activities', async () => {
+    const dataPoint = {
+        "data_point_id": uuidv4(),
+        "location": {
+            "latitude": "43.70416809098892",
+            "longitude": "-79.34354536235332"
+        },
+        "activities": ["commercial", "electronics"],
+        "posture": "leaning"
+    }
+    const { rowCount, command } = await addDataPointToSurveyNoStudyId(pool, surveyNearGarbage.surveyId, dataPoint);
+    expect(rowCount).toBe(1);
+    expect(command).toBe('INSERT');
+
+
+})
 
 afterAll(async () => {
     try {
