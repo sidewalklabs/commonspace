@@ -408,7 +408,7 @@ class SurveyScreen extends React.Component {
                   <Text>{noteButtonLabel}</Text>
                 </Button>
                 <Button
-                  onPress={() => this.toggleDrawer()}
+                  onPress={() => this.resetDrawer(MAX_DRAWER_TRANSLATE_Y)}
                   theme={{ ...Theme, roundness: 20 }}
                   style={styles.greyButton}>
                   <Text>Back to Map</Text>

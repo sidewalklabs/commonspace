@@ -3,23 +3,43 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Selectable from '../components/Selectable';
 import * as _ from 'lodash';
-
 import QUESTION_CONFIG from '../config/questions';
 
 class Survey extends React.Component {
-  render() {
+  onSelectPress = (key, value, selectableHeight) => {
     const { activeMarker, onSelect } = this.props;
+    onSelect(activeMarker.id, key, value, selectableHeight);
+  };
+
+  onMultiselectPress = (key, value, selectedValue) => {
+    const { activeMarker, onSelect } = this.props;
+    const valueArray = selectedValue || [];
+    // if value is already selected, deselect it.
+    // else, select it
+    if (_.includes(valueArray, value)) {
+      _.pull(valueArray, value);
+    } else {
+      valueArray.push(value);
+    }
+    onSelect(activeMarker.id, key, valueArray, 0);
+  };
+
+  render() {
+    const { activeMarker } = this.props;
     return (
       <View>
         {_.map(QUESTION_CONFIG, question => {
-          const { questionKey, questionLabel, options } = question;
+          const { questionKey, questionLabel, questionType, options } = question;
+          const selectedValue = activeMarker[questionKey];
           return (
             <Selectable
               key={questionKey}
               onSelectablePress={(value, selectableHeight) =>
-                onSelect(activeMarker.id, questionKey, value, selectableHeight)
+                questionType === 'multiselect'
+                  ? this.onMultiselectPress(questionKey, value, selectedValue)
+                  : this.onSelectPress(questionKey, value, selectableHeight)
               }
-              selectedValue={activeMarker[questionKey]}
+              selectedValue={selectedValue}
               selectedColor={activeMarker.color}
               title={questionLabel}
               options={options}
@@ -54,6 +74,7 @@ const styles = StyleSheet.create({
 });
 
 Survey.propTypes = {
+  activeMarker: PropTypes.any.isRequired,
   onSelect: PropTypes.func.isRequired,
 };
 
