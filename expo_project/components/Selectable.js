@@ -17,7 +17,7 @@ class Selectable extends React.Component {
   }
 
   // TODO (Ananta): Make this more React-y
-  // Currently Selectable passes back its height when pressed, since the parent wants to scrol the amount
+  // Currently Selectable passes back its height when pressed, since the parent wants to scroll the amount
   // But that's a weird API for a child that should function without knowledge of its parents' desires
   onLayout(event) {
     this.setState({ height: event.nativeEvent.layout.height });
@@ -31,7 +31,9 @@ class Selectable extends React.Component {
         <ScrollView style={styles.selectable} horizontal showsHorizontalScrollIndicator={false}>
           {_.map(options, (option, index) => {
             const { value, label } = option;
-            const selected = value === selectedValue;
+            let selected = Array.isArray(selectedValue)
+              ? _.includes(selectedValue, value)
+              : value === selectedValue;
             return (
               <TouchableOpacity
                 key={value}
@@ -83,7 +85,7 @@ const styles = StyleSheet.create({
 
 Selectable.propTypes = {
   onSelectablePress: PropTypes.func.isRequired,
-  selectedValue: PropTypes.string,
+  selectedValue: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
   selectedColor: PropTypes.string,
   title: PropTypes.string.isRequired,
   options: PropTypes.arrayOf(

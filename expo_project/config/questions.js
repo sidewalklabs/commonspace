@@ -2,6 +2,7 @@ export default [
   {
     questionKey: 'gender',
     questionLabel: 'Gender',
+    questionType: 'select',
     options: [
       { value: 'male', label: 'Male' },
       { value: 'female', label: 'Female' },
@@ -11,6 +12,7 @@ export default [
   {
     questionKey: 'age',
     questionLabel: 'Age',
+    questionType: 'select',
     options: [
       { value: 'child', label: '0-14' },
       { value: 'young', label: '15-24' },
@@ -21,6 +23,7 @@ export default [
   {
     questionKey: 'posture',
     questionLabel: 'Posture',
+    questionType: 'select',
     options: [
       { value: 'standing', label: 'Standing' },
       { value: 'sittingInformal', label: 'Sitting (informal)' },
@@ -32,6 +35,7 @@ export default [
   {
     questionKey: 'activity',
     questionLabel: 'Activity',
+    questionType: 'multiselect',
     options: [
       { value: 'commercial', label: 'Commercial' },
       { value: 'consuming', label: 'Consuming' },
