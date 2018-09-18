@@ -65,7 +65,9 @@ class MapWithMarkers extends React.Component {
       onMarkerPress,
       onMapPress,
       onMapLongPress,
+      zoneLatLngs,
     } = this.props;
+
     return this.state.region ? (
       <TouchableOpacity
         activeOpacity={1}
@@ -86,14 +88,11 @@ class MapWithMarkers extends React.Component {
           zoomEnabled
           pitchEnabled={false}
           mapType="satellite">
-          <MapView.Polyline
-            coordinates={MapConfig.polylineCoordinates}
-            strokeColor="#D77C61"
-            strokeWidth={6}
-          />
+          <MapView.Polyline coordinates={zoneLatLngs} strokeColor="#D77C61" strokeWidth={6} />
           {markers.map(marker => {
             const selected = marker.id === activeMarkerId;
-            const key = marker.id + (selected ? '-selected' : ''); //trigger a re render when switching states, so it recenters itself
+            // trigger a re render when switching states, so it recenters itself
+            const key = marker.id + (selected ? '-selected' : '');
             return (
               <MapView.Marker
                 coordinate={marker.location}
@@ -181,6 +180,12 @@ MapWithMarkers.propTypes = {
       id: PropTypes.string,
     }),
   ).isRequired,
+  zoneLatLngs: PropTypes.arrayOf(
+    PropTypes.shape({
+      latitude: PropTypes.number,
+      longitude: PropTypes.number,
+    }),
+  ),
   activeMarkerId: PropTypes.string,
   onMarkerDragEnd: PropTypes.func.isRequired,
   onMarkerPress: PropTypes.func.isRequired,
