@@ -79,6 +79,7 @@ class SurveyScreen extends React.Component {
     this.state = {
       activeMarkerId: null,
       markers: [],
+      zoneLatLngs: [],
       modalVisible: false,
       formScrollPosition: 0,
       pan: new Animated.ValueXY({ x: 0, y: INITIAL_DRAWER_TRANSLATE_Y }),
@@ -99,6 +100,22 @@ class SurveyScreen extends React.Component {
     // Query for saved data
     const studyId = this.props.navigation.getParam('studyId');
     const surveyId = this.props.navigation.getParam('surveyId');
+    const locationId = this.props.navigation.getParam('locationId');
+
+    this.firestore
+      .collection('study')
+      .doc(studyId)
+      .collection('location')
+      .doc(locationId)
+      .get()
+      .then(o => {
+        const coordinates = JSON.parse(o.data().geometry.coordinates);
+        const zoneLatLngs = _.map(coordinates, c => ({
+          longitude: c[0],
+          latitude: c[1],
+        }));
+        this.setState({ zoneLatLngs });
+      });
 
     this.firestore
       .collection('study')
@@ -355,6 +372,7 @@ class SurveyScreen extends React.Component {
           onMapLongPress={this.createNewMarker}
           activeMarkerId={this.state.activeMarkerId}
           markers={this.state.markers}
+          zoneLatLngs={this.state.zoneLatLngs}
           onMarkerPress={this.selectMarker}
           onMarkerDragEnd={this.setMarkerLocation}
         />

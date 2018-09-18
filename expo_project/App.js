@@ -11,7 +11,6 @@ export default class App extends React.Component {
     isLoadingComplete: false,
   };
 
-
   render() {
     if (!this.state.isLoadingComplete && !this.props.skipLoadingScreen) {
       return (
@@ -22,7 +21,7 @@ export default class App extends React.Component {
         <View style={{ flex: 1, backgroundColor: 'white' }}>
           <PaperProvider theme={Theme}>
             <StatusBar barStyle="light-content" />
-          <AppNavigator />
+            <AppNavigator />
           </PaperProvider>
         </View>
       );
@@ -32,7 +31,7 @@ export default class App extends React.Component {
   _loadResourcesAsync = async () => {
     return Font.loadAsync({
       ...Icon.Ionicons.font,
-      monaco
+      monaco,
     });
   };
 
