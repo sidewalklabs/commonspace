@@ -52,7 +52,7 @@ export async function saveStudy(db: firestore.Firestore, study: FirestoreStudy) 
 }
 
 export async function getAvailableStudiesForUserId(db: firestore.Firestore, userId: string) {
-    return getCollectionAsArray(db.collection('study').where("firebaseUserId", "==", userId));
+    return getCollectionAsArray(db.collection('study').where("userId", "==", userId));
 }
 
 
@@ -83,7 +83,6 @@ export async function addUserToStudyByEmail(db: firestore.Firestore, studyId: st
             const currentData = doc.data();
             currentData.surveyors = currentData.surveyors ? currentData.surveyors : [];
             currentData.surveyors.push(email);
-            console.log(currentData);
             return await studyRef.set(currentData);
         }
 
