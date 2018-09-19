@@ -84,7 +84,7 @@ export async function addUserToStudyByEmail(db: firestore.Firestore, studyId: st
             currentData.surveyors = currentData.surveyors ? currentData.surveyors : [];
             currentData.surveyors.push(email);
             console.log(currentData);
-            await studyRef.set(currentData);
+            return await studyRef.set(currentData);
         }
 
     } catch (error) {
