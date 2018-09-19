@@ -28,18 +28,17 @@ class AuthScreen extends React.Component {
       if (type === 'success') {
         // Build Firebase credential with the access token.
         const credential = firebase.auth.GoogleAuthProvider.credential(idToken);
-        console.log(`credential: ${credential}`);
+        // console.log("credential:", credential);
 
         // Sign in with credential from the Facebook user.
         const firebaseSignInResult = await firebase
           .auth()
           .signInAndRetrieveDataWithCredential(credential);
-        console.log(`sign in result: ${firebaseSignInResult}`);
-
-        // TODO: Check whether user has access to surveys, and if not add to a waiting list
+        // console.log("sign in result:", firebaseSignInResult);
 
         // set token for next session, then navigate to the internal app
-        await AsyncStorage.setItem('userToken', idToken);
+        await AsyncStorage.setItem('userEmail', firebaseSignInResult.user.email);
+
         this.props.navigation.navigate('App');
       } else {
         console.log('cancelled');
