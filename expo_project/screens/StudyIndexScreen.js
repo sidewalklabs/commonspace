@@ -2,7 +2,7 @@ import React from 'react';
 import { AsyncStorage, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import Theme from '../constants/Theme';
-import { Button, Caption, Card, CardContent, Divider, Title, Paragraph } from 'react-native-paper';
+import { Button, Card, CardContent, Divider, Title, Paragraph } from 'react-native-paper';
 
 import { firestore } from '../lib/firebaseSingleton';
 import { getAuthorizedStudiesForEmail, getSurveysForStudy } from '../lib/firestore';
@@ -19,10 +19,11 @@ function typeToRouteName(type) {
 class SurveyIndexScreen extends React.Component {
   state = {
     studies: [],
+    loading: true,
   };
 
-  navigationOptions = {
-    title: 'Studies',
+  static navigationOptions = {
+    headerTitle: 'Your Studies',
   };
 
   _signOut = async () => {
@@ -43,21 +44,38 @@ class SurveyIndexScreen extends React.Component {
         return study;
       }),
     );
-    this.setState({ studies });
+    this.setState({ studies, loading: false });
   }
 
   render() {
     return (
       <View style={[styles.container]}>
         <ScrollView style={[styles.container]} stickyHeaderIndices={[0]}>
-          <Caption style={styles.sectionTitle}>Your studies</Caption>
           {this.state.studies.map(study => {
             const { studyId, title: studyName, authorName: studyAuthor, surveys } = study;
+            // TODO: move these to backend
+            const authorUrl = 'https://parkpeople.ca/';
+            const studyInstructions =
+              'You will be using Commons to collect observational data about what public activities people are doing in Thorncliffe Park. Following the study, a report will be made available online.';
             return (
               <Card elevation={3} key={study.studyId}>
                 <CardContent style={styles.studyHeader}>
                   <Title>{studyName}</Title>
-                  <Paragraph>by {studyAuthor}</Paragraph>
+                  <Paragraph>
+                    by{' '}
+                    <Text
+                      style={{ color: 'blue' }}
+                      onPress={() =>
+                        this.props.navigation.navigate('WebViewScreen', {
+                          uri: authorUrl,
+                          title: studyAuthor,
+                        })
+                      }>
+                      {studyAuthor}
+                    </Text>
+                  </Paragraph>
+
+                  {studyInstructions && <Paragraph>{studyInstructions}</Paragraph>}
                 </CardContent>
                 {surveys.map(survey => {
                   const { surveyId, type: surveyType, title: surveyTitle, locationId } = survey;
@@ -94,6 +112,13 @@ class SurveyIndexScreen extends React.Component {
               </Card>
             );
           })}
+          {!this.state.loading &&
+            !this.state.studies.length && (
+              <Paragraph>
+                You do not have any studies assigned to you currently. If you believe this is
+                incorrect, please reach out to your study coordinator.
+              </Paragraph>
+            )}
         </ScrollView>
         <Button raised primary dark theme={{ ...Theme, roundness: 100 }} onPress={this._signOut}>
           Log Out

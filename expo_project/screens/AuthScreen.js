@@ -52,9 +52,13 @@ class AuthScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <Title style={styles.title}>Create an account</Title>
+        <Title style={styles.title}>Log in to Commons</Title>
         <Subheading style={styles.subheading}>
-          Once your study is complete, you can use graphs and text to explain your findings
+          If you are volunteering to conduct a survey, log in below with your email address to get
+          started. Sidewalk Labs, the app developer, will only use your information to authenticate
+          you to the app notify you about the studies you have opted into. View the privacy policy
+          below or email privacy@sidewalklabs.com with any questions about how your personal
+          information is used.
         </Subheading>
         <Button
           raised
@@ -67,7 +71,14 @@ class AuthScreen extends React.Component {
           )}>
           Connect with Google
         </Button>
-        <Button primary onPress={() => this.props.navigation.navigate('PrivacyScreen')}>
+        <Button
+          primary
+          onPress={() =>
+            this.props.navigation.navigate('WebViewScreen', {
+              uri: 'http://www.sidewalktoronto.com/privacy',
+              title: 'Privacy & Terms',
+            })
+          }>
           Privacy & Terms
         </Button>
       </View>

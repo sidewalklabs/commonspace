@@ -1,18 +1,19 @@
+import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { StyleSheet, View, WebView } from 'react-native';
 import { withNavigation } from 'react-navigation';
-
 import { Button, Divider, withTheme } from 'react-native-paper';
 
-class PrivacyScreen extends Component {
-  static navigationOptions = {
-    title: 'Privacy & Terms',
-  };
+class WebViewScreen extends Component {
+  static navigationOptions = ({ navigation }) => ({
+    headerTitle: navigation.getParam('title'),
+  });
 
   render() {
+    const uri = this.props.navigation.getParam('uri');
     return (
       <View style={styles.container}>
-        <WebView source={{ uri: 'http://www.sidewalktoronto.com/privacy' }} />
+        <WebView source={{ uri }} />
         <Divider />
         <View elevation={4} style={styles.footer}>
           <Button
@@ -39,4 +40,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default withNavigation(withTheme(PrivacyScreen));
+export default withNavigation(withTheme(WebViewScreen));

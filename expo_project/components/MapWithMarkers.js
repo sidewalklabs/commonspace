@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
 MapWithMarkers.propTypes = {
   markers: PropTypes.arrayOf(
     PropTypes.shape({
-      coordinate: PropTypes.any,
+      location: PropTypes.any,
       color: PropTypes.string,
       title: PropTypes.string,
       dateLabel: PropTypes.string,
