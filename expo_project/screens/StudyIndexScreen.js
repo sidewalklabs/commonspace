@@ -1,5 +1,5 @@
 import React from 'react';
-import { AsyncStorage, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AsyncStorage, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import Theme from '../constants/Theme';
 import { Button, Card, CardContent, Divider, Title, Paragraph } from 'react-native-paper';
@@ -51,6 +51,7 @@ class SurveyIndexScreen extends React.Component {
     return (
       <View style={[styles.container]}>
         <ScrollView style={[styles.container]} stickyHeaderIndices={[0]}>
+          {this.state.loading && <ActivityIndicator />}
           {this.state.studies.map(study => {
             const { studyId, title: studyName, authorName: studyAuthor, surveys } = study;
             // TODO: move these to backend
