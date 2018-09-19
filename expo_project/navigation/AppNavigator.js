@@ -5,7 +5,8 @@ import AuthLoadingScreen from '../screens/AuthLoadingScreen';
 import ComingSoonScreen from '../screens/ComingSoonScreen';
 import SurveyScreen from '../screens/SurveyScreen';
 import StudyIndexScreen from '../screens/StudyIndexScreen';
-import PrivacyScreen from '../screens/PrivacyScreen';
+import OnboardingScreen from '../screens/OnboardingScreen';
+import WebViewScreen from '../screens/WebViewScreen';
 
 const navigationOptions = {
   headerStyle: {
@@ -23,6 +24,7 @@ const AppStack = createStackNavigator(
     StudyIndexScreen,
     SurveyScreen,
     ComingSoonScreen,
+    WebViewScreen,
   },
   {
     initialRouteName: 'StudyIndexScreen',
@@ -32,10 +34,11 @@ const AppStack = createStackNavigator(
 const AuthStack = createStackNavigator(
   {
     AuthScreen,
-    PrivacyScreen,
+    OnboardingScreen,
+    WebViewScreen,
   },
   {
-    initialRouteName: 'AuthScreen',
+    initialRouteName: 'OnboardingScreen',
     navigationOptions,
   },
 );
