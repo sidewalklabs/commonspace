@@ -37,7 +37,10 @@ class AuthScreen extends React.Component {
         // console.log("sign in result:", firebaseSignInResult);
 
         // set token for next session, then navigate to the internal app
-        await AsyncStorage.setItem('userEmail', firebaseSignInResult.user.email);
+        // await AsyncStorage.setItem('userEmail', firebaseSignInResult.user.email);
+
+        //TODO: revert
+        await AsyncStorage.setItem('userEmail', 'matt@sidewalklabs.com');
 
         this.props.navigation.navigate('App');
       } else {
