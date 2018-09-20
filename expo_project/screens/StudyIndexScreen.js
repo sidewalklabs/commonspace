@@ -37,7 +37,7 @@ class SurveyIndexScreen extends React.Component {
     studies = await Promise.all(
       studies.map(async study => {
         try {
-          study.surveys = await getSurveysForStudy(firestore, study.studyId);
+          study.surveys = await getSurveysForStudy(firestore, study.studyId, userEmail);
         } catch (error) {
           console.error(error);
         }
