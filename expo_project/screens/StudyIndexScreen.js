@@ -50,7 +50,7 @@ class SurveyIndexScreen extends React.Component {
   render() {
     return (
       <View style={[styles.container]}>
-        <ScrollView style={[styles.container]} stickyHeaderIndices={[0]}>
+        <ScrollView style={[styles.container]}>
           {this.state.loading && <ActivityIndicator />}
           {this.state.studies.map(study => {
             const { studyId, title: studyName, authorName: studyAuthor, surveys } = study;
@@ -59,7 +59,7 @@ class SurveyIndexScreen extends React.Component {
             const studyInstructions =
               'You will be using Commons to collect observational data about what public activities people are doing in Thorncliffe Park. Following the study, a report will be made available online.';
             return (
-              <Card elevation={3} key={study.studyId}>
+              <Card elevation={3} key={study.studyId} style={styles.card}>
                 <CardContent style={styles.studyHeader}>
                   <Title>{studyName}</Title>
                   <Paragraph>
@@ -134,6 +134,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     flex: 1,
     padding: 10,
+  },
+  card: {
+    marginBottom: 20,
   },
   studyHeader: {
     paddingBottom: 10,

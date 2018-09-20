@@ -52,6 +52,16 @@ class MapWithMarkers extends React.Component {
     });
   };
 
+  fitToCoordinates = () => {
+    // timeout hack to make sure map is loaded :/
+    setTimeout(() => {
+      this.map.fitToCoordinates(this.props.zoneLatLngs, {
+        edgePadding: { top: 20, right: 20, bottom: 100, left: 20 },
+        animated: true,
+      });
+    }, 2000);
+  };
+
   render() {
     /* 
       Note: we're taking advantage of the fact that AnimatedCircularProgress animates on mount
@@ -79,6 +89,10 @@ class MapWithMarkers extends React.Component {
         }}
         style={styles.container}>
         <MapView
+          ref={ref => {
+            this.map = ref;
+          }}
+          onLayout={this.fitToCoordinates}
           style={styles.mapStyle}
           provider="google"
           onPress={() => onMapPress()}
