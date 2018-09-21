@@ -103,7 +103,7 @@ class SurveyIndexScreen extends React.Component {
                                 locationId,
                               })
                             }>
-                            Start
+                            Enter
                           </Button>
                         </View>
                       </CardContent>
