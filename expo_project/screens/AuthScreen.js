@@ -19,6 +19,7 @@ class AuthScreen extends React.Component {
     try {
       console.log('start the log ing');
       const { type, idToken } = await Expo.Google.logInAsync({
+        androidClientId: '8677857213-avso90qgtscpsfj9cs1r5ri2p9i1nh4q.apps.googleusercontent.com',
         iosClientId: '8677857213-j9dn9ebe425td60q8c9tc20gomjbojip.apps.googleusercontent.com',
         iosStandaloneAppClientId:
           '8677857213-s1rosh2e597b3nccpqv67dbfpmc3q53o.apps.googleusercontent.com',
