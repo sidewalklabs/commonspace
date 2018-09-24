@@ -23,6 +23,9 @@ import * as uuid from 'uuid';
 
 import Theme from '../constants/Theme';
 import NoteModal from '../components/NoteModal';
+import MarkerMenu from '../components/MarkerMenu';
+
+import { getRandomIconColor } from '../utils/color';
 
 // TODO (Ananta): shouold be dynamically set
 const MIN_DRAWER_TRANSLATE_Y = 0;
@@ -81,7 +84,8 @@ class SurveyScreen extends React.Component {
       activeMarkerId: null,
       markers: [],
       zoneLatLngs: [],
-      modalVisible: false,
+      markerMenuTopLocation: undefined,
+      noteModalVisible: false,
       formScrollPosition: 0,
       pan: new Animated.ValueXY({ x: 0, y: INITIAL_DRAWER_TRANSLATE_Y }),
     };
@@ -92,7 +96,9 @@ class SurveyScreen extends React.Component {
     this.getToggleDirection = this.getToggleDirection.bind(this);
     this.toggleDrawer = this.toggleDrawer.bind(this);
     this.selectMarker = this.selectMarker.bind(this);
+    this.deleteMarker = this.deleteMarker.bind(this);
     this.createNewMarker = this.createNewMarker.bind(this);
+    this.duplicateMarker = this.duplicateMarker.bind(this);
     this.setMarkerLocation = this.setMarkerLocation.bind(this);
     this.setFormResponse = this.setFormResponse.bind(this);
   }
@@ -258,7 +264,7 @@ class SurveyScreen extends React.Component {
         .collection('survey')
         .doc(surveyId)
         .collection('dataPoints')
-        .doc(marker.id)
+        .doc(id)
         .set(marker);
 
       if (heightToScroll) {
@@ -293,6 +299,67 @@ class SurveyScreen extends React.Component {
     }
   }
 
+  deleteMarker(id) {
+    const studyId = this.props.navigation.getParam('studyId');
+    const surveyId = this.props.navigation.getParam('surveyId');
+
+    this.firestore
+      .collection('study')
+      .doc(studyId)
+      .collection('survey')
+      .doc(surveyId)
+      .collection('dataPoints')
+      .doc(id)
+      .delete()
+      .then(() => {
+        this.setState({
+          markers: _.reject(this.state.markers, { id }),
+          activeMarkerId: null,
+        });
+      })
+      .catch(function(error) {
+        console.error('Error removing document: ', error);
+      });
+    this.resetDrawer(MAX_DRAWER_TRANSLATE_Y);
+  }
+
+  duplicateMarker(id) {
+    const studyId = this.props.navigation.getParam('studyId');
+    const surveyId = this.props.navigation.getParam('surveyId');
+    const markersCopy = [...this.state.markers];
+    const markerToCopy = _.find(markersCopy, { id });
+
+    if (markerToCopy) {
+      const date = moment();
+      const dateLabel = date.format('HH:mm');
+      const title = 'Person ' + (markersCopy.length + 1);
+      const dataPointId = uuid.v4();
+      const color = getRandomIconColor();
+
+      const duplicateMarker = {
+        ...markerToCopy,
+        dataPointId,
+        color,
+        title,
+        dateLabel,
+      };
+
+      this.firestore
+        .collection('study')
+        .doc(studyId)
+        .collection('survey')
+        .doc(surveyId)
+        .collection('dataPoints')
+        .add(duplicateMarker)
+        .then(doc => {
+          const { id } = doc;
+          duplicateMarker.id = id;
+          markersCopy.push(duplicateMarker);
+          this.setState({ markers: markersCopy, activeMarkerId: id });
+        });
+    }
+  }
+
   selectMarker(activeMarkerId) {
     if (activeMarkerId === this.state.activeMarkerId) {
       this.toggleDrawer();
@@ -309,10 +376,10 @@ class SurveyScreen extends React.Component {
     const date = moment();
     const dateLabel = date.format('HH:mm');
     const title = 'Person ' + (markersCopy.length + 1);
-    const id = uuid.v4();
+    const dataPointId = uuid.v4();
 
     const marker = {
-      dataPointId: id,
+      dataPointId,
       location,
       color,
       title,
@@ -337,7 +404,6 @@ class SurveyScreen extends React.Component {
   }
 
   setMarkerLocation(id, location) {
-    // TODO: add logic for updating in db
     const studyId = this.props.navigation.getParam('studyId');
     const surveyId = this.props.navigation.getParam('surveyId');
     const markersCopy = [...this.state.markers];
@@ -387,6 +453,7 @@ class SurveyScreen extends React.Component {
             activeOpacity={1}
             onPress={this.toggleDrawer}>
             <Indicator onPress={this.toggleDrawer} />
+
             {activeMarker && (
               <View style={styles.headerContent}>
                 <View style={styles.personIconWrapper}>
@@ -396,6 +463,16 @@ class SurveyScreen extends React.Component {
                   <Text style={styles.title}>{activeMarker.title}</Text>
                   <Text>{activeMarker.dateLabel}</Text>
                 </View>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={e => {
+                    const { pageY } = e.nativeEvent;
+                    this.setState({
+                      markerMenuTopLocation: pageY - 120,
+                    });
+                  }}>
+                  <Icon.MaterialCommunityIcons name="dots-vertical" color="#787878" size={24} />
+                </TouchableOpacity>
                 <View style={styles.chevron}>
                   <Icon.Ionicons name={chevronIconName} color="#D8D8D8" size={30} />
                 </View>
@@ -421,7 +498,7 @@ class SurveyScreen extends React.Component {
                 <Button
                   onPress={() =>
                     this.setState({
-                      modalVisible: true,
+                      noteModalVisible: true,
                     })
                   }
                   style={styles.greyButton}
@@ -439,12 +516,26 @@ class SurveyScreen extends React.Component {
           )}
           <View style={styles.bottomGuard} />
         </Animated.View>
-        {this.state.modalVisible && (
+        {this.state.markerMenuTopLocation && (
+          <MarkerMenu
+            topLocation={this.state.markerMenuTopLocation}
+            onDuplicatePress={() => {
+              this.duplicateMarker(activeMarker.id);
+            }}
+            onDeletePress={() => {
+              this.deleteMarker(activeMarker.id);
+            }}
+            onClose={() => {
+              this.setState({ markerMenuTopLocation: null });
+            }}
+          />
+        )}
+        {this.state.noteModalVisible && (
           <NoteModal
             initialValue={note}
             onClose={note => {
               this.setFormResponse(activeMarker.id, 'note', note, 0);
-              this.setState({ modalVisible: false });
+              this.setState({ noteModalVisible: false });
             }}
           />
         )}
@@ -486,7 +577,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  titleContainer: { paddingVertical: 10, paddingHorizontal: 20 },
+  titleContainer: { paddingVertical: 10, paddingHorizontal: 20, flexGrow: 1 },
   title: { fontWeight: 'bold' },
   personIconWrapper: {
     padding: 12,
@@ -524,10 +615,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#D8D8D8',
     borderRadius: 10,
   },
-  chevron: {
-    position: 'absolute',
-    right: 20,
-  },
+  chevron: { marginHorizontal: 20 },
   instructionsContainer: {
     display: 'flex',
     flexDirection: 'row',

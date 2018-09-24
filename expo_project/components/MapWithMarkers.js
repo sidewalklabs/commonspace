@@ -3,10 +3,11 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { Platform, StyleSheet, TouchableOpacity } from 'react-native';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
-import { iconColors } from '../constants/Colors';
 import MapConfig from '../constants/Map';
 import PersonIcon from '../components/PersonIcon';
 import * as _ from 'lodash';
+
+import { getRandomIconColor } from '../utils/color';
 
 // NOTE: A longPress is more like 500ms,
 // however there's a delay between when the longPress is registered
@@ -23,22 +24,13 @@ class MapWithMarkers extends React.Component {
     this.state = {
       region: MapConfig.defaultRegion,
       circularProgressLocation: null,
-      nextMarkerColor: null,
+      markerColor: null,
     };
   }
 
-  getRandomIconColor = () => {
-    // enforce next color is not current color
-    const iconColorOptions = _.filter(
-      _.values(iconColors),
-      color => color !== this.state.nextMarkerColor,
-    );
-    return _.sample(iconColorOptions);
-  };
-
   startProgressAnimation = (locationX, locationY) => {
     this.setState({
-      nextMarkerColor: this.getRandomIconColor(),
+      markerColor: getRandomIconColor([this.state.markerColor]),
       circularProgressLocation: {
         top: locationY - CIRCULAR_PROGRESS_SIZE / 2,
         left: locationX - CIRCULAR_PROGRESS_SIZE / 2,
@@ -96,19 +88,23 @@ class MapWithMarkers extends React.Component {
           style={styles.mapStyle}
           provider="google"
           onPress={() => onMapPress()}
-          onLongPress={e => onMapLongPress(e.nativeEvent.coordinate, this.state.nextMarkerColor)}
+          onLongPress={e => onMapLongPress(e.nativeEvent.coordinate, this.state.markerColor)}
           initialRegion={this.state.region}
           showsUserLocation
           zoomEnabled
           pitchEnabled={false}
           mapType="satellite">
           <MapView.Polyline coordinates={zoneLatLngs} strokeColor="#D77C61" strokeWidth={6} />
-          {markers.map(marker => {
+          {markers.map((marker, index) => {
             const selected = marker.id === activeMarkerId;
             // trigger a re render when switching states, so it recenters itself
             const key = marker.id + (selected ? '-selected' : '');
+            // overlapping markers flicker, unless you specify dominance
+            // TODO: implement clustering and delete this hack
+            const zIndex = index;
             return (
               <MapView.Marker
+                zIndex={zIndex}
                 coordinate={marker.location}
                 key={key}
                 identifier={marker.id}
@@ -147,7 +143,7 @@ class MapWithMarkers extends React.Component {
             ]}
             size={CIRCULAR_PROGRESS_SIZE}
             width={5}
-            tintColor={this.state.nextMarkerColor}
+            tintColor={this.state.markerColor}
             backgroundColor="transparent"
             duration={CIRCULAR_PROGRESS_ANIMATION_DURATION}
             fill={100}

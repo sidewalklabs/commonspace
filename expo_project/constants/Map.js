@@ -2,8 +2,8 @@ export default {
   defaultRegion: {
     latitude: 43.703816,
     longitude: -79.343754,
-    latitudeDelta: 0.00043,
-    longitudeDelta: 0.00072,
+    latitudeDelta: 0.002,
+    longitudeDelta: 0.002,
   },
   features: [
     {
