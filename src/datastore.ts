@@ -57,7 +57,7 @@ export interface Survey {
     microclimate?: string;
     temperatureCelcius?: number;
     method: string;
-    userId?: string;
+    userEmail?: string;
     notes?: string;
 }
 
@@ -103,7 +103,7 @@ function setString(s: any) {
 }
 
 function flatMapper(someMap: any, f: any) {
-    return Object.keys(someMap).map(key => f(key)).filter(x => x !== undefined);
+    return Object.keys(someMap).map(f).filter(x => x !== undefined);
 }
 
 export function javascriptArrayToPostgresArray(xs) {
@@ -185,7 +185,7 @@ function createNewTableFromGehlFields(study: Study, tablename: string, fields: G
                     )`;
         default:
             console.error(new Set(fields));
-            throw new Error(`no table possible for selected fields: ${fields} `);
+            throw new Error(`no table possible for selected fields: ${fields}`);
     }
 }
 
@@ -234,7 +234,7 @@ export async function createUserFromEmail(pool: pg.Pool, email: string) {
         return userId;
     } catch (error) {
         console.error(error);
-        console.error(`could not add user with email: ${email}, with query: ${query} `);
+        console.error(`could not add user with email: ${email}, with query: ${query}`);
         throw error;
     }
 }
@@ -266,15 +266,29 @@ export async function giveUserStudyAcess(pool: pg.Pool, userEmail: string, study
             const pgRes2 = await pool.query(query);
             return [pgRes2, newUserId];
         }
-        console.error(`postgres error: ${JSON.stringify(error)} `);
+        console.error(`postgres error: ${JSON.stringify(error)}`);
         throw error;
     }
 }
 
 export async function createNewSurveyForStudy(pool: pg.Pool, survey: Survey) {
-    const query = `INSERT INTO data_collection.survey
-                   (study_id, survey_id, time_start, time_stop, representation, method, user_id)
-                   VALUES('${survey.studyId}', '${survey.surveyId}', '${survey.startDate}', '${survey.endDate}', '${survey.representation}', '${survey.method}', '${survey.userId}')`;
+    const getUserUidQuery = `WITH t (study_id, survey_id, time_start, time_stop, representation, method, user_email) as (
+                     VALUES(
+                       '${survey.studyId}'::uuid,
+                       '${survey.surveyId}'::uuid,
+                       '${survey.startDate}'::timestamp with time zone,
+                       '${survey.endDate}'::timestamp with time zone,
+                       '${survey.representation}'::TEXT,
+                       '${survey.method}'::TEXT,
+                       '${survey.userEmail}'::TEXT
+                     )
+                   )
+                   SELECT t.study_id, t.survey_id, t.time_start, t.time_stop, t.representation, t.method, u.user_id
+                   FROM  t
+                   JOIN public.users u
+                   on t.user_email = u.email`;
+    const query = `INSERT INTO data_collection.survey (study_id, survey_id, time_start, time_stop, representation, method, user_id)
+                   ${getUserUidQuery};`
     try {
         return pool.query(query);
     } catch (error) {
@@ -285,16 +299,16 @@ export async function createNewSurveyForStudy(pool: pg.Pool, survey: Survey) {
 
 export async function getTablenameForSurveyId(pool: pg.Pool, surveyId: string) {
     const query = `SELECT tablename
-                   FROM  data_collection.survey_to_tablename
-                   WHERE survey_id='${surveyId}'`;
+    FROM  data_collection.survey_to_tablename
+    WHERE survey_id = '${surveyId}'`;
     let pgRes;
     try {
         pgRes = await pool.query(query);
     } catch (error) {
-        console.error(`postgres error: ${error} for query: ${query}`);
+        console.error(`postgres error: ${error} for query: ${query} `);
         throw error;
     }
-    if (pgRes.rowCount == 1) {
+    if (pgRes.rowCount === 1) {
         return pgRes.rows[0]['tablename'];
     } else {
         throw new Error(`Invalid return for surveyId: ${surveyId}, ${JSON.stringify(pgRes)}`);
@@ -343,7 +357,7 @@ function processDataPointToValue(dataPoint, key) {
     } else if (key === 'activities') {
         const { activities } = dataPoint;
         const activitesAsArr = Array.isArray(activities) ? activities : [activities];
-        return `${javascriptArrayToPostgresArray(activitesAsArr)}::data_collection.activities[]`;
+        return `${javascriptArrayToPostgresArray(activitesAsArr)}:: data_collection.activities[]`;
     } else if (validDataPointProperties.has(key)) {
         return `'${dataPoint[key]}'`;
     } else {
@@ -361,9 +375,9 @@ function transformToPostgresInsert(dataPoint) {
     const columns = flatMapper(dataPoint, processKeyToColumnName);
     const values = flatMapper(dataPoint, (key) => processDataPointToValue(dataPoint, key));
     dataPoint = deleteNonGehlFields(dataPoint)
-    //const gehlFieldColumns = flatMapper(dataPoint, processKeyToColumnName);
-    //const gehlFieldValues = flatMapper(dataPoint, (key) => processDataPointToValue(dataPoint, key));
-    const insert_statement = `(${(columns.join(', '))}) VALUES (${values.join(', ')})`;
+    // const gehlFieldColumns = flatMapper(dataPoint, processKeyToColumnName);
+    // const gehlFieldValues = flatMapper(dataPoint, (key) => processDataPointToValue(dataPoint, key));
+    const insert_statement = `(${(columns.join(', '))}) VALUES(${values.join(', ')})`;
     return `${insert_statement}
             ON CONFLICT(data_point_id)
             DO UPDATE SET(${(columns.join(', '))}) = (${values.join(', ')})`;
@@ -372,8 +386,7 @@ function transformToPostgresInsert(dataPoint) {
 export async function addDataPointToSurveyNoStudyId(pool: pg.Pool, surveyId: string, dataPoint: any) {
     const tablename = await getTablenameForSurveyId(pool, surveyId);
     const query = `INSERT INTO ${tablename}
-                   ${ transformToPostgresInsert({ survey_id: surveyId, ...dataPoint })} `;
-    console.log('query: ', query);
+                   ${ transformToPostgresInsert({ survey_id: surveyId, ...dataPoint })}`;
     try {
         return pool.query(query);
     } catch (error) {
@@ -385,7 +398,19 @@ export async function addDataPointToSurveyNoStudyId(pool: pg.Pool, surveyId: str
 export async function addDataPointToSurveyWithStudyId(pool: pg.Pool, studyId: string, surveyId: string, dataPoint: any) {
     const tablename = await studyIdToTablename(studyId);
     const query = `INSERT INTO ${tablename}
-                   ${ transformToPostgresInsert({ survey_id: surveyId, ...dataPoint })}`;
+                   ${transformToPostgresInsert({ survey_id: surveyId, ...dataPoint })}`;
+    try {
+        return pool.query(query);
+    } catch (error) {
+        console.error(`error executing sql query: ${query}`)
+        throw error;
+    }
+}
+
+export async function deleteDataPoint(pool: pg.Pool, surveyId: string, dataPointId: any) {
+    const tablename = await getTablenameForSurveyId(pool, surveyId);
+    const query = `DELETE FROM ${tablename}
+WHERE data_point_id = '${dataPointId}'`;
     try {
         return pool.query(query);
     } catch (error) {

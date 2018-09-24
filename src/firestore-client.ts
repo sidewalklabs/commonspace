@@ -65,15 +65,6 @@ export async function saveStudy(
   );
 }
 
-export async function getAvailableStudiesForUserId(
-  db: firestore.Firestore,
-  userId: string
-) {
-  return getCollectionAsArray(
-    db.collection("study").where("userId", "==", userId)
-  );
-}
-
 export async function getSurveysForStudy(
   db: firestore.Firestore,
   studyId: string,
@@ -84,7 +75,7 @@ export async function getSurveysForStudy(
       .collection("study")
       .doc(studyId)
       .collection("survey")
-      .where("email", "==", email)
+      .where("userEmail", "==", email)
   );
 }
 

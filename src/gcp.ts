@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import * as pg from 'pg';
 import * as uuid from 'uuid';
 
-import { addDataPointToSurveyNoStudyId, addDataPointToSurveyWithStudyId, createLocation, createNewSurveyForStudy, createStudy, createUser, giveUserStudyAcess, GehlFields } from './datastore';
+import { addDataPointToSurveyNoStudyId, addDataPointToSurveyWithStudyId, createLocation, createNewSurveyForStudy, createStudy, createUser, deleteDataPoint, giveUserStudyAcess, GehlFields } from './datastore';
 
 const pgConnectionInfo = {
     connectionLimit: 1,
@@ -79,7 +79,7 @@ export async function saveNewLocation(req: Request, res: Response) {
 }
 
 export async function saveDataPointToStudy(req: Request, res: Response) {
-    const { studyId, surveyId, ...dataPoint } = req.body;
+    const { study_id: studyId, survey_id: surveyId, ...dataPoint } = req.body;
     try {
         if (studyId) {
             await addDataPointToSurveyWithStudyId(pool, studyId, surveyId, dataPoint)
@@ -91,4 +91,14 @@ export async function saveDataPointToStudy(req: Request, res: Response) {
         throw error;
     }
     res.send(dataPoint);
+}
+
+export async function deleteDataPointFromStudy(req: Request, res: Response) {
+    const { data_point_id: dataPointId, survey_id: surveyId } = req.body;
+    try {
+        deleteDataPoint(pool, surveyId, dataPointId);
+    } catch (error) {
+        console.error(`error saving data point for payload: ${JSON.stringify(req.body)}`);
+    }
+    res.send({ data_point_id: dataPointId, survey_di: surveyId });
 }

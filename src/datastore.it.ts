@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 import * as pg from 'pg';
 import * as uuidv4 from 'uuid/v4';
 
-import { getTablenameForSurveyId, createLocation, createStudy, createNewSurveyForStudy, createUser, addDataPointToSurveyNoStudyId, addDataPointToSurveyWithStudyId, Location, Study, Survey, User, giveUserStudyAcess } from './datastore';
+import { addDataPointToSurveyNoStudyId, addDataPointToSurveyWithStudyId, getTablenameForSurveyId, createLocation, createStudy, createNewSurveyForStudy, createUser, deleteDataPoint, Location, Study, Survey, User, giveUserStudyAcess } from './datastore';
 
 dotenv.config();
 
@@ -111,7 +111,7 @@ const surveyNearGarbage: Survey = {
     endDate: '2018-09-14T19:00:00Z',
     representation: 'absolute',
     method: 'analog',
-    userId: sebastian.userId
+    userEmail: sebastian.email
 }
 
 async function seedDatabase() {
@@ -259,7 +259,7 @@ test('save a data point with a single activity', async () => {
         "age": "child",
         "activities": "commercial",
         "posture": "leaning"
-    }
+    };
     const { rowCount, command } = await addDataPointToSurveyNoStudyId(pool, surveyNearGarbage.surveyId, dataPoint);
     expect(rowCount).toBe(1);
     expect(command).toBe('INSERT');
@@ -275,7 +275,7 @@ test('save a data point with multiple activities', async () => {
             "latitude": "43.70416809098892",
             "longitude": "-79.34354536235332"
         },
-        "activities": ["commercial", "electronics"],
+        "activities": ["commercial", "recreation_active", "electronic_engagement"],
         "posture": "leaning"
     }
     const { rowCount, command } = await addDataPointToSurveyNoStudyId(pool, surveyNearGarbage.surveyId, dataPoint);
@@ -283,6 +283,26 @@ test('save a data point with multiple activities', async () => {
     expect(command).toBe('INSERT');
 
 
+});
+
+test('delete a data point', async () => {
+    const dataPointId = uuidv4();
+    const dataPoint = {
+        "data_point_id": dataPointId,
+        "location": {
+            "latitude": "43.70416809098892",
+            "longitude": "-79.34354536235332"
+        },
+        "age": "child",
+        "activities": "commercial",
+        "posture": "leaning"
+    };
+    const { rowCount: rowCountAdd, command: commandAdd } = await addDataPointToSurveyNoStudyId(pool, surveyNearGarbage.surveyId, dataPoint);
+    expect(rowCountAdd).toBe(1);
+    expect(commandAdd).toBe('INSERT');
+    const { rowCount: rowCountDelete, command: commandDelete } = await deleteDataPoint(pool, surveyNearGarbage.surveyId, dataPointId);
+    expect(rowCountDelete).toBe(1);
+    expect(commandDelete).toBe('DELETE');
 })
 
 afterAll(async () => {

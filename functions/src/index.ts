@@ -10,7 +10,6 @@ import { UserRecord } from 'firebase-functions/lib/providers/auth';
 
 export function snakeCasify(x: object) {
     const keys = Object.keys(x);
-    console.log("keys: ", keys);
     const newKeyValuePairs = keys.map(k => {
         const previousValue = x[k];
         let newValue;
@@ -26,7 +25,6 @@ export function snakeCasify(x: object) {
         res[newKey] = newValue;
         return res;
     });
-    console.log('new pairs: ', newKeyValuePairs);
     return Object.assign({}, ...newKeyValuePairs);
 }
 
@@ -214,15 +212,26 @@ async function sendDataPointSnapshotToGcp(snapshot: FirebaseFirestore.DocumentSn
     const surveyRef = snapshot.ref.parent.parent;
     const surveySnapshot = await surveyRef.get()
     const survey = surveySnapshot.data() as Survey;
-    dataPoint.surveyId = survey.surveyId;
-    await callGcp(functions.config().gcp.cloud_functions_url, '/saveDataPointToStudy', dataPoint);
+    dataPoint.survey_id = survey.surveyId;
+    return await callGcp(functions.config().gcp.cloud_functions_url, '/saveDataPointToStudy', dataPoint);
 }
 export const addDataPointToSurvey = functions.firestore.document('/study/{studyId}/survey/{surveyId}/dataPoints/{dataPointId}')
     .onCreate(async (snapshot: FirebaseFirestore.DocumentSnapshot, ctx: functions.EventContext) => {
-        await sendDataPointSnapshotToGcp(snapshot);
+        return await sendDataPointSnapshotToGcp(snapshot);
     });
 
 export const updateDataPointForSurvey = functions.firestore.document('/study/{studyId}/survey/{surveyId}/dataPoints/{dataPointId}')
     .onUpdate(async ({ after, before }, ctx) => {
-        await sendDataPointSnapshotToGcp(after);
+        return await sendDataPointSnapshotToGcp(after);
+    });
+
+export const deleteDataPointForSurvey = functions.firestore.document('/study/{studyId}/survey/{surveyId}/dataPoints/{dataPointId}')
+    .onDelete(async (snapshot) => {
+        const { dataPointId } = snapshot.data();
+        const surveyRef = snapshot.ref.parent.parent;
+        const surveySnapshot = await surveyRef.get()
+        const survey = surveySnapshot.data() as Survey;
+        const { surveyId } = survey;
+        const payload = snakeCasify({ dataPointId, surveyId });
+        return await callGcp(functions.config().gcp.cloud_functions_url, '/deleteDataPointFromStudy', payload);
     });
