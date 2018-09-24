@@ -3,7 +3,7 @@ import React from 'react';
 
 import PersonIcon from './PersonIcon';
 
-import { FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { FlatList, Platform, StyleSheet, TouchableOpacity } from 'react-native';
 
 import * as _ from 'lodash';
 
@@ -24,8 +24,12 @@ class MarkerCarousel extends React.Component {
   }
 
   onViewableItemsChanged({ viewableItems }) {
+    // Note: only works on ios
+    // Keep track of which markers are visible in the the header, so we don't scroll to them on select
     const viewableIndices = _.map(viewableItems, 'index');
-    this.setState({ viewableIndices });
+    this.setState({
+      viewableIndices,
+    });
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -54,6 +58,7 @@ class MarkerCarousel extends React.Component {
 
   render() {
     const { activeMarkerId, markers, onMarkerPress } = this.props;
+    const onViewableItemsChanged = Platform.OS === 'ios' ? this.onViewableItemsChanged : undefined;
     return (
       <FlatList
         style={styles.container}
@@ -75,7 +80,7 @@ class MarkerCarousel extends React.Component {
           offset: CAROUSEL_ITEM_LENGTH * index,
           index,
         })}
-        onViewableItemsChanged={this.onViewableItemsChanged}
+        onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={VIEWABILITY_CONFIG}
         renderItem={({ item, index }) => {
           const selected = item.id === activeMarkerId;

@@ -12,6 +12,10 @@ class SurveyHeader extends React.Component {
     this.state = {
       timer: SURVEY_LENGTH_MS,
     };
+    this.state = { timer: SURVEY_LENGTH_MS };
+    // On android, we get an error for using a long timer See https://github.com/facebook/react-native/issues/12981
+    // For now, just hide it from the user
+    console.ignoredYellowBox = ['Setting a timer'];
   }
 
   componentDidMount() {
