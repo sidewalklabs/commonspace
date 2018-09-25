@@ -311,7 +311,7 @@ export async function getTablenameForSurveyId(pool: pg.Pool, surveyId: string) {
     if (pgRes.rowCount === 1) {
         return pgRes.rows[0]['tablename'];
     } else {
-        throw new Error(`Invalid return for surveyId: ${surveyId}, ${JSON.stringify(pgRes)}`);
+        throw new Error(`no tablename found for surveyId: ${surveyId}, ${JSON.stringify(pgRes)}`);
     }
 }
 
@@ -410,9 +410,14 @@ export async function addDataPointToSurveyWithStudyId(pool: pg.Pool, studyId: st
 export async function deleteDataPoint(pool: pg.Pool, surveyId: string, dataPointId: any) {
     const tablename = await getTablenameForSurveyId(pool, surveyId);
     const query = `DELETE FROM ${tablename}
-WHERE data_point_id = '${dataPointId}'`;
+                   WHERE data_point_id = '${dataPointId}'`;
     try {
-        return pool.query(query);
+        const res = await pool.query(query);
+        const { rowCount } = res;
+        if (rowCount !== 1) {
+            throw new Error(`[query ${query}] No data point found to delete for data_point_id: ${dataPointId}`)
+        }
+        return res;
     } catch (error) {
         console.error(`error executing sql query: ${query}`)
         throw error;

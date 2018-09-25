@@ -118,4 +118,22 @@ Content-Type: application/json
         ]
     }
 }
+# the survey id does not exist and should cause the cloud function to error
+:save_data_point_url = https://us-central1-nyc-tlc-1225.cloudfunctions.net/saveDataPointToStudy
+POST :save_data_point_url
+Accept-Encoding: application/json
+Content-Type: application/json
+
+{
+ "survey_id": "19fb0d8d-eab1-4ff6-96f4-980f71b06e52",
+ "data_point_id": "32729f2d-7e78-420c-b29b-043b8f8a68bb",
+ "color": "#F44336",
+ "date_label": "20:46",
+ "id": "eAeQVY7fCzGdzC8Mq5Mq",
+ "location": {
+  "latitude": 43.70392498659262,
+  "longitude": -79.3435537442565
+ },
+ "title": "Person 1"
+}
 #
