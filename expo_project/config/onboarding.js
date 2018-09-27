@@ -2,7 +2,7 @@ export default [
   {
     title: 'Design a study based on your needs',
     description:
-      'Commons is a mobile app that you can use to survey public life activity in your community.',
+      'Public Life Explorer is a mobile app that you can use to survey public life activity in your community.',
     ionicon: 'ios-pin',
   },
   {
