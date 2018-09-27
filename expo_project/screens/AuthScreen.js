@@ -18,24 +18,22 @@ class AuthScreen extends React.Component {
   _signIn = async () => {
     try {
       console.log('start the log ing');
-      const { type, idToken } = await Expo.Google.logInAsync({
+      const { type, idToken, accessToken } = await Expo.Google.logInAsync({
         androidClientId: '8677857213-avso90qgtscpsfj9cs1r5ri2p9i1nh4q.apps.googleusercontent.com',
+        androidStandaloneAppClientId:
+          '8677857213-ft2nkhonr0iapgg08r0htbrrco7efnc0.apps.googleusercontent.com',
         iosClientId: '8677857213-j9dn9ebe425td60q8c9tc20gomjbojip.apps.googleusercontent.com',
         iosStandaloneAppClientId:
           '8677857213-s1rosh2e597b3nccpqv67dbfpmc3q53o.apps.googleusercontent.com',
         scopes: ['profile', 'email'],
       });
-
       if (type === 'success') {
         // Build Firebase credential with the access token.
-        const credential = firebase.auth.GoogleAuthProvider.credential(idToken);
-        // console.log("credential:", credential);
-
-        // Sign in with credential from the Facebook user.
+        const credential = firebase.auth.GoogleAuthProvider.credential(idToken, accessToken);
+        // Sign in with credential from the Google user.
         const firebaseSignInResult = await firebase
           .auth()
           .signInAndRetrieveDataWithCredential(credential);
-        // console.log("sign in result:", firebaseSignInResult);
 
         // set token for next session, then navigate to the internal app
         await AsyncStorage.setItem('userEmail', firebaseSignInResult.user.email);
@@ -52,7 +50,7 @@ class AuthScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <Title style={styles.title}>Log in to Commons</Title>
+        <Title style={styles.title}>Log in to Public Life Explorer</Title>
         <Subheading style={styles.subheading}>
           If you are volunteering to conduct a survey, log in below with your email address to get
           started. Sidewalk Labs, the app developer, will only use your information to authenticate
