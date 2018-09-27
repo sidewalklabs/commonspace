@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS survey (
 );
 
 
-CREATE VIEW survey_to_tablename AS
+CREATE OR REPLACE VIEW survey_to_tablename AS
  SELECT sr.survey_id, st.tablename
  FROM study as st
  INNER JOIN survey as sr
