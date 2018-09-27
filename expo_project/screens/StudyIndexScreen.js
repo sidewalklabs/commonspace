@@ -3,6 +3,7 @@ import { ActivityIndicator, AsyncStorage, ScrollView, StyleSheet, Text, View } f
 import { withNavigation } from 'react-navigation';
 import Theme from '../constants/Theme';
 import { Button, Card, CardContent, Divider, Title, Paragraph } from 'react-native-paper';
+import * as _ from 'lodash';
 
 import { firestore } from '../lib/firebaseSingleton';
 import { getAuthorizedStudiesForEmail, getSurveysForStudy } from '../lib/firestore';
@@ -37,7 +38,8 @@ class SurveyIndexScreen extends React.Component {
     studies = await Promise.all(
       studies.map(async study => {
         try {
-          study.surveys = await getSurveysForStudy(firestore, study.studyId, userEmail);
+          const surveys = await getSurveysForStudy(firestore, study.studyId, userEmail);
+          study.surveys = _.sortBy(surveys, 'title');
         } catch (error) {
           console.error(error);
         }
