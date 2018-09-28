@@ -6,9 +6,11 @@ import * as _ from 'lodash';
 import QUESTION_CONFIG from '../config/questions';
 
 class Survey extends React.Component {
-  onSelectPress = (key, value, selectableHeight) => {
+  onSelectPress = (key, value, selectedValue, selectableHeight) => {
     const { activeMarker, onSelect } = this.props;
-    onSelect(activeMarker.id, key, value, selectableHeight);
+    // If editing a response, don't scroll
+    const heightToScroll = selectedValue ? 0 : selectableHeight;
+    onSelect(activeMarker.id, key, value, heightToScroll);
   };
 
   onMultiselectPress = (key, value, selectedValue) => {
@@ -37,7 +39,7 @@ class Survey extends React.Component {
               onSelectablePress={(value, selectableHeight) =>
                 questionType === 'multiselect'
                   ? this.onMultiselectPress(questionKey, value, selectedValue)
-                  : this.onSelectPress(questionKey, value, selectableHeight)
+                  : this.onSelectPress(questionKey, value, selectedValue, selectableHeight)
               }
               selectedValue={selectedValue}
               selectedColor={activeMarker.color}

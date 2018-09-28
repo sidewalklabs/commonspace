@@ -67,8 +67,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFAFA',
     borderRadius: 3,
     borderColor: 'rgba(0, 0, 0, 0.12)',
-    padding: 5,
-    marginRight: 5,
+    padding: 8,
+    marginRight: 10,
     marginTop: 10,
   },
   firstCell: {
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     fontFamily: 'monaco',
   },
   title: {
-    marginBottom: 5,
+    marginVertical: 5,
     paddingHorizontal: 20,
   },
 });
