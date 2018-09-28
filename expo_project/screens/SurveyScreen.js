@@ -464,6 +464,7 @@ class SurveyScreen extends React.Component {
                   <Text>{activeMarker.dateLabel}</Text>
                 </View>
                 <TouchableOpacity
+                  style={styles.markerMenuButton}
                   activeOpacity={1}
                   onPress={e => {
                     const { pageY } = e.nativeEvent;
@@ -577,6 +578,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  markerMenuButton: {
+    padding: 20,
+  },
   titleContainer: { paddingVertical: 10, paddingHorizontal: 20, flexGrow: 1 },
   title: { fontWeight: 'bold' },
   personIconWrapper: {
@@ -615,7 +619,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#D8D8D8',
     borderRadius: 10,
   },
-  chevron: { marginHorizontal: 20 },
+  chevron: { marginRight: 20 },
   instructionsContainer: {
     display: 'flex',
     flexDirection: 'row',
