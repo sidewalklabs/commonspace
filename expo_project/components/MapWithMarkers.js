@@ -142,7 +142,7 @@ class MapWithMarkers extends React.Component {
               },
             ]}
             size={CIRCULAR_PROGRESS_SIZE}
-            width={5}
+            width={8}
             tintColor={this.state.markerColor}
             backgroundColor="transparent"
             duration={CIRCULAR_PROGRESS_ANIMATION_DURATION}

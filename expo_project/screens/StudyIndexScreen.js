@@ -1,7 +1,15 @@
+import { Icon } from 'expo';
 import React from 'react';
-import { ActivityIndicator, AsyncStorage, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  AsyncStorage,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { withNavigation } from 'react-navigation';
-import Theme from '../constants/Theme';
 import { Button, Card, CardContent, Divider, Title, Paragraph } from 'react-native-paper';
 import * as _ from 'lodash';
 
@@ -23,14 +31,20 @@ class SurveyIndexScreen extends React.Component {
     loading: true,
   };
 
-  static navigationOptions = {
+  static navigationOptions = ({ navigation }) => ({
     headerTitle: 'Your Studies',
-  };
-
-  _signOut = async () => {
-    await AsyncStorage.clear();
-    this.props.navigation.navigate('Auth');
-  };
+    headerLeft: (
+      <TouchableOpacity
+        onPress={() => {
+          navigation.toggleDrawer();
+        }}
+        style={{
+          paddingHorizontal: 12,
+        }}>
+        <Icon.MaterialCommunityIcons name="menu" color="white" size={24} />
+      </TouchableOpacity>
+    ),
+  });
 
   async componentDidMount() {
     const userEmail = await AsyncStorage.getItem('userEmail');
@@ -46,6 +60,7 @@ class SurveyIndexScreen extends React.Component {
         return study;
       }),
     );
+    studies = _.sortBy(studies, 'title');
     this.setState({ studies, loading: false });
   }
 
@@ -59,7 +74,7 @@ class SurveyIndexScreen extends React.Component {
             // TODO: move these to backend
             const authorUrl = 'https://parkpeople.ca/';
             const studyInstructions =
-              'You will be using Commons to collect observational data about what public activities people are doing in Thorncliffe Park. Following the study, a report will be made available online.';
+              'You will be using this app to collect observational data about what public activities people are doing in Thorncliffe Park. Following the study, a report will be made available online.';
             return (
               <Card elevation={3} key={study.studyId} style={styles.card}>
                 <CardContent style={styles.studyHeader}>
@@ -123,9 +138,6 @@ class SurveyIndexScreen extends React.Component {
               </Paragraph>
             )}
         </ScrollView>
-        <Button raised primary dark theme={{ ...Theme, roundness: 100 }} onPress={this._signOut}>
-          Log Out
-        </Button>
       </View>
     );
   }
