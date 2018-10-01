@@ -58,20 +58,26 @@ class SurveyScreen extends React.Component {
   static navigationOptions = ({ navigation }) => ({
     headerTitle: navigation.getParam('surveyTitle'),
     headerLeft: (
-      <Button
+      <TouchableOpacity
         onPress={() => {
           navigation.goBack();
         }}
-        primary
         style={{
           backgroundColor: 'white',
-          minWidth: 0,
-          padding: 0,
+          paddingHorizontal: 15,
+          paddingVertical: 5,
+          borderRadius: 20,
           marginLeft: 10,
-        }}
-        theme={{ ...Theme, roundness: 100 }}>
-        <Text style={{ fontSize: 14 }}>Exit</Text>
-      </Button>
+        }}>
+        <Text
+          style={{
+            fontSize: 14,
+            color: Theme.colors.primary,
+            fontWeight: 'bold',
+          }}>
+          Exit
+        </Text>
+      </TouchableOpacity>
     ),
   });
 

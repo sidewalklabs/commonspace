@@ -1,4 +1,8 @@
-import { createStackNavigator, createSwitchNavigator } from 'react-navigation';
+import {
+  createDrawerNavigator,
+  createStackNavigator,
+  createSwitchNavigator,
+} from 'react-navigation';
 import Theme from '../constants/Theme';
 import AuthScreen from '../screens/AuthScreen';
 import AuthLoadingScreen from '../screens/AuthLoadingScreen';
@@ -7,6 +11,8 @@ import SurveyScreen from '../screens/SurveyScreen';
 import StudyIndexScreen from '../screens/StudyIndexScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import WebViewScreen from '../screens/WebViewScreen';
+
+import DrawerNavigatorScreen from '../screens/DrawerNavigatorScreen';
 
 const navigationOptions = {
   headerStyle: {
@@ -43,10 +49,20 @@ const AuthStack = createStackNavigator(
   },
 );
 
+const DrawerNavigator = createDrawerNavigator(
+  {
+    AppStack,
+  },
+  {
+    initialRouteName: 'AppStack',
+    contentComponent: DrawerNavigatorScreen,
+  },
+);
+
 export default createSwitchNavigator(
   {
     AuthLoading: AuthLoadingScreen,
-    App: AppStack,
+    App: DrawerNavigator,
     Auth: AuthStack,
   },
   {

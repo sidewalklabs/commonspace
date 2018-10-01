@@ -1,5 +1,5 @@
 import React from 'react';
-import { AsyncStorage, StatusBar, View } from 'react-native';
+import { StatusBar, View } from 'react-native';
 import { AppLoading, Font, Icon } from 'expo';
 import AppNavigator from './navigation/AppNavigator';
 import { Provider as PaperProvider } from 'react-native-paper';

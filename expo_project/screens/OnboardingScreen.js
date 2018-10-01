@@ -64,7 +64,7 @@ class OnboardingScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <LinearGradient colors={['#3890e7', '#0c3987']} style={styles.graddientContainer}>
+        <LinearGradient colors={['#4e87ec', '#0c3987']} style={styles.graddientContainer}>
           <ScrollView
             ref={ref => (this.carousel = ref)}
             horizontal

@@ -1,7 +1,7 @@
 import React from 'react';
-import { AsyncStorage, StyleSheet, View } from 'react-native';
+import { AsyncStorage, Linking, StyleSheet, Text, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
-import { Button, Subheading, Title } from 'react-native-paper';
+import { Button, Paragraph, Title } from 'react-native-paper';
 import Theme from '../constants/Theme';
 import { Icon } from 'expo';
 import firebase from '../lib/firebaseSingleton';
@@ -47,17 +47,33 @@ class AuthScreen extends React.Component {
     }
   };
 
+  _openEmailDialog = async () => {
+    const url = 'mailto:privacy@sidewalklabs.com';
+    Linking.canOpenURL(url).then(supported => {
+      if (supported) {
+        Linking.openURL(url).catch(err => {
+          console.warn('openURL error', err);
+        });
+      }
+    });
+  };
+
   render() {
     return (
       <View style={styles.container}>
         <Title style={styles.title}>Log in to Public Life Explorer</Title>
-        <Subheading style={styles.subheading}>
-          If you are volunteering to conduct a survey, log in below with your email address to get
-          started. Sidewalk Labs, the app developer, will only use your information to authenticate
-          you to the app notify you about the studies you have opted into. View the privacy policy
-          below or email privacy@sidewalklabs.com with any questions about how your personal
-          information is used.
-        </Subheading>
+        <Paragraph style={styles.paragraph}>
+          If you are volunteering to conduct a survey, log in below. Sidewalk Labs, the app
+          developer, will only use your information to authenticate you to the app and notify you
+          about the studies you have opted into.{' '}
+        </Paragraph>
+        <Paragraph style={styles.paragraph}>
+          View the privacy policy below or email{' '}
+          <Text style={{ color: 'blue' }} onPress={this._openEmailDialog}>
+            privacy@sidewalklabs.com
+          </Text>{' '}
+          with any questions about how your personal information is used.
+        </Paragraph>
         <Button
           raised
           primary
@@ -90,14 +106,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 40,
   },
   title: {
     fontSize: 25,
-    marginHorizontal: 50,
+    textAlign: 'center',
+    marginBottom: 20,
   },
-  subheading: {
-    marginHorizontal: 50,
-    marginVertical: 30,
+  paragraph: {
+    textAlign: 'center',
+    marginBottom: 20,
   },
 });
 
