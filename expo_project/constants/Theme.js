@@ -8,4 +8,10 @@ export default {
     primary: '#0271cd',
     accent: '#1C4442',
   },
+  fonts: {
+    regular: 'System',
+    medium: 'System',
+    light: 'System',
+    thin: 'System',
+  },
 };
