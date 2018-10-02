@@ -61,7 +61,7 @@ class AuthScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <Title style={styles.title}>Log in to Public Life Explorer</Title>
+        <Title style={styles.title}>Log in to Sidewalk Commons</Title>
         <Paragraph style={styles.paragraph}>
           If you are volunteering to conduct a survey, log in below. Sidewalk Labs, the app
           developer, will only use your information to authenticate you to the app and notify you
