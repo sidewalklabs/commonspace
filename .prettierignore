@@ -1,0 +1,7 @@
+expo_project/
+node_modules/
+config/
+deployment/
+dist/
+functions/
+js_scripts/
