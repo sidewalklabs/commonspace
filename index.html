@@ -3,61 +3,14 @@
     <head>
       <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
       <title>Site Template - Welcome!</title>
-      <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-app.js"></script>
-      <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-firestore.js"></script>
-      <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-database.js"></script>
-      <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-functions.js"></script>
-      <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-auth.js"></script>
-      <script src="https://cdn.firebase.com/libs/firebaseui/3.1.1/firebaseui.js"></script>
       <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.1.1/firebaseui.css" />
     </head>
     <body>
+      <div id="app"></div>
       <div id="firebaseui-auth-container"></div>
-      <div id="new-study" class="container" hidden>
-        <form id="new-study-form"">
-          <label for="study-title">Study Title</label>
-          <input id="study-title" type="text" name="text">
-          </br>
-          <label for="protocol-version-selection">Choose a version of the gehl protocol:</label>
-          <select id="protocol-version-selection">
-            <option value="1.0">1.0</option>
-            <option value="beta">Beta</option>
-          </select>
-          </br>
-          <input type="submit" value="Create Study" >
-        </form>
-      </div>
-      </br>
-      <div id="add-surveyor" class="container" hidden>
-        <h4>Invite Surveyor</h4>
-        <form id="new-surveyor">
-          <select id="study-select">
-          </br>
-          <label for="surveyor-email">Surveyor Email</label>
-          <input id="surveyor-email" type="text">
-          </br>
-          <label for="study-start-date">Start Time:</label>
-          <input type="time" id="study-start-date" name="appt-time"
-               min="9:00" max="18:00" required />
-          </br>
-          <label for="study-end-date">End Time:</label>
-          <input type="time" id="study-end-date" name="appt-time"
-               min="9:00" max="18:00" required />
-          </br>
-          <input type="submit" value="Authorize Surveyor" >
-        </form>
-      </div>
-      <div id="start-survey" class="container" hidden>
-        <h4>Create a survey for Study</h4>
-        <form id="new-survey">
-          <select id="study-select-2">
-          </br>
-          <input type="submit" value="Authorize Surveyor" >
-        </form>
-      </div>
     </body>
     <!-- we use UMD modules in our webpack for gcp cloud function reasons, yes, we can do otherwise -->
     <script> if (global === undefined) { var global = window; } </script>
-    <script src="dist/firestore.js"></script>
-    <script src="index.js"></script/>
+    <script src="dist/app.bundle.js"></script>
 </html>
+

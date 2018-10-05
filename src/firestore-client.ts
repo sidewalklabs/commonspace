@@ -34,6 +34,29 @@ export async function saveStudyWithToken(
     return study.studyId;
 }
 
+export async function getStudiesWhereAdminForUser(
+    db: firestore.Firestore,
+    userId: string
+) {
+    const query = await db.collection('study').where('userId', '==', userId);
+    const querySnapshots = await query.get();
+    const ps = [];
+
+    querySnapshots.forEach(snapshot => {
+        ps.push(
+            getCollectionAsArray(snapshot.ref.collection('location')).then(
+                locations => {
+                    const study = snapshot.data();
+                    study.locations = locations;
+                    return study;
+                }
+            )
+        );
+    });
+
+    return await Promise.all(ps);
+}
+
 export interface FirestoreStudy extends Study {
     locations: Location[];
 }
@@ -69,15 +92,19 @@ export async function saveStudy(
 export async function getSurveysForStudy(
     db: firestore.Firestore,
     studyId: string,
-    email: string
+    email?: string
 ) {
-    return getCollectionAsArray(
-        db
+    const query = email
+        ? db
             .collection('study')
             .doc(studyId)
             .collection('survey')
             .where('userEmail', '==', email)
-    );
+        : db
+            .collection('study')
+            .doc(studyId)
+            .collection('survey');
+    return getCollectionAsArray(query);
 }
 
 export function getAuthorizedStudiesForEmail(

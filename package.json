@@ -29,6 +29,7 @@
     "@babel/cli": "^7.0.0-beta.56",
     "@babel/core": "^7.0.0-beta.55",
     "@babel/preset-env": "^7.0.0-beta.55",
+    "@babel/preset-react": "^7.0.0",
     "@babel/preset-typescript": "^7.0.0-beta.55",
     "@types/jest": "^23.3.1",
     "babel-loader": "^8.0.0-beta",
@@ -43,17 +44,26 @@
     "webpack-cli": "^3.1.0"
   },
   "dependencies": {
+    "@material-ui/core": "^3.1.2",
+    "@material-ui/icons": "^3.0.1",
     "@types/dotenv": "^4.0.3",
     "@types/express": "^4.16.0",
+    "@types/material-ui": "^0.21.5",
     "@types/pg": "^7.4.10",
     "@types/uuid": "^3.4.3",
     "csvtojson": "^2.0.8",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
-    "firebase": "^5.3.1",
+    "firebase": "^5.5.2",
     "firebase-admin": "^6.0.0",
+    "firebaseui": "^3.4.1",
+    "mobx": "^5.5.0",
+    "mobx-react": "^5.2.8",
+    "moment": "^2.22.2",
     "pg": "^7.4.3",
     "pg-error-constants": "^1.0.0",
+    "react": "^16.5.2",
+    "react-dom": "^16.5.2",
     "uuid": "^3.3.2"
   }
 }
