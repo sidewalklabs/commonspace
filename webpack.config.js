@@ -6,7 +6,8 @@ module.exports = [{
   entry: {
     'dist/firestore': ['babel-polyfill', path.resolve(__dirname, 'src/firestore-client.ts')],
     'expo_project/lib/firestore': ['babel-polyfill', path.resolve(__dirname, 'src/firestore-client.ts')],
-    'dist/index': ['babel-polyfill', path.resolve(__dirname, 'src/gcp.ts')]
+    'dist/index': ['babel-polyfill', path.resolve(__dirname, 'src/gcp.ts')],
+    'server': ['babel-polyfill', path.resolve(__dirname, 'src/server.ts')]
   },
   output: {
     libraryTarget: 'umd',
