@@ -1,0 +1,11 @@
+#
+:studies = http://localhost:3000/studies
+GET :studies
+Accept-Encoding: application/json
+Content-Type: application/json
+#
+:surveys = http://localhost:3000/studies/36d00ab2-0dba-4eca-8973-9e1e0a6bb074/surveys
+GET :surveys
+Accept-Encoding: application/json
+Content-Type: application/json
+#
