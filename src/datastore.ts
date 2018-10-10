@@ -189,6 +189,53 @@ function createNewTableFromGehlFields(study: Study, tablename: string, fields: G
     }
 }
 
+export function returnStudies(pool: pg.Pool, userId: string) {
+    const query = `WITH
+                        study_and_surveyors (study_id, emails)
+                            AS (
+                                SELECT
+                                    s.study_id, array_agg(u.email)
+                                FROM
+                                    data_collection.surveyors AS s
+                                    JOIN public.users AS u
+                                    ON u.user_id = s.user_id
+                                GROUP BY
+                                    study_id
+                            )
+                    SELECT
+                        stu.study_id,
+                        stu.title,
+                        stu.protocol_version,
+                        sas.emails
+                    FROM
+                        data_collection.study AS stu
+                        JOIN study_and_surveyors AS sas
+                        ON stu.study_id = sas.study_id;`;
+    try {
+        return pool.query(query);
+    } catch (error) {
+        console.error(`error executing sql query: ${query}`)
+        throw error;
+    }
+}
+
+export function surveysForStudy(pool: pg.Pool, studyId: string) {
+    const query = `SELECT
+                       s.time_start, s.time_stop, u.email, s.survey_id
+                   FROM
+                       data_collection.survey AS s
+                       JOIN public.users AS u ON s.user_id = u.user_id
+                   WHERE
+                       s.study_id = '${studyId}'`;
+    try {
+        return pool.query(query);
+    } catch (error) {
+        console.error(`error executing sql query: ${query}`)
+        throw error;
+    }
+}
+
+
 function executeQueryInSearchPath(searchPath: string[], query: string) {
     const searchPathQuery = `SET search_path TO ${searchPath.join(', ')}; `;
     return `${searchPathQuery} ${query} `;
