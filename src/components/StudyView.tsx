@@ -1,17 +1,28 @@
 import React from 'react';
 import { observer } from 'mobx-react';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 
 import SurveyView from './SurveyView';
 
-import applicationState from '../stores/applicationState';
+import applicationState, { persistStudy } from '../stores/applicationState';
 
 const styles = theme => ({
+    container: {
+        display: 'flex',
+        flexDirection: 'column',
+        flexWrap: 'wrap'
+    },
     textField: {
         marginLeft: theme.spacing.unit,
         marginRight: theme.spacing.unit,
         width: 200
+    },
+    rightCornerButton: {
+        margin: theme.spacing.unit,
+        alignContent: 'flex-end',
+        width: 150
     }
 });
 
@@ -33,7 +44,7 @@ const StudyView = observer((props: any & WithStyles) => {
 
     const { classes } = props;
     if (applicationState.currentStudy) {
-        const { title, surveys } = applicationState.currentStudy;
+        const { title, surveys, studyId } = applicationState.currentStudy;
         return (
             <div className={classes.container}>
                 <TextField
@@ -65,7 +76,10 @@ const StudyView = observer((props: any & WithStyles) => {
                     margin="normal"
                 />
                 <SurveyView surveys={surveys} />
-            </div>
+                <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={() => persistStudy(applicationState.studies[studyId])}>
+                    Update
+               </Button>
+            </div >
         );
     }
     return null;
