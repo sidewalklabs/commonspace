@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS surveyors (
 -- TODO should id have default uuid function call?
 CREATE TABLE IF NOT EXISTS survey (
     study_id UUID references study(study_id) NOT NULL,
+    title TEXT,
     location_id UUID,
     survey_id UUID PRIMARY KEY,
     time_start TIMESTAMP WITH TIME ZONE,

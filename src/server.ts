@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 
+import * as bodyParser from 'body-parser';
 import express = require('express');
 import DbPool from './database';
 import { returnStudies, surveysForStudy } from './datastore';
@@ -10,19 +11,28 @@ const PORT = 3000;
 
 const app = express();
 
-app.get('/', (req, res) => {
-    res.send('hello world');
-})
+app.use(bodyParser.json());
+app.use('/', express.static('.'));
 
 interface Survey {
     title: string;
+    start_time: string;
+    end_time: string;
+    location_id: string;
+    surveyor_email: string;
+}
+
+interface Study {
+    study_id: string;
+    title: string;
     protocol_version: string;
     surveyors: string[];
+    surveys?: Survey[];
 }
 
 app.get('/studies', async (req, res) => {
     const pgRes = await returnStudies(DbPool, 'b44a8bc3-b136-428e-bee5-32837aee9ca2')  
-    const studiesForUser = pgRes.rows.map(({study_id, title, protocol_version, emails}) => {
+    const studiesForUser: Study[] = pgRes.rows.map(({study_id, title, protocol_version, emails}) => {
         return {
             study_id,
             title,
@@ -49,6 +59,13 @@ app.get('/studies/:studyId/surveys', async (req, res) => {
     });
     res.send(surveys);
 })
+
+app.put('/studies/:studyId', async (req, res) => {
+    const study = req.body as Study;
+    const surveys = study.surveys;
+    console.log(surveys);
+    surveys.forEach(console.log);
+});
 
 
 app.listen(PORT, () => console.log(`listening on port ${PORT}`));

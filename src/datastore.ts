@@ -50,6 +50,7 @@ export interface Survey {
     studyId: string;
     locationId: string;
     surveyId: string;
+    title?: string;
     startDate?: string,
     endDate?: string,
     timeCharacter?: string;
@@ -318,24 +319,28 @@ export async function giveUserStudyAcess(pool: pg.Pool, userEmail: string, study
     }
 }
 
+function joinSurveyWithUserEmailCTE(survey: Survey) {
+    return `WITH t (study_id, survey_id, title, time_start, time_stop, representation, method, user_email) as (
+              VALUES(
+                     '${survey.studyId}'::uuid,
+                     '${survey.surveyId}'::uuid,
+                     '${survey.title}'::text,
+                     '${survey.startDate}'::timestamp with time zone,
+                     '${survey.endDate}'::timestamp with time zone,
+                     '${survey.representation}'::TEXT,
+                     '${survey.method}'::TEXT,
+                     '${survey.userEmail}'::TEXT
+              )
+            )
+            SELECT t.study_id, t.survey_id, t.title, t.time_start, t.time_stop, t.representation, t.method, u.user_id
+            FROM  t
+            JOIN public.users u
+            ON t.user_email = u.email`;
+}
+
 export async function createNewSurveyForStudy(pool: pg.Pool, survey: Survey) {
-    const getUserUidQuery = `WITH t (study_id, survey_id, time_start, time_stop, representation, method, user_email) as (
-                     VALUES(
-                       '${survey.studyId}'::uuid,
-                       '${survey.surveyId}'::uuid,
-                       '${survey.startDate}'::timestamp with time zone,
-                       '${survey.endDate}'::timestamp with time zone,
-                       '${survey.representation}'::TEXT,
-                       '${survey.method}'::TEXT,
-                       '${survey.userEmail}'::TEXT
-                     )
-                   )
-                   SELECT t.study_id, t.survey_id, t.time_start, t.time_stop, t.representation, t.method, u.user_id
-                   FROM  t
-                   JOIN public.users u
-                   on t.user_email = u.email`;
-    const query = `INSERT INTO data_collection.survey (study_id, survey_id, time_start, time_stop, representation, method, user_id)
-                   ${getUserUidQuery};`
+    const query = `INSERT INTO data_collection.survey (study_id, survey_id, title, time_start, time_stop, representation, method, user_id)
+                   ${joinSurveyWithUserEmailCTE(survey)};`
     try {
         return pool.query(query);
     } catch (error) {
@@ -344,10 +349,42 @@ export async function createNewSurveyForStudy(pool: pg.Pool, survey: Survey) {
     }
 }
 
+const SURVEY_UPDATABLE_COLUMNS = ['title', 'location_id', 'time_start', 'time_stop', 'time_character', 'representation', 'microclimate', 'temperature_c', 'method', 'user_email'];
+export function updateSurvey(pool: pg.Pool, survey: Survey) {
+   const query = `WITH t (title, location_id, time_start, time_stop, time_character, representation, microclimate, temperature_c, method, user_email) as (
+                      VALUES (
+                             '${survey.title}'::text,
+                             '${survey.startDate}'::timestamp with time zone,
+                             '${survey.endDate}'::timestamp with time zone,
+                             '${survey.representation}'::TEXT,
+                             '${survey.method}'::TEXT,
+                             '${survey.userEmail}'::TEXT
+                      )
+                  )
+                  UPDATE date_collection.survey
+                  SET title = t.title,
+                      location_id = t.location_id,
+                      time_start = t.time_start,
+                      time_stop = t.time_stop,
+                      time_character = t.time_character,
+                      representation = t.representation,
+                      microclimate = t.microclimate,
+                      temperature_c = t.temperature_c,
+                      method = t.method,
+                      user_email = t.user_email`
+
+    try {
+        return pool.query(query);
+    } catch (error) {
+        console.error(`[query: ${query}] ${error}`)
+        throw error;
+    }
+}
+
 export async function getTablenameForSurveyId(pool: pg.Pool, surveyId: string) {
     const query = `SELECT tablename
-    FROM  data_collection.survey_to_tablename
-    WHERE survey_id = '${surveyId}'`;
+                   FROM  data_collection.survey_to_tablename
+                   WHERE survey_id = '${surveyId}'`;
     let pgRes;
     try {
         pgRes = await pool.query(query);

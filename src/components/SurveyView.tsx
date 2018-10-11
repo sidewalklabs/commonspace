@@ -1,6 +1,7 @@
 import React from 'react';
 import moment from 'moment';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
+import MenuItem from '@material-ui/core/MenuItem';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -91,7 +92,20 @@ const SurveyObjectToTableRow = observer(({ classes, survey }) => {
     return (
         <TableRow key={survey.surveyId}>
             <TableCell component="th" scope="row">
-                {survey.userEmail}
+                <TextField
+                    id="surveyor-email"
+                    select
+                    className={classes.textField}
+                    value={survey.surveyorEmail}
+                    onChange={(e) => applicationState.currentStudy.surveys[survey.surveyId].surveyorEmail = e.target.value}
+                    margin="normal"
+                >
+                    {applicationState.currentStudy.surveyors.map(email => (
+                        <MenuItem key={email} value={email}>
+                            {email}
+                        </MenuItem>
+                    ))}
+                </TextField>
             </TableCell>
             <TableCell numeric>{survey.title}</TableCell>
             <TableCell numeric className={classes.containter}>

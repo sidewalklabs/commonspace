@@ -51,6 +51,8 @@
     "@types/material-ui": "^0.21.5",
     "@types/pg": "^7.4.10",
     "@types/uuid": "^3.4.3",
+    "body-parser": "^1.18.3",
+    "camelcase-keys": "^4.2.0",
     "csvtojson": "^2.0.8",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
