@@ -1,8 +1,8 @@
 import React from 'react';
 import { ActivityIndicator, AsyncStorage, ScrollView, StyleSheet, View } from 'react-native';
 import PropTypes from 'prop-types';
-
 import { Button, Divider, Paragraph } from 'react-native-paper';
+import { Constants } from 'expo';
 
 class DrawerNavigatorScreen extends React.Component {
   state = {
@@ -28,6 +28,7 @@ class DrawerNavigatorScreen extends React.Component {
           {!this.state.loading && (
             <View>
               <Paragraph style={styles.text}>You are logged in as {this.state.userEmail}</Paragraph>
+              <Paragraph style={styles.text}>version {Constants.manifest.version}</Paragraph>
               <Divider />
               <Button
                 primary
