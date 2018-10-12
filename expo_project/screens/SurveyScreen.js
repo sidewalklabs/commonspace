@@ -141,14 +141,17 @@ class SurveyScreen extends React.Component {
         const markers = [];
 
         querySnapshot.forEach(function(doc) {
-          const marker = {
-            id: doc.id,
-            ...doc.data(),
-          };
+          const marker = doc.data();
           markers.push(marker);
         });
         if (markers.length) {
-          this.setState({ markers, activeMarkerId: markers[0].id });
+          // Sort by time string then title (since many markers have the same time string)
+          const sortedMarkers = _.sortBy(markers, [
+            marker => moment(marker.dateLabel, 'HH:mm').unix(),
+            'title',
+          ]);
+          const { dataPointId: activeMarkerId } = _.last(sortedMarkers);
+          this.setState({ markers: sortedMarkers, activeMarkerId });
         }
       });
   }
@@ -251,11 +254,9 @@ class SurveyScreen extends React.Component {
     }
   }
 
-  setFormResponse(id, key, value, heightToScroll) {
+  setFormResponse(dataPointId, key, value, heightToScroll) {
     const markersCopy = [...this.state.markers];
-    const marker = _.find(markersCopy, {
-      id,
-    });
+    const marker = _.find(markersCopy, { dataPointId });
     const studyId = this.props.navigation.getParam('studyId');
     const surveyId = this.props.navigation.getParam('surveyId');
 
@@ -270,7 +271,7 @@ class SurveyScreen extends React.Component {
         .collection('survey')
         .doc(surveyId)
         .collection('dataPoints')
-        .doc(id)
+        .doc(dataPointId)
         .set(marker);
 
       if (heightToScroll) {
@@ -305,7 +306,7 @@ class SurveyScreen extends React.Component {
     }
   }
 
-  deleteMarker(id) {
+  deleteMarker(dataPointId) {
     const studyId = this.props.navigation.getParam('studyId');
     const surveyId = this.props.navigation.getParam('surveyId');
 
@@ -315,12 +316,19 @@ class SurveyScreen extends React.Component {
       .collection('survey')
       .doc(surveyId)
       .collection('dataPoints')
-      .doc(id)
+      .doc(dataPointId)
       .delete()
       .then(() => {
+        // this callback is called regardless of whether a marker is deleted or not :/
+        const newMarkers = _.reject(this.state.markers, {
+          dataPointId,
+        });
+        const newActiveMarkerId = newMarkers.length
+          ? newMarkers[newMarkers.length - 1].dataPointId
+          : null;
         this.setState({
-          markers: _.reject(this.state.markers, { id }),
-          activeMarkerId: null,
+          markers: newMarkers,
+          activeMarkerId: newActiveMarkerId,
         });
       })
       .catch(function(error) {
@@ -329,11 +337,13 @@ class SurveyScreen extends React.Component {
     this.resetDrawer(MAX_DRAWER_TRANSLATE_Y);
   }
 
-  duplicateMarker(id) {
+  duplicateMarker(originalDataPointId) {
     const studyId = this.props.navigation.getParam('studyId');
     const surveyId = this.props.navigation.getParam('surveyId');
     const markersCopy = [...this.state.markers];
-    const markerToCopy = _.find(markersCopy, { id });
+    const markerToCopy = _.find(markersCopy, {
+      dataPointId: originalDataPointId,
+    });
 
     if (markerToCopy) {
       const date = moment();
@@ -356,12 +366,14 @@ class SurveyScreen extends React.Component {
         .collection('survey')
         .doc(surveyId)
         .collection('dataPoints')
-        .add(duplicateMarker)
+        .doc(dataPointId)
+        .set(duplicateMarker)
         .then(doc => {
-          const { id } = doc;
-          duplicateMarker.id = id;
           markersCopy.push(duplicateMarker);
-          this.setState({ markers: markersCopy, activeMarkerId: id });
+          this.setState({
+            markers: markersCopy,
+            activeMarkerId: dataPointId,
+          });
         });
     }
   }
@@ -400,20 +412,19 @@ class SurveyScreen extends React.Component {
       .collection('survey')
       .doc(surveyId)
       .collection('dataPoints')
-      .add(marker)
+      .doc(dataPointId)
+      .set(marker)
       .then(doc => {
-        const { id } = doc;
-        marker.id = id;
         markersCopy.push(marker);
-        this.setState({ markers: markersCopy, activeMarkerId: id }, this.resetDrawer);
+        this.setState({ markers: markersCopy, activeMarkerId: dataPointId }, this.resetDrawer);
       });
   }
 
-  setMarkerLocation(id, location) {
+  setMarkerLocation(dataPointId, location) {
     const studyId = this.props.navigation.getParam('studyId');
     const surveyId = this.props.navigation.getParam('surveyId');
     const markersCopy = [...this.state.markers];
-    const marker = _.find(markersCopy, { id });
+    const marker = _.find(markersCopy, { dataPointId });
 
     if (marker) {
       marker.location = location;
@@ -427,14 +438,14 @@ class SurveyScreen extends React.Component {
         .collection('survey')
         .doc(surveyId)
         .collection('dataPoints')
-        .doc(marker.id)
+        .doc(dataPointId)
         .update({ location: marker.location });
     }
   }
 
   render() {
     const { activeMarkerId, markers } = this.state;
-    const activeMarker = _.find(markers, { id: activeMarkerId });
+    const activeMarker = _.find(markers, { dataPointId: activeMarkerId });
     const note = _.get(activeMarker, 'note', '');
     const noteButtonLabel = note ? 'Edit note' : 'Add note';
     const direction = this.getToggleDirection();
@@ -527,10 +538,10 @@ class SurveyScreen extends React.Component {
           <MarkerMenu
             topLocation={this.state.markerMenuTopLocation}
             onDuplicatePress={() => {
-              this.duplicateMarker(activeMarker.id);
+              this.duplicateMarker(activeMarkerId);
             }}
             onDeletePress={() => {
-              this.deleteMarker(activeMarker.id);
+              this.deleteMarker(activeMarkerId);
             }}
             onClose={() => {
               this.setState({ markerMenuTopLocation: null });
@@ -541,7 +552,7 @@ class SurveyScreen extends React.Component {
           <NoteModal
             initialValue={note}
             onClose={note => {
-              this.setFormResponse(activeMarker.id, 'note', note, 0);
+              this.setFormResponse(activeMarkerId, 'note', note, 0);
               this.setState({ noteModalVisible: false });
             }}
           />

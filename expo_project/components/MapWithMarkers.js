@@ -96,9 +96,9 @@ class MapWithMarkers extends React.Component {
           mapType="satellite">
           <MapView.Polyline coordinates={zoneLatLngs} strokeColor="#D77C61" strokeWidth={6} />
           {markers.map((marker, index) => {
-            const selected = marker.id === activeMarkerId;
+            const selected = marker.dataPointId === activeMarkerId;
             // trigger a re render when switching states, so it recenters itself
-            const key = marker.id + (selected ? '-selected' : '');
+            const key = marker.dataPointId + (selected ? '-selected' : '');
             // overlapping markers flicker, unless you specify dominance
             // TODO: implement clustering and delete this hack
             const zIndex = index;
@@ -107,11 +107,11 @@ class MapWithMarkers extends React.Component {
                 zIndex={zIndex}
                 coordinate={marker.location}
                 key={key}
-                identifier={marker.id}
+                identifier={marker.dataPointId}
                 stopPropagation
                 draggable
                 onDragEnd={e => onMarkerDragEnd(e.nativeEvent.id, e.nativeEvent.coordinate)}
-                onPress={() => onMarkerPress(marker.id)}
+                onPress={() => onMarkerPress(marker.dataPointId)}
                 anchor={{ x: 0.5, y: 0.5 }}>
                 <PersonIcon backgroundColor={marker.color} size={selected ? 24 : 16} />
               </MapView.Marker>
@@ -187,7 +187,7 @@ MapWithMarkers.propTypes = {
       color: PropTypes.string,
       title: PropTypes.string,
       dateLabel: PropTypes.string,
-      id: PropTypes.string,
+      dataPointId: PropTypes.string,
     }),
   ).isRequired,
   zoneLatLngs: PropTypes.arrayOf(
