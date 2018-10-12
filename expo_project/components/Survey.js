@@ -10,7 +10,7 @@ class Survey extends React.Component {
     const { activeMarker, onSelect } = this.props;
     // If editing a response, don't scroll
     const heightToScroll = selectedValue ? 0 : selectableHeight;
-    onSelect(activeMarker.id, key, value, heightToScroll);
+    onSelect(activeMarker.dataPointId, key, value, heightToScroll);
   };
 
   onMultiselectPress = (key, value, selectedValue) => {
@@ -23,7 +23,7 @@ class Survey extends React.Component {
     } else {
       valueArray.push(value);
     }
-    onSelect(activeMarker.id, key, valueArray, 0);
+    onSelect(activeMarker.dataPointId, key, valueArray, 0);
   };
 
   render() {

@@ -41,7 +41,7 @@ class MarkerCarousel extends React.Component {
       this.props.activeMarkerId !== prevProps.activeMarkerId
     ) {
       const index = _.findIndex(this.props.markers, {
-        id: this.props.activeMarkerId,
+        dataPointId: this.props.activeMarkerId,
       });
       if (index > -1) {
         // Only scroll if the new selection isn't already visible
@@ -63,7 +63,7 @@ class MarkerCarousel extends React.Component {
       <FlatList
         style={styles.container}
         data={markers}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item.dataPointId}
         extraData={activeMarkerId}
         horizontal
         removeClippedSubviews
@@ -83,12 +83,12 @@ class MarkerCarousel extends React.Component {
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={VIEWABILITY_CONFIG}
         renderItem={({ item, index }) => {
-          const selected = item.id === activeMarkerId;
+          const selected = item.dataPointId === activeMarkerId;
           return (
             <TouchableOpacity
               Index={index}
               style={[styles.cell, selected && { borderBottomColor: item.color }]}
-              onPress={() => onMarkerPress(item.id)}>
+              onPress={() => onMarkerPress(item.dataPointId)}>
               <PersonIcon backgroundColor={item.color} size={CAROUSEL_ICON_SIZE} />
             </TouchableOpacity>
           );
@@ -120,7 +120,7 @@ MarkerCarousel.propTypes = {
       color: PropTypes.string,
       title: PropTypes.string,
       dateLabel: PropTypes.string,
-      id: PropTypes.string,
+      dataPointId: PropTypes.string,
     }),
   ).isRequired,
   activeMarkerId: PropTypes.string,
