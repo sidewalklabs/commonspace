@@ -66,6 +66,7 @@
     "pg-error-constants": "^1.0.0",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
+    "snakecase-keys": "^1.2.0",
     "uuid": "^3.3.2"
   }
 }

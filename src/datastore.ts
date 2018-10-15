@@ -351,13 +351,12 @@ export async function createNewSurveyForStudy(pool: pg.Pool, survey: Survey) {
 
 const SURVEY_UPDATABLE_COLUMNS = ['title', 'location_id', 'time_start', 'time_stop', 'time_character', 'representation', 'microclimate', 'temperature_c', 'method', 'user_email'];
 export function updateSurvey(pool: pg.Pool, survey: Survey) {
-   const query = `WITH t (title, location_id, time_start, time_stop, time_character, representation, microclimate, temperature_c, method, user_email) as (
+   const query = `WITH t (title, location_id, time_start, time_stop, user_email) as (
                       VALUES (
                              '${survey.title}'::text,
+                             '${survey.locationId}'::UUID,
                              '${survey.startDate}'::timestamp with time zone,
                              '${survey.endDate}'::timestamp with time zone,
-                             '${survey.representation}'::TEXT,
-                             '${survey.method}'::TEXT,
                              '${survey.userEmail}'::TEXT
                       )
                   )
@@ -366,11 +365,6 @@ export function updateSurvey(pool: pg.Pool, survey: Survey) {
                       location_id = t.location_id,
                       time_start = t.time_start,
                       time_stop = t.time_stop,
-                      time_character = t.time_character,
-                      representation = t.representation,
-                      microclimate = t.microclimate,
-                      temperature_c = t.temperature_c,
-                      method = t.method,
                       user_email = t.user_email`
 
     try {

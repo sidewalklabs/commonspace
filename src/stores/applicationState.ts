@@ -2,12 +2,12 @@ import * as babelPolyfill from 'babel-polyfill';
 
 import camelcaseKeys from 'camelcase-keys';
 import { observable, autorun, toJS, get, set } from 'mobx';
+import snakecaseKeys from 'snakecase-keys';
 
 import { AUTH, FIRESTORE } from '../web.config';
 
 import { groupArrayOfObjectsBy } from '../utils';
 
-interface Survey { }
 
 interface ApplicationState {
     currentSurvey: null | string;
@@ -45,9 +45,9 @@ export async function persistStudy(studyId) {
         },
         redirect: "follow", // manual, *follow, error
         referrer: "no-referrer", // no-referrer, *client
-        body: JSON.stringify(data), // body data type must match "Content-Type" header
+        body: JSON.stringify(snakecaseKeys(data)), // body data type must match "Content-Type" header
     });
-    console.log(await response.);
+    console.log(response.status);
 }
 
 export async function selectNewStudy(study: any) {
