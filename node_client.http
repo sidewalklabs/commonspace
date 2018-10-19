@@ -1,11 +1,67 @@
+:host = http://localhost:3000
 #
-:studies = http://localhost:3000/studies
+:studies = :host/studies
 GET :studies
 Accept-Encoding: application/json
 Content-Type: application/json
 #
-:surveys = http://localhost:3000/studies/36d00ab2-0dba-4eca-8973-9e1e0a6bb074/surveys
+:surveys = :host/studies/36d00ab2-0dba-4eca-8973-9e1e0a6bb074/surveys
 GET :surveys
 Accept-Encoding: application/json
 Content-Type: application/json
 #
+:locations = :host/locations
+POST :locations
+Accept-Encoding: application/json
+Content-Type: application/json
+
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -74.00340199470521,
+          40.75190608823771
+        ]
+      },
+      "properties": {
+        "name": "marker: 1"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            -74.00048375129701,
+            40.752133659459204
+          ],
+          [
+            -74.00201797485353,
+            40.75101205089848
+          ],
+          [
+            -74.00011897087099,
+            40.75027242910473
+          ],
+          [
+            -73.99890661239625,
+            40.75110145517336
+          ],
+          [
+            -74.00048375129701,
+            40.752133659459204
+          ]
+        ]
+      },
+      "properties": {
+        "name": "zone_2"
+      }
+    }
+  ]
+} 
+

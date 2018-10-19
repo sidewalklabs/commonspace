@@ -4,6 +4,7 @@ import { withStyles, WithStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
+import Icon from '@material-ui/core/Icon';
 import Toolbar from '@material-ui/core/Toolbar';
 import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
@@ -16,9 +17,10 @@ import NotificationsIcon from '@material-ui/icons/Notifications';
 
 import { observer } from 'mobx-react';
 
-import StudiesList from './components/StudiesList';
-import StudyView from './components/StudyView';
-import uiState from './stores/ui';
+import StudiesList from './StudiesList';
+import StudyView from './StudyView';
+import uiState, { visualizeNewStudy } from '../stores/ui';
+import { setCurrentStudyEmptySkeleton } from '../stores/applicationState';
 
 const drawerWidth = 240;
 
@@ -72,7 +74,9 @@ const styles = theme => ({
         transition: theme.transitions.create('width', {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.enteringScreen
-        })
+        }),
+        display: 'flex',
+        flexDirection: 'column'
     },
     drawerPaperClose: {
         overflowX: 'hidden',
@@ -91,8 +95,17 @@ const styles = theme => ({
         padding: theme.spacing.unit * 3,
         height: '100vh',
         overflow: 'auto'
+    },
+    icon: {
+        margin: theme.spacing.unit * 2,
+        marginTop: 'auto'
     }
 });
+
+function prepareNewStudy() {
+    setCurrentStudyEmptySkeleton()
+    visualizeNewStudy()
+}
 
 const Main: (props: MainProps & WithStyles) => React.Component = observer(
     (props: MainProps & WithStyle) => {
@@ -152,6 +165,9 @@ const Main: (props: MainProps & WithStyles) => React.Component = observer(
                         <List>
                             <StudiesList />
                         </List>
+                        <Icon className={classes.icon} color="primary" fontSize="large" onClick={() => prepareNewStudy()}>
+                            add_circle
+                        </Icon>
                     </Drawer>
                     <main className={classes.content}>
                         <div className={classes.appBarSpacer} />

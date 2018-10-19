@@ -1,27 +1,27 @@
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 import moment from 'moment';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
+import Paper from '@material-ui/core/Paper';
+import Select from '@material-ui/core/Select';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import TextField from '@material-ui/core/TextField';
-import Paper from '@material-ui/core/Paper';
+import uuidv4 from 'uuid/v4';
 
 import { get, set, toJS } from 'mobx';
 import { observer } from 'mobx-react';
 
-import applicationState from '../stores/applicationState';
+import applicationState, { addNewSurveyToCurrentStudy } from '../stores/applicationState';
+import uiState from '../stores/ui';
+import { groupArrayOfObjectsBy } from '../utils';
 
 const styles = theme => ({
-    container: {
-        display: 'flex',
-        flexWrap: 'wrap'
-    },
     root: {
-        width: '75%',
+        width: '100%',
         height: '40%',
         marginTop: theme.spacing.unit * 3,
         overflow: 'auto'
@@ -82,22 +82,58 @@ function changeEndDate(survey, updatedDate) {
     );
 }
 
+export interface DateTableCellProps {
+    displayDate: string;
+    onUpdate: (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement | HTMLSelectElement>) => void;
+    label?: string;
+}
+
+const DateTableCell = withStyles(styles)(observer((props: DateTableCellProps & WithStyles) => {
+    const { displayDate, onUpdate, classes, label } = props;
+    return (
+        <TableCell numeric className={classes.containter}>
+            <TextField
+                label={label}
+                type="date"
+                defaultValue={displayDate}
+                onChange={e => onUpdate(e)}
+                className={classes.textField}
+                InputLabelProps={{
+                    shrink: true
+                }}
+            />
+        </TableCell>
+    )
+}));
+
 const SurveyObjectToTableRow = observer(({ classes, survey }) => {
+    const { surveyId } = survey;
     const startDate = moment(survey.startDate);
     const startDateDisplayDate = startDate.format('YYYY-MM-DD');
     const startTime = startDate.format('kk:mm');
     const endDate = moment(survey.endDate);
     const endDateDisplayDate = endDate.format('YYYY-MM-DD');
     const endTime = endDate.format('kk:mm');
+    let surveyName;
+    if (uiState.availableLocations.length > 0 && survey.locationId) {
+        surveyName = groupArrayOfObjectsBy(uiState.availableLocations, 'locationId')[survey.locationId].name;
+    } else if (uiState.availableLocations.length > 0) {
+        console.log('hey: ', toJS(uiState.availableLocations));
+        surveyName = uiState.availableLocations[0].name;
+    } else {
+        surveyName = '';
+    }
     return (
-        <TableRow key={survey.surveyId}>
+        <TableRow key={surveyId}>
+            <TableCell component="th" scope="row">
+            </TableCell>
             <TableCell component="th" scope="row">
                 <TextField
                     id="surveyor-email"
                     select
                     className={classes.textField}
                     value={survey.surveyorEmail}
-                    onChange={(e) => applicationState.currentStudy.surveys[survey.surveyId].surveyorEmail = e.target.value}
+                    onChange={e => applicationState.currentStudy.surveys[surveyId].surveyorEmail = e.target.value}
                     margin="normal"
                 >
                     {applicationState.currentStudy.surveyors.map(email => (
@@ -107,24 +143,19 @@ const SurveyObjectToTableRow = observer(({ classes, survey }) => {
                     ))}
                 </TextField>
             </TableCell>
-            <TableCell numeric>{survey.title}</TableCell>
-            <TableCell numeric className={classes.containter}>
+            <TableCell numeric>
                 <TextField
-                    id="startDate"
-                    label="startDate"
-                    type="date"
-                    defaultValue={startDateDisplayDate}
-                    onChange={e => changeStartDate(survey, e.target.value)}
+                    id="survey-title"
+                    label="Title"
                     className={classes.textField}
-                    InputLabelProps={{
-                        shrink: true
-                    }}
+                    value={survey.title}
+                    onChange={e => applicationState.currentStudy.surveys[surveyId].title = e.target.value}
+                    margin="normal"
                 />
             </TableCell>
+            <DateTableCell displayDate={startDateDisplayDate} onUpdate={e => changeStartDate(survey, e.target.value)} />
             <TableCell>
                 <TextField
-                    id="startTime"
-                    label="startTime"
                     type="time"
                     defaultValue={startTime}
                     className={classes.textField}
@@ -137,23 +168,9 @@ const SurveyObjectToTableRow = observer(({ classes, survey }) => {
                     }}
                 />
             </TableCell>
-            <TableCell numeric className={classes.containter}>
-                <TextField
-                    id="endDate"
-                    label="endDate"
-                    type="date"
-                    defaultValue={endDateDisplayDate}
-                    className={classes.textField}
-                    onChange={e => changeEndDate(survey, e.target.value)}
-                    InputLabelProps={{
-                        shrink: true
-                    }}
-                />
-            </TableCell>
+            <DateTableCell displayDate={endDateDisplayDate} onUpdate={e => changeEndDate(survey, e.target.value)} />
             <TableCell>
                 <TextField
-                    id="endTime"
-                    label="endTime"
                     type="time"
                     defaultValue={endTime}
                     className={classes.textField}
@@ -166,7 +183,22 @@ const SurveyObjectToTableRow = observer(({ classes, survey }) => {
                     }}
                 />
             </TableCell>
-            <TableCell numeric>{survey.locationId}</TableCell>
+            <TableCell component="th" scope="row">
+                <Select
+                    name={surveyName}
+                    onChange={(e) => applicationState.currentStudy.surveys[surveyId].locationId = e.target.value}
+                    inputProps={{
+                        name: 'locationId',
+                        id: 'survey-location',
+                    }}
+                >
+                    {uiState.availableLocations.map(({ name, locationId }) => (
+                        <MenuItem key={locationId} value={locationId}>
+                            {name}
+                        </MenuItem>
+                    ))}
+                </Select>
+            </TableCell>
         </TableRow>
     );
 });
@@ -183,6 +215,7 @@ const SurveyView = observer((props: { surveys: any[] } & WithStyles) => {
             <Table className={classes.table}>
                 <TableHead>
                     <TableRow>
+                        <TableCell onClick={addNewSurveyToCurrentStudy}>Add</TableCell>
                         <TableCell>Surveyor Email</TableCell>
                         <TableCell numeric>Title</TableCell>
                         <TableCell numeric>Start Date</TableCell>
@@ -194,7 +227,7 @@ const SurveyView = observer((props: { surveys: any[] } & WithStyles) => {
                 </TableHead>
                 <TableBody>{tableRows}</TableBody>
             </Table>
-        </Paper>
+        </Paper >
     );
 });
 

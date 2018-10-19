@@ -5,7 +5,8 @@ import * as bodyParser from 'body-parser';
 import * as camelcaseKeys from 'camelcase-keys';
 import express = require('express');
 import DbPool from './database';
-import { returnStudies, surveysForStudy, updateSurvey } from './datastore';
+import * as uuidv4 from 'uuid/v4';
+import { createLocation, giveUserStudyAcess, returnStudies, surveysForStudy, updateSurvey } from './datastore';
 
 
 const PORT = 3000;
@@ -14,6 +15,26 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use('/', express.static('.'));
+app.use('/digitalshadow', express.static('./map-annotation'));
+
+app.use(function (req, res, next) {
+
+    // Website you wish to allow to connect
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8000');
+
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
+    //res.setHeader('Access-Control-Allow-Credentials', true);
+
+    // Pass to next layer of middleware
+    next();
+});
 
 namespace RestApi {
     export interface Survey {
@@ -52,7 +73,6 @@ app.get('/studies', async (req, res) => {
 app.get('/studies/:studyId/surveys', async (req, res) => {
     const { studyId } = req.params;
     const pgRes = await surveysForStudy(DbPool, studyId); 
-    console.log(pgRes.rowCount);
     const surveys: RestApi.Survey[] = pgRes.rows.map(({ survey_id, title, time_start, time_stop, location_id, email }) => {
         return {
             survey_id,
@@ -72,6 +92,42 @@ app.put('/studies/:studyId', async (req, res) => {
     const pgQueries = await Promise.all(
         surveys.map(s => updateSurvey(DbPool, camelcaseKeys({study_id, ...s, userEmail: s.surveyor_email}))))
     res.sendStatus(200);
+});
+
+app.post('/studies/:studyId/surveyors', async (req, res) => {
+    const { studyId } = req.params;
+    const { email} = req.body;
+    const [_, newUserId] = await giveUserStudyAcess(DbPool, email, studyId);
+    res.send({ email, studyId, newUserId })
+});
+
+async function processFeature(feature) {
+    const { type: featureType, geometry, properties, id } = feature;
+    if (featureType !== 'Feature') {
+        throw new Error('must be a geojson feature')
+    }
+    const { type: geometryType, coordinates } = geometry;
+    if (!id) {
+        feature.id = uuidv4();
+    }
+    // todo add geocoding logic
+    await createLocation(DbPool, {
+        locationId: feature.id,
+        namePrimary: properties.name,
+        geometry,
+        country: '',
+        city: '',
+        subdivision: ''
+    });
+    console.log('f: ', feature);
+    return feature;
+}
+
+app.post('/locations', async (req, res) => {
+    const { type, features } = req.body;
+    const response = await Promise.all(features.map(processFeature));
+    console.log(response);
+    res.send({type, features: response });
 });
 
 app.listen(PORT, () => console.log(`listening on port ${PORT}`));

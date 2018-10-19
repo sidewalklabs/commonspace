@@ -6,12 +6,18 @@ import { withStyles, WithStyles } from '@material-ui/core/styles';
 import { observer } from 'mobx-react';
 
 import applicationState, { selectNewStudy } from '../stores/applicationState';
+import uiState from '../stores/ui';
+
+async function transitionToViewStudy(study) {
+    uiState.currentStudyIsNew = false;
+    await selectNewStudy(study)
+}
 
 export default observer((props: any & WithStyles) => {
     const { classes } = props;
     const listItems = Object.values(applicationState.studies).map(study => {
         return (
-            <ListItem button onClick={async () => await selectNewStudy(study)}>
+            <ListItem button onClick={async () => await transitionToViewStudy(study)}>
                 <ListItemText primary={study.title} secondary={study.authorName} />
             </ListItem>
         );
