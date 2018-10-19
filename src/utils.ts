@@ -10,3 +10,7 @@ export function groupArrayOfObjectsBy(xs: any, field: string) {
     });
     return Object.assign({}, ...pairs);
 }
+
+export function flatMap(xs: any[], f: any) {
+    return xs.map(f).filter(x => x !== undefined && x !== null)
+}

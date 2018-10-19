@@ -1,9 +1,7 @@
 import React from 'react';
 
-import auth from 'firebase/auth';
 import { render } from 'react-dom';
-import Main from './main';
-
+import Main from './components/main';
 
 import applicationState, { getStudies } from './stores/applicationState';
 
