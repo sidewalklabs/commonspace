@@ -4,14 +4,20 @@ dotenv.config();
 import * as bodyParser from 'body-parser';
 import * as camelcaseKeys from 'camelcase-keys';
 import express = require('express');
-import DbPool from './database';
+import * as jwt from 'jsonwebtoken';
+import  * as passport from 'passport';
 import * as uuidv4 from 'uuid/v4';
-import { createLocation, giveUserStudyAcess, returnStudies, surveysForStudy, updateSurvey } from './datastore';
+import { createLocation, createUser, giveUserStudyAcess, returnStudies, surveysForStudy, updateSurvey } from './datastore';
 
+import auth from './auth'
+import DbPool from './database';
 
 const PORT = 3000;
 
 const app = express();
+
+auth(passport);
+app.use(passport.initialize());
 
 app.use(bodyParser.json());
 app.use('/', express.static('.'));
@@ -55,10 +61,18 @@ namespace RestApi {
     }
 }
 
-
+app.post('/signup', (req, res, next) => {
+    passport.authenticate('local',
+                          {session: false, successRedirect: '/', failureRedirect: 'signup'},
+                          (err, user, info)=> {
+                              if (err) throw err;
+                              const token = jwt.sign(user, 'secret');
+                              return res.json({user, token});
+                          })(req, res, next)
+})
 
 app.get('/studies', async (req, res) => {
-    const pgRes = await returnStudies(DbPool, 'b44a8bc3-b136-428e-bee5-32837aee9ca2')  
+    const pgRes = await returnStudies(DbPool, 'b44a8bc3-b136-428e-bee5-32837aee9ca2')
     const studiesForUser: RestApi.Study[] = pgRes.rows.map(({study_id, title, protocol_version, emails}) => {
         return {
             study_id,
@@ -72,7 +86,7 @@ app.get('/studies', async (req, res) => {
 
 app.get('/studies/:studyId/surveys', async (req, res) => {
     const { studyId } = req.params;
-    const pgRes = await surveysForStudy(DbPool, studyId); 
+    const pgRes = await surveysForStudy(DbPool, studyId);
     const surveys: RestApi.Survey[] = pgRes.rows.map(({ survey_id, title, time_start, time_stop, location_id, email }) => {
         return {
             survey_id,

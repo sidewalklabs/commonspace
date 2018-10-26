@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
@@ -83,7 +83,7 @@ const StudyView = observer((props: any & WithStyles) => {
 
         }
         return (
-            <div id="study" className={classes.container}>
+            <Fragment id="study" className={classes.container}>
                 <TextField
                     id="study-title"
                     label="Title"
@@ -127,7 +127,7 @@ const StudyView = observer((props: any & WithStyles) => {
                 <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={() => updateStudy(applicationState.studies[studyId])}>
                     {uiState.currentStudyIsNew ? 'Create' : 'Update'}
                 </Button>
-            </div >
+            </Fragment>
         );
     }
     return null;
