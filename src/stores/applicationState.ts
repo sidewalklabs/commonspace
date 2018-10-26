@@ -20,6 +20,38 @@ interface Study {
 interface ApplicationState {
     currentStudy: null | Study;
     studies: any;
+    token: string;
+}
+
+async function fetchWrapper(route: string, method: string, token: string, data: any ) {
+    return await fetch(route, {
+        method: method, // *GET, POST, PUT, DELETE, etc.
+        mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, same-origin, *omit
+        headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            "Authorization": `bearer ${token}` 
+        },
+        redirect: "follow", // manual, *follow, error
+        referrer: "no-referrer", // no-referrer, *client
+        body: JSON.stringify(snakecaseKeys(data)), // body data type must match "Content-Type" header
+    })
+}
+
+async function getFromApi(route: string, token: string) {
+    return await fetch('http://localhost:3000' + route, {
+        method: 'GET', // *GET, POST, PUT, DELETE, etc.
+        mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, same-origin, *omit
+        headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            "Authorization": `bearer ${token}` 
+        },
+        redirect: "follow", // manual, *follow, error
+        referrer: "no-referrer" // no-referrer, *client
+    })
 }
 
 async function fetchSurveysForStudy(studyId: string) {
@@ -32,10 +64,10 @@ async function fetchSurveysForStudy(studyId: string) {
     return study;
 }
 
-export async function getStudies() {
-    const studiesReq = await fetch('http://localhost:3000/studies');
+export async function getStudies(token: string) {
+    const studiesReq = await getFromApi('/studies', token);
     const studies = camelcaseKeys(await studiesReq.json());
-    applicationState.studies = groupArrayOfObjectsBy(studies, 'studyId');
+    return groupArrayOfObjectsBy(studies, 'studyId');
 }
 
 export async function updateStudy(studyId) {
@@ -117,13 +149,19 @@ export async function addNewSurveyorToSurvey(studyId: string, email: string) {
     console.log(response.status);
 }
 
-const applicationState = observable({
+export async function init(token) {
+    applicationState.token = token;
+    applicationState.studies = await getStudies(token); 
+}
+
+let applicationState: ApplicationState = observable({
     currentStudy: null,
-    studies: {}
+    studies: {},
+    token: null
 });
 
 autorun(() => {
-    console.log(toJS(applicationState.currentStudy));
+    console.log(toJS(applicationState.token));
 });
 
 export default applicationState;

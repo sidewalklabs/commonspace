@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import classNames from 'classnames';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -17,10 +17,11 @@ import NotificationsIcon from '@material-ui/icons/Notifications';
 
 import { observer } from 'mobx-react';
 
+import SignUpView from './SignUpView';
 import StudiesList from './StudiesList';
 import StudyView from './StudyView';
 import uiState, { visualizeNewStudy } from '../stores/ui';
-import { setCurrentStudyEmptySkeleton } from '../stores/applicationState';
+import applicationState, { setCurrentStudyEmptySkeleton } from '../stores/applicationState';
 
 const drawerWidth = 240;
 
@@ -110,72 +111,83 @@ function prepareNewStudy() {
 const Main: (props: MainProps & WithStyles) => React.Component = observer(
     (props: MainProps & WithStyle) => {
         const { drawerOpen } = uiState;
+        const { token } = applicationState;
         const { classes } = props;
-
-        return (
-            <React.Fragment>
-                <CssBaseline />
-                <div className={classes.root}>
-                    <AppBar
-                        position="absolute"
-                        className={classNames(
-                            classes.appBar,
-                            drawerOpen && classes.appBarShift
-                        )}
-                    >
-                        <Toolbar disableGutters={!drawerOpen} className={classes.toolbar}>
-                            <IconButton
-                                color="inherit"
-                                aria-label="Open drawer"
-                                onClick={() => (uiState.drawerOpen = true)}
-                                className={classNames(
-                                    classes.menuButton,
-                                    drawerOpen && classes.menuButtonHidden
-                                )}
-                            >
-                                <MenuIcon />
-                            </IconButton>
-                            <Typography
-                                component="h1"
-                                variant="title"
-                                color="inherit"
-                                noWrap
-                                className={classes.title}
-                            >
-                                Commons
-              </Typography>
-                        </Toolbar>
-                    </AppBar>
-                    <Drawer
-                        variant="permanent"
-                        classes={{
-                            paper: classNames(
-                                classes.drawerPaper,
-                                !drawerOpen && classes.drawerPaperClose
-                            )
-                        }}
-                        open={drawerOpen}
-                    >
-                        <div className={classes.toolbarIcon}>
-                            <IconButton onClick={() => (uiState.drawerOpen = false)}>
-                                <ChevronLeftIcon />
-                            </IconButton>
-                        </div>
-                        <Divider />
-                        <List>
-                            <StudiesList />
-                        </List>
-                        <Icon className={classes.icon} color="primary" fontSize="large" onClick={() => prepareNewStudy()}>
-                            add_circle
+        if (token) {
+            return (
+                <Fragment>
+                    <CssBaseline />
+                    <div className={classes.root}>
+                        <AppBar
+                            position="absolute"
+                            className={classNames(
+                                classes.appBar,
+                                drawerOpen && classes.appBarShift
+                            )}
+                        >
+                            <Toolbar disableGutters={!drawerOpen} className={classes.toolbar}>
+                                <IconButton
+                                    color="inherit"
+                                    aria-label="Open drawer"
+                                    onClick={() => (uiState.drawerOpen = true)}
+                                    className={classNames(
+                                        classes.menuButton,
+                                        drawerOpen && classes.menuButtonHidden
+                                    )}
+                                >
+                                    <MenuIcon />
+                                </IconButton>
+                                <Typography
+                                    component="h1"
+                                    variant="title"
+                                    color="inherit"
+                                    noWrap
+                                    className={classes.title}
+                                >
+                                    Commons
+                            </Typography>
+                            </Toolbar>
+                        </AppBar>
+                        <Drawer
+                            variant="permanent"
+                            classes={{
+                                paper: classNames(
+                                    classes.drawerPaper,
+                                    !drawerOpen && classes.drawerPaperClose
+                                )
+                            }}
+                            open={drawerOpen}
+                        >
+                            <div className={classes.toolbarIcon}>
+                                <IconButton onClick={() => (uiState.drawerOpen = false)}>
+                                    <ChevronLeftIcon />
+                                </IconButton>
+                            </div>
+                            <Divider />
+                            <List>
+                                <StudiesList />
+                            </List>
+                            <Icon className={classes.icon} color="primary" fontSize="large" onClick={() => prepareNewStudy()}>
+                                add_circle
                         </Icon>
-                    </Drawer>
-                    <main className={classes.content}>
-                        <div className={classes.appBarSpacer} />
-                        <StudyView />
-                    </main>
-                </div>
-            </React.Fragment>
-        );
+                        </Drawer>
+                        <main className={classes.content}>
+                            <div className={classes.appBarSpacer} />
+                            <StudyView />
+                        </main>
+                    </div>
+                </Fragment>
+            )
+        } else {
+            return (
+                <Fragment>
+                    <CssBaseline />
+                    <div className={classes.root}>
+                        <SignUpView />
+                    </div>
+                </Fragment>
+            )
+        }
     }
 );
 

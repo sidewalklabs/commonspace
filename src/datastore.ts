@@ -30,6 +30,7 @@ export interface User {
     userId: string;
     email: string;
     name: string;
+    password: string;
 }
 
 export interface PolygonGeometry {
@@ -267,9 +268,14 @@ export async function createStudy(pool: pg.Pool, study: Study, fields: GehlField
     return [studyResult, newStudyDataTable];
 }
 
+export async function findUser(pool: pg.Pool, userId: string) {
+		const query = `SELECT * FROM users where user_id='${userId}'`;
+		return pool.query(query);
+}
+
 export async function createUser(pool: pg.Pool, user: User) {
-    const query = `INSERT INTO users(user_id, email, name)
-                   VALUES('${user.userId}', '${user.email}', '${user.name}')`;
+    const query = `INSERT INTO users(user_id, email, name, password)
+                   VALUES('${user.userId}', '${user.email}', '${user.name}', '${user.password}')`;
     return pool.query(query);
 }
 
