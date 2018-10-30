@@ -11,9 +11,10 @@ import { groupArrayOfObjectsBy } from '../utils';
 
 
 interface Study {
+		studyId: string;
     protocolVersion: string;
     surveys: {[key: string]: any};
-    surveyors: string[]; 
+    surveyors: string[];
     title: string;
 }
 
@@ -31,7 +32,7 @@ async function fetchWrapper(route: string, method: string, token: string, data: 
         credentials: "same-origin", // include, same-origin, *omit
         headers: {
             "Content-Type": "application/json; charset=utf-8",
-            "Authorization": `bearer ${token}` 
+            "Authorization": `bearer ${token}`
         },
         redirect: "follow", // manual, *follow, error
         referrer: "no-referrer", // no-referrer, *client
@@ -47,17 +48,34 @@ async function getFromApi(route: string, token: string) {
         credentials: "same-origin", // include, same-origin, *omit
         headers: {
             "Content-Type": "application/json; charset=utf-8",
-            "Authorization": `bearer ${token}` 
+            "Authorization": `bearer ${token}`
         },
         redirect: "follow", // manual, *follow, error
         referrer: "no-referrer" // no-referrer, *client
     })
 }
 
-async function fetchSurveysForStudy(studyId: string) {
+function putToApi(route: string, token: string, data: any) {
+		return fetch(route, {
+        method: "PUT", // *GET, POST, PUT, DELETE, etc.
+        mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, same-origin, *omit
+        headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            // "Content-Type": "application/x-www-form-urlencoded",
+        },
+        redirect: "follow", // manual, *follow, error
+        referrer: "no-referrer", // no-referrer, *client
+        body: JSON.stringify(snakecaseKeys(data)), // body data type must match "Content-Type" header
+    })
+}
+
+
+async function fetchSurveysForStudy(studyId: string, token: string) {
     const study = applicationState.studies[studyId];
     if (!study.surveys) {
-        const surveysReq = await fetch(`http://localhost:3000/studies/${studyId}/surveys`);
+        const surveysReq = await getFromApi(`/studies/${studyId}/surveys`, token);
         const surveysAsArr = camelcaseKeys(await surveysReq.json());
         study.surveys = groupArrayOfObjectsBy(surveysAsArr, 'surveyId');
     }
@@ -65,7 +83,7 @@ async function fetchSurveysForStudy(studyId: string) {
 }
 
 export async function getStudies(token: string) {
-    const studiesReq = await getFromApi('/studies', token);
+    const studiesReq = await getFromApi('/api/v1/studies', token);
     const studies = camelcaseKeys(await studiesReq.json());
     return groupArrayOfObjectsBy(studies, 'studyId');
 }
@@ -111,7 +129,8 @@ export async function createStudy(studyId) {
 }
 
 export async function selectNewStudy(study: any) {
-    applicationState.currentStudy = await fetchSurveysForStudy(study.studyId);
+		const { token } = applicationState;
+    applicationState.currentStudy = await fetchSurveysForStudy(study.studyId, token);
 }
 
 export async function setCurrentStudyEmptySkeleton() {
@@ -125,7 +144,7 @@ export async function setCurrentStudyEmptySkeleton() {
 }
 
 export async function addNewSurveyToCurrentStudy() {
-    const newSurveyId = uuidv4() 
+    const newSurveyId = uuidv4()
     applicationState.currentStudy.surveys[newSurveyId] = {
         surveyId: newSurveyId
     }
@@ -151,7 +170,7 @@ export async function addNewSurveyorToSurvey(studyId: string, email: string) {
 
 export async function init(token) {
     applicationState.token = token;
-    applicationState.studies = await getStudies(token); 
+    applicationState.studies = await getStudies(token);
 }
 
 let applicationState: ApplicationState = observable({

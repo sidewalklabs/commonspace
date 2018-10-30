@@ -10,19 +10,42 @@ const JwtStrategy  = passportJWT.Strategy;
 
 
 import DbPool from './database';
-import { createUser, findUser, User } from './datastore';
+import { createUser, findUser, findUserById, User } from './datastore';
 
 const jwtOptions = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     secretOrKey: 'secret'
 }
 
-const loginStrategy = new JwtStrategy(jwtOptions, async (jwt_payload, next) => {
+const signinStrategy = new LocalStrategy({usernameField: 'email'}, async (email, password, done) => {
+				const userId = uuidv4()
+				const user = {email, password, userId, name: '' }
+        try {
+            await createUser(DbPool, user);
+	    console.log(JSON.stringify(user));
+            return done(null, {user_id: userId});
+        } catch (err) {
+            return done(err, null);
+        }
+    })
+
+const loginStrategy = new LocalStrategy({usernameField: 'email'}, async (email, password, done) => {
+        try {
+            const user = await findUser(DbPool, email, password);
+	    console.log(JSON.stringify(user));
+            return done(null, {user_id: user.user_id});
+        } catch (err) {
+            return done(err, null);
+        }
+    })
+
+const jwtStrategy = new JwtStrategy(jwtOptions, async (jwt_payload, next) => {
     console.log('payload received', jwt_payload);
+    const {user_id: userId} = jwt_payload;
   // usually this would be a database call:
-    const user =  await findUser(DbPool, 'sebastian@sidewalklabs.com', '') ;
+    const user =  await findUserById(DbPool, 'b44a8bc3-b136-428e-bee5-32837aee9ca2');
     if (user) {
-        next(null, user);
+        next(null, {user_id: userId});
     } else {
         next(null, false);
     }
@@ -30,25 +53,9 @@ const loginStrategy = new JwtStrategy(jwtOptions, async (jwt_payload, next) => {
 
 export default function init(passport) {
     //passport.initialize();
-    passport.use(new LocalStrategy({usernameField: 'email'}, async (email, password, done) => {
-				const userId = uuidv4()
-				const user = {email, password, userId, name: '' }
-        try {
-            await createUser(DbPool, user);
-	    console.log(JSON.stringify(user));
-            return done(null, {id: userId, ...user});
-        } catch (err) {
-            return done(err, null);
-        }
-    }))
+    passport.use('signin', signinStrategy)
 
-    passport.use('login', new LocalStrategy({usernameField: 'email'}, async (email, password, done) => {
-        try {
-            const user = await findUser(DbPool, email, password);
-	    console.log(JSON.stringify(user));
-            return done(null, {id: user.user_id, ...user});
-        } catch (err) {
-            return done(err, null);
-        }
-    }));
+    passport.use('login', loginStrategy);
+
+    passport.use('jwt', jwtStrategy);
 }
