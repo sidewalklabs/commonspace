@@ -17,6 +17,7 @@ import NotificationsIcon from '@material-ui/icons/Notifications';
 
 import { observer } from 'mobx-react';
 
+import LoginView from './LoginView';
 import SignUpView from './SignUpView';
 import StudiesList from './StudiesList';
 import StudyView from './StudyView';
@@ -31,7 +32,8 @@ interface MainProps {
 
 const styles = theme => ({
     root: {
-        display: 'flex'
+        display: 'flex',
+        alignContent: 'center'
     },
     toolbar: {
         paddingRight: 24 // keep right padding when drawer closed
@@ -180,11 +182,12 @@ const Main: (props: MainProps & WithStyles) => React.Component = observer(
             )
         } else {
             return (
-                <Fragment>
+                <Fragment className={classes.root}>
                     <CssBaseline />
-                    <div className={classes.root}>
+                    {uiState.login ?
+                        <LoginView /> :
                         <SignUpView />
-                    </div>
+                    }
                 </Fragment>
             )
         }

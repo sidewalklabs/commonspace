@@ -20,7 +20,7 @@ const jwtOptions = {
 const loginStrategy = new JwtStrategy(jwtOptions, async (jwt_payload, next) => {
     console.log('payload received', jwt_payload);
   // usually this would be a database call:
-    const user =  await findUser(DbPool, 'b44a8bc3-b136-428e-bee5-32837aee9ca2') ;
+    const user =  await findUser(DbPool, 'sebastian@sidewalklabs.com', '') ;
     if (user) {
         next(null, user);
     } else {
@@ -42,5 +42,13 @@ export default function init(passport) {
         }
     }))
 
-    //passport.use('login', loginStrategy);
+    passport.use('login', new LocalStrategy({usernameField: 'email'}, async (email, password, done) => {
+        try {
+            const user = await findUser(DbPool, email, password);
+	    console.log(JSON.stringify(user));
+            return done(null, {id: user.user_id, ...user});
+        } catch (err) {
+            return done(err, null);
+        }
+    }));
 }

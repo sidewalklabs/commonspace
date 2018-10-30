@@ -268,9 +268,15 @@ export async function createStudy(pool: pg.Pool, study: Study, fields: GehlField
     return [studyResult, newStudyDataTable];
 }
 
-export async function findUser(pool: pg.Pool, userId: string) {
-		const query = `SELECT * FROM users where user_id='${userId}'`;
-		return pool.query(query);
+export async function findUser(pool: pg.Pool, email: string, password: string) {
+    const query = `SELECT * FROM users where email='${email}' AND password='${password}'`;
+    const pgRes = await pool.query(query);
+    if (pgRes.rowCount !== 1) {
+        throw new Error('User not found for email: ${email}')
+    }
+    const user = pgRes.rows[0];
+    console.log('user: ', JSON.stringify(user));
+    return user; 
 }
 
 export async function createUser(pool: pg.Pool, user: User) {

@@ -7,8 +7,8 @@ import Typography from '@material-ui/core/Typography'
 
 import { observer } from 'mobx-react';
 
-import signUpState, { signUpUser } from '../stores/signup'
 import uiState from '../stores/ui'
+import logInState, { logInUser } from '../stores/login'
 
 const styles = theme => ({
     hyperlinkText: {
@@ -42,33 +42,22 @@ const SignUpView = withStyles(styles)(observer((props: WithStyles) => {
     return (
         <Paper className={classes.root}>
             <TextField
-                id="signUp-email"
+                id="login-email"
                 label="Email"
-                onChange={e => signUpState.email = e.target.value}
-                error={signUpState.emailErrorMessage ? true : false}
+                onChange={e => logInState.email = e.target.value}
+                error={logInState.emailErrorMessage ? true : false}
                 className={classes.textField} />
             <TextField
-                id="signUp-name"
-                label="Name"
-                onChange={e => signUpState.name = e.target.value}
-                className={classes.textField} />
-            <TextField
-                id="signUp-password"
+                id="login-password"
                 label="Password"
-                onChange={e => signUpState.password = e.target.value}
-                error={signUpState.passwordErrorMessage ? true : false}
+                onChange={e => logInState.password = e.target.value}
+                error={logInState.passwordErrorMessage ? true : false}
                 className={classes.textField} />
-            <TextField
-                id="signUp-password-confirmation"
-                label="Re-Enter Password"
-                onChange={e => signUpState.passwordConfirmation = e.target.value}
-                error={signUpState.passwordConfirmationErrorMessage ? true : false}
-                className={classes.textField} />
-            <Button className={classes.signUpButton} variant="contained" color="primary" onClick={signUpUser}>
-                Sign Up
+            <Button className={classes.button} variant="contained" color="primary" onClick={logInUser}>
+                Log In
             </Button>
-            <Button color="secondary" className={classes.button} onClick={() => uiState.login = true}>
-                Already Signed Up? Login Here
+            <Button color="secondary" className={classes.button} onClick={() => uiState.login = false}>
+                Need An Account? Sign Up Here
             </Button>
         </Paper >
     )
