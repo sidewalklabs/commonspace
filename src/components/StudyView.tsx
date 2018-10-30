@@ -42,7 +42,7 @@ function saveOrUpdateStudy(study) {
     uiState.currentStudyIsNew = false;
 }
 
-const CreateOrUpdateButton = ({ studyId }, classes) => {
+const CreateOrUpdateButton = withStyles(styles)(({ studyId, classes } => {
     const study = applicationState.studies[studyId];
     if (uiState.currentStudyIsNew) {
         return (
@@ -57,8 +57,7 @@ const CreateOrUpdateButton = ({ studyId }, classes) => {
             </Button>
         )
     }
-
-}
+}))
 
 const StudyView = observer((props: any & WithStyles) => {
     const PROTOCOL_SELECTIONS = [
@@ -82,6 +81,9 @@ const StudyView = observer((props: any & WithStyles) => {
         const protocolVersionUpdate = (versionValue: string) => {
 
         }
+        const saveButtonFn = uiState.currentStudyIsNew ?
+            () => updateStudy(applicationState.studies[studyId])
+            : () => createNewStudy(applicationState.currentStudy, surveyors)
         return (
             <Fragment id="study" className={classes.container}>
                 <TextField
