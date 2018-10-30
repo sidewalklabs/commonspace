@@ -99,6 +99,10 @@ export interface SurveryorsViewProps {
     studyId: string;
 }
 
+function handleAddingNewSurveyor() {
+
+}
+
 // todo, this is using the store components/ui.ts which may not be the best abstraction, this might be more localizable ...
 const SurveyorsView = observer((props: SurveyorsViewProps & WithStyles) => {
     const { classes, studyId } = props;
