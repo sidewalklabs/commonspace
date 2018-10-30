@@ -71,6 +71,15 @@ app.post('/signup', (req, res, next) => {
                           })(req, res, next)
 })
 
+app.post('/login', (req, res, next) => {
+    passport.authenticate('login',
+                          {session: false},
+                          (err, user) => {
+                              const token = jwt.sign(user, 'secret');
+                              return res.json({token})
+                          })(req, res, next);
+})
+
 app.get('/studies', async (req, res) => {
     const pgRes = await returnStudies(DbPool, 'b44a8bc3-b136-428e-bee5-32837aee9ca2')
     const studiesForUser: RestApi.Study[] = pgRes.rows.map(({study_id, title, protocol_version, emails}) => {

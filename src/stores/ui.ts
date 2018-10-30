@@ -23,6 +23,7 @@ interface UiState {
     availableLocations: AvailableLocation[]; 
     currentStudyIsNew: boolean;
     drawerOpen: boolean;
+    login: boolean;
 }
 
 const uiState = observable({
@@ -30,7 +31,8 @@ const uiState = observable({
     addSurveyorModalText: '',
     availableLocations: [],
     currentStudyIsNew: false,
-    drawerOpen: true
+    drawerOpen: true,
+    login: false
 });
 
 autorun(() => {
