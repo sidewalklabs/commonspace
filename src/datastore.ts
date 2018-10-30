@@ -272,11 +272,20 @@ export async function findUser(pool: pg.Pool, email: string, password: string) {
     const query = `SELECT * FROM users where email='${email}' AND password='${password}'`;
     const pgRes = await pool.query(query);
     if (pgRes.rowCount !== 1) {
-        throw new Error('User not found for email: ${email}')
+        throw new Error(`User not found for email: ${email}`)
     }
     const user = pgRes.rows[0];
-    console.log('user: ', JSON.stringify(user));
-    return user; 
+    return user;
+}
+
+export async function findUserById(pool: pg.Pool, userId: string) {
+const query = `SELECT * FROM users where user_id='${userId}'`;
+    const pgRes = await pool.query(query);
+    if (pgRes.rowCount !== 1) {
+        throw new Error(`User not found for user_id: ${userId}`)
+    }
+    const user = pgRes.rows[0];
+    return user;
 }
 
 export async function createUser(pool: pg.Pool, user: User) {
@@ -311,7 +320,7 @@ export async function createLocation(pool: pg.Pool, location: Location) {
     }
 }
 
-export async function giveUserStudyAcess(pool: pg.Pool, userEmail: string, studyId: string) {
+export async function giveUserStudyAccess(pool: pg.Pool, userEmail: string, studyId: string) {
     const query = `INSERT INTO data_collection.surveyors
                    (SELECT coalesce
                       ((SELECT pu.user_id FROM public.users pu WHERE pu.email = '${userEmail}'),
