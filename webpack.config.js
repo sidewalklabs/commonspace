@@ -4,19 +4,14 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = [{
-  name: 'firestore and gcp',
-  entry: {
-    'dist/firestore': ['babel-polyfill', path.resolve(__dirname, 'src/firestore-client.ts')],
-    'expo_project/lib/firestore': ['babel-polyfill', path.resolve(__dirname, 'src/firestore-client.ts')],
-    'dist/index': ['babel-polyfill', path.resolve(__dirname, 'src/gcp.ts')],
-    'dist/server': ['babel-polyfill', path.resolve(__dirname, 'src/server.ts')],
-  },
+  name: 'api-server',
+  entry: ['babel-polyfill', path.resolve(__dirname, 'src/server.ts')],
+  devtool: 'source-map',
+  target: 'node',
   output: {
-    libraryTarget: 'umd',
-    path: path.resolve(__dirname),
-    filename: '[name].js'
+    path: path.join(__dirname, 'build'),
+    filename: 'server.js'
   },
-  target: "node",
   module: {
     rules: [
       {
@@ -38,7 +33,7 @@ module.exports = [{
   plugins: [
     new webpack.IgnorePlugin(/^pg-native$/)
   ]
-}, {
+},{
   name: 'admin-app',
   entry: {
     app: ['babel-polyfill', path.resolve(__dirname, 'src/app.tsx')]
@@ -65,7 +60,16 @@ module.exports = [{
         }
       }
     ]
-  }
+  },
+  plugins: [
+    new HtmlWebpackPlugin(
+      {
+        title: 'Commons Survey Administrator',
+        template: 'index.html'
+      }
+    ),
+    new CopyWebpackPlugin([{from: 'css/styles.css', to: 'css/styles.css'}])
+  ]
 }, {
   name: 'map-annotation',
   entry: {

@@ -1,10 +1,10 @@
-import * as dotenv from 'dotenv';
+import dotenv from 'dotenv';
 dotenv.config();
 
 import * as bodyParser from 'body-parser';
-import express = require('express');
+import express from 'express';
 import * as jwt from 'jsonwebtoken';
-import  * as passport from 'passport';
+import passport from 'passport';
 import * as uuidv4 from 'uuid/v4';
 import { createLocation } from './datastore';
 
@@ -42,25 +42,6 @@ app.use(function (req, res, next) {
     // Pass to next layer of middleware
     next();
 });
-
-namespace RestApi {
-    export interface Survey {
-        survey_id: string;
-        title?: string;
-        location_id: string;
-        start_date: string;
-        end_date: string;
-        surveyor_email: string;
-    }
-
-    export interface Study {
-        study_id: string;
-        title: string;
-        protocol_version: string;
-        surveyors: string[];
-        surveys?: Survey[];
-    }
-}
 
 app.post('/signup', (req, res, next) => {
     passport.authenticate('signin',

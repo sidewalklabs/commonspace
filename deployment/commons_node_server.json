@@ -1,0 +1,96 @@
+{
+  "variables": {
+    "pg_pass": "postgres",
+    "db_name": "dataCollect",
+    "pg_user": "postgres"
+  },
+  "builders": [
+    {
+      "type": "docker",
+      "image": "node:8.12",
+      "commit": true,
+      "changes": [
+        "ENV POSTGRES_PASSWORD {{ user `pg_pass` }}",
+        "ENV POSTGRES_USER {{ user `pg_user` }}",
+        "ENV POSTGRES_DB {{ user `db_name` }}",
+        "EXPOSE 5431 5431"
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": "mkdir commons"
+    },
+    {
+      "type": "file",
+      "source": "../.babelrc",
+      "destination": "commons/.babelrc"
+    },
+    {
+      "type": "file",
+      "source": "../src",
+      "destination": "commons/src"
+    },
+    {
+      "type": "file",
+      "source": "../css",
+      "destination": "commons/css"
+    },
+    {
+      "type": "file",
+      "source": "../package.json",
+      "destination": "commons/package.json"
+    },
+    {
+      "type": "file",
+      "source": "../index.html",
+      "destination": "commons/index.html"
+    },
+    {
+      "type": "file",
+      "source": "../map.html",
+      "destination": "commons/map.html"
+    },
+    {
+      "type": "file",
+      "source": "../yarn.lock",
+      "destination": "commons/yarn.lock"
+    },
+    {
+      "type": "file",
+      "source": "../webpack.config.js",
+      "destination": "commons/webpack.config.js"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "cd commons/",
+	"npm install -g -s --no-progress yarn",
+	"yarn",
+        "yarn build"
+      ]
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "apt-get update",
+        "apt-get install nginx -y"  
+      ]
+    },
+    {
+      "type": "file",
+      "source": "./nginx.conf",
+      "destination": "/nginx.conf"
+    }
+  ],
+  "post-processors": [
+    [
+      {
+	"type": "docker-tag",
+	"repository": "swl-eng/gehl-data-collector",
+	"tag": "v0.0.1"
+      }
+    ]
+  ]
+}
