@@ -2,14 +2,22 @@
   "compilerOptions": {
     "lib": ["es6", "dom"],
     "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es6",
+    "noImplicitAny": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
     "sourceMap": true,
-    "target": "es6"
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "*": [
+        "node_modules/*",
+        "src/types/*"
+      ]
+    }
   },
   "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "**/*.spec.ts"
+    "src/**/*"
   ]
 }

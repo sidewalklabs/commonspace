@@ -37,7 +37,7 @@
     [
       {
         "type": "docker-tag",
-        "repository": "swl-eng/gehl-data-collector",
+        "repository": "swl-eng/commons-postgres",
         "tag": "v0.0.1"
       }
     ]

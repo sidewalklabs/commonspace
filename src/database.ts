@@ -1,7 +1,6 @@
-'use strict';
 import * as pg from 'pg';
-
-console.log(process.env);
+import dotenv from 'dotenv';
+dotenv.config();
 
 const config = {
     user: process.env.db_user,
