@@ -1,22 +1,41 @@
-## How to create your own study
-
-* Setup your firebase instance
-
-* deploy functions to your firebase instance
+## Running the Administrator Frontend and API Server Locally on Kubernetes
+[Kubernetes] is an open source project designed to automate the deployent, scaling, and management of cloud based applications. Commons uses kubernetes to run in the cloud. Various cloud services provide support for running and monitoring applications in a kubernetes environment. In order to test out and debug issues related to prodution environments developers should run commons using [minikube], which allows developers to run kubernetes environments on a single machine. Follow the appropriate install [instructions](minikube-install-instrutions) for your machine. Once installed you can use the following command line instructions to run Commons in a cloud-like environment. Note before running the application in kubernetes, [we will need access to an appropriate postgres instance] (## Setting Up Postgres) 
 
 ``` bash
-firebase deploy --only functions
+minikube start
+eval $(minikube docker-env)
+packer build -var version=$(git rev-parse --short=8 HEAD) -var container_image_name=swl-eng/commons-nginx deployment/commons_nginx.json
+packer build -var version=$(git rev-parse --short=8 HEAD) -var container_image_name=swl-eng/commons-server deployment/commons_server.json
+kubectl patch --local -o yaml -p \ '
+              {
+                "spec": {
+                   "template": {
+                        "spec": {
+                          "containers": [
+                                {
+                                    "name": "commons-nginx",
+                                    "image": "swl-eng/commons-nginx:'$(git rev-parse --short=8 HEAD)'"
+                                },
+                                {
+                                    "name": "commons-server",
+                                    "image": "swl-eng/commons-server:'$(git rev-parse --short=8 HEAD)'"
+                                }
+                            ]
+                        }
+                    }
+                  }
+              }' -f deployment/commons.yml > deployment/commons.yml
+kubectl apply -f development-postgres-endpoint.yml
+kubectl apply -f commons.yml
+kubectl apply -f commons_nginx_service.yml
+kubectl apply -f commons_ingress.yml
 ```
 
-* fill out the users.csv and surveys.csv file
-
-* download a service account key from your firebase console, or get one from your admin
-
-* go over the src/tpwc-admin-script.ts and make sure that the hard coded values for the study are correct
+N.B.
+Don't forget to turn off your minikube when you're all done, you probably could have guessed:
 ``` bash
-ts-node src/tpwc-admin-script.ts $path-to-service-account-json
+minikube stop
 ```
-
 
 ### Frontend and Expo
 #### Installation
@@ -44,12 +63,12 @@ python -m http.server
 ### SQL
 
 #### Local Development -- Backend
-[Install packer][2]
+[Install Packer]
 
 ``` bash
 cd deployment
 packer build postgres.json
-docker run -p 5431:5431 swl-eng/gehl-data-collector:v0.0.1 postgres
+docker run -p 5431:5431 swl-eng/commons-postgres:$(../.version) postgres -p 5431
 psql -f deployment/init.sql
 ```
 
@@ -88,6 +107,7 @@ psql "host=127.0.0.1 sslmode=disable dbname=postgres user=postgres" -f deploymen
 psql "host=127.0.0.1 sslmode=disable dbname=postgres user=postgres" -f deployment/init.sql
 ```
 
+## Setting Up Postgres
 
 ## Deploy GCP Cloud Functions
 Create an environment variables file.
@@ -118,4 +138,7 @@ yarn run deploy
 
 
 [1]: https://cloud.google.com/sql/docs/postgres/connect-external-app#proxy
-[2]: https://www.packer.io/intro/getting-started/install.html
+[Install Packer]: https://www.packer.io/intro/getting-started/install.html
+[kubernetes]: https://kubernetes.io/
+[minikube]: https://github.com/kubernetes/minikube
+[minikube-install-instrutions]: https://kubernetes.io/docs/tasks/tools/install-minikube/

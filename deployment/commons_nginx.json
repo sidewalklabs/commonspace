@@ -1,8 +1,8 @@
 {
   "variables": {
-    "pg_pass": "postgres",
-    "db_name": "dataCollect",
-    "pg_user": "postgres"
+    "container_image_name": "us.gcr.io/nyc-tlc-1225/commons-nginx",
+    "version": "",
+    "gcloud_json_key": ""
   },
   "builders": [
     {
@@ -10,10 +10,7 @@
       "image": "node:8.12",
       "commit": true,
       "changes": [
-        "ENV POSTGRES_PASSWORD {{ user `pg_pass` }}",
-        "ENV POSTGRES_USER {{ user `pg_user` }}",
-        "ENV POSTGRES_DB {{ user `db_name` }}",
-        "EXPOSE 5431 5431"
+        "EXPOSE 80 80"
       ]
     }
   ],
@@ -24,42 +21,42 @@
     },
     {
       "type": "file",
-      "source": "../.babelrc",
+      "source": ".babelrc",
       "destination": "commons/.babelrc"
     },
     {
       "type": "file",
-      "source": "../src",
+      "source": "src/",
       "destination": "commons/src"
     },
     {
       "type": "file",
-      "source": "../css",
+      "source": "css/",
       "destination": "commons/css"
     },
     {
       "type": "file",
-      "source": "../package.json",
+      "source": "package.json",
       "destination": "commons/package.json"
     },
     {
       "type": "file",
-      "source": "../index.html",
+      "source": "index.html",
       "destination": "commons/index.html"
     },
     {
       "type": "file",
-      "source": "../map.html",
+      "source": "map.html",
       "destination": "commons/map.html"
     },
     {
       "type": "file",
-      "source": "../yarn.lock",
+      "source": "yarn.lock",
       "destination": "commons/yarn.lock"
     },
     {
       "type": "file",
-      "source": "../webpack.config.js",
+      "source": "webpack.config.js",
       "destination": "commons/webpack.config.js"
     },
     {
@@ -80,16 +77,22 @@
     },
     {
       "type": "file",
-      "source": "./nginx.conf",
+      "source": "deployment/nginx.conf",
       "destination": "/nginx.conf"
     }
   ],
   "post-processors": [
     [
       {
-	"type": "docker-tag",
-	"repository": "swl-eng/gehl-data-collector",
-	"tag": "v0.0.1"
+        "type": "docker-tag",
+        "repository": "{{user `container_image_name`}}",
+        "tag": "{{user `version`}}"
+      }, {
+        "type": "docker-push",
+        "login": true,
+        "login_username": "_json_key",
+        "login_password": "{{user `gcloud_json_key`}}",
+        "login_server": "https://gcr.io"
       }
     ]
   ]

@@ -1,0 +1,120 @@
+version: 2
+
+jobs:
+
+  validate:
+    docker:
+      - image: hashicorp/packer:light
+
+    steps:
+      - checkout
+      - run:
+         name: validate
+         command: |
+             packer validate deployment/commons_nginx.json
+             packer validate deployment/commons_server.json
+
+
+  build-containers:
+      docker:                                
+        - image: californianseabass/gcloud-packer-docker:v0.0.1
+
+      steps:
+          - run:
+             name: setup docker
+             command: echo y | gcloud auth configure-docker
+
+          - run: &setup_gcloud
+             name: authenticate gcloud service account
+             command: |
+                echo "${GCP_SERVICE_ACCOUNT_KEY}" > ${HOME}/gcp-key.json
+                gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
+                gcloud --quiet config set project nyc-tlc-1225
+
+          - checkout
+
+          - setup_remote_docker
+
+          - run:
+             name: build and push commons server image to GC Registry for k8s to have access
+             command: |
+                docker login -u _json_key -p "${GCP_SERVICE_ACCOUNT_KEY}" https://gcr.io
+                packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-server -var version=$(git rev-parse --short=8 HEAD) -var NODE_ENV="production" -var server_hostname="commons-staging.sidewalklabs.com" -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" -var db_host="${db_host}" -var db_user="${db_user}" -var db_pass="${db_pass}" -var db_name="${db_name}" -var db_port="${db_port}" -var db_pool_size="${db_pool_size}" -var db_client_timeout="${db_client_timeout}" deployment/commons_server.json
+
+          - run:
+              name: build and push nginx image to GC Registry for k8s to have access
+              command: |
+                packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-nginx -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" deployment/commons_nginx.json
+
+          - run:
+              name: patch K8s configs
+              command: |
+                mkdir /tmp/k8s
+                kubectl patch --local -o yaml -p \ '
+                  {
+                    "spec": {
+                       "template": {
+                            "spec": {
+                              "containers": [
+                                    {
+                                        "name": "commons-nginx",
+                                        "image": "us.gcr.io/nyc-tlc-1225/commons-nginx:'$(git rev-parse --short=8 HEAD)'"
+                                    },
+                                    {
+                                        "name": "commons-server",
+                                        "image": "us.gcr.io/nyc-tlc-1225/commons-server:'$(git rev-parse --short=8 HEAD)'"
+                                    }
+                                ]
+                            }
+                        }
+                      }
+                  }' -f deployment/commons.yml > /tmp/k8s/commons.yml
+                cp deployment/commons_nginx_service.yml /tmp/k8s/
+                cp deployment/commons_server_service.yml /tmp/k8s/
+
+          - persist_to_workspace:
+              root: /tmp/
+              paths:
+                - k8s
+          - store_artifacts:
+              path: /tmp/k8s
+
+  deploy-staging:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - attach_workspace:
+          at: /tmp
+      - run:
+          <<: *setup_gcloud
+      - run:
+          name: Apply K8s configs
+          command: |
+            gcloud container clusters get-credentials staging --zone=us-east1-b
+            kubectl apply -f /tmp/k8s/commons.yml
+            kubectl apply -f /tmp/k8s/commons_nginx_service.yml
+            kubectl apply -f /tmp/k8s/commons_server_service.yml
+
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - validate
+      - build-containers:
+          requires:
+            - validate
+      - deploy-staging:
+          requires:
+            - build-containers
+
+
+
+
+
+ 
+
+
+
+
+ 
