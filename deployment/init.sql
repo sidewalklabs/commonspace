@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users
 (
     user_id UUID PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL,
+    password TEXT,
     name TEXT
 );
 

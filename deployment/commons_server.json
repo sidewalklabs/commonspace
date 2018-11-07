@@ -1,0 +1,103 @@
+{
+  "variables": {
+    "container_image_name": "us.gcr.io/nyc-tlc-1225/commons-server",
+    "version": "",
+    "gcloud_json_key": "",
+    "db_user": "postgres",
+    "db_pass": "postgres",
+    "db_host": "localhost",
+    "db_port": "5432",
+    "db_name": "postgres",
+    "db_pool_size": "8",
+    "db_client_timeout": "8000",
+    "node_port": "3000"
+  },
+  "builders": [
+    {
+      "type": "docker",
+      "image": "node:8.12",
+      "commit": true,
+      "changes": [
+        "ENV db_user {{ user `db_user` }}",
+        "ENV db_pass {{ user `db_pass` }}",
+        "ENV db_host {{ user `db_host` }}",
+        "ENV db_port {{ user `db_port` }}",
+        "ENV db_name {{ user `db_name` }}",
+        "ENV db_pool_size {{ user `db_pool_size` }}",
+        "ENV db_client_timeout {{ user `db_client_timeout` }}",
+        "ENV NODE_PORT {{ user `node_port` }}",
+        "EXPOSE {{ user `node_port` }} {{ user `node_port` }}"
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": "mkdir commons"
+    },
+    {
+      "type": "file",
+      "source": ".babelrc",
+      "destination": "commons/.babelrc"
+    },
+    {
+      "type": "file",
+      "source": "src/",
+      "destination": "commons/src"
+    },
+    {
+      "type": "file",
+      "source": "css/",
+      "destination": "commons/css"
+    },
+    {
+      "type": "file",
+      "source": "package.json",
+      "destination": "commons/package.json"
+    },
+    {
+      "type": "file",
+      "source": "index.html",
+      "destination": "commons/index.html"
+    },
+    {
+      "type": "file",
+      "source": "map.html",
+      "destination": "commons/map.html"
+    },
+    {
+      "type": "file",
+      "source": "yarn.lock",
+      "destination": "commons/yarn.lock"
+    },
+    {
+      "type": "file",
+      "source": "webpack.config.js",
+      "destination": "commons/webpack.config.js"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "cd commons/",
+	"npm install -g -s --no-progress yarn",
+	"yarn install",
+        "yarn build --mode=production"
+      ]
+    }
+  ],
+  "post-processors": [
+    [
+      {
+        "type": "docker-tag",
+        "repository": "{{user `container_image_name`}}",
+        "tag": "{{user `version`}}"
+      }, {
+        "type": "docker-push",
+        "login": true,
+        "login_username": "_json_key",
+        "login_password": "{{user `gcloud_json_key`}}",
+        "login_server": "https://gcr.io"
+      }
+    ]
+  ]
+}

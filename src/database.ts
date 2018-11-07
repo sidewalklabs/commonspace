@@ -4,10 +4,10 @@ dotenv.config();
 
 const config = {
     user: process.env.db_user,
-    database: process.env.db_name,
     password: process.env.db_pass,
     host: process.env.db_host,
     port: parseInt(process.env.db_port),
+    database: process.env.db_name,
     max: parseInt(process.env.db_pool_size),
     idleTimeoutMillis: parseInt(process.env.db_client_timeout),
 };

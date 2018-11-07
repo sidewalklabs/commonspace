@@ -1,10 +1,14 @@
 module.exports = {
   "roots": [
-    "<rootDir>/src",
-    "<rootDir>/functions/src"
+    "<rootDir>/src"
   ],
   "transform": {
     "^.+\\.tsx?$": "ts-jest"
+  },
+  "globals": {
+    "ts-jest": {
+      "tsConfigFile": "tsconfig.json"
+    }
   },
   "testRegex": "(\\.|/)it\\.tsx?$",
   "moduleFileExtensions": [
@@ -13,4 +17,5 @@ module.exports = {
     "js",
     "jsx"
   ],
-}
+  verbose: true
+};
