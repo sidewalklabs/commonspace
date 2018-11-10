@@ -13,7 +13,7 @@ import apiRouter from './routes/api';
 import auth from './auth'
 import DbPool from './database';
 
-const PORT = 3000;
+const PORT = process.env.NODE_PORT ? process.env.NODE_PORT : 3000;
 
 const app = express();
 
@@ -21,7 +21,9 @@ auth(passport);
 app.use(passport.initialize());
 
 app.use(bodyParser.json());
-app.use('/', express.static('.'));
+if (process.env.NODE_ENV === 'development') {
+    app.use('/', express.static('./dist'));
+}
 app.use('/digitalshadow', express.static('./map-annotation'));
 
 app.use(function (req, res, next) {
@@ -46,10 +48,11 @@ app.use(function (req, res, next) {
 app.post('/signup', (req, res, next) => {
     passport.authenticate('signin',
                           {session: false, successRedirect: '/', failureRedirect: 'signup'},
-                          (err, user, info)=> {
+                          (err, user)=> {
+                              // TODO handle user already exists ....
                               if (err) throw err;
-                              const token = jwt.sign(user, 'secret');
-                              return res.json({user, token});
+                              const token = jwt.sign(user, process.env.jwt_secret);
+                              return res.json({token});
                           })(req, res, next)
 })
 
@@ -57,20 +60,35 @@ app.post('/login', (req, res, next) => {
     passport.authenticate('login',
                           {session: false},
                           (err, user) => {
-                              const token = jwt.sign(user, 'secret');
+                              const token = jwt.sign(user, process.env.jwt_secret);
                               return res.json({token})
                           })(req, res, next);
 })
 
-app.use('/api/v1', apiRouter)
 
-async function processFeature(feature) {
+if (process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'production') {
+    app.get('/auth/google', passport.authenticate('google', { scope : ['profile', 'email'] }));
+    app.get('/auth/google/callback',
+            passport.authenticate('google', {
+                successRedirect : '/',
+                failureRedirect : '/'
+            }),
+            (req, res) => {
+                const token = jwt.sign(req.user, process.env.jwt_secret);
+                return res.json({token});
+            });
+}
+
+app.use('/api/v1', apiRouter);
+
+async function processFeature(feature: any) {
     const { type: featureType, geometry, properties, id } = feature;
     if (featureType !== 'Feature') {
         throw new Error('must be a geojson feature')
     }
     const { type: geometryType, coordinates } = geometry;
     if (!id) {
+        //@ts-ignore
         feature.id = uuidv4();
     }
     // todo add geocoding logic

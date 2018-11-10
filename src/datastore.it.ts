@@ -1,8 +1,8 @@
 import * as dotenv from 'dotenv';
 import * as pg from 'pg';
-import * as uuidv4 from 'uuid/v4';
+import * as uuid from 'uuid';
 
-import { addDataPointToSurveyNoStudyId, addDataPointToSurveyWithStudyId, getTablenameForSurveyId, createLocation, createStudy, createNewSurveyForStudy, createUser, deleteDataPoint, Location, Study, Survey, User, giveUserStudyAcess } from './datastore';
+import { addDataPointToSurveyNoStudyId, addDataPointToSurveyWithStudyId, authenticateOAuthUser, getTablenameForSurveyId, createLocation, createStudy, createNewSurveyForStudy, createUser, deleteDataPoint, giveUserStudyAccess, Location, Study, Survey, User } from './datastore';
 
 dotenv.config();
 
@@ -27,38 +27,40 @@ const pool = new pg.Pool({
 });
 
 const sebastian: User = {
-    userId: uuidv4(),
+    userId: uuid.v4(),
     email: 'sebastian@sidewalklabs.com',
-    name: 'Eric Sebastian'
+    name: 'Eric Sebastian',
+    password: 'password'
 }
 
 const sebastian2: User = {
-    userId: uuidv4(),
+    userId: uuid.v4(),
     email: 'sebastian@sidewalklabs.com',
-    name: 'Eric Sebastian'
+    name: 'Eric Sebastian',
+    password: 'password'
 }
 
 const thorncliffeParkStudy: Study = {
     title: 'Thornecliffe Park',
-    studyId: uuidv4(),
+    studyId: uuid.v4(),
     protocolVersion: '1.0',
-    userId: sebastian.userId,
+    userId: sebastian.userId
 }
 const simpleStudy: Study = {
     title: 'Thornecliffe Park',
-    studyId: uuidv4(),
+    studyId: uuid.v4(),
     protocolVersion: '1.0',
-    userId: sebastian.userId,
+    userId: sebastian.userId
 }
 
 const simpleStudyInvalidUserId: Study = {
     title: 'Thornecliffe Park and Sabina Ali Study',
-    studyId: uuidv4(),
+    studyId: uuid.v4(),
     protocolVersion: '1.0',
-    userId: uuidv4(),
+    userId: uuid.v4()
 }
 
-const location: Location = {
+const location  = {
     "locationId": "07ab155a-2b38-44a7-ad73-b6711b3d46b9",
     "country": "canada",
     "city": "Toronto",
@@ -68,36 +70,38 @@ const location: Location = {
         "type": "Polygon",
         "coordinates": [
             [
+              [
                 -79.34435606002809,
                 43.70395407191628
-            ],
-            [
+              ],
+              [
                 -79.34425145387651,
                 43.70387845004543
-            ],
-            [
+              ],
+              [
                 -79.34404492378236,
                 43.70362637645357
-            ],
-            [
+              ],
+              [
                 -79.3438357114792,
                 43.70356820547418
-            ],
-            [
+              ],
+              [
                 -79.34322685003282,
                 43.703548815135164
-            ],
-            [
+              ],
+              [
                 -79.34306591749193,
                 43.70346931467964
-            ],
-            [
+              ],
+              [
                 -79.3434950709343,
                 43.70313967751972
-            ],
-            [
+              ],
+              [
                 -79.34463769197465,
                 43.70377955976265
+              ]
             ]
         ]
     }
@@ -105,8 +109,8 @@ const location: Location = {
 
 const surveyNearGarbage: Survey = {
     studyId: thorncliffeParkStudy.studyId,
-    locationId: uuidv4(),
-    surveyId: uuidv4(),
+    locationId: uuid.v4(),
+    surveyId: uuid.v4(),
     startDate: '2018-09-14T17:00:00Z',
     endDate: '2018-09-14T19:00:00Z',
     representation: 'absolute',
@@ -129,6 +133,17 @@ test('saving user with duplicate email errors', async () => {
     await expect(createUser(pool, sebastian2))
         .rejects
         .toThrowError('duplicate key value violates unique constraint "users_email_key"');
+});
+
+test('saving user with an OAuth account, should return the same value whether users exists or not', async () => {
+    const { rowCount: rc1, command: c1, rows: xs } = await authenticateOAuthUser(pool, 'test@gmail.com');
+    expect(rc1).toBe(1);
+    expect(c1).toBe('INSERT');
+    console.log(xs);
+    const { rowCount: rc2, command: c2, rows: ys } = await authenticateOAuthUser(pool, 'test@gmail.com');
+    expect(rc2).toBe(1);
+    expect(c2).toBe('INSERT');
+    expect(xs[0].userId).toEqual(ys[0].userId);
 });
 
 test('save new study', async () => {
@@ -162,7 +177,7 @@ test('saving study with a nonexistent user errors', async () => {
 });
 
 test('authorize a user to be a surveyor for a study based off their email', async () => {
-    const [res, userId] = await giveUserStudyAcess(pool, sebastian.email, thorncliffeParkStudy.studyId);
+    const [res, userId] = await giveUserStudyAccess(pool, sebastian.email, thorncliffeParkStudy.studyId);
     const { rowCount, command } = res as pg.QueryResult;
     expect(userId).toBe(null);
     expect(rowCount).toBe(1);
@@ -170,7 +185,7 @@ test('authorize a user to be a surveyor for a study based off their email', asyn
 });
 
 test('create new user if added to study without existsing account', async () => {
-    const [res, userId] = await giveUserStudyAcess(pool, 'authorizedNonPreviouslyExisitingUser@nowhere.io', thorncliffeParkStudy.studyId);
+    const [res, userId] = await giveUserStudyAccess(pool, 'authorizedNonPreviouslyExisitingUser@nowhere.io', thorncliffeParkStudy.studyId);
     const { rowCount, command } = res as pg.QueryResult;
     expect(userId).toBeTruthy();
     expect(rowCount).toBe(1);
@@ -191,7 +206,7 @@ test('can save a data point', async () => {
         },
         "object": "pushcart",
         "posture": "sitting",
-        "data_point_id": uuidv4()
+        "data_point_id": uuid.v4()
     }
     const { rowCount, command } = await addDataPointToSurveyWithStudyId(pool, surveyNearGarbage.studyId, surveyNearGarbage.surveyId, dataPoint);
     expect(rowCount).toBe(1);
@@ -201,7 +216,7 @@ test('can save a data point', async () => {
 
 test('add a data point using only the survey id', async () => {
     const dataPoint = {
-        "data_point_id": uuidv4(),
+        "data_point_id": uuid.v4(),
         "gender": "male",
         "groups": "pair",
         "location": {
@@ -218,7 +233,7 @@ test('add a data point using only the survey id', async () => {
 });
 
 test('update a data point using it\'s own id', async () => {
-    const dataPointId = uuidv4()
+    const dataPointId = uuid.v4()
     const dataPoint = {
         "data_point_id": dataPointId,
         "location": {
@@ -251,7 +266,7 @@ test('update a data point using it\'s own id', async () => {
 
 test('save a data point with a single activity', async () => {
     const dataPoint = {
-        "data_point_id": uuidv4(),
+        "data_point_id": uuid.v4(),
         "location": {
             "latitude": "43.70416809098892",
             "longitude": "-79.34354536235332"
@@ -270,7 +285,7 @@ test('save a data point with a single activity', async () => {
 
 test('save a data point with multiple activities', async () => {
     const dataPoint = {
-        "data_point_id": uuidv4(),
+        "data_point_id": uuid.v4(),
         "location": {
             "latitude": "43.70416809098892",
             "longitude": "-79.34354536235332"
@@ -286,7 +301,7 @@ test('save a data point with multiple activities', async () => {
 });
 
 test('delete a data point', async () => {
-    const dataPointId = uuidv4();
+    const dataPointId = uuid.v4();
     const dataPoint = {
         "data_point_id": dataPointId,
         "location": {

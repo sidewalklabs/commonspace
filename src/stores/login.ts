@@ -22,9 +22,8 @@ export async function logInUser() {
         referrer: "no-referrer", // no-referrer, *client
         body: JSON.stringify(snakecaseKeys(data)), // body data type must match "Content-Type" header
     })
-    const {user, token} = await response.json();
+    const {token} = await response.json();
     init(token);
-    console.log(response.status);
 }
 
 export interface LogInState {
