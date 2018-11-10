@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import * as pg from 'pg';
 import { FOREIGN_KEY_VIOLATION } from 'pg-error-constants';
 import * as uuid from 'uuid';
@@ -269,7 +270,7 @@ export async function createStudy(pool: pg.Pool, study: Study, fields: GehlField
 }
 
 export async function findUser(pool: pg.Pool, email: string, password: string) {
-    const query = `SELECT * FROM users where email='${email}' AND password='${password}'`;
+    const query = `SELECT * FROM users where email='${email}'`;
     const pgRes = await pool.query(query);
     if (pgRes.rowCount !== 1) {
         throw new Error(`User not found for email: ${email}`)
@@ -279,7 +280,7 @@ export async function findUser(pool: pg.Pool, email: string, password: string) {
 }
 
 export async function findUserById(pool: pg.Pool, userId: string) {
-const query = `SELECT * FROM users where user_id='${userId}'`;
+    const query = `SELECT * from users where user_id='${userId}'`
     const pgRes = await pool.query(query);
     if (pgRes.rowCount !== 1) {
         throw new Error(`User not found for user_id: ${userId}`)
@@ -289,9 +290,27 @@ const query = `SELECT * FROM users where user_id='${userId}'`;
 }
 
 export async function createUser(pool: pg.Pool, user: User) {
+    const hash = await bcrypt.hash(user.password, 14)
     const query = `INSERT INTO users(user_id, email, name, password)
-                   VALUES('${user.userId}', '${user.email}', '${user.name}', '${user.password}')`;
+                   VALUES('${user.userId}', '${user.email}', '${user.name}', '${hash}')`;
     return pool.query(query);
+}
+
+export async function authenticateOAuthUser(pool: pg.Pool, email: string) {
+    const userId = uuid.v4();
+    const query = `INSERT INTO users (user_id, email)
+                   VALUES (
+                       '${userId}',
+                       '${email}'
+                   ) ON CONFLICT (email)
+                   DO UPDATE SET email=EXCLUDED.email RETURNING user_id`;
+    try {
+        return pool.query(query);
+    } catch (error) {
+        console.error(error);
+        console.error(`could not handle OAuth user for email: ${email}`);
+        throw error;
+    }
 }
 
 export async function createUserFromEmail(pool: pg.Pool, email: string) {
@@ -308,7 +327,7 @@ export async function createUserFromEmail(pool: pg.Pool, email: string) {
     }
 }
 
-export async function createLocation(pool: pg.Pool, location: Location) {
+export async function createLocation(pool: pg.Pool, location) {
     const query = `INSERT INTO data_collection.location
                    (location_id, country, city, name_primary, subdivision, geometry)
                    VALUES ('${location.locationId}', '${location.country}', '${location.city}', '${location.namePrimary}', '${location.subdivision}', ST_GeomFromGeoJSON('${JSON.stringify(location.geometry)}'))`;

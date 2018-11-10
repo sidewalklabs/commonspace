@@ -44,6 +44,9 @@ module.exports = [{
     filename: 'app.bundle.js'
   },
   module: {
+    noParse: [
+        /aws/
+    ],
     rules: [
       {
         test: /\.(t|j)sx?$/,
