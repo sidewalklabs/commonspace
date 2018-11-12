@@ -19,6 +19,13 @@ import uiState from '../stores/ui';
 
 
 const styles = theme => ({
+    smallColumn: {
+        width: 'auto',
+        whiteSpace: 'nowrap'
+    },
+    column: {
+        width: '100%'
+    },
     container: {
         display: 'flex',
         flexDirection: 'column',
@@ -56,7 +63,7 @@ export interface TextTableCellProps {
     onUpdate: (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement | HTMLSelectElement>) => void;
 }
 
-const TextTableCell = (props: TextTableCellProps & WithStyles) => {
+const TextTableCell = withStyles(styles)((props: TextTableCellProps & WithStyles) => {
     const { classes, displayText, onUpdate } = props;
     return (
         <TableCell numeric>
@@ -70,10 +77,9 @@ const TextTableCell = (props: TextTableCellProps & WithStyles) => {
             />
         </TableCell>
     )
-}
+})
 
 interface SurveyorsViewProps {
-    addNewSurveyorToSt
     addNewCell: (...args: any[]) => void;
     tableHeaders: string[] | any[];
     tableRows: React.Component[];
@@ -83,8 +89,8 @@ const Row = withStyles(styles)(observer(props => {
     const { email, classes } = props;
     return (
         <TableRow>
-            <TableCell component="th" scope="row" />
-            <TableCell component="th" scope="row">
+            <TableCell className={classes.smallColumn} component="th" scope="row" />
+            <TableCell className={classes.column} component="th" scope="row">
                 <TextField
                     className={classes.textField}
                     value={email}
@@ -95,12 +101,13 @@ const Row = withStyles(styles)(observer(props => {
     )
 }))
 
-export interface SurveryorsViewProps {
-    studyId: string;
+function handleAddingNewSurveyor(studyId, email) {
+    uiState.addSurveyorModalIsOpen = false;
+    addNewSurveyorToSurvey(studyId, email);
 }
 
-function handleAddingNewSurveyor() {
-
+interface SurveyorsViewProps {
+    studyId: string;
 }
 
 // todo, this is using the store components/ui.ts which may not be the best abstraction, this might be more localizable ...
@@ -115,8 +122,8 @@ const SurveyorsView = observer((props: SurveyorsViewProps & WithStyles) => {
                 <Table className={classes.table}>
                     <TableHead>
                         <TableRow>
-                            <TableCell onClick={() => uiState.addSurveyorModalIsOpen = true}>Add</TableCell>
-                            <TableCell>Email</TableCell>
+                            <TableCell className={classes.smallColumn} onClick={() => uiState.addSurveyorModalIsOpen = true}>Add</TableCell>
+                            <TableCell className={classes.column}>Email</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>{tableRows}</TableBody>
@@ -129,7 +136,7 @@ const SurveyorsView = observer((props: SurveyorsViewProps & WithStyles) => {
                 onClose={() => uiState.addSurveyorModalIsOpen = false}
             >
                 <div className={classes.modal}>
-                    <Typography variant="h6" id="modal-title">
+                    <Typography id="modal-title">
                         Enter an email to give access to your study
                     </Typography>
                     <TextField
@@ -140,7 +147,7 @@ const SurveyorsView = observer((props: SurveyorsViewProps & WithStyles) => {
                         onChange={e => uiState.addSurveyorModalText = e.target.value}
                         margin="normal"
                     />
-                    <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={() => addNewSurveyorToSurvey(studyId, userEnteredEmail)}>
+                    <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={() => handleAddingNewSurveyor(studyId, userEnteredEmail)}>
                         Add Surveyor
                     </Button>
                 </div>

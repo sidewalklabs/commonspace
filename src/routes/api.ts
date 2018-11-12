@@ -1,8 +1,8 @@
-import * as camelcaseKeys from 'camelcase-keys';
+import camelcaseKeys from 'camelcase-keys';
 import express from 'express';
 import passport from 'passport';
 
-import { giveUserStudyAccess, returnStudies, surveysForStudy, updateSurvey } from '../datastore';
+import { createNewSurveyForStudy, createStudy , giveUserStudyAccess, returnStudies, surveysForStudy, updateSurvey, GehlFields } from '../datastore';
 import DbPool from '../database';
 
 const router = express.Router()
@@ -24,11 +24,13 @@ export interface Study {
     surveys?: Survey[];
 }
 
+const STUDY_FIELDS: GehlFields[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'objects', 'location', 'note'];
+
 router.use(passport.authenticate('jwt', {session: false}))
 
 router.get('/studies', async (req, res) => {
-    console.log('api: ', req.user);
-    const pgRes = await returnStudies(DbPool, 'b44a8bc3-b136-428e-bee5-32837aee9ca2')
+    const { user_id: userId } = req.user;
+    const pgRes = await returnStudies(DbPool, userId);
     const studiesForUser: Study[] = pgRes.rows.map(({study_id, title, protocol_version, emails}) => {
         return {
             study_id,
@@ -39,6 +41,24 @@ router.get('/studies', async (req, res) => {
     })
     res.send(studiesForUser);
 })
+
+router.post('/studies', async (req, res) => {
+    const { user_id: userId } = req.user;
+    const {protocol_version: protocolVersion, study_id: studyId, surveyors, surveys, title} = req.body;
+    const pgRes = createStudy(DbPool, { studyId, title, protocolVersion, userId}, STUDY_FIELDS);
+    const newUserIds = await Promise.all(
+        surveyors.map(async email => {
+            const [_, newUserId] = await giveUserStudyAccess(DbPool, email, studyId)
+            return newUserId;
+        })
+    );
+    await Promise.all(
+        surveys.map(async survey => {
+            return createNewSurveyForStudy(DbPool, camelcaseKeys({studyId, ...survey, userEmail: survey.surveyor_email}))
+        })
+    )
+    res.send(req.body)
+});
 
 router.get('/studies/:studyId/surveys', async (req, res) => {
     const { studyId } = req.params;
@@ -65,7 +85,7 @@ router.put('/studies/:studyId', async (req, res) => {
 
 router.post('/studies/:studyId/surveyors', async (req, res) => {
     const { studyId } = req.params;
-    const { email} = req.body;
+    const { email } = req.body;
     const [_, newUserId] = await giveUserStudyAccess(DbPool, email, studyId);
     res.send({ email, studyId, newUserId })
 });

@@ -1,6 +1,7 @@
 import React, { ChangeEvent } from 'react';
 import moment from 'moment';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
+import FormControl from '@material-ui/core/FormControl';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import Select from '@material-ui/core/Select';
@@ -20,6 +21,10 @@ import uiState from '../stores/ui';
 import { groupArrayOfObjectsBy } from '../utils';
 
 const styles = theme => ({
+    formControl: {
+        margin: theme.spacing.unit,
+        minWidth: 80,
+    },
     root: {
         width: '100%',
         height: '40%',
@@ -106,6 +111,14 @@ const DateTableCell = withStyles(styles)(observer((props: DateTableCellProps & W
     )
 }));
 
+interface SurveyRowProps {
+    surveyId: String;
+    startDate: string;
+    endDate: string;
+    locationId: string;
+    surveyorEmail: string;
+}
+
 const SurveyObjectToTableRow = observer(({ classes, survey }) => {
     const { surveyId } = survey;
     const startDate = moment(survey.startDate);
@@ -114,14 +127,14 @@ const SurveyObjectToTableRow = observer(({ classes, survey }) => {
     const endDate = moment(survey.endDate);
     const endDateDisplayDate = endDate.format('YYYY-MM-DD');
     const endTime = endDate.format('kk:mm');
-    let surveyName;
+    let locationName;
     if (uiState.availableLocations.length > 0 && survey.locationId) {
-        surveyName = groupArrayOfObjectsBy(uiState.availableLocations, 'locationId')[survey.locationId].name;
+        const properties = toJS(uiState.availableLocations).map(({ properties }) => properties);
+        locationName = groupArrayOfObjectsBy(properties, 'locationId')[survey.locationId].name;
     } else if (uiState.availableLocations.length > 0) {
-        console.log('hey: ', toJS(uiState.availableLocations));
-        surveyName = uiState.availableLocations[0].name;
+        locationName = uiState.availableLocations[0].properties.name;
     } else {
-        surveyName = '';
+        locationName = '';
     }
     return (
         <TableRow key={surveyId}>
@@ -129,10 +142,9 @@ const SurveyObjectToTableRow = observer(({ classes, survey }) => {
             </TableCell>
             <TableCell component="th" scope="row">
                 <TextField
-                    id="surveyor-email"
                     select
                     className={classes.textField}
-                    value={survey.surveyorEmail}
+                    value={survey.surveyorEmail ? survey.surveyorEmail : ''}
                     onChange={e => applicationState.currentStudy.surveys[surveyId].surveyorEmail = e.target.value}
                     margin="normal"
                 >
@@ -145,7 +157,6 @@ const SurveyObjectToTableRow = observer(({ classes, survey }) => {
             </TableCell>
             <TableCell numeric>
                 <TextField
-                    id="survey-title"
                     label="Title"
                     className={classes.textField}
                     value={survey.title}
@@ -184,20 +195,19 @@ const SurveyObjectToTableRow = observer(({ classes, survey }) => {
                 />
             </TableCell>
             <TableCell component="th" scope="row">
-                <Select
-                    name={surveyName}
-                    onChange={(e) => applicationState.currentStudy.surveys[surveyId].locationId = e.target.value}
-                    inputProps={{
-                        name: 'locationId',
-                        id: 'survey-location',
-                    }}
+                <TextField
+                    className={classes.textField}
+                    select
+                    value={locationName}
+                    onChange={e => applicationState.currentStudy.surveys[surveyId].locationId = e.target.value}
+                    margin="normal"
                 >
-                    {uiState.availableLocations.map(({ name, locationId }) => (
-                        <MenuItem key={locationId} value={locationId}>
-                            {name}
+                    {uiState.availableLocations.map(({ properties }) => (
+                        <MenuItem key={properties.locationId} value={properties.locationId}>
+                            {properties.name}
                         </MenuItem>
                     ))}
-                </Select>
+                </TextField>
             </TableCell>
         </TableRow>
     );

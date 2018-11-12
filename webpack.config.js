@@ -76,7 +76,7 @@ module.exports = [{
 }, {
   name: 'map-annotation',
   entry: {
-    map: ['babel-polyfill', path.resolve(__dirname, 'src/map.ts')]
+    map: ['babel-polyfill', path.resolve(__dirname, 'src/map.tsx')]
   },
   devtool: 'source-map',
   output: {
