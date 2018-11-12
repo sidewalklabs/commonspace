@@ -1,7 +1,12 @@
+import React from 'react';
+import { render } from 'react-dom';
+
 import L from 'leaflet';
 import 'leaflet-draw';
+import * as uuid from 'uuid';
 
 import { flatMap } from './utils';
+import { Feature, Polygon, FeatureCollection } from 'geojson';
 
 declare var document;
 
@@ -12,8 +17,14 @@ const OSM_ATTRIBUTION =
 const TILE_SERVER_URL =
     'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png';
 
+// todo: use this map Id through the broad cast channel
+let mapId;
 const map = L.map('map');
-const regions = [];
+const regions: Feature[] = [];
+const data: FeatureCollection = {
+    type: 'FeatureCollection',
+    features: regions
+}
 
 // Get the modal
 
@@ -37,28 +48,43 @@ window.onclick = function(event) {
     }
 };
 
+// we need to keep track of which feature's properties are being edited so the removeInputsFromModal can update the correct set
+let featureIndex;
+
 function removeInputsFromModal(modal) {
+    const geojsonProperites = {};
+    const propertyRows = modal.querySelectorAll('.input-row')
+    propertyRows.forEach(elem => {
+        const key = elem.childNodes[1].firstChild.nodeValue;
+        const value = elem.childNodes[2].firstChild.nodeValue;
+        if (key) {
+            console.log(`{${key}: ${value}}`);
+            geojsonProperites[key] = value;
+        }
+    });
+    regions[featureIndex].properties = geojsonProperites;
+    /* const attributeKeys = modal.querySelectorAll('.attribute-key');
+     * const valueKeys = modal.querySelectorAll('.attribute-value');
+     * const breaks = modal.querySelectorAll('.br');
+     * attributeKeys.forEach(k => {
+     *     console.log('key: ', k.firstChild.nodeValue);
+     *     k.remove();
+     * });
+     * valueKeys.forEach(v => {
+     *     v.remove();
+     * });
+     * breaks.forEach(b => {
+     *     b.remove();
+     * }); */
     const tableBody = modal.querySelectorAll('.table-body')[0];
     while (tableBody.firstChild) {
         tableBody.removeChild(tableBody.firstChild);
     }
     tableBody.remove();
-    const attributeKeys = modal.querySelectorAll('.attribute-key');
-    const valueKeys = modal.querySelectorAll('.attribute-value');
-    const breaks = modal.querySelectorAll('.br');
-    attributeKeys.forEach(k => {
-        k.remove();
-    });
-    valueKeys.forEach(v => {
-        v.remove();
-    });
-    breaks.forEach(b => {
-        b.remove();
-    });
 }
 
 
-function createKeyValueInputElements(key, value) {
+function createKeyValueInputElements(key, value, obj) {
     const keyElem = document.createElement('td');
     keyElem.contentEditable = true;
     keyElem.name = 'key';
@@ -68,7 +94,12 @@ function createKeyValueInputElements(key, value) {
         valueElem.name = keyElem.value;
         valueElem.focus();
     };
-    
+    keyElem.addEventListener('input', e => {
+        console.log(e.target.firstChild.nodeValue);
+        console.log(valueElem.firstChild.nodeValue);
+        console.log(obj);
+    });
+
     const valueElem = document.createElement('td');
     valueElem.contentEditable = true;
     valueElem.className = 'attribute-value';
@@ -76,36 +107,9 @@ function createKeyValueInputElements(key, value) {
     return [keyElem, valueElem]
 }
 
-/** What is the data structure that we want
- * a linked list that represents a hash map
- * one trick is that we can't write the same key twice
- * other wise the user would be confused, so you have
- * to throw an error and do a check every time you insert 
- * a new hash
- */
-function addAttributeEntry(modal, properties) {
-    const newTable = document.createElement('tbody');
-    newTable.className = 'table-body'
-    const headerRow = document.createElement('tr'); 
-    ['name', 'Value'].forEach(columnName => {
-        const tableHeaderCell = document.createElement('th');
-        tableHeaderCell.className = 'modal-table-cell'
-        tableHeaderCell.appendChild(document.createTextNode(columnName));
-        headerRow.appendChild(tableHeaderCell);
-    });
-    newTable.appendChild(headerRow);
-    const inputs = hashmapToArray(properties, createKeyValueInputElements)
-    inputs.forEach(([kElem, vElem]) => {
-        const row = document.createElement('tr')
-        row.appendChild(kElem);
-        row.appendChild(vElem);
-        //const deleteRowSpan = document.createElement('span');
-        //deleteRowSpan.className = 'table-remove glyphicon glyphicon-remove';
-        //row.appendChild(deleteRowSpan);
-        newTable.appendChild(row);
-        
-    });
-
+function createEmptyTableRow(properties) {
+    const newRow = document.createElement('tr');
+    newRow.className = 'input-row';
     const keyInput = document.createElement('td');
     keyInput.contentEditable = true;
     keyInput.name = 'key';
@@ -123,10 +127,60 @@ function addAttributeEntry(modal, properties) {
             properties.push([keyInput.value, valueInput.value])
         }
     };
-    modal.appendChild(keyInput);
-    modal.appendChild(valueInput);
-    modal.appendChild(document.createElement('br'));
 
+    newRow.appendChild(document.createElement('td'));
+    newRow.appendChild(keyInput);
+    newRow.appendChild(valueInput);
+    return newRow;
+}
+
+function createTableHeader(newTable, properties) {
+    const headerRow = document.createElement('tr');
+    const addButtonHeaderCell = document.createElement('th');
+    addButtonHeaderCell.className = 'modal-table-cell'
+    addButtonHeaderCell.appendChild(document.createTextNode('add'));
+    addButtonHeaderCell.onclick = () => {
+        newTable.appendChild(createEmptyTableRow(properties));
+    }
+    headerRow.appendChild(addButtonHeaderCell);
+    ['name', 'value'].forEach(columnName => {
+        const tableHeaderCell = document.createElement('th');
+        tableHeaderCell.className = 'modal-table-cell'
+        tableHeaderCell.appendChild(document.createTextNode(columnName));
+        headerRow.appendChild(tableHeaderCell);
+    });
+
+    return headerRow;
+}
+
+/** What is the data structure that we want
+ * a linked list that represents a hash map
+ * one trick is that we can't write the same key twice
+ * other wise the user would be confused, so you have
+ * to throw an error and do a check every time you insert 
+ * a new hash
+ */
+function addAttributeEditorTable(modal, properties) {
+    const newTable = document.createElement('tbody');
+    newTable.className = 'table-body';
+    const headerRow = createTableHeader(newTable, properties);
+    newTable.appendChild(headerRow);
+    const inputs = hashmapToArray(properties, (k, v) => createKeyValueInputElements(k, v, properties))
+    inputs.forEach(([kElem, vElem]) => {
+        const row = document.createElement('tr');
+        row.className = 'input-row';
+        row.appendChild(document.createElement('td'));
+        row.appendChild(kElem);
+        row.appendChild(vElem);
+        //const deleteRowSpan = document.createElement('span');
+        //deleteRowSpan.className = 'table-remove glyphicon glyphicon-remove';
+        //row.appendChild(deleteRowSpan);
+        newTable.appendChild(row);
+    });
+    newTable.appendChild(createEmptyTableRow(properties));
+    newTable.onblur = () => {
+        console.log('table: ', newTable);
+    }
     modal.appendChild(newTable);
 }
 
@@ -230,7 +284,7 @@ interface KeyPair {
 }
 function keyValueArrayToObject(xs: [string, string][]) {
     const keyPairs = xs.map(([x, y]) => {
-        const keyPair = {}; 
+        const keyPair = {};
         keyPair[x] = y;
         return keyPairs
     });
@@ -241,46 +295,69 @@ function keyValueArrayToObject(xs: [string, string][]) {
  * take an object of string-> string and apply a function to each key value pair
  * returning an array of the outputs.
  */
-function hashmapToArray(obj: {[x: string]: string}, f: (x: string, y: string) => any): any[] {
+function hashmapToArray(obj: { [x: string]: string }, f: (x: string, y: string) => any): any[] {
     const xs = [];
     Object.keys(obj).map(key => {
         console.log('kye: ', key);
-        const value = obj[key]; 
+        const value = obj[key];
         console.log('value: ', value);
         xs.push(f(key, value));
     });
     return xs;
 }
 
-let selectedRegion = 0;
+const newZoneBroadcastChannel = new BroadcastChannel('new_zone');
 
 map.on('draw:created', function(event: any) {
     const { layerType, layer, target } = event;
 
     if (layerType === 'polygon') {
         const { _latlngs } = layer;
-        const geojson = latLngsToPolygonGeoJson(_latlngs[0], regions.length);
-        regions.push(geojson);
-        geojson.properties.name = 'zone_' + regions.length.toString();
+        console.log(_latlngs);
+        console.log(JSON.stringify(_latlngs));
+        const newFeature: Feature = {
+            type: 'Feature',
+            geometry: {
+                type: 'Polygon',
+                coordinates: _latlngs[0].map(({ lat, lng }) => [lng, lat]),
+            },
+            properties: {
+                name: 'zone_' + regions.length.toString(),
+                locationId: uuid.v4()
+            }
+        }
+        newZoneBroadcastChannel.postMessage(newFeature);
+
+        regions.push(newFeature);
+        const index = regions.length - 1;
+        layer.on('click', () => {
+            featureIndex = index;
+        });
     }
 
     if (layerType === 'marker') {
         const { _latlng } = layer;
-        const geojson = latLngToGeoJsonPoint(_latlng);
-        const regionIndex = regions.length;
-        console.log('new region: ', regionIndex);
-        regions.push(geojson);
-        geojson.properties = {name: 'marker: ' + regions.length.toString()}
-        const geojsonProperties = [{name: 'marker: ' + regions.length.toString()}];
+        const { lat, lng } = _latlng;
+        const markerGeoJson: Feature = {
+            type: 'Feature',
+            geometry: {
+                type: 'Point',
+                coordinates: [lng, lat]
+            },
+            properties: {
+                name: 'marker: ' + regions.length.toString()
+            }
+        }
+        regions.push(markerGeoJson);
+        const index = regions.length - 1;
+        const geojsonProperties = [{ name: 'marker: ' + regions.length.toString() }];
 
         const clickHandler = () => {
             MODAL.style.display = 'block';
-            selectedRegion = regionIndex;
-            const { properties } = geojson;
-            // console.log('a: ', expand(regions[regionIndex].properties, (k, v) => [k, v]));
-            //console.log('b: ', JSON.stringify(geojson.properties));
-            // TODO use the collapse and expand functions to create the attributes table 
-            addAttributeEntry(MODAL_CONTENT, properties);
+            const { properties } = markerGeoJson;
+            featureIndex = index;
+            console.log(featureIndex);
+            addAttributeEditorTable(MODAL_CONTENT, properties);
         };
         layer.on('click', clickHandler);
     }
@@ -289,7 +366,7 @@ map.on('draw:created', function(event: any) {
     //     console.log('attach new click handler to modal');
     //     MODAL.style.display = 'block';
     //     // TODO prepopulate
-    //     addAttributeEntry(MODAL_CONTENT, geojson.properties);
+    //     addAttributeEditorTable(MODAL_CONTENT, geojson.properties);
     // }
     editableLayers.addLayer(layer);
 });
@@ -327,18 +404,18 @@ async function sendGeoJsonToRoute(url: string) {
         referrer: "no-referrer", // no-referrer, *client
         body: data, // body data type must match "Content-Type" header
     })
-    if (response.status === 200){
+    if (response.status === 200) {
         // we rely on the backend to give us the location Ids .... in case it decides to match ours up with something very similar (a were you trying to draw this feature cause someone else already did, maybe you should us it
         const bcAvailableLocations = new BroadcastChannel('available_locations');
         const { features } = await response.json();
-        const locations = flatMap(features, ({id, properties, geometry}) => geometry.type === 'Polygon' ?
-                                  {locationId: id, name: properties.name }
-                                  : null
+        const locations = flatMap(features, ({ id, properties, geometry }) => geometry.type === 'Polygon' ?
+            { locationId: id, name: properties.name }
+            : null
         )
         bcAvailableLocations.postMessage(locations);
     };
 }
 
-document
-    .querySelector('#json-download')
-    .addEventListener('click', async () => await sendGeoJsonToRoute('http://localhost:3000/locations'));
+/* document
+ *     .querySelector('#json-download')
+ *     .addEventListener('click', async () => await sendGeoJsonToRoute('http://localhost:3000/locations')); */

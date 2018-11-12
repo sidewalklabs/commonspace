@@ -1,4 +1,5 @@
 import React, { Fragment } from 'react';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
@@ -11,7 +12,7 @@ import MapView from './MapView';
 import SurveyView from './SurveyView';
 
 import uiState from '../stores/ui';
-import applicationState, { createStudy, updateStudy } from '../stores/applicationState';
+import applicationState, { saveNewStudy, updateStudy } from '../stores/applicationState';
 import { groupArrayOfObjectsBy } from '../utils';
 
 
@@ -37,22 +38,27 @@ const styles = theme => ({
     }
 });
 
-function saveOrUpdateStudy(study) {
-    updateStudy(study);
+async function update() {
+    await updateStudy(applicationState.currentStudy);
     uiState.currentStudyIsNew = false;
+}
+
+async function create() {
+    await saveNewStudy(applicationState.currentStudy)
+    uiState.login = false;
 }
 
 const CreateOrUpdateButton = withStyles(styles)(({ studyId, classes }) => {
     const study = applicationState.studies[studyId];
     if (uiState.currentStudyIsNew) {
         return (
-            <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={() => createStudy(applicationState.studies[studyId])}>
+            <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={create}>
                 Create
             </Button>
         )
     } else {
         return (
-            <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={() => updateStudy(applicationState.studies[studyId])}>
+            <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={update}>
                 Update
             </Button>
         )
@@ -81,11 +87,8 @@ const StudyView = observer((props: any & WithStyles) => {
         const protocolVersionUpdate = (versionValue: string) => {
 
         }
-        const saveButtonFn = uiState.currentStudyIsNew ?
-            () => updateStudy(applicationState.studies[studyId])
-            : () => createNewStudy(applicationState.currentStudy, surveyors)
         return (
-            <Fragment id="study" className={classes.container}>
+            <Fragment>
                 <TextField
                     id="study-title"
                     label="Title"
@@ -125,10 +128,8 @@ const StudyView = observer((props: any & WithStyles) => {
                     display="initial"
                     position="relative"
                     allowFullScreen />
-                <SurveyView surveys={surveys} />
-                <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={() => updateStudy(applicationState.studies[studyId])}>
-                    {uiState.currentStudyIsNew ? 'Create' : 'Update'}
-                </Button>
+                <SurveyView surveys={Object.values(toJS(surveys))} />
+                <CreateOrUpdateButton studyId={studyId} />
             </Fragment>
         );
     }

@@ -183,10 +183,12 @@ const Main: (props: MainProps & WithStyles) => React.Component = observer(
             return (
                 <div className={classes.root}>
                     <CssBaseline />
-                    {uiState.mode === AuthMode.Login ?
-                        <LoginView /> :
-                        <SignUpView />
-                    }
+                    <div className={classes.root}>
+                        {uiState.mode === AuthMode.Login ?
+                            <LoginView /> :
+                            <SignUpView />
+                        }
+                    </div>
                 </div>
             )
         }

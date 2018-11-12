@@ -48,7 +48,7 @@ html, body, #map {
   padding: 0.8em 1.2em;
   overflow: hidden; // Or flex might break
   list-style: none;
-  border: solid @bw white;
+  border: solid black;
   background: fade(slategrey,20%);
   > h1, > h2, > h3, > h4, > h5, > h6 { margin: 0; }
 }

@@ -1,4 +1,4 @@
-import { observable, autorun } from 'mobx';
+import { observable, autorun, toJS } from 'mobx';
 
 import initmap from '../map';
 
@@ -8,10 +8,12 @@ interface AvailableLocation {
     name: string;
 }
 
-const bcAvailableLocations = new BroadcastChannel('available_locations');
+const bcAvailableLocations = new BroadcastChannel('new_zone');
 bcAvailableLocations.onmessage = ({data}) => {
-    uiState.availableLocations = data;
+    uiState.availableLocations = [...uiState.availableLocations, data];
 }
+
+const availableZones = new BroadcastChannel('');
 
 export function visualizeNewStudy() {
     uiState.currentStudyIsNew = true;
@@ -42,7 +44,7 @@ const uiState = observable({
 });
 
 autorun(() => {
-    console.log(uiState.addSurveyorModalIsOpen);
+    console.log(toJS(uiState.availableLocations));
 });
 
 export default uiState;

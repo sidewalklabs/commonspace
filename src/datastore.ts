@@ -193,6 +193,7 @@ function createNewTableFromGehlFields(study: Study, tablename: string, fields: G
 }
 
 export function returnStudies(pool: pg.Pool, userId: string) {
+    // TODO union with studies that do not have a surveyors yet
     const query = `WITH
                         study_and_surveyors (study_id, emails)
                             AS (
@@ -224,7 +225,7 @@ export function returnStudies(pool: pg.Pool, userId: string) {
 
 export function surveysForStudy(pool: pg.Pool, studyId: string) {
     const query = `SELECT
-                       s.time_start, s.time_stop, u.email, s.survey_id
+                       s.time_start, s.time_stop, u.email, s.survey_id, s.title
                    FROM
                        data_collection.survey AS s
                        JOIN public.users AS u ON s.user_id = u.user_id
