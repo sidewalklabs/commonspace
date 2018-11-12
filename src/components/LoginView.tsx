@@ -50,6 +50,7 @@ const SignUpView = withStyles(styles)(observer((props: WithStyles) => {
             <TextField
                 id="login-password"
                 label="Password"
+                type="password"
                 onChange={e => logInState.password = e.target.value}
                 error={logInState.passwordErrorMessage ? true : false}
                 className={classes.textField} />

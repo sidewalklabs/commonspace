@@ -55,12 +55,14 @@ const SignUpView = withStyles(styles)(observer((props: WithStyles) => {
             <TextField
                 id="signUp-password"
                 label="Password"
+                type="password"
                 onChange={e => signUpState.password = e.target.value}
                 error={signUpState.passwordErrorMessage ? true : false}
                 className={classes.textField} />
             <TextField
                 id="signUp-password-confirmation"
                 label="Re-Enter Password"
+                type="password"
                 onChange={e => signUpState.passwordConfirmation = e.target.value}
                 error={signUpState.passwordConfirmationErrorMessage ? true : false}
                 className={classes.textField} />
