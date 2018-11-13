@@ -39,12 +39,12 @@ jobs:
              name: build and push commons server image to GC Registry for k8s to have access
              command: |
                 docker login -u _json_key -p "${GCP_SERVICE_ACCOUNT_KEY}" https://gcr.io
-                packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-server -var version=$(git rev-parse --short=8 HEAD) -var NODE_ENV="production" -var server_hostname="commons-staging.sidewalklabs.com" -var jwt_secret="${jwt_secret}" -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" -var google_auth_client_id="${google_auth_client_id}" -var google_auth_client_secret="${google_auth_client_secret}" -var db_host="${db_host}" -var db_user="${db_user}" -var db_pass="${db_pass}" -var db_name="${db_name}" -var db_port="${db_port}" -var db_pool_size="${db_pool_size}" -var db_client_timeout="${db_client_timeout}" deployment/commons_server.json
+                packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-server -var version=$(git rev-parse --short=8 HEAD) -var NODE_ENV="production" -var server_hostname="https://commons-staging.sidewalklabs.com" -var jwt_secret="${jwt_secret}" -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" -var google_auth_client_id="${google_auth_client_id}" -var google_auth_client_secret="${google_auth_client_secret}" -var db_host="${db_host}" -var db_user="${db_user}" -var db_pass="${db_pass}" -var db_name="${db_name}" -var db_port="${db_port}" -var db_pool_size="${db_pool_size}" -var db_client_timeout="${db_client_timeout}" deployment/commons_server.json
 
           - run:
               name: build and push nginx image to GC Registry for k8s to have access
               command: |
-                packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-nginx -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" deployment/commons_nginx.json
+                packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-nginx -var server_hostname="https://commons-staging.sidewalklabs.com" -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" deployment/commons_nginx.json
 
           - run:
               name: patch K8s configs
@@ -107,6 +107,3 @@ workflows:
       - deploy-staging:
           requires:
             - build-containers
-          filters:
-            branches:
-              only: master

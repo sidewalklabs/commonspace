@@ -2,12 +2,13 @@
   "variables": {
     "container_image_name": "us.gcr.io/nyc-tlc-1225/commons-nginx",
     "version": "",
-    "gcloud_json_key": ""
+    "gcloud_json_key": "",
+    "server_hostname": "http://localhost:3000"
   },
   "builders": [
     {
       "type": "docker",
-      "image": "node:8.12",
+      "image": "node:10.13",
       "commit": true,
       "changes": [
         "EXPOSE 80 80"
@@ -65,7 +66,7 @@
         "cd commons/",
 	"npm install -g -s --no-progress yarn",
 	"yarn",
-        "yarn build"
+        "yarn build --mode production --env.server_hostname={{ user `server_hostname` }}"
       ]
     },
     {
@@ -78,7 +79,7 @@
     {
       "type": "file",
       "source": "deployment/nginx.conf",
-      "destination": "/nginx.conf"
+      "destination": "/commons.nginx.conf"
     }
   ],
   "post-processors": [

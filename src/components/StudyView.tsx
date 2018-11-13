@@ -120,7 +120,7 @@ const StudyView = observer((props: any & WithStyles) => {
                     })}
                 </TextField>
                 <SurveyorsView studyId={studyId} />
-                <Iframe url="http://localhost:3000/digitalshadow"
+                <Iframe url={`${process.env.server_hostname}/digitalShadow`}
                     width="450px"
                     height="450px"
                     id="myId"
