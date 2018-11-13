@@ -21,13 +21,15 @@ import LoginView from './LoginView';
 import SignUpView from './SignUpView';
 import StudiesList from './StudiesList';
 import StudyView from './StudyView';
+import mapState from '../stores/map';
 import uiState, { visualizeNewStudy, AuthMode } from '../stores/ui';
-import applicationState, { setCurrentStudyEmptySkeleton } from '../stores/applicationState';
+import applicationState, { setCurrentStudyEmptySkeleton, ApplicationState } from '../stores/applicationState';
 
 const drawerWidth = 240;
 
 interface MainProps {
     isOpen: boolean;
+    applicationState: ApplicationState;
 }
 
 const styles = theme => ({
@@ -110,10 +112,10 @@ function prepareNewStudy() {
 }
 
 const Main: (props: MainProps & WithStyles) => React.Component = observer(
-    (props: MainProps & WithStyle) => {
+    (props: MainProps & WithStyles) => {
         const { drawerOpen } = uiState;
-        const { token } = applicationState;
-        const { classes } = props;
+        const { applicationState, classes } = props;
+        const { currentStudy, token } = applicationState;
         if (token) {
             return (
                 <Fragment>
@@ -174,7 +176,7 @@ const Main: (props: MainProps & WithStyles) => React.Component = observer(
                         </Drawer>
                         <main className={classes.content}>
                             <div className={classes.appBarSpacer} />
-                            <StudyView />
+                            <StudyView study={currentStudy} />
                         </main>
                     </div>
                 </Fragment>

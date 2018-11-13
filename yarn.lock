@@ -1355,6 +1355,11 @@ acorn@^5.0.0, acorn@^5.5.3, acorn@^5.6.2:
   version "5.7.1"
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-5.7.1.tgz#f095829297706a7c9776958c0afc8930a9b9d9d8"
 
+add@^2.0.6:
+  version "2.0.6"
+  resolved "https://registry.yarnpkg.com/add/-/add-2.0.6.tgz#248f0a9f6e5a528ef2295dbeec30532130ae2235"
+  integrity sha1-JI8Kn25aUo7yKV2+7DBTITCuIjU=
+
 adm-zip@^0.4.11:
   version "0.4.11"
   resolved "https://registry.yarnpkg.com/adm-zip/-/adm-zip-0.4.11.tgz#2aa54c84c4b01a9d0fb89bb11982a51f13e3d62a"
@@ -4435,9 +4440,10 @@ hoist-non-react-statics@^2.3.1, hoist-non-react-statics@^2.5.0:
   version "2.5.5"
   resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-2.5.5.tgz#c5903cf409c0dfd908f388e619d86b9c1174cb47"
 
-hoist-non-react-statics@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-3.0.1.tgz#fba3e7df0210eb9447757ca1a7cb607162f0a364"
+hoist-non-react-statics@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-3.1.0.tgz#42414ccdfff019cd2168168be998c7b3bd5245c0"
+  integrity sha512-MYcYuROh7SBM69xHGqXEwQqDux34s9tz+sCnxJmN18kgWh6JFdTw/5YdZtqsOdZJXddE/wUpCzfEdDrJj8p0Iw==
   dependencies:
     react-is "^16.3.2"
 
@@ -5695,6 +5701,7 @@ leaflet-draw@^1.0.3:
 leaflet@^1.3.4:
   version "1.3.4"
   resolved "https://registry.yarnpkg.com/leaflet/-/leaflet-1.3.4.tgz#7f006ea5832603b53d7269ef5c595fd773060a40"
+  integrity sha512-FYL1LGFdj6v+2Ifpw+AcFIuIOqjNggfoLUwuwQv6+3sS21Za7Wvapq+LhbSE4NDXrEj6eYnW3y7LsaBICpyXtw==
 
 left-pad@^1.3.0:
   version "1.3.0"
@@ -5764,7 +5771,7 @@ locate-path@^3.0.0:
     p-locate "^3.0.0"
     path-exists "^3.0.0"
 
-lodash-es@^4.0.0:
+lodash-es@^4.0.0, lodash-es@^4.17.10:
   version "4.17.11"
   resolved "https://registry.yarnpkg.com/lodash-es/-/lodash-es-4.17.11.tgz#145ab4a7ac5c5e52a3531fb4f310255a152b4be0"
 
@@ -7337,14 +7344,15 @@ rc@^1.0.1, rc@^1.1.6, rc@^1.2.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-react-dom@^16.5.2:
-  version "16.5.2"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.5.2.tgz#b69ee47aa20bab5327b2b9d7c1fe2a30f2cfa9d7"
+react-dom@^16.6.3:
+  version "16.6.3"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.6.3.tgz#8fa7ba6883c85211b8da2d0efeffc9d3825cccc0"
+  integrity sha512-8ugJWRCWLGXy+7PmNh8WJz3g1TaTUt1XyoIcFN+x0Zbkoz+KKdUyx1AQLYJdbFXjuF41Nmjn5+j//rxvhFjgSQ==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
     prop-types "^15.6.2"
-    schedule "^0.5.0"
+    scheduler "^0.11.2"
 
 react-event-listener@^0.6.2:
   version "0.6.4"
@@ -7372,12 +7380,20 @@ react-jss@^8.1.0:
     prop-types "^15.6.0"
     theming "^1.3.0"
 
-react-leaflet@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/react-leaflet/-/react-leaflet-2.1.0.tgz#96f01ebceebad8a0043c3edadbe631279d4ba740"
+react-leaflet-draw@^0.19.0:
+  version "0.19.0"
+  resolved "https://registry.yarnpkg.com/react-leaflet-draw/-/react-leaflet-draw-0.19.0.tgz#95de33054016db27e171f8f8f646f6bad17106f3"
+  integrity sha512-aOB7Nqgl79l62L7vHxhdyKJD6ep+1Q+qTfnrYfmcgF+yK0A1lQA2fUv9N4C0HCbejcyiqx1XYchSCw9Q+Vtc3A==
+  dependencies:
+    lodash-es "^4.17.10"
+
+react-leaflet@^2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/react-leaflet/-/react-leaflet-2.1.2.tgz#2f55055335ea97fe7bca56fe958440d9f0c871d6"
+  integrity sha512-eBzp3fANQqxY4jFNkbZdRd3ilLQblU8qu0DPqtwKergbmwsDqFRyIq+H+7Umsl1JGSfx2T6KdY5mAq2OyqXdqA==
   dependencies:
     "@babel/runtime" "^7.0.0"
-    hoist-non-react-statics "^3.0.1"
+    hoist-non-react-statics "^3.1.0"
     lodash "^4.0.0"
     lodash-es "^4.0.0"
     warning "^4.0.0"
@@ -7395,14 +7411,15 @@ react-transition-group@^2.2.1:
     prop-types "^15.6.2"
     react-lifecycles-compat "^3.0.4"
 
-react@^16.5.2:
-  version "16.5.2"
-  resolved "https://registry.yarnpkg.com/react/-/react-16.5.2.tgz#19f6b444ed139baa45609eee6dc3d318b3895d42"
+react@^16.6.3:
+  version "16.6.3"
+  resolved "https://registry.yarnpkg.com/react/-/react-16.6.3.tgz#25d77c91911d6bbdd23db41e70fb094cc1e0871c"
+  integrity sha512-zCvmH2vbEolgKxtqXL2wmGCUxUyNheYn/C+PD1YAjfxHC54+MhdruyhO7QieQrYsYeTxrn93PM2y0jRH1zEExw==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
     prop-types "^15.6.2"
-    schedule "^0.5.0"
+    scheduler "^0.11.2"
 
 read-all-stream@^3.0.0:
   version "3.1.0"
@@ -7918,10 +7935,12 @@ sax@^1.2.4:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9"
 
-schedule@^0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/schedule/-/schedule-0.5.0.tgz#c128fffa0b402488b08b55ae74bb9df55cc29cc8"
+scheduler@^0.11.2:
+  version "0.11.2"
+  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.11.2.tgz#a8db5399d06eba5abac51b705b7151d2319d33d3"
+  integrity sha512-+WCP3s3wOaW4S7C1tl3TEXp4l9lJn0ZK8G3W3WKRWmw77Z2cIFUW2MiNTMHn5sCjxN+t7N43HAOOgMjyAg5hlg==
   dependencies:
+    loose-envify "^1.1.0"
     object-assign "^4.1.1"
 
 schema-utils@^0.4.4, schema-utils@^0.4.5:
@@ -9395,6 +9414,11 @@ yargs@~3.10.0:
     cliui "^2.1.0"
     decamelize "^1.0.0"
     window-size "0.1.0"
+
+yarn@^1.12.3:
+  version "1.12.3"
+  resolved "https://registry.yarnpkg.com/yarn/-/yarn-1.12.3.tgz#fb4599bf1f8da01552bcc7e1571dfd4e53788203"
+  integrity sha512-8f5rWNDvkhAmCxmn8C0LsNWMxTYVk4VGKiq0sIB6HGZjaZTHsGIH87SUmVDUEd2Wk54bqKoUlbVWgQFCQhRkVw==
 
 yauzl@2.4.1:
   version "2.4.1"

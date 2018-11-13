@@ -24,6 +24,17 @@ SET search_path TO data_collection;
 
 CREATE TYPE studyScale AS ENUM ('district', 'city', 'cityCentre', 'neighborhood', 'blockScale', 'singleSite');
 
+
+CREATE TABLE IF NOT EXISTS location
+(
+    location_id UUID PRIMARY KEY,
+    country TEXT,
+    city TEXT,
+    name_primary TEXT,
+    subdivision TEXT,
+    geometry public.geometry
+);
+
 CREATE TABLE IF NOT EXISTS study
 (
     study_id UUID PRIMARY KEY,
@@ -37,17 +48,8 @@ CREATE TABLE IF NOT EXISTS study
     protocol_version TEXT NOT NULL,
     table_definition JSON,
     tablename VARCHAR(63),
+    map JSON,
     notes TEXT
-);
-
-CREATE TABLE IF NOT EXISTS location
-(
-    location_id UUID PRIMARY KEY,
-    country TEXT,
-    city TEXT,
-    name_primary TEXT,
-    subdivision TEXT,
-    geometry public.geometry
 );
 
 CREATE TYPE gender AS ENUM ('male', 'female', 'unknown');

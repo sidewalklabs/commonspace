@@ -47,11 +47,6 @@
     },
     {
       "type": "file",
-      "source": "map.html",
-      "destination": "commons/map.html"
-    },
-    {
-      "type": "file",
       "source": "yarn.lock",
       "destination": "commons/yarn.lock"
     },

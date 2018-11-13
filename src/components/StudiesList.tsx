@@ -16,9 +16,10 @@ async function transitionToViewStudy(study) {
 export default observer((props: any & WithStyles) => {
     const { classes } = props;
     const listItems = Object.values(applicationState.studies).map(study => {
+        const { studyId, title, authorName } = study;
         return (
-            <ListItem button onClick={async () => await transitionToViewStudy(study)}>
-                <ListItemText primary={study.title} secondary={study.authorName} />
+            <ListItem button key={studyId} onClick={async () => await transitionToViewStudy(study)}>
+                <ListItemText primary={title} secondary={authorName} />
             </ListItem>
         );
     });

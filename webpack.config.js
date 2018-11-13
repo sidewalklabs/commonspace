@@ -76,46 +76,12 @@ module.exports = env => {
           template: 'index.html'
         }
       ),
-      new CopyWebpackPlugin([{from: 'css/styles.css', to: 'css/styles.css'}]),
+      new CopyWebpackPlugin([
+        {from: 'css/styles.css', to: 'css/styles.css'},
+        {from: 'node_modules/leaflet/dist/leaflet.css', to: 'css/leaflet.css'},
+        {from: 'node_modules/leaflet-draw/dist/leaflet.draw.css', to: 'css/leaflet.draw.css'}
+      ]),
       new webpack.DefinePlugin(envKeys)
-    ]
-  }, {
-    name: 'map-annotation',
-    entry: {
-      map: ['babel-polyfill', path.resolve(__dirname, 'src/map.tsx')]
-    },
-    devtool: 'source-map',
-    output: {
-      path: path.join(__dirname, 'map_annotation'),
-      filename: 'bundle.js'
-    },
-    module: {
-      rules: [
-        {
-          test: /\.(t|j)sx?$/,
-          exclude: /(node_modules|expo_project|.test.ts$)/,
-          resolve: {
-            // Add `.ts` and `.tsx` as a resolvable extension.
-            extensions: [".ts", ".tsx", ".js"]
-          },
-          use: {
-            loader: 'babel-loader',
-            options: {
-              presets: ['@babel/preset-env', '@babel/preset-typescript']
-            }
-          }
-        }
-      ]
-    },
-    plugins: [
-      new HtmlWebpackPlugin(
-        {
-          title: 'La Sombra y El Gemelo',
-          filename: 'index.html',
-          template: 'map.html'
-        }
-      ),
-      new CopyWebpackPlugin([{from: 'css/map.css', to: 'css/styles.css'}])
     ]
   }];
 };
