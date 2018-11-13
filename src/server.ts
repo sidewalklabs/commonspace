@@ -9,6 +9,7 @@ import * as uuidv4 from 'uuid/v4';
 import { createLocation } from './datastore';
 
 import apiRouter from './routes/api';
+import authRouter from './routes/auth';
 
 import auth from './auth'
 import DbPool from './database';
@@ -45,41 +46,8 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.post('/signup', (req, res, next) => {
-    passport.authenticate('signin',
-                          {session: false, successRedirect: '/', failureRedirect: 'signup'},
-                          (err, user)=> {
-                              // TODO handle user already exists ....
-                              if (err) throw err;
-                              const token = jwt.sign(user, process.env.jwt_secret);
-                              return res.json({token});
-                          })(req, res, next)
-})
-
-app.post('/login', (req, res, next) => {
-    passport.authenticate('login',
-                          {session: false},
-                          (err, user) => {
-                              const token = jwt.sign(user, process.env.jwt_secret);
-                              return res.json({token})
-                          })(req, res, next);
-})
-
-
-if (process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'production') {
-    app.get('/auth/google', passport.authenticate('google', { scope : ['profile', 'email'] }));
-    app.get('/auth/google/callback',
-            passport.authenticate('google', {
-                successRedirect : '/',
-                failureRedirect : '/'
-            }),
-            (req, res) => {
-                const token = jwt.sign(req.user, process.env.jwt_secret);
-                return res.json({token});
-            });
-}
-
-app.use('/api/v1', apiRouter);
+app.use('/auth', authRouter);
+app.use('/api', apiRouter);
 
 async function processFeature(feature: any) {
     const { type: featureType, geometry, properties, id } = feature;

@@ -7,7 +7,7 @@ import Typography from '@material-ui/core/Typography'
 
 import { observer } from 'mobx-react';
 
-import uiState from '../stores/ui'
+import uiState, { AuthMode } from '../stores/ui'
 import logInState, { logInUser } from '../stores/login'
 
 const styles = theme => ({
@@ -17,9 +17,9 @@ const styles = theme => ({
         width: 150
     },
     root: {
-        width: '30%',
+        width: '45%',
         marginTop: theme.spacing.unit * 3,
-        flex: '1 0 auto',
+        flex: '0 1 auto',
         flexDirection: 'column'
     },
     button: {
@@ -57,7 +57,7 @@ const SignUpView = withStyles(styles)(observer((props: WithStyles) => {
             <Button className={classes.button} variant="contained" color="primary" onClick={logInUser}>
                 Log In
             </Button>
-            <Button color="secondary" className={classes.button} onClick={() => uiState.login = false}>
+            <Button color="secondary" className={classes.button} onClick={() => uiState.mode = AuthMode.Signup}>
                 Need An Account? Sign Up Here
             </Button>
         </Paper >

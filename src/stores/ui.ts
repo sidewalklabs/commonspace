@@ -16,7 +16,11 @@ bcAvailableLocations.onmessage = ({data}) => {
 export function visualizeNewStudy() {
     uiState.currentStudyIsNew = true;
 }
-        
+
+export enum AuthMode {
+    Login, Signup, Authorized
+}
+
 interface UiState {
     addSurveyorModalIsOpen: boolean;
     addSurveyorModalText: string;
@@ -24,6 +28,7 @@ interface UiState {
     currentStudyIsNew: boolean;
     drawerOpen: boolean;
     login: boolean;
+    mode: AuthMode;
 }
 
 const uiState = observable({
@@ -32,6 +37,7 @@ const uiState = observable({
     availableLocations: [],
     currentStudyIsNew: false,
     drawerOpen: true,
+    mode: AuthMode.Signup,
     login: false
 });
 
