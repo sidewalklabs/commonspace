@@ -43,10 +43,12 @@ class AuthScreen extends React.Component {
             }
           }
         );
-        console.log('jet token', resp.json());
+        const body = await resp.json();
 
         // set token for next session, then navigate to the internal app
         //await AsyncStorage.setItem('userEmail', firebaseSignInResult.user.email);
+        console.log(body.token);
+        await AsyncStorage.setItem('token', body.token);
 
         this.props.navigation.navigate('App');
       } else {

@@ -13,8 +13,7 @@ import { withNavigation } from 'react-navigation';
 import { Button, Card, CardContent, Divider, Title, Paragraph } from 'react-native-paper';
 import * as _ from 'lodash';
 
-import { firestore } from '../lib/firebaseSingleton';
-import { getAuthorizedStudiesForEmail, getSurveysForStudy } from '../lib/firestore';
+import { getStudies, getSurveysForStudy } from '../lib/commonsClient';
 
 function typeToRouteName(type) {
   switch (type) {
@@ -47,12 +46,14 @@ class SurveyIndexScreen extends React.Component {
   });
 
   async componentDidMount() {
-    const userEmail = await AsyncStorage.getItem('userEmail');
-    let studies = await getAuthorizedStudiesForEmail(firestore, userEmail);
+    const token = await AsyncStorage.getItem('token');
+    let studies = await getStudies(token);
     studies = await Promise.all(
       studies.map(async study => {
         try {
-          const surveys = await getSurveysForStudy(firestore, study.studyId, userEmail);
+          console.log(study.studyId);
+          const surveys = await getSurveysForStudy(token, study.studyId);
+          console.log('surveys: ', surveys);
           study.surveys = _.sortBy(surveys, 'title');
         } catch (error) {
           console.error(error);
@@ -60,6 +61,7 @@ class SurveyIndexScreen extends React.Component {
         return study;
       }),
     );
+    console.log('hey: ', studies);
     studies = _.sortBy(studies, 'title');
     this.setState({ studies, loading: false });
   }

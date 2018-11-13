@@ -13,11 +13,10 @@ export default class GoogleTokenStrategy extends Strategy {
     _passReqToCallback = false
     _verify = null
 
-    constructor(options: GoogleTokenStrategyOptions, verify) { 
+    constructor(options: GoogleTokenStrategyOptions, verify) {
         super()
         if (!verify) { throw new TypeError('LocalStrategy requires a verify callback'); }
         this._verify = verify;
-        console.log('hey: ', this._verify);
 
         if (!options.tokenFromRequest) this._tokenFromRequest = options.tokenFromRequest;
         if (options.passReqToCallback) this._passReqToCallback = options.passReqToCallback;
@@ -27,7 +26,7 @@ export default class GoogleTokenStrategy extends Strategy {
         const token = req.get('access-token')
 
         // https://developers.google.com/identity/sign-in/web/backend-auth#calling-the-tokeninfo-endpoint
-        const response = await fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${token}`); 
+        const response = await fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${token}`);
         const body = await response.json()
         const { email, email_verified: emailVerified } = body;
 
