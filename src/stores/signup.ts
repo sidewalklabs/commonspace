@@ -14,7 +14,7 @@ export async function signUpUser() {
         email,
         name
     }
-    const response = await fetch(`/signup`, {
+    const response = await fetch(`/auth/signup`, {
         method: "POST", // *GET, POST, PUT, DELETE, etc.
         mode: "cors", // no-cors, cors, *same-origin
         cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
@@ -29,7 +29,6 @@ export async function signUpUser() {
     })
     const {user, token} = await response.json();
     init(token);
-    console.log(response.status);
 }
 
 interface SignUpState {

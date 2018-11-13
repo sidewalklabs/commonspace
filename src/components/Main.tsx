@@ -21,7 +21,7 @@ import LoginView from './LoginView';
 import SignUpView from './SignUpView';
 import StudiesList from './StudiesList';
 import StudyView from './StudyView';
-import uiState, { visualizeNewStudy } from '../stores/ui';
+import uiState, { visualizeNewStudy, AuthMode } from '../stores/ui';
 import applicationState, { setCurrentStudyEmptySkeleton } from '../stores/applicationState';
 
 const drawerWidth = 240;
@@ -32,8 +32,7 @@ interface MainProps {
 
 const styles = theme => ({
     root: {
-        display: 'flex',
-        alignContent: 'center'
+        display: 'flex'
     },
     toolbar: {
         paddingRight: 24 // keep right padding when drawer closed
@@ -182,13 +181,13 @@ const Main: (props: MainProps & WithStyles) => React.Component = observer(
             )
         } else {
             return (
-                <Fragment className={classes.root}>
+                <div className={classes.root}>
                     <CssBaseline />
-                    {uiState.login ?
+                    {uiState.mode === AuthMode.Login ?
                         <LoginView /> :
                         <SignUpView />
                     }
-                </Fragment>
+                </div>
             )
         }
     }

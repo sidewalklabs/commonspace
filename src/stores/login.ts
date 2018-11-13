@@ -9,7 +9,7 @@ export async function logInUser() {
         password,
         email,
     }
-    const response = await fetch(`/login`, {
+    const response = await fetch(`/auth/login`, {
         method: "POST", // *GET, POST, PUT, DELETE, etc.
         mode: "cors", // no-cors, cors, *same-origin
         cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
