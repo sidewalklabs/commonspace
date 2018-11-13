@@ -11,7 +11,6 @@ import { FeatureCollection } from 'geojson';
 
 import {  snakecasePayload } from '../utils';
 
-
 export interface Study {
     studyId: string;
     protocolVersion: string;
@@ -92,7 +91,6 @@ async function fetchSurveysForStudy(token: string, studyId: string) {
 export async function getStudies(token: string) {
     const studiesReq = await getFromApi('/api/studies', token);
     const studies = camelcaseKeys(await studiesReq.json());
-    console.log(studies);
     return groupArrayOfObjectsBy(studies, 'studyId');
 }
 
