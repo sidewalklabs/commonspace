@@ -23,7 +23,7 @@
     "lint": "tsc --noEmit",
     "it": "jest -c jest.config.integration.js --runInBand",
     "test": "jest -c jest.config.test.js",
-    "watch": "yarn webpack --watch --mode development"
+    "watch": "yarn build  --env.server_hostname=http://localhost:3000 --watch --mode development"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.56",

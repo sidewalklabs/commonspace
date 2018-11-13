@@ -59,7 +59,7 @@ const init = (mode: string) => {
             const googleOAuthStrategy = new GoogleStrategy({
                 clientID: process.env.google_auth_client_id,
                 clientSecret: process.env.google_auth_client_secret,
-                callbackURL: `https://${process.env.server_hostname}/auth/google/callback`,
+                callbackURL: `${process.env.server_hostname}/auth/google/callback`,
                 passReqToCallback: true
             }, async function(request, accessToken, refreshToken, profile, done) {
                 const email = profile.emails[0].value;

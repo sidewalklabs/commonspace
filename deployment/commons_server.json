@@ -12,7 +12,7 @@
     "db_name": "postgres",
     "db_pool_size": "8",
     "db_client_timeout": "8000",
-    "server_hostname": "localhost",
+    "server_hostname": "localhost:3000",
     "jwt_secret": "B5PgrJs/WrTaJ4mUvPpREu",
     "NODE_ENV": "development",
     "node_port": "3000"
@@ -95,7 +95,7 @@
         "cd commons/",
 	"npm install -g -s --no-progress yarn",
 	"yarn install",
-        "yarn build --mode=production"
+        "yarn build --env.server_hostname={{ user `server_hostname` }} --mode=production"
       ]
     }
   ],
