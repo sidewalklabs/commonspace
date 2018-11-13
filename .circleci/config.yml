@@ -107,3 +107,6 @@ workflows:
       - deploy-staging:
           requires:
             - build-containers
+          filters:
+            branches:
+              only: master

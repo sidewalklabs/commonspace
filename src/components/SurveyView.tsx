@@ -17,7 +17,6 @@ import { get, set, toJS } from 'mobx';
 import { observer } from 'mobx-react';
 
 import applicationState, { addNewSurveyToCurrentStudy } from '../stores/applicationState';
-import uiState from '../stores/ui';
 import { groupArrayOfObjectsBy } from '../utils';
 
 const styles = theme => ({
@@ -128,11 +127,13 @@ const SurveyObjectToTableRow = observer(({ classes, survey }) => {
     const endDateDisplayDate = endDate.format('YYYY-MM-DD');
     const endTime = endDate.format('kk:mm');
     let locationName;
-    if (uiState.availableLocations.length > 0 && survey.locationId) {
-        const properties = toJS(uiState.availableLocations).map(({ properties }) => properties);
+    const features = applicationState.currentStudy.map.features;
+
+    if (features.length > 0 && survey.locationId) {
+        const properties = toJS(features).map(({ properties }) => properties);
         locationName = groupArrayOfObjectsBy(properties, 'locationId')[survey.locationId].name;
-    } else if (uiState.availableLocations.length > 0) {
-        locationName = uiState.availableLocations[0].properties.name;
+    } else if (features.length > 0) {
+        locationName = features[0].properties.name;
     } else {
         locationName = '';
     }
@@ -202,7 +203,7 @@ const SurveyObjectToTableRow = observer(({ classes, survey }) => {
                     onChange={e => applicationState.currentStudy.surveys[surveyId].locationId = e.target.value}
                     margin="normal"
                 >
-                    {uiState.availableLocations.map(({ properties }) => (
+                    {features.map(({ properties }) => (
                         <MenuItem key={properties.locationId} value={properties.locationId}>
                             {properties.name}
                         </MenuItem>

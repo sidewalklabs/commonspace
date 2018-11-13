@@ -5,15 +5,15 @@ import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
-import Iframe from 'react-iframe'
 
 import SurveyorsView from './SurveyorsView';
 import MapView from './MapView';
 import SurveyView from './SurveyView';
 
-import uiState from '../stores/ui';
-import applicationState, { saveNewStudy, updateStudy } from '../stores/applicationState';
+import uiState, { AuthMode } from '../stores/ui';
+import applicationState, { saveNewStudy, updateStudy, Study } from '../stores/applicationState';
 import { groupArrayOfObjectsBy } from '../utils';
+import { FeatureCollection } from 'geojson';
 
 
 const styles = theme => ({
@@ -38,32 +38,40 @@ const styles = theme => ({
     }
 });
 
-async function update() {
-    await updateStudy(applicationState.currentStudy);
+async function update(study) {
+    await updateStudy(study);
     uiState.currentStudyIsNew = false;
 }
 
-async function create() {
-    await saveNewStudy(applicationState.currentStudy)
-    uiState.login = false;
+async function create(study) {
+    await saveNewStudy(study);
+    uiState.mode = AuthMode.Authorized;
 }
 
-const CreateOrUpdateButton = withStyles(styles)(({ studyId, classes }) => {
-    const study = applicationState.studies[studyId];
+interface CreateOrUpdateButtonProps {
+    study: Study;
+    map: FeatureCollection;
+}
+const CreateOrUpdateButton = withStyles(styles)((props: CreateOrUpdateButtonProps & WithStyles) => {
+    const { study, classes } = props;
     if (uiState.currentStudyIsNew) {
         return (
-            <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={create}>
+            <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={() => create(study)}>
                 Create
-            </Button>
+            </Button >
         )
     } else {
         return (
-            <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={update}>
+            <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={() => update(study)}>
                 Update
             </Button>
         )
     }
-})
+});
+
+interface StudyViewProps {
+    study: Study;
+}
 
 const StudyView = observer((props: any & WithStyles) => {
     const PROTOCOL_SELECTIONS = [
@@ -81,9 +89,9 @@ const StudyView = observer((props: any & WithStyles) => {
         }
     ];
 
-    const { classes } = props;
-    if (applicationState.currentStudy) {
-        const { title, surveys, studyId, protocolVersion } = applicationState.currentStudy;
+    const { study, classes } = props;
+    if (study) {
+        const { title, surveys, studyId, protocolVersion, map } = study;
         const protocolVersionUpdate = (versionValue: string) => {
 
         }
@@ -94,7 +102,7 @@ const StudyView = observer((props: any & WithStyles) => {
                     label="Title"
                     className={classes.textField}
                     value={title}
-                    onChange={e => applicationState.currentStudy.title = e.target.value}
+                    onChange={e => study.title = e.target.value}
                     margin="normal"
                 />
                 <TextField
@@ -104,7 +112,7 @@ const StudyView = observer((props: any & WithStyles) => {
                     className={classes.textField}
                     value={groupArrayOfObjectsBy(PROTOCOL_SELECTIONS, 'value')[protocolVersion].label}
                     onChange={e => {
-                        applicationState.currentStudy.protocolVersion = e.target.value;
+                        study.protocolVersion = e.target.value;
                     }}
                     SelectProps={{
                         MenuProps: {
@@ -120,16 +128,9 @@ const StudyView = observer((props: any & WithStyles) => {
                     })}
                 </TextField>
                 <SurveyorsView studyId={studyId} />
-                <Iframe url={`${process.env.server_hostname}/digitalShadow`}
-                    width="450px"
-                    height="450px"
-                    id="myId"
-                    className="myClassname"
-                    display="initial"
-                    position="relative"
-                    allowFullScreen />
+                <MapView lat={33.546727} lng={-117.673965} featureCollection={map} />
                 <SurveyView surveys={Object.values(toJS(surveys))} />
-                <CreateOrUpdateButton studyId={studyId} />
+                <CreateOrUpdateButton study={study} />
             </Fragment>
         );
     }

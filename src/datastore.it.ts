@@ -136,14 +136,9 @@ test('saving user with duplicate email errors', async () => {
 });
 
 test('saving user with an OAuth account, should return the same value whether users exists or not', async () => {
-    const { rowCount: rc1, command: c1, rows: xs } = await authenticateOAuthUser(pool, 'test@gmail.com');
-    expect(rc1).toBe(1);
-    expect(c1).toBe('INSERT');
-    console.log(xs);
-    const { rowCount: rc2, command: c2, rows: ys } = await authenticateOAuthUser(pool, 'test@gmail.com');
-    expect(rc2).toBe(1);
-    expect(c2).toBe('INSERT');
-    expect(xs[0].userId).toEqual(ys[0].userId);
+    const user1 = await authenticateOAuthUser(pool, 'test@gmail.com');
+    const user2 = await authenticateOAuthUser(pool, 'test@gmail.com');
+    expect(user1.userId).toEqual(user2.userId);
 });
 
 test('save new study', async () => {

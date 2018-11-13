@@ -1,26 +1,29 @@
 import camelcaseKeys from 'camelcase-keys';
 import { observable, autorun, toJS, get, set } from 'mobx';
 import moment from 'moment';
-import snakecaseKeys from 'snakecase-keys';
 import uuid from 'uuid';
 
 import { AUTH, FIRESTORE } from '../web.config';
 
 import { groupArrayOfObjectsBy } from '../utils';
 import { surveysForStudy } from '../datastore';
+import { FeatureCollection } from 'geojson';
+
+import {  snakecasePayload } from '../utils';
 
 
-interface Study {
+export interface Study {
     studyId: string;
     protocolVersion: string;
     surveys: {[key: string]: any};
     surveyors: string[];
     title: string;
+    map: FeatureCollection;
 }
 
-interface ApplicationState {
+export interface ApplicationState {
     currentStudy: null | Study;
-    studies: any;
+    studies: {[key: string]: Study};
     token: string;
 }
 
@@ -34,7 +37,7 @@ const fetchParams = {
 
 function getFromApi(route: string, token: string) {
     const {mode, cache, credentials, redirect, referrer} = fetchParams;
-    return fetch('http://localhost:3000' + route, {
+    return fetch(process.env.server_hostname + route, {
         ...fetchParams,
         method: 'GET', // *GET, POST, PUT, DELETE, etc.
         headers: {
@@ -45,20 +48,22 @@ function getFromApi(route: string, token: string) {
 }
 
 function putToApi(route: string, token: string, data: any) {
-    return fetch(route, {
+    const body = JSON.stringify(snakecasePayload(data))
+    return fetch(process.env.server_hostname + route, {
         ...fetchParams,
         method: "PUT", // *GET, POST, PUT, DELETE, etc.
         headers: {
             "Content-Type": "application/json; charset=utf-8",
             "Authorization": `bearer ${token}`
         },
-        body: JSON.stringify(snakecaseKeys(data)), // body data type must match "Content-Type" header
+        body // body data type must match "Content-Type" header
     })
 }
 
 async function postToApi(route: string, token: string, data: any) {
+    const body = JSON.stringify(snakecasePayload(data));
     try {
-        return await fetch(route, {
+        return await fetch(process.env.server_hostname + route, {
             ...fetchParams,
             method: "POST", // *GET, POST, PUT, DELETE, etc.
             headers: {
@@ -66,7 +71,7 @@ async function postToApi(route: string, token: string, data: any) {
                 "Authorization": `bearer ${token}`
                 // "Content-Type": "application/x-www-form-urlencoded",
             },
-            body: JSON.stringify(snakecaseKeys(data)), // body data type must match "Content-Type" header
+            body // body data type must match "Content-Type" header
         })
     } catch (err) {
         console.log(`[uri ${route}] [data ${JSON.stringify(data)}] ${err}`)
@@ -87,6 +92,7 @@ async function fetchSurveysForStudy(token: string, studyId: string) {
 export async function getStudies(token: string) {
     const studiesReq = await getFromApi('/api/studies', token);
     const studies = camelcaseKeys(await studiesReq.json());
+    console.log(studies);
     return groupArrayOfObjectsBy(studies, 'studyId');
 }
 
@@ -96,12 +102,12 @@ export async function updateStudy(studyInput) {
     const study = toJS(applicationState.currentStudy);
     study.surveys = surveys;
     const { token } = applicationState;
-    const response = await putToApi(`/api/studies/${studyId}`, token, study)
+    const response = await putToApi(`/api/studies/${studyId}`, token, study);
     console.log(response.status);
 }
 
-export async function saveNewStudy(studyInput) {
-    const study = toJS(studyInput)
+export async function saveNewStudy(studyInput: Study) {
+    const study: Study = toJS(studyInput)
     study.surveys = Object.values(toJS(studyInput.surveys));
     const { token } = applicationState;
     const response = await postToApi(`/api/studies`, token, study);
@@ -120,7 +126,11 @@ export async function setCurrentStudyEmptySkeleton() {
         title: '',
         protocolVersion: '1.0',
         surveys: {},
-        surveyors: []
+        surveyors: [],
+        map: {
+            type: 'FeatureCollection',
+            features: []
+        }
     }
     applicationState.currentStudy = applicationState.studies[studyId];
 }

@@ -1,8 +1,5 @@
 import { observable, autorun, toJS } from 'mobx';
 
-import initmap from '../map';
-
-
 interface AvailableLocation {
     locationId: string;
     name: string;
@@ -29,7 +26,6 @@ interface UiState {
     availableLocations: AvailableLocation[]; 
     currentStudyIsNew: boolean;
     drawerOpen: boolean;
-    login: boolean;
     mode: AuthMode;
 }
 
@@ -39,8 +35,7 @@ const uiState = observable({
     availableLocations: [],
     currentStudyIsNew: false,
     drawerOpen: true,
-    mode: AuthMode.Signup,
-    login: false
+    mode: AuthMode.Signup
 });
 
 autorun(() => {

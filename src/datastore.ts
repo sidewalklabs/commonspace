@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import * as pg from 'pg';
 import { FOREIGN_KEY_VIOLATION } from 'pg-error-constants';
 import * as uuid from 'uuid';
+import { FeatureCollection, Geometry } from 'geojson';
 
 export enum StudyScale {
     district,
@@ -23,6 +24,7 @@ export interface Study {
     scale?: StudyScale;
     areas?: any,
     userId: string;
+    map?: FeatureCollection;
     protocolVersion: string;
     notes?: string;
 }
@@ -34,18 +36,13 @@ export interface User {
     password: string;
 }
 
-export interface PolygonGeometry {
-    type: string;
-    coordinates: number[][];
-}
-
 export interface Location {
     locationId: string;
-    country: string;
-    city: string;
+    country?: string;
+    city?: string;
     namePrimary: string;
-    subdivision: string;
-    geometry: PolygonGeometry;
+    subdivision?: string;
+    geometry: Geometry | FeatureCollection;
 }
 
 export interface Survey {
@@ -210,6 +207,7 @@ export function returnStudies(pool: pg.Pool, userId: string) {
                         stu.study_id,
                         stu.title,
                         stu.protocol_version,
+                        stu.map,
                         sas.emails
                     FROM
                         data_collection.study AS stu
@@ -251,8 +249,9 @@ export async function createStudy(pool: pg.Pool, study: Study, fields: GehlField
     // for some unknown reason import * as uuidv4 from 'uuid/v4'; uuidv4(); fails in gcp, saying that it's not a function call
     const studyTablename = studyIdToTablename(study.studyId);
     const newStudyDataTableQuery = createNewTableFromGehlFields(study, studyTablename, fields);
-    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, protocol_version, table_definition, tablename)
-                                   VALUES('${study.studyId}', '${study.title}', '${study.userId}', '${study.protocolVersion}', '${JSON.stringify(fields)}', '${studyTablename}')`;
+    const { map={} } = study;
+    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, protocol_version, table_definition, tablename, map)
+                                   VALUES('${study.studyId}', '${study.title}', '${study.userId}', '${study.protocolVersion}', '${JSON.stringify(fields)}', '${studyTablename}', '${JSON.stringify(map)}')`;
     // we want the foreign constraint to fail if we've already created a study with the specified ID
     let studyResult, newStudyDataTable;
     try {
@@ -306,8 +305,8 @@ export async function authenticateOAuthUser(pool: pg.Pool, email: string) {
                    ) ON CONFLICT (email)
                    DO UPDATE SET email=EXCLUDED.email RETURNING user_id`;
     try {
-        const {rowCount, rows} = await pool.query(query);
-        if (rowCount !== 1) {
+        const {rowCount, rows, command} = await pool.query(query);
+        if (rowCount !== 1 && command !== 'INSERT') {
             throw new Error(`error OAuth authentication for email ${email}`);
         }
         return rows[0] as User;
@@ -332,12 +331,13 @@ export async function createUserFromEmail(pool: pg.Pool, email: string) {
     }
 }
 
-export async function createLocation(pool: pg.Pool, location) {
+export async function createLocation(pool: pg.Pool, location: Location) {
+    const { locationId, namePrimary, geometry, country='', city='', subdivision='' } = location;
     const query = `INSERT INTO data_collection.location
                    (location_id, country, city, name_primary, subdivision, geometry)
-                   VALUES ('${location.locationId}', '${location.country}', '${location.city}', '${location.namePrimary}', '${location.subdivision}', ST_GeomFromGeoJSON('${JSON.stringify(location.geometry)}'))`;
+                   VALUES ('${locationId}', '${country}', '${city}', '${namePrimary}', '${subdivision}', ST_GeomFromGeoJSON('${JSON.stringify(geometry)}'))`;
     try {
-        return await pool.query(query)
+        return await pool.query(query);
     } catch (error) {
         console.error(error);
         console.error(`could not add location: ${JSON.stringify(location)} with query ${query}`);
