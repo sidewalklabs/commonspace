@@ -17,7 +17,6 @@ class AuthScreen extends React.Component {
 
   _signIn = async () => {
     try {
-      console.log('start the log ing');
       const { type, idToken, accessToken } = await Expo.Google.logInAsync({
         androidClientId: '8677857213-avso90qgtscpsfj9cs1r5ri2p9i1nh4q.apps.googleusercontent.com',
         androidStandaloneAppClientId:
@@ -29,14 +28,25 @@ class AuthScreen extends React.Component {
       });
       if (type === 'success') {
         // Build Firebase credential with the access token.
-        const credential = firebase.auth.GoogleAuthProvider.credential(idToken, accessToken);
-        // Sign in with credential from the Google user.
-        const firebaseSignInResult = await firebase
-          .auth()
-          .signInAndRetrieveDataWithCredential(credential);
+        // post in body access_token
+        const resp = await fetch(
+          'https://commons-staging.sidewalklabs.com/auth/google/token',
+          {
+            mode: "cors",
+            cache: "no-cache",
+            credentials: "same-origin",
+            redirect: 'follow',
+            referrer: 'no-referrer',
+            headers: {
+              "Content-Type": "application/json; charset=utf-8",
+              "access-token": `${accessToken}`
+            }
+          }
+        );
+        console.log('jet token', resp.json());
 
         // set token for next session, then navigate to the internal app
-        await AsyncStorage.setItem('userEmail', firebaseSignInResult.user.email);
+        //await AsyncStorage.setItem('userEmail', firebaseSignInResult.user.email);
 
         this.props.navigation.navigate('App');
       } else {
