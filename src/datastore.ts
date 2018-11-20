@@ -306,7 +306,11 @@ export async function authenticateOAuthUser(pool: pg.Pool, email: string) {
                    ) ON CONFLICT (email)
                    DO UPDATE SET email=EXCLUDED.email RETURNING user_id`;
     try {
-        return pool.query(query);
+        const {rowCount, rows} = await pool.query(query);
+        if (rowCount !== 1) {
+            throw new Error(`error OAuth authentication for email ${email}`);
+        }
+        return rows[0] as User;
     } catch (error) {
         console.error(error);
         console.error(`could not handle OAuth user for email: ${email}`);

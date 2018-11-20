@@ -61,6 +61,8 @@ router.post('/studies', async (req, res) => {
 });
 
 router.get('/studies/:studyId/surveys', async (req, res) => {
+    // TODO only return studies where the user is verfied
+    const { user_id: userId } = req.user;
     const { studyId } = req.params;
     const pgRes = await surveysForStudy(DbPool, studyId);
     const surveys: Survey[] = pgRes.rows.map(({ survey_id, title, time_start, time_stop, location_id, email }) => {

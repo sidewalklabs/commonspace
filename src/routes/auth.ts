@@ -37,6 +37,12 @@ if (process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'production')
                 const token = jwt.sign(req.user, process.env.jwt_secret);
                 return res.json({token});
             });
+    router.get('/google/token',
+               passport.authenticate('google-token', {session: false}),
+               (req, res) => {
+                   const token = jwt.sign(req.user, process.env.jwt_secret);
+                   return res.json({token});
+               })
 }
 
 export default router;

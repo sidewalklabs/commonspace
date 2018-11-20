@@ -3,6 +3,7 @@ import * as passport from 'passport';
 import * as passportGoogle from 'passport-google-oauth20';
 import * as passportJWT from 'passport-jwt'
 import * as passportLocal from 'passport-local';
+import GoogleTokenStrategy from './passport_strategies/GoogleTokenStrategy';
 import * as uuid from 'uuid';
 
 import { authenticateOAuthUser, createUser, findUser, findUserById, User } from './datastore';
@@ -62,14 +63,17 @@ const init = (mode: string) => {
                 passReqToCallback: true
             }, async function(request, accessToken, refreshToken, profile, done) {
                 const email = profile.emails[0].value;
-                const { rowCount, rows } = await authenticateOAuthUser(DbPool, email);
-                if (rowCount !== 1) {
-                    done(new Error(`error OAuth authentication for email ${email}`));
-                }
-                request.user = { user_id: rows[0].userId };
-                done(null, request);
+                const user = await authenticateOAuthUser(DbPool, email);
+                request.user = { user_id: user.userId };
+                done(null, request.user);
             });
             passport.use('google-oauth', googleOAuthStrategy);
+            const googleTokenStrategy = new GoogleTokenStrategy({tokenFromRequest: 'header', passReqToCallback: true}, async (request, email, done) => {
+                const user = await authenticateOAuthUser(DbPool, email);
+                request.user = user;
+                done(null, user, request);
+            })
+            passport.use('google-token', googleTokenStrategy);
         }
         passport.use('signin', signinStrategy)
         passport.use('login', loginStrategy)

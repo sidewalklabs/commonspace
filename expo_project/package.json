@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@expo/samples": "2.1.1",
+    "camelcase-keys": "^5.0.0",
     "expo": "^28.0.0",
     "firebase": "^5.4.1-0",
     "lodash": "4.17.4",
