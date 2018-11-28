@@ -26,20 +26,18 @@ spec:
           - containerPort: 3000
         # The following environment variables will contain the database host,
         # user and password to connect to the PostgreSQL instance.
-        env:
-          - name: db_name
-            value: "postgres"
+        # env:
           # [START cloudsql_secrets]
-          - name: pg_user
-            valueFrom:
-              secretKeyRef:
-                name: cloudsql-db-commons-credentials
-                key: username
-          - name: pg_pass
-            valueFrom:
-              secretKeyRef:
-                name: cloudsql-db-commons-credentials
-                key: password
+          #- name: pg_user
+          #  valueFrom:
+          #    secretKeyRef:
+          #      name: cloudsql-db-commons-credentials
+          #      key: username
+          #- name: pg_pass
+          #  valueFrom:
+          #    secretKeyRef:
+          #      name: cloudsql-db-commons-credentials
+          #      key: password
           # [END cloudsql_secrets]
         command: ["node", "/commons/build/server.js"]
       - name: commons-nginx
