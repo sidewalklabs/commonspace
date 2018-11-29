@@ -189,7 +189,7 @@ function createNewTableFromGehlFields(study: Study, tablename: string, fields: G
     }
 }
 
-export function returnStudies(pool: pg.Pool, userId: string) {
+export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
     // TODO union with studies that do not have a surveyors yet
     const query = `WITH
                         study_and_surveyors (study_id, emails)
@@ -200,6 +200,8 @@ export function returnStudies(pool: pg.Pool, userId: string) {
                                     data_collection.surveyors AS s
                                     JOIN public.users AS u
                                     ON u.user_id = s.user_id
+                                WHERE
+                                    u.user_id = '${userId}'
                                 GROUP BY
                                     study_id
                             )
@@ -211,10 +213,21 @@ export function returnStudies(pool: pg.Pool, userId: string) {
                         sas.emails
                     FROM
                         data_collection.study AS stu
-                        JOIN study_and_surveyors AS sas
+                        LEFT JOIN study_and_surveyors AS sas
                         ON stu.study_id = sas.study_id;`;
     try {
-        return pool.query(query);
+        const { rows } = await pool.query(query);
+        const studiesForUser = rows.map(({study_id, title, protocol_version, emails, map}) => {
+            const surveyors = emails && emails.length > 0 ? emails : [];
+            return {
+                study_id,
+                title,
+                protocol_version,
+                map,
+                surveyors
+            }
+        });
+        return studiesForUser;
     } catch (error) {
         console.error(`error executing sql query: ${query}`)
         throw error;
@@ -222,7 +235,7 @@ export function returnStudies(pool: pg.Pool, userId: string) {
 }
 
 export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: string) {
-   const query = `SELECT stu.study_id, stu.title as study_title, stu.map, svy.survey_id, svy.title as survey_title, svy.time_start, svy.time_stop, loc.geometry
+   const query = `SELECT stu.study_id, stu.title as study_title, stu.protocol_version, stu.map, svy.survey_id, svy.title as survey_title, svy.time_start, svy.time_stop, loc.geometry
                  FROM data_collection.survey as svy
                  JOIN data_collection.study as stu
                  ON svy.study_id = stu.study_id
@@ -233,45 +246,48 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
         const {rows}  = await pool.query(query);
         const studiesAndSurveys = rows.map((row) => {
             const {
-                study_id: studyId,
-                study_title: studyTitle,
-                survey_id: surveyId,
-                survey_title: surveyTitle,
-                time_start: startTime,
-                time_stop: endTime,
-                geometry: location } = row;
+                study_id,
+                study_title,
+                survey_id,
+                survey_title,
+                protocol_version,
+                time_start: start_date,
+                time_stop: end_date,
+                geometry: survey_location,
+                location_id } = row;
             return {
-                studyId,
-                studyTitle,
-                surveyId,
-                surveyTitle,
-                startTime,
-                endTime,
-                location
+                study_id,
+                study_title,
+                survey_id,
+                survey_title,
+                protocol_version,
+                start_date,
+                end_date,
+                location_id,
+                survey_location
             }
         }).reduce((acc, curr) => {
-            const {studyId, studyTitle, surveyId, startTime, endTime, location } = curr;
-            if (acc[curr.studyId]) {
-                acc[curr.studyId].surveys.push({
-                    surveyId,
-                    startTime,
-                    endTime,
-                    location
-                });
+            const {study_id, study_title, survey_id, protocol_version, start_date, end_date, survey_location, location_id } = curr;
+            const survey = {
+                    survey_id,
+                    start_date,
+                    end_date,
+                    survey_location,
+                    location_id
+                }
+            if (acc[curr.study_id]) {
+                acc[curr.study_id].surveys.push(survey);
             } else {
-                acc[curr.studyId] = {
-                    studyId,
-                    studyTitle,
-                    surveys: [{
-                        surveyId,
-                        startTime,
-                        endTime,
-                        location
-                    }]
+                acc[curr.study_id] = {
+                    study_id,
+                    protocol_version,
+                    title: study_title,
+                    surveys: [survey]
                 }
             }
             return acc;
         }, {} )
+        return Object.values(studiesAndSurveys);
     } catch (error) {
         console.error(`[sql ${query}] ${error}`);
         throw error;

@@ -6,7 +6,7 @@ import uuid from 'uuid';
 
 import { UNIQUE_VIOLATION } from 'pg-error-constants';
 
-import { createNewSurveyForStudy, createStudy, giveUserStudyAccess, returnStudies, surveysForStudy, updateSurvey, GehlFields, createLocation } from '../datastore';
+import { createNewSurveyForStudy, createStudy, giveUserStudyAccess, returnStudiesForAdmin, returnStudiesUserIsAssignedTo, surveysForStudy, updateSurvey, GehlFields, createLocation } from '../datastore';
 import DbPool from '../database';
 import { FeatureCollection, Feature } from 'geojson';
 
@@ -17,6 +17,7 @@ const router = express.Router()
 export interface Survey {
     survey_id: string;
     title?: string;
+    location?: Feature;
     location_id: string;
     start_date: string;
     end_date: string;
@@ -28,6 +29,7 @@ export interface Study {
     title: string;
     protocol_version: string;
     surveyors: string[];
+    map?: FeatureCollection;
     surveys?: Survey[];
 }
 
@@ -36,18 +38,20 @@ const STUDY_FIELDS: GehlFields[] = ['gender', 'age', 'mode', 'posture', 'activit
 router.use(passport.authenticate('jwt', {session: false}))
 
 router.get('/studies', async (req, res) => {
+    const { type = 'all' } = req.query;
     const { user_id: userId } = req.user;
-    const pgRes = await returnStudies(DbPool, userId);
-    const studiesForUser: Study[] = pgRes.rows.map(({study_id, title, protocol_version, emails, map}) => {
-        return {
-            study_id,
-            title,
-            protocol_version,
-            map,
-            surveyors: emails
-        }
-    })
-    res.send(studiesForUser);
+    let responseBody: Study[] = []
+    if (type === 'admin') {
+        responseBody = await returnStudiesForAdmin(DbPool, userId)
+    } else if (type === 'surveyor') {
+        responseBody = await returnStudiesUserIsAssignedTo(DbPool, userId) as Study[];
+    } else {
+        const adminStudies =  await returnStudiesForAdmin(DbPool, userId);
+        const suveyorStudies = await returnStudiesUserIsAssignedTo(DbPool, userId) as Study[];
+        // @ts-ignore
+        responseBody = adminStudies.concat(suveyorStudies);
+    }
+    res.send(responseBody);
 })
 
 async function saveGeoJsonFeatureAsLocation(x: Feature | FeatureCollection) {
@@ -69,13 +73,9 @@ async function saveGeoJsonFeatureAsLocation(x: Feature | FeatureCollection) {
     }
 }
 
-interface NewStudy extends Study {
-    map?: FeatureCollection;
-}
-
 router.post('/studies', async (req, res) => {
     const { user_id: userId } = req.user;
-    const {protocol_version: protocolVersion, study_id: studyId, title, surveyors, surveys = [], map} = req.body as NewStudy;
+    const {protocol_version: protocolVersion, study_id: studyId, title, surveyors, surveys = [], map} = req.body as Study;
     try {
         await createStudy(DbPool, { studyId, title, protocolVersion, userId, map}, STUDY_FIELDS);
     } catch (error) {

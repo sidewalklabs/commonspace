@@ -89,7 +89,7 @@ async function fetchSurveysForStudy(token: string, studyId: string) {
 }
 
 export async function getStudies(token: string) {
-    const studiesReq = await getFromApi('/api/studies', token);
+    const studiesReq = await getFromApi('/api/studies?type=admin', token);
     const studies = camelcaseKeys(await studiesReq.json());
     return groupArrayOfObjectsBy(studies, 'studyId');
 }

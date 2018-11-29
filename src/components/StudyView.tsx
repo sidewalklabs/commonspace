@@ -91,7 +91,8 @@ const StudyView = observer((props: any & WithStyles) => {
 
     const { study, classes } = props;
     if (study) {
-        const { title, surveys, studyId, protocolVersion, map } = study;
+        const { title, surveys, studyId, surveyors, protocolVersion, map } = study;
+        const features = map && map.features ? map.features : [];
         const protocolVersionUpdate = (versionValue: string) => {
 
         }
@@ -127,9 +128,9 @@ const StudyView = observer((props: any & WithStyles) => {
                         </MenuItem>)
                     })}
                 </TextField>
-                <SurveyorsView studyId={studyId} />
+                <SurveyorsView studyId={studyId} surveyors={surveyors} />
                 <MapView lat={33.546727} lng={-117.673965} featureCollection={map} />
-                <SurveyView surveys={Object.values(toJS(surveys))} />
+                <SurveyView surveys={Object.values(toJS(surveys))} features={features} />
                 <CreateOrUpdateButton study={study} />
             </Fragment>
         );
