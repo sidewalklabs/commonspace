@@ -18,6 +18,7 @@ import { observer } from 'mobx-react';
 
 import applicationState, { addNewSurveyToCurrentStudy } from '../stores/applicationState';
 import { groupArrayOfObjectsBy } from '../utils';
+import { Feature } from 'geojson';
 
 const styles = theme => ({
     formControl: {
@@ -111,14 +112,17 @@ const DateTableCell = withStyles(styles)(observer((props: DateTableCellProps & W
 }));
 
 interface SurveyRowProps {
-    surveyId: String;
-    startDate: string;
-    endDate: string;
-    locationId: string;
-    surveyorEmail: string;
+    survey: {
+        surveyId: string;
+        startDate: string;
+        endDate: string;
+        locationId: string;
+        surveyorEmail: string;
+    };
+    features: Feature[];
 }
 
-const SurveyObjectToTableRow = observer(({ classes, survey }) => {
+const SurveyObjectToTableRow = observer(({ classes, survey, features }: WithStyles & SurveyRowProps) => {
     const { surveyId } = survey;
     const startDate = moment(survey.startDate);
     const startDateDisplayDate = startDate.format('YYYY-MM-DD');
@@ -127,8 +131,6 @@ const SurveyObjectToTableRow = observer(({ classes, survey }) => {
     const endDateDisplayDate = endDate.format('YYYY-MM-DD');
     const endTime = endDate.format('kk:mm');
     let locationName;
-    const features = applicationState.currentStudy.map.features;
-
     if (features.length > 0 && survey.locationId) {
         const properties = toJS(features).map(({ properties }) => properties);
         locationName = groupArrayOfObjectsBy(properties, 'locationId')[survey.locationId].name;
@@ -216,10 +218,10 @@ const SurveyObjectToTableRow = observer(({ classes, survey }) => {
 
 const SurveyRow = withStyles(styles)(SurveyObjectToTableRow);
 
-const SurveyView = observer((props: { surveys: any[] } & WithStyles) => {
-    const { classes, surveys } = props;
+const SurveyView = observer((props: { surveys: any[], features: Feature[] } & WithStyles) => {
+    const { classes, surveys, features } = props;
     const tableRows = Object.values(toJS(surveys)).map(s => (
-        <SurveyRow survey={s} />
+        <SurveyRow survey={s} features={features} />
     ));
     return (
         <Paper className={classes.root}>

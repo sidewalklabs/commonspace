@@ -108,14 +108,14 @@ function handleAddingNewSurveyor(studyId, email) {
 
 interface SurveyorsViewProps {
     studyId: string;
+    surveyors: string[];
 }
 
 // todo, this is using the store components/ui.ts which may not be the best abstraction, this might be more localizable ...
 const SurveyorsView = observer((props: SurveyorsViewProps & WithStyles) => {
-    const { classes, studyId } = props;
+    const { classes, studyId, surveyors = [] } = props;
     const userEnteredEmail = uiState.addSurveyorModalText;
-    const surveyors = applicationState.currentStudy ? applicationState.currentStudy.surveyors : [];
-    const tableRows = surveyors.map(email => <Row email={email} />);
+    const tableRows = surveyors.map(email => <Row key={email} email={email} />);
     return (
         <div>
             <Paper className={classes.root}>
