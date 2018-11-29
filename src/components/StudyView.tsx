@@ -89,9 +89,20 @@ const StudyView = observer((props: any & WithStyles) => {
         }
     ];
 
+    const STUDY_TYPES = [
+        {
+            value: 'activity',
+            label: 'Stationary Activity Count'
+        },
+        {
+            value: 'movement',
+            label: 'Movement Counts'
+        }
+    ]
+
     const { study, classes } = props;
     if (study) {
-        const { title, surveys, studyId, surveyors, protocolVersion, map } = study;
+        const { title, surveys, studyId, surveyors, protocolVersion, type, map } = study;
         const features = map && map.features ? map.features : [];
         const protocolVersionUpdate = (versionValue: string) => {
 
@@ -106,6 +117,28 @@ const StudyView = observer((props: any & WithStyles) => {
                     onChange={e => study.title = e.target.value}
                     margin="normal"
                 />
+                <TextField
+                    id="select-study-type"
+                    select
+                    label="Study Type"
+                    className={classes.textField}
+                    value={groupArrayOfObjectsBy(STUDY_TYPES, 'value')[type].label}
+                    onChange={e => {
+                        study.type = e.target.value;
+                    }}
+                    SelectProps={{
+                        MenuProps: {
+                            className: classes.menu
+                        }
+                    }}
+                    margin="normal"
+                >
+                    {STUDY_TYPES.map(({ value, label }) => {
+                        return (<MenuItem key={value} value={value}>
+                            {label}
+                        </MenuItem>)
+                    })}
+                </TextField>
                 <TextField
                     id="select-protocol-version"
                     select

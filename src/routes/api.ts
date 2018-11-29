@@ -6,7 +6,7 @@ import uuid from 'uuid';
 
 import { UNIQUE_VIOLATION } from 'pg-error-constants';
 
-import { createNewSurveyForStudy, createStudy, giveUserStudyAccess, returnStudiesForAdmin, returnStudiesUserIsAssignedTo, surveysForStudy, updateSurvey, GehlFields, createLocation } from '../datastore';
+import { createNewSurveyForStudy, createStudy, giveUserStudyAccess, returnStudiesForAdmin, returnStudiesUserIsAssignedTo, surveysForStudy, updateSurvey, GehlFields, createLocation, StudyType } from '../datastore';
 import DbPool from '../database';
 import { FeatureCollection, Feature } from 'geojson';
 
@@ -29,6 +29,7 @@ export interface Study {
     title: string;
     protocol_version: string;
     surveyors: string[];
+    type: StudyType;
     map?: FeatureCollection;
     surveys?: Survey[];
 }
@@ -75,9 +76,9 @@ async function saveGeoJsonFeatureAsLocation(x: Feature | FeatureCollection) {
 
 router.post('/studies', async (req, res) => {
     const { user_id: userId } = req.user;
-    const {protocol_version: protocolVersion, study_id: studyId, title, surveyors, surveys = [], map} = req.body as Study;
+    const {protocol_version: protocolVersion, study_id: studyId, title, type, surveyors, surveys = [], map} = req.body as Study;
     try {
-        await createStudy(DbPool, { studyId, title, protocolVersion, userId, map}, STUDY_FIELDS);
+        await createStudy(DbPool, { studyId, title, protocolVersion, userId, type, map}, STUDY_FIELDS);
     } catch (error) {
         const {code, detail} = error;
         if (code === UNIQUE_VIOLATION) {
