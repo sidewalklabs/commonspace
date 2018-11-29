@@ -23,6 +23,7 @@ ALTER ROLE data_collector SET search_path TO data_collection,"$user",public;
 SET search_path TO data_collection;
 
 CREATE TYPE studyScale AS ENUM ('district', 'city', 'cityCentre', 'neighborhood', 'blockScale', 'singleSite');
+CREATE TYPE studyType AS ENUM('activity', 'movement');
 
 
 CREATE TABLE IF NOT EXISTS location
@@ -46,6 +47,7 @@ CREATE TABLE IF NOT EXISTS study
     scale studyScale,
     user_id UUID REFERENCES public.users(user_id) NOT NULL,
     protocol_version TEXT NOT NULL,
+    study_type studyType NOT NULL,
     table_definition JSON,
     tablename VARCHAR(63),
     map JSON,

@@ -17,6 +17,7 @@ export interface Study {
     surveys: {[key: string]: any};
     surveyors: string[];
     title: string;
+    type: 'activity' | 'movement';
     map: FeatureCollection;
 }
 
@@ -125,6 +126,7 @@ export async function setCurrentStudyEmptySkeleton() {
         protocolVersion: '1.0',
         surveys: {},
         surveyors: [],
+        type: 'activity',
         map: {
             type: 'FeatureCollection',
             features: []

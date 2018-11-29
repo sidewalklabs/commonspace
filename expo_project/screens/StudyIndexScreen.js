@@ -72,7 +72,8 @@ class SurveyIndexScreen extends React.Component {
         <ScrollView style={[styles.container]}>
           {this.state.loading && <ActivityIndicator />}
           {this.state.studies.map(study => {
-            const { studyId, title: studyName, authorName: studyAuthor, surveys } = study;
+            const { studyId, title: studyName, type: studyType, authorName: studyAuthor, surveys } = study;
+            console.log('study: ', study);
             // TODO: move these to backend
             const authorUrl = 'https://parkpeople.ca/';
             const studyInstructions =
@@ -98,7 +99,7 @@ class SurveyIndexScreen extends React.Component {
                   {studyInstructions && <Paragraph>{studyInstructions}</Paragraph>}
                 </CardContent>
                 {surveys.map(survey => {
-                  const { surveyId, type: surveyType, title: surveyTitle, locationId } = survey;
+                  const { surveyId, title: surveyTitle, locationId } = survey;
                   return (
                     <View key={surveyId}>
                       <Divider />
@@ -112,7 +113,7 @@ class SurveyIndexScreen extends React.Component {
                             raised
                             primary
                             onPress={() =>
-                              this.props.navigation.navigate(typeToRouteName(surveyType), {
+                              this.props.navigation.navigate(typeToRouteName(studyType), {
                                 studyId,
                                 surveyId,
                                 studyName,

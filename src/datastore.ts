@@ -13,6 +13,7 @@ export enum StudyScale {
     singleSite
 }
 
+export type StudyType = 'activity' | 'movement';
 
 export interface Study {
     studyId: string;
@@ -24,6 +25,7 @@ export interface Study {
     scale?: StudyScale;
     areas?: any,
     userId: string;
+    type: 'activity' | 'movement';
     map?: FeatureCollection;
     protocolVersion: string;
     notes?: string;
@@ -200,8 +202,6 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                                     data_collection.surveyors AS s
                                     JOIN public.users AS u
                                     ON u.user_id = s.user_id
-                                WHERE
-                                    u.user_id = '${userId}'
                                 GROUP BY
                                     study_id
                             )
@@ -210,20 +210,24 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                         stu.title,
                         stu.protocol_version,
                         stu.map,
+                        stu.study_type,
                         sas.emails
                     FROM
                         data_collection.study AS stu
                         LEFT JOIN study_and_surveyors AS sas
-                        ON stu.study_id = sas.study_id;`;
+                        ON stu.study_id = sas.study_id
+                    WHERE
+                        stu.user_id='${userId}'`;
     try {
         const { rows } = await pool.query(query);
-        const studiesForUser = rows.map(({study_id, title, protocol_version, emails, map}) => {
+        const studiesForUser = rows.map(({study_id, title, protocol_version, study_type: type, emails, map}) => {
             const surveyors = emails && emails.length > 0 ? emails : [];
             return {
                 study_id,
                 title,
                 protocol_version,
                 map,
+                type,
                 surveyors
             }
         });
@@ -235,7 +239,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
 }
 
 export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: string) {
-   const query = `SELECT stu.study_id, stu.title as study_title, stu.protocol_version, stu.map, svy.survey_id, svy.title as survey_title, svy.time_start, svy.time_stop, loc.geometry
+   const query = `SELECT stu.study_id, stu.title as study_title, stu.protocol_version, stu.study_type, stu.map, svy.survey_id, svy.title as survey_title, svy.time_start, svy.time_stop, loc.geometry
                  FROM data_collection.survey as svy
                  JOIN data_collection.study as stu
                  ON svy.study_id = stu.study_id
@@ -248,9 +252,10 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
             const {
                 study_id,
                 study_title,
+                protocol_version,
+                study_type,
                 survey_id,
                 survey_title,
-                protocol_version,
                 time_start: start_date,
                 time_stop: end_date,
                 geometry: survey_location,
@@ -258,16 +263,17 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
             return {
                 study_id,
                 study_title,
+                protocol_version,
+                study_type,
                 survey_id,
                 survey_title,
-                protocol_version,
                 start_date,
                 end_date,
                 location_id,
                 survey_location
             }
         }).reduce((acc, curr) => {
-            const {study_id, study_title, survey_id, protocol_version, start_date, end_date, survey_location, location_id } = curr;
+            const {study_id, study_title, protocol_version, study_type: type, survey_id, start_date, end_date, survey_location, location_id } = curr;
             const survey = {
                     survey_id,
                     start_date,
@@ -280,6 +286,7 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
             } else {
                 acc[curr.study_id] = {
                     study_id,
+                    type,
                     protocol_version,
                     title: study_title,
                     surveys: [survey]
@@ -323,9 +330,9 @@ export async function createStudy(pool: pg.Pool, study: Study, fields: GehlField
     // for some unknown reason import * as uuidv4 from 'uuid/v4'; uuidv4(); fails in gcp, saying that it's not a function call
     const studyTablename = studyIdToTablename(study.studyId);
     const newStudyDataTableQuery = createNewTableFromGehlFields(study, studyTablename, fields);
-    const { map={} } = study;
-    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, protocol_version, table_definition, tablename, map)
-                                   VALUES('${study.studyId}', '${study.title}', '${study.userId}', '${study.protocolVersion}', '${JSON.stringify(fields)}', '${studyTablename}', '${JSON.stringify(map)}')`;
+    const { studyId, title, userId, protocolVersion, type, map={} } = study;
+    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, protocol_version, study_type, table_definition, tablename, map)
+                                   VALUES('${studyId}', '${title}', '${userId}', '${protocolVersion}',  '${type}', '${JSON.stringify(fields)}', '${studyTablename}', '${JSON.stringify(map)}')`;
     // we want the foreign constraint to fail if we've already created a study with the specified ID
     let studyResult, newStudyDataTable;
     try {

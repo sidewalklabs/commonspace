@@ -39,6 +39,16 @@ minikube stop
 
 ### Frontend and Expo
 #### Installation
+Install postgres
+linux
+
+``` bash
+sudo apt-get install libpq-dev
+```
+
+``` bash
+brew install postgres
+```
 
 ``` bash
 cd expo_project
