@@ -221,6 +221,64 @@ export function returnStudies(pool: pg.Pool, userId: string) {
     }
 }
 
+export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: string) {
+   const query = `SELECT stu.study_id, stu.title as study_title, stu.map, svy.survey_id, svy.title as survey_title, svy.time_start, svy.time_stop, loc.geometry
+                 FROM data_collection.survey as svy
+                 JOIN data_collection.study as stu
+                 ON svy.study_id = stu.study_id
+                 JOIN data_collection.location as loc
+                 ON svy.location_id = loc.location_id
+                 WHERE svy.user_id = '${userId}'`;
+    try {
+        const {rows}  = await pool.query(query);
+        const studiesAndSurveys = rows.map((row) => {
+            const {
+                study_id: studyId,
+                study_title: studyTitle,
+                survey_id: surveyId,
+                survey_title: surveyTitle,
+                time_start: startTime,
+                time_stop: endTime,
+                geometry: location } = row;
+            return {
+                studyId,
+                studyTitle,
+                surveyId,
+                surveyTitle,
+                startTime,
+                endTime,
+                location
+            }
+        }).reduce((acc, curr) => {
+            const {studyId, studyTitle, surveyId, startTime, endTime, location } = curr;
+            if (acc[curr.studyId]) {
+                acc[curr.studyId].surveys.push({
+                    surveyId,
+                    startTime,
+                    endTime,
+                    location
+                });
+            } else {
+                acc[curr.studyId] = {
+                    studyId,
+                    studyTitle,
+                    surveys: [{
+                        surveyId,
+                        startTime,
+                        endTime,
+                        location
+                    }]
+                }
+            }
+            return acc;
+        }, {} )
+    } catch (error) {
+        console.error(`[sql ${query}] ${error}`);
+        throw error;
+    }
+
+}
+
 export function surveysForStudy(pool: pg.Pool, studyId: string) {
     const query = `SELECT
                        s.time_start, s.time_stop, u.email, s.survey_id, s.title
@@ -365,26 +423,27 @@ export async function giveUserStudyAccess(pool: pg.Pool, userEmail: string, stud
 }
 
 function joinSurveyWithUserEmailCTE(survey: Survey) {
-    return `WITH t (study_id, survey_id, title, time_start, time_stop, representation, method, user_email) as (
+    return `WITH t (study_id, survey_id, title, time_start, time_stop, representation, method, location_id, user_email) AS (
               VALUES(
-                     '${survey.studyId}'::uuid,
-                     '${survey.surveyId}'::uuid,
-                     '${survey.title}'::text,
-                     '${survey.startDate}'::timestamp with time zone,
-                     '${survey.endDate}'::timestamp with time zone,
+                     '${survey.studyId}'::UUID,
+                     '${survey.surveyId}'::UUID,
+                     '${survey.title}'::TEXT,
+                     '${survey.startDate}'::TIMESTAMP WITH TIME ZONE,
+                     '${survey.endDate}'::TIMESTAMP WITH TIME ZONE,
                      '${survey.representation}'::TEXT,
                      '${survey.method}'::TEXT,
+                     '${survey.locationId}'::UUID,
                      '${survey.userEmail}'::TEXT
               )
             )
-            SELECT t.study_id, t.survey_id, t.title, t.time_start, t.time_stop, t.representation, t.method, u.user_id
+            SELECT t.study_id, t.survey_id, t.title, t.time_start, t.time_stop, t.representation, t.method, t.location_id, u.user_id
             FROM  t
             JOIN public.users u
             ON t.user_email = u.email`;
 }
 
 export async function createNewSurveyForStudy(pool: pg.Pool, survey: Survey) {
-    const query = `INSERT INTO data_collection.survey (study_id, survey_id, title, time_start, time_stop, representation, method, user_id)
+    const query = `INSERT INTO data_collection.survey (study_id, survey_id, title, time_start, time_stop, representation, method, location_id, user_id)
                    ${joinSurveyWithUserEmailCTE(survey)};`
     try {
         return pool.query(query);

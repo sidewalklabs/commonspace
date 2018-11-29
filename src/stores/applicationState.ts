@@ -169,7 +169,7 @@ let applicationState: ApplicationState = observable({
 });
 
 autorun(() => {
-    console.log(toJS(applicationState.token));
+    console.log(toJS(applicationState.currentStudy));
 });
 
 export default applicationState;
