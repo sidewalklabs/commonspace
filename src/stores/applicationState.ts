@@ -27,7 +27,7 @@ export interface ApplicationState {
     token: string;
 }
 
-const fetchParams = {
+const fetchParams: RequestInit = {
     mode: "cors", // no-cors, cors, *same-origin
     cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
     credentials: "same-origin", // include, same-origin, *omit
@@ -39,7 +39,7 @@ function getFromApi(route: string, token: string) {
     const {mode, cache, credentials, redirect, referrer} = fetchParams;
     return fetch(process.env.server_hostname + route, {
         ...fetchParams,
-        method: 'GET', // *GET, POST, PUT, DELETE, etc.
+        method: 'GET',
         headers: {
             "Content-Type": "application/json; charset=utf-8",
             "Authorization": `bearer ${token}`
@@ -51,12 +51,12 @@ function putToApi(route: string, token: string, data: any) {
     const body = JSON.stringify(snakecasePayload(data))
     return fetch(process.env.server_hostname + route, {
         ...fetchParams,
-        method: "PUT", // *GET, POST, PUT, DELETE, etc.
+        method: "PUT",
         headers: {
             "Content-Type": "application/json; charset=utf-8",
             "Authorization": `bearer ${token}`
         },
-        body // body data type must match "Content-Type" header
+        body
     })
 }
 
@@ -65,13 +65,12 @@ async function postToApi(route: string, token: string, data: any) {
     try {
         return await fetch(process.env.server_hostname + route, {
             ...fetchParams,
-            method: "POST", // *GET, POST, PUT, DELETE, etc.
+            method: "POST",
             headers: {
                 "Content-Type": "application/json; charset=utf-8",
                 "Authorization": `bearer ${token}`
-                // "Content-Type": "application/x-www-form-urlencoded",
             },
-            body // body data type must match "Content-Type" header
+            body
         })
     } catch (err) {
         console.log(`[uri ${route}] [data ${JSON.stringify(data)}] ${err}`)
@@ -102,15 +101,20 @@ export async function updateStudy(studyInput) {
     study.surveys = surveys;
     const { token } = applicationState;
     const response = await putToApi(`/api/studies/${studyId}`, token, study);
-    console.log(response.status);
 }
 
 export async function saveNewStudy(studyInput: Study) {
     const study: Study = toJS(studyInput)
-    study.surveys = Object.values(toJS(studyInput.surveys));
+    study.surveys = Object.values(toJS(studyInput.surveys)).map(survey => {
+        const { method = 'analog', representation = 'absolute' } = survey;
+        return {
+            method,
+            representation,
+            ...survey
+        }
+    });
     const { token } = applicationState;
     const response = await postToApi(`/api/studies`, token, study);
-    console.log(response.status);
 }
 
 export async function selectNewStudy(study: any) {
@@ -169,7 +173,6 @@ let applicationState: ApplicationState = observable({
 });
 
 autorun(() => {
-    console.log(toJS(applicationState.currentStudy));
 });
 
 export default applicationState;

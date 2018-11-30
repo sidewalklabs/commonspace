@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 import * as pg from 'pg';
 import * as uuid from 'uuid';
 
-import { addDataPointToSurveyNoStudyId, addDataPointToSurveyWithStudyId, authenticateOAuthUser, getTablenameForSurveyId, createLocation, createStudy, createNewSurveyForStudy, createUser, deleteDataPoint, giveUserStudyAccess, Location, Study, Survey, User } from './datastore';
+import { addDataPointToSurveyNoStudyId, addDataPointToSurveyWithStudyId, authenticateOAuthUser, getTablenameForSurveyId, createLocation, createStudy, createNewSurveyForStudy, createUser, deleteDataPoint, giveUserStudyAccess, Location, Study, Survey, User, checkUserIdIsSurveyor } from './datastore';
 
 dotenv.config();
 
@@ -42,12 +42,14 @@ const sebastian2: User = {
 
 const thorncliffeParkStudy: Study = {
     title: 'Thornecliffe Park',
+    type: 'activity',
     studyId: uuid.v4(),
     protocolVersion: '1.0',
     userId: sebastian.userId
 }
 const simpleStudy: Study = {
     title: 'Thornecliffe Park',
+    type: 'activity',
     studyId: uuid.v4(),
     protocolVersion: '1.0',
     userId: sebastian.userId
@@ -55,6 +57,7 @@ const simpleStudy: Study = {
 
 const simpleStudyInvalidUserId: Study = {
     title: 'Thornecliffe Park and Sabina Ali Study',
+    type: 'activity',
     studyId: uuid.v4(),
     protocolVersion: '1.0',
     userId: uuid.v4()
@@ -151,7 +154,7 @@ test('save new study', async () => {
 });
 
 test('save new study with all possible fields', async () => {
-    const [studyPgResult, newTablePgResult] = await createStudy(pool, thorncliffeParkStudy, ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'objects', 'location', 'note']);
+    const [studyPgResult, newTablePgResult] = await createStudy(pool, thorncliffeParkStudy, ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'creation_date', 'last_updated', 'note']);
 
     let { rowCount, command } = studyPgResult;
     expect(rowCount).toBe(1);
@@ -193,12 +196,20 @@ test('save new survey', async () => {
     expect(command).toBe('INSERT');
 });
 
+test('verify a user has access to a survey', async() => {
+    const { userId } = sebastian;
+    const {  surveyId } = surveyNearGarbage;
+    const shouldBeTrue = await checkUserIdIsSurveyor(pool, userId, surveyId);
+    expect(shouldBeTrue).toEqual(true);
+});
+
 test('can save a data point', async () => {
     const dataPoint = {
         "location": {
-            "latitude": "43.70396934170554",
-            "longitude": "-79.3432493135333"
+            "coordinates": [-74.001327, 40.752675],
+            "type": "Point"
         },
+        "creation_date": "2018-03-11T15:04:54.892Z",
         "object": "pushcart",
         "posture": "sitting",
         "data_point_id": uuid.v4()
@@ -209,18 +220,41 @@ test('can save a data point', async () => {
 });
 
 
-test('add a data point using only the survey id', async () => {
+test('can save another data point', async () => {
     const dataPoint = {
-        "data_point_id": uuid.v4(),
-        "gender": "male",
-        "groups": "pair",
         "location": {
-            "latitude": "43.70416809098892",
-            "longitude": "-79.34354536235332"
+            "coordinates": [-74.001327, 40.752675],
+            "type": "Point"
         },
-        "mode": "pedestrian",
-        "object": "luggage",
-        "posture": "leaning"
+        "creation_date": "2018-03-11T15:04:54.892Z",
+        "object": "pushcart",
+        "posture": "sitting",
+        "data_point_id": uuid.v4()
+    }
+    const { rowCount, command } = await addDataPointToSurveyWithStudyId(pool, surveyNearGarbage.studyId, surveyNearGarbage.surveyId, dataPoint);
+    expect(rowCount).toBe(1);
+    expect(command).toBe('INSERT');
+})
+
+
+test('add a data point using only the survey id', async () => {
+    const dataPoint =  {
+        "data_point_id":"ecc12073-51ae-42fa-b63f-459d95ee4d68",
+        "gender":"male",
+        "age":null,
+        "mode":null,
+        "posture":null,
+        "activities":null,
+        "groups":null,
+        "object":null,
+        "note":null,
+        "location": {
+            "coordinates": [-74.001327, 40.752675],
+            "type": "Point"
+        },
+        "color":"#F44336",
+        "title":"Person 0",
+        "survey_id":"ff41212b-98fd-48c6-a84c-1eb927a3a5fc"
     };
     const { rowCount, command } = await addDataPointToSurveyNoStudyId(pool, surveyNearGarbage.surveyId, dataPoint);
     expect(rowCount).toBe(1);
@@ -232,9 +266,10 @@ test('update a data point using it\'s own id', async () => {
     const dataPoint = {
         "data_point_id": dataPointId,
         "location": {
-            "latitude": "43.70416809098892",
-            "longitude": "-79.34354536235332"
+            "coordinates": [-74.001327, 40.752675],
+            "type": "Point"
         },
+        "creation_date": "2018-03-11T15:04:54.892Z",
         "posture": "leaning"
     };
     const dataPointUpdated = {
@@ -242,9 +277,10 @@ test('update a data point using it\'s own id', async () => {
         "gender": "female",
         "groups": "pair",
         "location": {
-            "latitude": "43.70416809098892",
-            "longitude": "-79.34354536235332"
+            "coordinates": [-74.001327, 40.752675],
+            "type": "Point"
         },
+        "last_updated": "2018-03-11T18:04:54.892Z",
         "mode": "pedestrian",
         "object": "luggage",
         "posture": "sitting",
@@ -263,8 +299,8 @@ test('save a data point with a single activity', async () => {
     const dataPoint = {
         "data_point_id": uuid.v4(),
         "location": {
-            "latitude": "43.70416809098892",
-            "longitude": "-79.34354536235332"
+            "coordinates": [-74.001327, 40.752675],
+            "type": "Point"
         },
         "age": "child",
         "activities": "commercial",
@@ -282,9 +318,10 @@ test('save a data point with multiple activities', async () => {
     const dataPoint = {
         "data_point_id": uuid.v4(),
         "location": {
-            "latitude": "43.70416809098892",
-            "longitude": "-79.34354536235332"
+            "coordinates": [-74.001327, 40.752675],
+            "type": "Point"
         },
+        "creation_date": "2018-03-11T15:04:54.892Z",
         "activities": ["commercial", "recreation_active", "electronic_engagement"],
         "posture": "leaning"
     }
@@ -300,9 +337,10 @@ test('delete a data point', async () => {
     const dataPoint = {
         "data_point_id": dataPointId,
         "location": {
-            "latitude": "43.70416809098892",
-            "longitude": "-79.34354536235332"
+            "coordinates": [-74.001327, 40.752675],
+            "type": "Point"
         },
+        "creation_date": "2018-03-11T15:04:54.892Z",
         "age": "child",
         "activities": "commercial",
         "posture": "leaning"

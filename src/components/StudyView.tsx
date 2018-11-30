@@ -40,37 +40,39 @@ const styles = theme => ({
 
 async function update(study) {
     await updateStudy(study);
-    uiState.currentStudyIsNew = false;
 }
 
 async function create(study) {
     await saveNewStudy(study);
-    uiState.mode = AuthMode.Authorized;
+    uiState.currentStudyIsNew = false;
 }
 
 interface CreateOrUpdateButtonProps {
     study: Study;
     map: FeatureCollection;
+    studyIsNew: boolean;
 }
+
 const CreateOrUpdateButton = withStyles(styles)((props: CreateOrUpdateButtonProps & WithStyles) => {
-    const { study, classes } = props;
-    if (uiState.currentStudyIsNew) {
+    const { studyIsNew, study, classes } = props;
+    if (studyIsNew) {
         return (
-            <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={() => create(study)}>
+            <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={async () => await create(study)}>
                 Create
             </Button >
-        )
+        );
     } else {
         return (
-            <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={() => update(study)}>
+            <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={updateStudy}>
                 Update
             </Button>
-        )
+        );
     }
 });
 
 interface StudyViewProps {
     study: Study;
+    studyIsNew: boolean;
 }
 
 const StudyView = observer((props: any & WithStyles) => {
@@ -100,9 +102,9 @@ const StudyView = observer((props: any & WithStyles) => {
         }
     ]
 
-    const { study, classes } = props;
+    const { study, classes, studyIsNew } = props;
     if (study) {
-        const { title, surveys, studyId, surveyors, protocolVersion, type, map } = study;
+        const { title, surveys, studyId, surveyors, protocolVersion, type, map } = study as Study;
         const features = map && map.features ? map.features : [];
         const protocolVersionUpdate = (versionValue: string) => {
 
@@ -164,7 +166,7 @@ const StudyView = observer((props: any & WithStyles) => {
                 <SurveyorsView studyId={studyId} surveyors={surveyors} />
                 <MapView lat={33.546727} lng={-117.673965} featureCollection={map} />
                 <SurveyView surveys={Object.values(toJS(surveys))} features={features} />
-                <CreateOrUpdateButton study={study} />
+                <CreateOrUpdateButton study={study} studyIsNew={studyIsNew} />
             </Fragment>
         );
     }
