@@ -176,7 +176,7 @@ const Main: (props: MainProps & WithStyles) => React.Component = observer(
                         </Drawer>
                         <main className={classes.content}>
                             <div className={classes.appBarSpacer} />
-                            <StudyView study={currentStudy} />
+                            <StudyView study={currentStudy} studyIsNew={uiState.currentStudyIsNew} />
                         </main>
                     </div>
                 </Fragment>

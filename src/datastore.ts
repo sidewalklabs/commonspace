@@ -3,6 +3,8 @@ import * as pg from 'pg';
 import { FOREIGN_KEY_VIOLATION } from 'pg-error-constants';
 import * as uuid from 'uuid';
 import { FeatureCollection, Geometry } from 'geojson';
+import { Survey as RestSurvey } from './routes/api';
+import { database } from 'firebase';
 
 export enum StudyScale {
     district,
@@ -78,33 +80,25 @@ const validDataPointProperties = new Set([
     'activities',
     'groups',
     'object',
-    'location'
+    'location',
+    'creation_date',
+    'last_updated',
+    'note'
 ]);
 
-// export type Gender = 'male' | 'female' | 'unknown';
-// export type Age = 'age_0-14' | 'age_15-24' | 'age_25-64' | 'age_65+';
-// export type Posture = 'standing' | 'sitting_formal' | 'sitting_informal' | 'lying' | 'multiple';
-// export type Activity = 'commercial' | 'consuming' | 'conversing' |  'cultural' | 'electronic_engagement' | 'recreation_active'| 'recreation_passive'| 'working_civic';
-// export type Group ='group_1' | 'group_2' | 'group_3-7' | 'group_8+';
+export type Gender = 'male' | 'female' | 'unknown';
+export type Age = 'age_0-14' | 'age_15-24' | 'age_25-64' | 'age_65+';
+export type Posture = 'standing' | 'sitting_formal' | 'sitting_informal' | 'lying' | 'multiple';
+export type Activity = 'commercial' | 'consuming' | 'conversing' |  'cultural' | 'electronic_engagement' | 'recreation_active'| 'recreation_passive'| 'working_civic';
+export type Group ='group_1' | 'group_2' | 'group_3-7' | 'group_8+';
 
-// export interface DataPoint {
-//     gender?: Gender;
-//     age?: Age;
-//     mode?: string;
-//     posture?: Posture;
-//     activities?: Activity;
-//     groups?: Group;
-//     objects?: string;
-//     location?: string;
-// }
-
-export type GehlFields = 'gender' | 'age' | 'mode' | 'posture' | 'activities' | 'groups' | 'objects' | 'location' | 'note';
+export type GehlFields = 'gender' | 'age' | 'mode' | 'posture' | 'activities' | 'groups' | 'object' | 'location' | 'note' | 'creation_date' | 'last_updated';
 
 function setString(s: any) {
     return Array.from(s).toString();
 }
 
-function flatMapper(someMap: any, f: any) {
+function flatMapper<T>(someMap: any, f: (key: string, index?: number) => T | undefined): T[] {
     return Object.keys(someMap).map(f).filter(x => x !== undefined);
 }
 
@@ -114,7 +108,7 @@ export function javascriptArrayToPostgresArray(xs) {
             throw new Error(`Cannot convert ${JSON.stringify(xs)} into a postgres array because the array contrains the value null.`)
         }
         else if (typeof x === 'string') {
-            return `'${x}'`;
+            return `${x}`;
         } else if (Array.isArray(x)) {
             return `${javascriptArrayToPostgresArray(x)}`
         } else if (typeof x === 'object') {
@@ -123,7 +117,15 @@ export function javascriptArrayToPostgresArray(xs) {
             return x;
         }
     }).join(', ');
-    return `Array[${arrayElements}]`;
+    return `{${arrayElements}}`;
+}
+
+function wrapInArray<T>(x: T | T[]) {
+    if (Array.isArray(x)) {
+        return x;
+    } else {
+        return [x];
+    }
 }
 
 function digitToString(d: string) {
@@ -156,7 +158,7 @@ const genderLocationArray: GehlFields[] = ['gender', 'location'];
 const genderLocation: Set<GehlFields> = new Set(genderLocationArray);
 // to do this is very brittle, how do you now mess up objects vs object?
 // also how about the connection between the enums defined at database creation time?
-const allGehlFieldsArray: GehlFields[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'objects', 'location', 'note']
+const allGehlFieldsArray: GehlFields[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'creation_date', 'last_updated', 'note'];
 const allGehlFields: Set<GehlFields> = new Set(allGehlFieldsArray);
 const allGehlFieldsStrings: Set<string> = allGehlFields;
 
@@ -169,7 +171,9 @@ function createNewTableFromGehlFields(study: Study, tablename: string, fields: G
                     survey_id UUID references data_collection.survey(survey_id) NOT NULL,
                     data_point_id UUID PRIMARY KEY NOT NULL,
                     gender data_collection.gender,
-                    location geometry
+                    creation_date timestamptz,
+                    last_updated timestamptz,
+                    location geometry NOT NULL
                     )`;
         case setString(allGehlFields):
             return `CREATE TABLE ${tablename} (
@@ -181,8 +185,10 @@ function createNewTableFromGehlFields(study: Study, tablename: string, fields: G
                     posture data_collection.posture,
                     activities data_collection.activities[],
                     groups data_collection.groups,
-                    object data_collection.objects,
-                    location geometry,
+                    object data_collection.object,
+                    location geometry NOT NULL,
+                    creation_date timestamptz,
+                    last_updated timestamptz,
                     note text
                     )`;
         default:
@@ -275,12 +281,13 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
         }).reduce((acc, curr) => {
             const {study_id, study_title, protocol_version, study_type: type, survey_id, start_date, end_date, survey_location, location_id } = curr;
             const survey = {
-                    survey_id,
-                    start_date,
-                    end_date,
-                    survey_location,
-                    location_id
-                }
+                survey_id,
+                study_title,
+                start_date,
+                end_date,
+                survey_location,
+                location_id
+            }
             if (acc[curr.study_id]) {
                 acc[curr.study_id].surveys.push(survey);
             } else {
@@ -304,7 +311,7 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
 
 export function surveysForStudy(pool: pg.Pool, studyId: string) {
     const query = `SELECT
-                       s.time_start, s.time_stop, u.email, s.survey_id, s.title
+                       s.time_start, s.time_stop, u.email, s.survey_id, s.title, s.representation, s.microclimate, s.temperature_c, s.method, s.user_id, s.notes
                    FROM
                        data_collection.survey AS s
                        JOIN public.users AS u ON s.user_id = u.user_id
@@ -446,31 +453,62 @@ export async function giveUserStudyAccess(pool: pg.Pool, userEmail: string, stud
 }
 
 function joinSurveyWithUserEmailCTE(survey: Survey) {
-    return `WITH t (study_id, survey_id, title, time_start, time_stop, representation, method, location_id, user_email) AS (
+    const { studyId, surveyId, title, startDate, endDate, representation, method, userEmail, locationId } = survey;
+    let query, values;
+    if (locationId) {
+        query = `WITH t (study_id, survey_id, title, time_start, time_stop, representation, method, user_email, location_id) AS (
               VALUES(
-                     '${survey.studyId}'::UUID,
-                     '${survey.surveyId}'::UUID,
-                     '${survey.title}'::TEXT,
-                     '${survey.startDate}'::TIMESTAMP WITH TIME ZONE,
-                     '${survey.endDate}'::TIMESTAMP WITH TIME ZONE,
-                     '${survey.representation}'::TEXT,
-                     '${survey.method}'::TEXT,
-                     '${survey.locationId}'::UUID,
-                     '${survey.userEmail}'::TEXT
+                     $1::UUID,
+                     $2::UUID,
+                     $3::TEXT,
+                     $4::TIMESTAMP WITH TIME ZONE,
+                     $5::TIMESTAMP WITH TIME ZONE,
+                     $6::TEXT,
+                     $7::TEXT,
+                     $8::TEXT,
+                     $9::UUID
               )
             )
-            SELECT t.study_id, t.survey_id, t.title, t.time_start, t.time_stop, t.representation, t.method, t.location_id, u.user_id
+            SELECT t.study_id, t.survey_id, t.title, t.time_start, t.time_stop, t.representation, t.method, u.user_id, t.location_id
             FROM  t
             JOIN public.users u
             ON t.user_email = u.email`;
+        values =  [studyId, surveyId, title, startDate, endDate, representation, method, userEmail, locationId];
+    } else {
+        query = `WITH t (study_id, survey_id, title, time_start, time_stop, representation, method, user_email) AS (
+              VALUES(
+                     $1::UUID,
+                     $2::UUID,
+                     $3::TEXT,
+                     $4::TIMESTAMP WITH TIME ZONE,
+                     $5::TIMESTAMP WITH TIME ZONE,
+                     $6::TEXT,
+                     $7::TEXT,
+                     $8::TEXT
+              )
+            )
+            SELECT t.study_id, t.survey_id, t.title, t.time_start, t.time_stop, t.representation, t.method, u.user_id
+            FROM  t
+            JOIN public.users u
+            ON t.user_email = u.email`;
+        values =  [studyId, surveyId, title, startDate, endDate, representation, method, userEmail];
+    }
+    return { query, values };
 }
 
-export async function createNewSurveyForStudy(pool: pg.Pool, survey: Survey) {
-    const query = `INSERT INTO data_collection.survey (study_id, survey_id, title, time_start, time_stop, representation, method, location_id, user_id)
-                   ${joinSurveyWithUserEmailCTE(survey)};`
+export async function createNewSurveyForStudy(pool: pg.Pool, survey) {
+    let { query, values } = joinSurveyWithUserEmailCTE(survey);
+    if (survey.locationId ) {
+        query = `INSERT INTO data_collection.survey (study_id, survey_id, title, time_start, time_stop, representation, method, user_id, location_id)
+                   ${query};`
+    } else {
+        query = `INSERT INTO data_collection.survey (study_id, survey_id, title, time_start, time_stop, representation, method, user_id)
+                   ${query};`
+    }
     try {
-        return pool.query(query);
+        return pool.query(query, values);
     } catch (error) {
+        console.error(`[sql ${query}] [values ${JSON.stringify(values)}] ${error}`)
         console.error(`postgres error: ${error} for query: ${query}`);
         throw error;
     }
@@ -520,94 +558,181 @@ export async function getTablenameForSurveyId(pool: pg.Pool, surveyId: string) {
     }
 }
 
-function processKeyToColumnName(key) {
-    if (validDataPointProperties.has(key)) {
-        return key;
+function convertKeyToParamterBinding(index, key, value) {
+    if (key === 'location') {
+        let binding;
+        const location = value;
+        if (location.type && location.type === 'Point') {
+            binding = `ST_GeomFromGeoJSON($${index})`
+            return { index: index + 1, binding };
+        } else {
+            binding = `ST_GeomFromText($${index}, $${index+1})`
+            return { index: index + 2, binding };
+        }
     } else {
-        return undefined;
+        const binding = `$${index}`
+        return {index: index + 1, binding };
     }
 }
 
-function processDataPointToValue(dataPoint, key) {
+function processDataPointToPreparedStatement(acc: {columns: string[], values: string[], parameterBindings: string[], index: number}, curr: {key: string, value: string}) {
+    const { key, value } = curr;
+    const { columns, values, parameterBindings } = acc;
+    columns.push(key);
+    const { binding, index } = convertKeyToParamterBinding(acc.index, key, value);
+    parameterBindings.push(binding)
+    return {
+        columns,
+        values: [...values, ...wrapInArray(processDataPointToValue(key, value))],
+        parameterBindings,
+        index
+    }
+}
+
+function processDataPointToValue(key, value): any[] | any {
     if (key === 'location') {
-        const longitude = dataPoint['location']['longitude'];
-        const latitude = dataPoint['location']['latitude'];
-        return `ST_GeomFromText('POINT(${longitude} ${latitude})', 4326)`;
+        const location = value;
+        if (location.type && location.type === "Point") {
+            //return `ST_GeomFromGeoJSON('${JSON.stringify(location)}')`;
+            //return `ST_GeomFromGeoJSON('${JSON.stringify(location)}')`;
+            return JSON.stringify(location);
+        } else {
+            const { longitude, latitude} = location
+            return [longitude, latitude];
+            //return `ST_GeomFromText('POINT(${longitude} ${latitude})', 4326)`;
+        }
     } else if (key === 'groups') {
-        switch (dataPoint['groups']) {
+        switch (value) {
             case 'single':
-                return '\'group_1\'';
+                return 'group_1';
             case 'pair':
-                return '\'group_2\'';
+                return 'group_2';
             case 'group':
-                return '\'group_3-7\'';
+                return 'group_3-7';
             case 'crowd':
-                return '\'group_8+\'';
+                return 'group_8+';
             default:
-                throw new Error(`invalid value for groups: ${dataPoint['groups']}`)
+                throw new Error(`invalid value for groups: ${value}`)
         }
     } else if (key === 'age') {
-        switch (dataPoint['age']) {
+        switch (value) {
             case 'child':
-                return `'0-14'`;
+                return '0-14';
             case 'young':
-                return `'15-24'`;
+                return '15-24';
             case 'adult':
-                return `'25-64'`;
+                return '25-64';
             case 'elderly':
-                return `'65+'`;
+                return '65+';
             default:
-                throw new Error(`invalid value for age: ${dataPoint['age']}`)
+                throw new Error(`invalid value for age: ${value}`)
         }
     } else if (key === 'activities') {
-        const { activities } = dataPoint;
+        const activities = value;
         const activitesAsArr = Array.isArray(activities) ? activities : [activities];
-        return `${javascriptArrayToPostgresArray(activitesAsArr)}:: data_collection.activities[]`;
+        return `${javascriptArrayToPostgresArray(activitesAsArr)}`;
     } else if (validDataPointProperties.has(key)) {
-        return `'${dataPoint[key]}'`;
+        // if (value === null || value === undefined) {
+        //     return '';
+        // }
+        return `${value}`;
+        //return value;
     } else {
-        return undefined;
+        throw new Error(`Unexpected key ${key} in data point`);
     }
+}
+
+
+function processKeyAndValues(dataPoint) {
+    const kvs = Object.entries(dataPoint).map(([key, value]) => { return { key, value } });
+    return kvs.reduce(processDataPointToPreparedStatement, {
+        columns: [],
+        values: [],
+        parameterBindings: [],
+        index: 1
+    });
 }
 
 function deleteNonGehlFields(o: any) {
-    const unwantedKeys = Object.keys(o).filter(x => allGehlFieldsStrings.has(x))
+    const unwantedKeys = Object.keys(o).filter(x => !allGehlFieldsStrings.has(x) || o[x] === null)
     unwantedKeys.forEach(k => delete o[k]);
     return o;
 }
 
-function transformToPostgresInsert(dataPoint) {
-    const columns = flatMapper(dataPoint, processKeyToColumnName);
-    const values = flatMapper(dataPoint, (key) => processDataPointToValue(dataPoint, key));
-    dataPoint = deleteNonGehlFields(dataPoint)
-    // const gehlFieldColumns = flatMapper(dataPoint, processKeyToColumnName);
-    // const gehlFieldValues = flatMapper(dataPoint, (key) => processDataPointToValue(dataPoint, key));
-    const insert_statement = `(${(columns.join(', '))}) VALUES(${values.join(', ')})`;
-    return `${insert_statement}
+function transformToPostgresInsert(surveyId: string, dataPoint) {
+    const { data_point_id } = dataPoint;
+    const dataPointForPostgres = deleteNonGehlFields(dataPoint);
+    dataPointForPostgres.survey_id = surveyId;
+    dataPointForPostgres.data_point_id = data_point_id;
+    const { columns, values, parameterBindings } = processKeyAndValues(dataPointForPostgres);
+    const insert_statement = `(${(columns.join(', '))}) VALUES (${parameterBindings.join(', ')})`;
+    const query = `${insert_statement}
             ON CONFLICT(data_point_id)
-            DO UPDATE SET(${(columns.join(', '))}) = (${values.join(', ')})`;
+            DO UPDATE SET(${(columns.join(', '))}) = (${parameterBindings.join(', ')})`;
+    return { query, values };
+}
+
+export async function checkUserIdIsSurveyor(pool: pg.Pool, userId: string, surveyId: string) {
+    const query = `SELECT user_id, survey_id
+                   FROM data_collection.survey
+                   WHERE user_id = $1 and survey_id = $2`
+    try {
+        const values = [userId, surveyId];
+        const { command, rowCount } = await pool.query(query, values);
+        if (command !== 'SELECT' && rowCount !== 1) {
+            return false
+        }
+        return true
+    } catch (error) {
+        console.error(`[sql ${query}] ${error}`);
+        throw error;
+    }
 }
 
 export async function addDataPointToSurveyNoStudyId(pool: pg.Pool, surveyId: string, dataPoint: any) {
     const tablename = await getTablenameForSurveyId(pool, surveyId);
-    const query = `INSERT INTO ${tablename}
-                   ${ transformToPostgresInsert({ survey_id: surveyId, ...dataPoint })}`;
+    const dataPointWithSurveyId =  { ...dataPoint, survey_id: surveyId  };
+    let { query, values } = transformToPostgresInsert(surveyId, dataPointWithSurveyId)
+    query = `INSERT INTO ${tablename}
+                   ${query}`;
     try {
-        return pool.query(query);
+        return pool.query(query, values);
     } catch (error) {
-        console.error(`error executing sql query: ${query}`)
+        console.error(`[sql ${query}] ${error}`)
         throw error;
     }
 }
 
 export async function addDataPointToSurveyWithStudyId(pool: pg.Pool, studyId: string, surveyId: string, dataPoint: any) {
     const tablename = await studyIdToTablename(studyId);
-    const query = `INSERT INTO ${tablename}
-                   ${transformToPostgresInsert({ survey_id: surveyId, ...dataPoint })}`;
+    const dataPointWithSurveyId =  { ...dataPoint, survey_id: surveyId };
+    let { query, values } = transformToPostgresInsert(surveyId, dataPointWithSurveyId);
+    query = `INSERT INTO ${tablename}
+                   ${query}`;
     try {
-        return pool.query(query);
+        return pool.query(query, values);
     } catch (error) {
         console.error(`error executing sql query: ${query}`)
+        throw error;
+    }
+}
+
+export async function retrieveDataPointsForSurvey(pool, surveyId) {
+    const tablename = await getTablenameForSurveyId(pool, surveyId);
+    const query = `SELECT data_point_id, gender, age, mode, posture, activities, groups, object, ST_AsGeoJSON(location)::json as loc, note
+                   FROM ${tablename}`
+    try {
+        const res = await pool.query(query);
+        return res.rows.map(r => {
+            const { loc: location } = r;
+            delete r['loc'];
+            return {
+                ...r,
+                location
+            };
+        });;
+    } catch (error) {
+        console.error(`[sql ${query}] ${error}`)
         throw error;
     }
 }
@@ -624,7 +749,7 @@ export async function deleteDataPoint(pool: pg.Pool, surveyId: string, dataPoint
         }
         return res;
     } catch (error) {
-        console.error(`error executing sql query: ${query}`)
+        console.error(`[ query ${query}] ${error}`)
         throw error;
     }
 }

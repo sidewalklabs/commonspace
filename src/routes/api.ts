@@ -4,24 +4,28 @@ import fetch from 'node-fetch';
 import passport from 'passport';
 import uuid from 'uuid';
 
-import { UNIQUE_VIOLATION } from 'pg-error-constants';
+import { NOT_NULL_VIOLATION, UNIQUE_VIOLATION } from 'pg-error-constants';
 
-import { createNewSurveyForStudy, createStudy, giveUserStudyAccess, returnStudiesForAdmin, returnStudiesUserIsAssignedTo, surveysForStudy, updateSurvey, GehlFields, createLocation, StudyType } from '../datastore';
+import { createNewSurveyForStudy, createStudy, giveUserStudyAccess, returnStudiesForAdmin, returnStudiesUserIsAssignedTo, surveysForStudy, updateSurvey, GehlFields, createLocation, StudyType, checkUserIdIsSurveyor, addDataPointToSurveyNoStudyId, retrieveDataPointsForSurvey } from '../datastore';
 import DbPool from '../database';
-import { FeatureCollection, Feature } from 'geojson';
+import { Feature, FeatureCollection, Point } from 'geojson';
+import { snakecasePayload } from '../utils';
 
 const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org/reverse?format=json'
 
 const router = express.Router()
 
-export interface Survey {
-    survey_id: string;
-    title?: string;
-    location?: Feature;
-    location_id: string;
-    start_date: string;
-    end_date: string;
-    surveyor_email: string;
+export interface DataPoint {
+    data_point_id: string; // UUID
+    gender?: string;
+    age?: number;
+    mode?: string;
+    posture?: string;
+    activities?: string [];
+    groups?: string;
+    object?: string;
+    date: string;
+    location: Point;
 }
 
 export interface Study {
@@ -34,11 +38,39 @@ export interface Study {
     surveys?: Survey[];
 }
 
-const STUDY_FIELDS: GehlFields[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'objects', 'location', 'note'];
+export interface Survey {
+    survey_id: string;
+    title?: string;
+    location?: Feature;
+    location_id: string;
+    start_date: string;
+    end_date: string;
+    surveyor_email: string;
+    representation: string;
+    microclimate?: string;
+    temperature_celcius?: string;
+    method: string;
+    notes?: string;
+}
+
+
+const STUDY_FIELDS: GehlFields[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'note'];
+
+function return500OnError(f) {
+    return async (req, res) => {
+        try {
+            const result = await f(req, res);
+            return result;
+        } catch (error) {
+            console.error(`[body ${JSON.stringify(req.body)}] ${error}`);
+            res.status(500).send();
+        }
+    }
+}
 
 router.use(passport.authenticate('jwt', {session: false}))
 
-router.get('/studies', async (req, res) => {
+router.get('/studies', return500OnError(async (req, res) => {
     const { type = 'all' } = req.query;
     const { user_id: userId } = req.user;
     let responseBody: Study[] = []
@@ -53,7 +85,7 @@ router.get('/studies', async (req, res) => {
         responseBody = adminStudies.concat(suveyorStudies);
     }
     res.send(responseBody);
-})
+}));
 
 async function saveGeoJsonFeatureAsLocation(x: Feature | FeatureCollection) {
     if (x.type === 'Feature' && x.geometry.type === 'Polygon') {
@@ -73,7 +105,50 @@ async function saveGeoJsonFeatureAsLocation(x: Feature | FeatureCollection) {
     }
 }
 
-router.post('/studies', async (req, res) => {
+async function saveDataPoint(req, res) {
+    const { user_id: userId } = req.user;
+    const { surveyId, dataPointId } = req.params;
+    const userCanAccessSurvey = await checkUserIdIsSurveyor(DbPool, userId, surveyId);
+    if (!userCanAccessSurvey) {
+        res.status(401).send();
+        return;
+    }
+    const dataPointFromBody = req.body as DataPoint;
+    if (dataPointFromBody.data_point_id && dataPointFromBody.data_point_id !== dataPointId) {
+        res.status(400).send();
+    }
+    const dataPoint = {...dataPointFromBody, data_point_id: dataPointId };
+
+    await addDataPointToSurveyNoStudyId(DbPool, surveyId, {...dataPoint, data_point_id: dataPointId });
+    res.status(200).send();
+}
+
+router.get('/surveys/:surveyId/datapoints', return500OnError(async (req, res) => {
+    const { user_id: userId } = req.user;
+    const { surveyId } = req.params;
+    const userCanAccessSurvey = await checkUserIdIsSurveyor(DbPool, userId, surveyId);
+    if (!userCanAccessSurvey) {
+        res.statusMessage('not allowed to access survey');
+        res.status(401).send();
+        return;
+    }
+    const databaseDataPoints = await retrieveDataPointsForSurvey(DbPool, surveyId)
+    res.send(databaseDataPoints);
+}));
+
+router.post('/surveys/:surveyId/datapoints/:dataPointId', return500OnError((req, res) => {
+    const datapoint = req.body as DataPoint;
+    req.body.creation_date = datapoint.date;
+    return saveDataPoint(req, res);
+}));
+
+router.put('/surveys/:surverId/datapoints/:dataPointId', return500OnError((req, res) => {
+    const datapoint = req.body as DataPoint;
+    req.body.last_updated = datapoint.date;
+    return saveDataPoint(req, res);
+}));
+
+router.post('/studies', return500OnError(async (req, res) => {
     const { user_id: userId } = req.user;
     const {protocol_version: protocolVersion, study_id: studyId, title, type, surveyors, surveys = [], map} = req.body as Study;
     try {
@@ -97,45 +172,59 @@ router.post('/studies', async (req, res) => {
             map.features.map(saveGeoJsonFeatureAsLocation)
         )
     }
-    await Promise.all(
-        surveys.map(async survey => {
-            return createNewSurveyForStudy(DbPool, camelcaseKeys({studyId, ...survey, userEmail: survey.surveyor_email}))
-        })
-    )
-    res.send(req.body)
-});
+    try {
+        await Promise.all(
+            surveys.map(async survey => {
+                return createNewSurveyForStudy(DbPool, camelcaseKeys({studyId, ...survey, userEmail: survey.surveyor_email}))
+            })
+        )
+    } catch(error) {
+        console.error(error);
 
-router.get('/studies/:studyId/surveys', async (req, res) => {
+        if (error.code === NOT_NULL_VIOLATION ) {
+            res.status(400).send();
+            return;
+        }
+    }
+        res.send(req.body)
+}));
+
+router.get('/studies/:studyId/surveys', return500OnError(async (req, res) => {
     // TODO only return studies where the user is verfied
     const { user_id: userId } = req.user;
     const { studyId } = req.params;
     const pgRes = await surveysForStudy(DbPool, studyId);
-    const surveys: Survey[] = pgRes.rows.map(({ survey_id, title, time_start, time_stop, location_id, email }) => {
+    const surveys: Survey[] = pgRes.rows.map(({ survey_id, title, time_start, time_stop, location_id, email, representation, microclimate, temperature_celsius, method, notes}) => {
         return {
             survey_id,
             title,
             location_id,
             start_date: time_start,
             end_date: time_stop,
-            surveyor_email: email
+            surveyor_email: email,
+            representation,
+            microclimate,
+            temperature_celsius,
+            method,
+            notes
         }
     });
     res.send(surveys);
-})
+}))
 
-router.put('/studies/:studyId', async (req, res) => {
+router.put('/studies/:studyId', return500OnError(async (req, res) => {
     const { surveys, study_id }  = req.body as Study;
     const pgQueries = await Promise.all(
         surveys.map(s => updateSurvey(DbPool, camelcaseKeys({study_id, ...s, userEmail: s.surveyor_email}))))
     res.sendStatus(200);
-});
+}));
 
-router.post('/studies/:studyId/surveyors', async (req, res) => {
+router.post('/studies/:studyId/surveyors', return500OnError(async (req, res) => {
     const { studyId } = req.params;
     const { email } = req.body;
     const [_, newUserId] = await giveUserStudyAccess(DbPool, email, studyId);
     res.send({ email, studyId, newUserId })
-});
+}));
 
 
 

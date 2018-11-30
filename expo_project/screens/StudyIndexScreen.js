@@ -48,32 +48,18 @@ class SurveyIndexScreen extends React.Component {
   async componentDidMount() {
     const token = await AsyncStorage.getItem('token');
     let studies = await getStudies(token);
-    studies = await Promise.all(
-      studies.map(async study => {
-        try {
-          console.log(study.studyId);
-          const surveys = await getSurveysForStudy(token, study.studyId);
-          console.log('surveys: ', surveys);
-          study.surveys = _.sortBy(surveys, 'title');
-        } catch (error) {
-          console.error(error);
-        }
-        return study;
-      }),
-    );
-    console.log('hey: ', studies);
     studies = _.sortBy(studies, 'title');
-    this.setState({ studies, loading: false });
+    this.setState({ token, studies, loading: false });
   }
 
   render() {
+    const { token, studies } = this.state;
     return (
       <View style={[styles.container]}>
         <ScrollView style={[styles.container]}>
           {this.state.loading && <ActivityIndicator />}
-          {this.state.studies.map(study => {
+          {studies.map(study => {
             const { studyId, title: studyName, type: studyType, authorName: studyAuthor, surveys } = study;
-            console.log('study: ', study);
             // TODO: move these to backend
             const authorUrl = 'https://parkpeople.ca/';
             const studyInstructions =
@@ -99,7 +85,10 @@ class SurveyIndexScreen extends React.Component {
                   {studyInstructions && <Paragraph>{studyInstructions}</Paragraph>}
                 </CardContent>
                 {surveys.map(survey => {
-                  const { surveyId, title: surveyTitle, locationId } = survey;
+                  const { survey_id: surveyId, title: surveyTitle, locationId, survey_location: zoneFeatureGeoJson } = survey;
+                  const zoneCoordinates = _.map(zoneFeatureGeoJson.coordinates[0], c =>{
+                    return {longitude: c[0], latitude: c[1]};
+                  });
                   return (
                     <View key={surveyId}>
                       <Divider />
@@ -118,9 +107,10 @@ class SurveyIndexScreen extends React.Component {
                                 surveyId,
                                 studyName,
                                 studyAuthor,
-                                surveyType,
+                                studyType,
                                 surveyTitle,
-                                locationId,
+                                zoneCoordinates,
+                                token,
                               })
                             }>
                             Enter

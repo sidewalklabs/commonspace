@@ -1,4 +1,5 @@
 :host = http://localhost:3000
+:jwt = insert_your_jwt_here
 #
 :studies = :host/studies
 GET :studies
@@ -65,3 +66,21 @@ Content-Type: application/json
   ]
 } 
 
+#
+:surveyid = e473d7ea-d1b6-4d62-910a-c889b99bd33a
+:datapoints= :host/api/surveys/:surveyid/datapoints
+POST :datapoints
+Accept-Encoding: application/json
+Content-Type: application/json
+
+{
+}
+#
+:surveyId = 301611c2-e467-4200-9e21-78cdb2123698
+:datapoints = :host/api/surveys/:surveyId/datapoints
+GET :datapoints
+Accept-Encoding: application/json
+Content-Type: application/json
+Authorization: bearer :jwt
+
+#

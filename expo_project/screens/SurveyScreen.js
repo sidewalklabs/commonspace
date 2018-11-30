@@ -2,6 +2,7 @@ import { Icon } from 'expo';
 import React from 'react';
 import {
   Animated,
+  AsyncStorage,
   PanResponder,
   Platform,
   StyleSheet,
@@ -24,6 +25,7 @@ import * as uuid from 'uuid';
 import Theme from '../constants/Theme';
 import NoteModal from '../components/NoteModal';
 import MarkerMenu from '../components/MarkerMenu';
+import { getDataPointsforSurvey, saveDataPoint } from '../lib/commonsClient';
 
 import { getRandomIconColor } from '../utils/color';
 
@@ -84,12 +86,11 @@ class SurveyScreen extends React.Component {
   constructor(props) {
     super(props);
 
-    this.firestore = firestore;
-
     this.state = {
       activeMarkerId: null,
       markers: [],
-      zoneLatLngs: [],
+      zoneLatLngs: props.navigation.state.params.zoneCoordinates,
+      token: props.navigation.state.params.token,
       markerMenuTopLocation: undefined,
       noteModalVisible: false,
       formScrollPosition: 0,
@@ -110,50 +111,19 @@ class SurveyScreen extends React.Component {
   }
 
   componentDidMount() {
-    // Query for saved data
-    const studyId = this.props.navigation.getParam('studyId');
     const surveyId = this.props.navigation.getParam('surveyId');
-    const locationId = this.props.navigation.getParam('locationId');
-
-    this.firestore
-      .collection('study')
-      .doc(studyId)
-      .collection('location')
-      .doc(locationId)
-      .get()
-      .then(o => {
-        const coordinates = JSON.parse(o.data().geometry.coordinates);
-        const zoneLatLngs = _.map(coordinates, c => ({
-          longitude: c[0],
-          latitude: c[1],
-        }));
-        this.setState({ zoneLatLngs });
+    getDataPointsforSurvey(this.state.token,  surveyId).then((dataPoints) => {
+      const markers = dataPoints.map((d, i) => {
+        const title = `Person ${i}`;
+        const color = getRandomIconColor();
+        return {
+          ...d,
+          color,
+          title,
+        };
       });
-
-    this.firestore
-      .collection('study')
-      .doc(studyId)
-      .collection('survey')
-      .doc(surveyId)
-      .collection('dataPoints')
-      .get()
-      .then(querySnapshot => {
-        const markers = [];
-
-        querySnapshot.forEach(function(doc) {
-          const marker = doc.data();
-          markers.push(marker);
-        });
-        if (markers.length) {
-          // Sort by time string then title (since many markers have the same time string)
-          const sortedMarkers = _.sortBy(markers, [
-            marker => moment(marker.dateLabel, 'HH:mm').unix(),
-            'title',
-          ]);
-          const { dataPointId: activeMarkerId } = _.last(sortedMarkers);
-          this.setState({ markers: sortedMarkers, activeMarkerId });
-        }
-      });
+      this.setState({markers});
+    });
   }
 
   componentWillMount() {
@@ -259,20 +229,15 @@ class SurveyScreen extends React.Component {
     const marker = _.find(markersCopy, { dataPointId });
     const studyId = this.props.navigation.getParam('studyId');
     const surveyId = this.props.navigation.getParam('surveyId');
+    const { token } = this.state;
 
     if (marker) {
       marker[key] = value;
       this.setState({
         markers: markersCopy,
       });
-      this.firestore
-        .collection('study')
-        .doc(studyId)
-        .collection('survey')
-        .doc(surveyId)
-        .collection('dataPoints')
-        .doc(dataPointId)
-        .set(marker);
+      saveDataPoint(token, surveyId, marker).then(() => {
+        console.log('success')});
 
       if (heightToScroll) {
         const currentScrollPosition = this.state.formScrollPosition;
@@ -358,8 +323,8 @@ class SurveyScreen extends React.Component {
         color,
         title,
         dateLabel,
+        date: date.format(),
       };
-
       this.firestore
         .collection('study')
         .doc(studyId)
@@ -391,6 +356,7 @@ class SurveyScreen extends React.Component {
     const studyId = this.props.navigation.getParam('studyId');
     const surveyId = this.props.navigation.getParam('surveyId');
     const markersCopy = [...this.state.markers];
+    // todo creation date vs latest update date? how do we handle the numbering later w/o creation?
     const date = moment();
     const dateLabel = date.format('HH:mm');
     const title = 'Person ' + (markersCopy.length + 1);
@@ -402,20 +368,19 @@ class SurveyScreen extends React.Component {
       color,
       title,
       dateLabel,
+      date: date.toISOString(),
     };
 
     // TODO (Seabass or Ananta): Figure out a way to get faster UI feedback
     // Would be nice for UI to optimistically render before firestore returns
-    this.firestore
-      .collection('study')
-      .doc(studyId)
-      .collection('survey')
-      .doc(surveyId)
-      .collection('dataPoints')
-      .doc(dataPointId)
-      .set(marker)
-      .then(doc => {
+    saveDataPoint(this.state.token, surveyId, marker).
+      then(() => {
         markersCopy.push(marker);
+        this.setState({ markers: markersCopy, activeMarkerId: dataPointId }, this.resetDrawer);
+      })
+      .catch((error) => {
+        // remove markers
+        //markersCopy.pop();
         this.setState({ markers: markersCopy, activeMarkerId: dataPointId }, this.resetDrawer);
       });
   }
@@ -423,6 +388,7 @@ class SurveyScreen extends React.Component {
   setMarkerLocation(dataPointId, location) {
     const studyId = this.props.navigation.getParam('studyId');
     const surveyId = this.props.navigation.getParam('surveyId');
+    const { token } = this.state;
     const markersCopy = [...this.state.markers];
     const marker = _.find(markersCopy, { dataPointId });
 
@@ -432,14 +398,7 @@ class SurveyScreen extends React.Component {
         markers: markersCopy,
       });
 
-      this.firestore
-        .collection('study')
-        .doc(studyId)
-        .collection('survey')
-        .doc(surveyId)
-        .collection('dataPoints')
-        .doc(dataPointId)
-        .update({ location: marker.location });
+      saveDataPoint(token, surveyId, marker).then(() => {});
     }
   }
 
@@ -478,7 +437,7 @@ class SurveyScreen extends React.Component {
                 </View>
                 <View style={styles.titleContainer}>
                   <Text style={styles.title}>{activeMarker.title}</Text>
-                  <Text>{activeMarker.dateLabel}</Text>
+                  <Text>{activeMarker.date}</Text>
                 </View>
                 <TouchableOpacity
                   style={styles.markerMenuButton}

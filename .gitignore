@@ -1,4 +1,5 @@
 dist/
+build/
 functions/lib/
 js_scripts/
 .env*

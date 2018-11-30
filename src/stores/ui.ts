@@ -5,13 +5,6 @@ interface AvailableLocation {
     name: string;
 }
 
-const bcAvailableLocations = new BroadcastChannel('new_zone');
-bcAvailableLocations.onmessage = ({data}) => {
-    uiState.availableLocations = [...uiState.availableLocations, data];
-}
-
-const availableZones = new BroadcastChannel('');
-
 export function visualizeNewStudy() {
     uiState.currentStudyIsNew = true;
 }
