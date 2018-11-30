@@ -239,7 +239,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
 }
 
 export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: string) {
-   const query = `SELECT stu.study_id, stu.title as study_title, stu.protocol_version, stu.study_type, stu.map, svy.survey_id, svy.title as survey_title, svy.time_start, svy.time_stop, loc.geometry
+   const query = `SELECT stu.study_id, stu.title as study_title, stu.protocol_version, stu.study_type, stu.map, svy.survey_id, svy.title as survey_title, svy.time_start, svy.time_stop, ST_AsGeoJSON(loc.geometry)::json as survey_location
                  FROM data_collection.survey as svy
                  JOIN data_collection.study as stu
                  ON svy.study_id = stu.study_id
@@ -258,7 +258,7 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
                 survey_title,
                 time_start: start_date,
                 time_stop: end_date,
-                geometry: survey_location,
+                survey_location,
                 location_id } = row;
             return {
                 study_id,

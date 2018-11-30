@@ -66,7 +66,6 @@ async function saveGeoJsonFeatureAsLocation(x: Feature | FeatureCollection) {
         const lngCenterApprox = lngs / geometry.coordinates[0].length;
         const latCenterApprox = lats / geometry.coordinates[0].length;
         const url = NOMINATIM_BASE_URL + `&lat=${latCenterApprox}&lon=${lngCenterApprox}`;
-                    console.log(url);
         const response = await fetch(url);
         const body = await response.json();
         const { county = '', city = '', country = '', county: subdivision = '' } = body;
