@@ -168,7 +168,7 @@ function createNewTableFromGehlFields(study: Study, tablename: string, fields: G
     switch (comparisionString) {
         case setString(genderLocation):
             return `CREATE TABLE ${tablename} (
-                    survey_id UUID references data_collection.survey(survey_id) NOT NULL,
+                    survey_id UUID references data_collection.survey(survey_id) ON DELETE CASCADE NOT NULL,
                     data_point_id UUID PRIMARY KEY NOT NULL,
                     gender data_collection.gender,
                     creation_date timestamptz,
@@ -177,7 +177,7 @@ function createNewTableFromGehlFields(study: Study, tablename: string, fields: G
                     )`;
         case setString(allGehlFields):
             return `CREATE TABLE ${tablename} (
-                    survey_id UUID references data_collection.survey(survey_id) NOT NULL,
+                    survey_id UUID references data_collection.survey(survey_id) ON DELETE CASCADE NOT NULL,
                     data_point_id UUID PRIMARY KEY NOT NULL,
                     gender data_collection.gender,
                     age varchar(64),
@@ -331,8 +331,6 @@ function executeQueryInSearchPath(searchPath: string[], query: string) {
     return `${searchPathQuery} ${query} `;
 }
 
-// TODO an orm would be great for these .... or maybe interface magic? but an orm won't also express the relation between user and study right? we need normalized data for security reasons
-// in other words the study already has the userId references, where should the idea of the study belonging to a user live? in the relationship model it's with a reference id
 export async function createStudy(pool: pg.Pool, study: Study, fields: GehlFields[]) {
     // for some unknown reason import * as uuidv4 from 'uuid/v4'; uuidv4(); fails in gcp, saying that it's not a function call
     const studyTablename = studyIdToTablename(study.studyId);
@@ -355,6 +353,38 @@ export async function createStudy(pool: pg.Pool, study: Study, fields: GehlField
         throw error;
     }
     return [studyResult, newStudyDataTable];
+}
+
+export async function deleteStudy(pool: pg.Pool, studyId: string) {
+    const tablename = await studyIdToTablename(studyId);
+    const deleteStudyTable = `DROP TABLE ${tablename}`;
+    const deleteStudy = `DELETE from data_collection.study
+                         WHERE study_id = '${studyId}'`;
+    try {
+        await pool.query(deleteStudyTable);
+        const {rowCount, command} = await pool.query(deleteStudy);
+        if (rowCount !== 1 && command !== 'DELETE') {
+            throw new Error(`Unable to delete study: ${studyId}`);
+        }
+    } catch(error) {
+        console.error(`[sql ${deleteStudyTable}] [sql ${deleteStudy}] ${error}`);
+        throw error;
+    }
+}
+
+export async function userIsAdminOfStudy(pool: pg.Pool, studyId: string, userId: string) {
+    const query = `SELECT * from data_collection.study
+                   WHERE user_id=$1 and study_id=$2`;
+    const values = [userId, studyId];
+    try {
+        const { rowCount } = await pool.query(query, values);
+        if (rowCount === 1) {
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error(`[sql ${query}] ${error}`);
+    }
 }
 
 export async function findUser(pool: pg.Pool, email: string, password: string) {

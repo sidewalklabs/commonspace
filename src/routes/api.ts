@@ -6,7 +6,7 @@ import uuid from 'uuid';
 
 import { NOT_NULL_VIOLATION, UNIQUE_VIOLATION } from 'pg-error-constants';
 
-import { createNewSurveyForStudy, createStudy, giveUserStudyAccess, returnStudiesForAdmin, returnStudiesUserIsAssignedTo, surveysForStudy, updateSurvey, GehlFields, createLocation, StudyType, checkUserIdIsSurveyor, addDataPointToSurveyNoStudyId, retrieveDataPointsForSurvey } from '../datastore';
+import { createNewSurveyForStudy, createStudy, deleteDataPoint, deleteStudy, giveUserStudyAccess, returnStudiesForAdmin, returnStudiesUserIsAssignedTo, surveysForStudy, updateSurvey, GehlFields, createLocation, StudyType, checkUserIdIsSurveyor, addDataPointToSurveyNoStudyId, retrieveDataPointsForSurvey, userIsAdminOfStudy } from '../datastore';
 import DbPool from '../database';
 import { Feature, FeatureCollection, Point } from 'geojson';
 import { snakecasePayload } from '../utils';
@@ -51,6 +51,7 @@ export interface Survey {
     temperature_celcius?: string;
     method: string;
     notes?: string;
+
 }
 
 
@@ -85,6 +86,16 @@ router.get('/studies', return500OnError(async (req, res) => {
         responseBody = adminStudies.concat(suveyorStudies);
     }
     res.send(responseBody);
+}));
+
+router.delete('/studies/:studyId', return500OnError(async (req, res) => {
+    const { user_id: userId } = req.user;
+    const { studyId } = req.params;
+    if (!userIsAdminOfStudy(DbPool, studyId, userId)) {
+        res.status(409).send();
+    }
+    await deleteStudy(DbPool, studyId)
+    res.status(200).send();
 }));
 
 async function saveGeoJsonFeatureAsLocation(x: Feature | FeatureCollection) {
@@ -142,10 +153,16 @@ router.post('/surveys/:surveyId/datapoints/:dataPointId', return500OnError((req,
     return saveDataPoint(req, res);
 }));
 
-router.put('/surveys/:surverId/datapoints/:dataPointId', return500OnError((req, res) => {
+router.put('/surveys/:surveyId/datapoints/:dataPointId', return500OnError((req, res) => {
     const datapoint = req.body as DataPoint;
     req.body.last_updated = datapoint.date;
     return saveDataPoint(req, res);
+}));
+
+router.delete('/surveys/:surverId/datapoints/:dataPointId', return500OnError(async (req, res) => {
+    const { surveyId, dataPointId } = req.params;
+    await deleteDataPoint(DbPool, surveyId, dataPointId);
+    res.status(200).send();
 }));
 
 router.post('/studies', return500OnError(async (req, res) => {

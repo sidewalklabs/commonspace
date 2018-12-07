@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 import * as pg from 'pg';
 import * as uuid from 'uuid';
 
-import { addDataPointToSurveyNoStudyId, addDataPointToSurveyWithStudyId, authenticateOAuthUser, getTablenameForSurveyId, createLocation, createStudy, createNewSurveyForStudy, createUser, deleteDataPoint, giveUserStudyAccess, Location, Study, Survey, User, checkUserIdIsSurveyor } from './datastore';
+import { addDataPointToSurveyNoStudyId, addDataPointToSurveyWithStudyId, authenticateOAuthUser, getTablenameForSurveyId, createLocation, createStudy, createNewSurveyForStudy, createUser, deleteDataPoint, deleteStudy, giveUserStudyAccess, Location, Study, Survey, User, checkUserIdIsSurveyor } from './datastore';
 
 dotenv.config();
 
@@ -219,7 +219,6 @@ test('can save a data point', async () => {
     expect(command).toBe('INSERT');
 });
 
-
 test('can save another data point', async () => {
     const dataPoint = {
         "location": {
@@ -313,7 +312,6 @@ test('save a data point with a single activity', async () => {
 
 });
 
-
 test('save a data point with multiple activities', async () => {
     const dataPoint = {
         "data_point_id": uuid.v4(),
@@ -351,6 +349,10 @@ test('delete a data point', async () => {
     const { rowCount: rowCountDelete, command: commandDelete } = await deleteDataPoint(pool, surveyNearGarbage.surveyId, dataPointId);
     expect(rowCountDelete).toBe(1);
     expect(commandDelete).toBe('DELETE');
+});
+
+test('delete a study after throwing information for it into the database', async() => {
+    expect(async () => await deleteStudy(pool, thorncliffeParkStudy.studyId)).not.toThrowError();
 })
 
 afterAll(async () => {
