@@ -195,6 +195,7 @@ router.get('/surveys/:surveyId/datapoints', return500OnError(async (req, res) =>
 
 router.post('/surveys/:surveyId/datapoints/:dataPointId', return500OnError((req, res) => {
     const datapoint = req.body as DataPoint;
+    console.log(JSON.stringify(datapoint));
     req.body.creation_date = datapoint.date;
     req.body.last_updated = datapoint.date;
     return saveDataPoint(req, res);

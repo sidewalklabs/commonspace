@@ -1,5 +1,6 @@
 :host = http://localhost:3000
 :jwt = insert_your_jwt_here
+
 #
 :studies = :host/studies
 GET :studies
@@ -67,17 +68,27 @@ Content-Type: application/json
 } 
 
 #
-:surveyid = e473d7ea-d1b6-4d62-910a-c889b99bd33a
-:datapoints= :host/api/surveys/:surveyid/datapoints
+:surveyid = 34a8f647-6b35-4cf4-bd89-0fd4860410b5
+:datapoints = :host/api/surveys/:surveyid/datapoints/:dataPointId
+:dataPointId = f167b536-3c00-4204-8bce-61c6c87a11a3
 POST :datapoints
 Accept-Encoding: application/json
 Content-Type: application/json
+Authorization: bearer :jwt
 
 {
+  "data_point_id": ":dataPointId",
+  "location": {
+      "type":"Point",
+      "coordinates":[-117.6705479621887,33.54673140671231]
+   },
+   "color":"#EF6C00",
+   "title":"Person 12",
+   "date_label":"00:28",
+   "date":"2018-12-07T05:28:49.367Z"
 }
 #
-:surveyId = 301611c2-e467-4200-9e21-78cdb2123698
-:datapoints = :host/api/surveys/:surveyId/datapoints
+:datapoints = :host/api/surveys/:surveyid/datapoints
 GET :datapoints
 Accept-Encoding: application/json
 Content-Type: application/json
