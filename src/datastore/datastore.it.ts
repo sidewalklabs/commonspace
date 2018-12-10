@@ -1,4 +1,5 @@
 import * as dotenv from 'dotenv';
+import { Polygon } from 'geojson';
 import * as pg from 'pg';
 import * as uuid from 'uuid';
 
@@ -68,16 +69,9 @@ const simpleStudyInvalidUserId: Study = {
     userId: uuid.v4()
 }
 
-const location  = {
-    "locationId": "07ab155a-2b38-44a7-ad73-b6711b3d46b9",
-    "country": "canada",
-    "city": "Toronto",
-    "namePrimary": "Zone 3",
-    "subdivision": "west",
-    "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-            [
+const locatoinPolygon: Polygon = {
+    "type": "Polygon",
+    "coordinates": [[
               [
                 -79.34435606002809,
                 43.70395407191628
@@ -110,9 +104,16 @@ const location  = {
                 -79.34463769197465,
                 43.70377955976265
               ]
-            ]
-        ]
-    }
+    ]]
+}
+
+const location  = {
+    "locationId": "07ab155a-2b38-44a7-ad73-b6711b3d46b9",
+    "country": "canada",
+    "city": "Toronto",
+    "namePrimary": "Zone 3",
+    "subdivision": "west",
+    "geometry": locatoinPolygon
 }
 
 const surveyNearGarbage: Survey = {

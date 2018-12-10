@@ -1,5 +1,5 @@
 import * as pg from 'pg';
-import { FeatureCollection, Geometry } from 'geojson';
+import { Polygon } from 'geojson';
 
 export interface Location {
     locationId: string;
@@ -7,7 +7,7 @@ export interface Location {
     city?: string;
     namePrimary: string;
     subdivision?: string;
-    geometry: Geometry | FeatureCollection;
+    geometry: Polygon;
 }
 
 export async function createLocation(pool: pg.Pool, location: Location) {

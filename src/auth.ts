@@ -6,7 +6,7 @@ import * as passportLocal from 'passport-local';
 import GoogleTokenStrategy from './passport_strategies/GoogleTokenStrategy';
 import * as uuid from 'uuid';
 
-import { authenticateOAuthUser, createUser, findUser, findUserById, User } from './datastore';
+import { authenticateOAuthUser, createUser, findUser, findUserById, User } from './datastore/user';
 import DbPool from './database';
 
 import dotenv from 'dotenv';

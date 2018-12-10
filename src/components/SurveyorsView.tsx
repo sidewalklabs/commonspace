@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import Modal from '@material-ui/core/Modal';
@@ -16,7 +16,6 @@ import { observer } from 'mobx-react';
 
 import applicationState, { addNewSurveyorToSurvey } from '../stores/applicationState';
 import uiState from '../stores/ui';
-
 
 const styles = theme => ({
     smallColumn: {
@@ -63,6 +62,7 @@ export interface TextTableCellProps {
     onUpdate: (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement | HTMLSelectElement>) => void;
 }
 
+// @ts-ignore
 const TextTableCell = withStyles(styles)((props: TextTableCellProps & WithStyles) => {
     const { classes, displayText, onUpdate } = props;
     return (
@@ -85,6 +85,7 @@ interface SurveyorsViewProps {
     tableRows: React.Component[];
 }
 
+// @ts-ignore
 const Row = withStyles(styles)(observer(props => {
     const { email, classes } = props;
     return (
@@ -156,4 +157,5 @@ const SurveyorsView = observer((props: SurveyorsViewProps & WithStyles) => {
     )
 })
 
+// @ts-ignore
 export default withStyles(styles)(SurveyorsView);
