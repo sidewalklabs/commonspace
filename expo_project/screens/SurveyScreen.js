@@ -19,13 +19,12 @@ import MapWithMarkers from '../components/MapWithMarkers';
 import PersonIcon from '../components/PersonIcon';
 import Survey from '../components/Survey';
 import Layout from '../constants/Layout';
-import { firestore } from '../lib/firebaseSingleton';
 import * as uuid from 'uuid';
 
 import Theme from '../constants/Theme';
 import NoteModal from '../components/NoteModal';
 import MarkerMenu from '../components/MarkerMenu';
-import { getDataPointsforSurvey, saveDataPoint } from '../lib/commonsClient';
+import { deleteDataPoint, getDataPointsforSurvey, saveDataPoint } from '../lib/commonsClient';
 
 import { getRandomIconColor } from '../utils/color';
 
@@ -236,8 +235,7 @@ class SurveyScreen extends React.Component {
       this.setState({
         markers: markersCopy,
       });
-      saveDataPoint(token, surveyId, marker).then(() => {
-        console.log('success')});
+      saveDataPoint(token, surveyId, marker).then(() => {});
 
       if (heightToScroll) {
         const currentScrollPosition = this.state.formScrollPosition;
@@ -272,17 +270,9 @@ class SurveyScreen extends React.Component {
   }
 
   deleteMarker(dataPointId) {
-    const studyId = this.props.navigation.getParam('studyId');
     const surveyId = this.props.navigation.getParam('surveyId');
 
-    this.firestore
-      .collection('study')
-      .doc(studyId)
-      .collection('survey')
-      .doc(surveyId)
-      .collection('dataPoints')
-      .doc(dataPointId)
-      .delete()
+    deleteDataPoint(this.state.token, surveyId, dataPointId)
       .then(() => {
         // this callback is called regardless of whether a marker is deleted or not :/
         const newMarkers = _.reject(this.state.markers, {
@@ -297,7 +287,7 @@ class SurveyScreen extends React.Component {
         });
       })
       .catch(function(error) {
-        console.error('Error removing document: ', error);
+        console.error('Error removing datapoint: ', error);
       });
     this.resetDrawer(MAX_DRAWER_TRANSLATE_Y);
   }
@@ -325,21 +315,16 @@ class SurveyScreen extends React.Component {
         dateLabel,
         date: date.format(),
       };
-      this.firestore
-        .collection('study')
-        .doc(studyId)
-        .collection('survey')
-        .doc(surveyId)
-        .collection('dataPoints')
-        .doc(dataPointId)
-        .set(duplicateMarker)
-        .then(doc => {
-          markersCopy.push(duplicateMarker);
-          this.setState({
-            markers: markersCopy,
-            activeMarkerId: dataPointId,
-          });
-        });
+
+      markersCopy.push(duplicateMarker);
+      saveDataPoint(this.state.token, surveyId, duplicateMarker).
+      then(() => {
+        this.setState({ markers: markersCopy, activeMarkerId: dataPointId }, this.resetDrawer);
+      })
+      .catch((error) => {
+        markersCopy.pop();
+        this.setState({ markers: markersCopy, activeMarkerId: dataPointId }, this.resetDrawer);
+      });
     }
   }
 
@@ -355,11 +340,11 @@ class SurveyScreen extends React.Component {
   createNewMarker(location, color) {
     const studyId = this.props.navigation.getParam('studyId');
     const surveyId = this.props.navigation.getParam('surveyId');
-    const markersCopy = [...this.state.markers];
+    const { markers } = this.state;
     // todo creation date vs latest update date? how do we handle the numbering later w/o creation?
     const date = moment();
     const dateLabel = date.format('HH:mm');
-    const title = 'Person ' + (markersCopy.length + 1);
+    const title = 'Person ' + (markers.length + 1);
     const dataPointId = uuid.v4();
 
     const marker = {
@@ -371,17 +356,12 @@ class SurveyScreen extends React.Component {
       date: date.toISOString(),
     };
 
-    // TODO (Seabass or Ananta): Figure out a way to get faster UI feedback
-    // Would be nice for UI to optimistically render before firestore returns
     saveDataPoint(this.state.token, surveyId, marker).
       then(() => {
-        markersCopy.push(marker);
-        this.setState({ markers: markersCopy, activeMarkerId: dataPointId }, this.resetDrawer);
+        this.setState({ markers: [...markers, marker], activeMarkerId: dataPointId }, this.resetDrawer);
       })
       .catch((error) => {
-        // remove markers
-        //markersCopy.pop();
-        this.setState({ markers: markersCopy, activeMarkerId: dataPointId }, this.resetDrawer);
+        this.setState({ markers, activeMarkerId: dataPointId }, this.resetDrawer);
       });
   }
 
@@ -437,7 +417,7 @@ class SurveyScreen extends React.Component {
                 </View>
                 <View style={styles.titleContainer}>
                   <Text style={styles.title}>{activeMarker.title}</Text>
-                  <Text>{activeMarker.date}</Text>
+                  <Text>{activeMarker.dateLabel}</Text>
                 </View>
                 <TouchableOpacity
                   style={styles.markerMenuButton}

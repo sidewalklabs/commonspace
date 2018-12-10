@@ -4,7 +4,6 @@ import { withNavigation } from 'react-navigation';
 import { Button, Paragraph, Title } from 'react-native-paper';
 import Theme from '../constants/Theme';
 import { Icon } from 'expo';
-import firebase from '../lib/firebaseSingleton';
 
 class AuthScreen extends React.Component {
   static navigationOptions = {
@@ -27,8 +26,6 @@ class AuthScreen extends React.Component {
         scopes: ['profile', 'email'],
       });
       if (type === 'success') {
-        // Build Firebase credential with the access token.
-        // post in body access_token
         const resp = await fetch(
           'https://commons-staging.sidewalklabs.com/auth/google/token',
           {
@@ -45,8 +42,6 @@ class AuthScreen extends React.Component {
         );
         const body = await resp.json();
 
-        // set token for next session, then navigate to the internal app
-        //await AsyncStorage.setItem('userEmail', firebaseSignInResult.user.email);
         console.log(body.token);
         await AsyncStorage.setItem('token', body.token);
 

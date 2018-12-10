@@ -156,8 +156,8 @@ function transformToPostgresInsert(surveyId: string, dataPoint) {
     const { columns, values, parameterBindings } = processKeyAndValues(dataPointForPostgres);
     const insert_statement = `(${(columns.join(', '))}) VALUES (${parameterBindings.join(', ')})`;
     const query = `${insert_statement}
-            ON CONFLICT(data_point_id)
-            DO UPDATE SET(${(columns.join(', '))}) = (${parameterBindings.join(', ')})`;
+                   ON CONFLICT(data_point_id)
+                   DO UPDATE SET(${(columns.join(', '))}) = (${parameterBindings.join(', ')})`;
     return { query, values };
 }
 
@@ -192,7 +192,7 @@ export async function addDataPointToSurveyWithStudyId(pool: pg.Pool, studyId: st
 export async function retrieveDataPointsForSurvey(pool, surveyId) {
     const tablename = await getTablenameForSurveyId(pool, surveyId);
     const query = `SELECT data_point_id, gender, age, mode, posture, activities, groups, object, creation_date, last_updated, ST_AsGeoJSON(location)::json as loc, note
-                   FROM ${tablename}`
+                   FROM ${tablename}`;
     try {
         const res = await pool.query(query);
         return res.rows.map(r => {
@@ -204,7 +204,7 @@ export async function retrieveDataPointsForSurvey(pool, surveyId) {
             };
         });;
     } catch (error) {
-        console.error(`[sql ${query}] ${error}`)
+        console.error(`[sql ${query}] ${error}`);
         throw error;
     }
 }
