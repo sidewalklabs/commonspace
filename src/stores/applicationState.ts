@@ -6,7 +6,7 @@ import uuid from 'uuid';
 import { AUTH, FIRESTORE } from '../web.config';
 
 import { groupArrayOfObjectsBy } from '../utils';
-import { surveysForStudy } from '../datastore';
+import { surveysForStudy } from '../datastore/study';
 import { FeatureCollection } from 'geojson';
 
 import {  snakecasePayload } from '../utils';

@@ -37,6 +37,7 @@ const styles = theme => ({
     }
 })
 
+// @ts-ignore
 const SignUpView = withStyles(styles)(observer((props: WithStyles) => {
     const { classes } = props;
     return (

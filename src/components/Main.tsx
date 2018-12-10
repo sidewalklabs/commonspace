@@ -111,7 +111,7 @@ function prepareNewStudy() {
     visualizeNewStudy()
 }
 
-const Main: (props: MainProps & WithStyles) => React.Component = observer(
+const Main = observer(
     (props: MainProps & WithStyles) => {
         const { drawerOpen } = uiState;
         const { applicationState, classes } = props;
@@ -197,4 +197,5 @@ const Main: (props: MainProps & WithStyles) => React.Component = observer(
     }
 );
 
+// @ts-ignore
 export default withStyles(styles)(Main);

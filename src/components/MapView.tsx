@@ -158,4 +158,5 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
     );
 });
 
+// @ts-ignore
 export default withStyles(styles)(MapView);

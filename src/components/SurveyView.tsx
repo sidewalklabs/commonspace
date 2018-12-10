@@ -118,6 +118,7 @@ interface SurveyRowProps {
         endDate: string;
         locationId: string;
         surveyorEmail: string;
+        title: string;
     };
     features: Feature[];
 }

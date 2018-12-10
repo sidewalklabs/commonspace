@@ -16,10 +16,10 @@ async function transitionToViewStudy(study) {
 export default observer((props: any & WithStyles) => {
     const { classes } = props;
     const listItems = Object.values(applicationState.studies).map(study => {
-        const { studyId, title, authorName } = study;
+        const { studyId, title } = study;
         return (
             <ListItem button key={studyId} onClick={async () => await transitionToViewStudy(study)}>
-                <ListItemText primary={title} secondary={authorName} />
+                <ListItemText primary={title} />
             </ListItem>
         );
     });

@@ -55,7 +55,6 @@ export interface Survey {
     temperature_celcius?: string;
     method: string;
     notes?: string;
-
 }
 
 

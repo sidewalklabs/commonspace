@@ -53,6 +53,7 @@ interface CreateOrUpdateButtonProps {
     studyIsNew: boolean;
 }
 
+// @ts-ignore
 const CreateOrUpdateButton = withStyles(styles)((props: CreateOrUpdateButtonProps & WithStyles) => {
     const { studyIsNew, study, classes } = props;
     if (studyIsNew) {
@@ -173,4 +174,5 @@ const StudyView = observer((props: any & WithStyles) => {
     return null;
 });
 
+// @ts-ignore
 export default withStyles(styles)(StudyView);
