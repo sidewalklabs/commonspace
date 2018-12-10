@@ -64,7 +64,7 @@ CREATE TYPE object AS ENUM ('animal', 'bag_carried', 'clothing_cultural', 'cloth
 
 CREATE TABLE IF NOT EXISTS surveyors (
     user_id UUID references public.users(user_id) NOT NULL,
-    study_id UUID references study(study_id) NOT NULL,
+    study_id UUID references study(study_id) ON DELETE CASCADE NOT NULL,
     PRIMARY KEY(study_id, user_id)
 );
 
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS surveyors (
 --  no user tied to this? I guess anonymous surveys are a thing, what about fake data?
 -- TODO should id have default uuid function call?
 CREATE TABLE IF NOT EXISTS survey (
-    study_id UUID references study(study_id) NOT NULL,
+    study_id UUID references study(study_id) ON DELETE CASCADE NOT NULL,
     title TEXT,
     location_id UUID,
     survey_id UUID PRIMARY KEY,
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS survey (
     temperature_c FLOAT,
     method TEXT NOT NULL,
     user_id UUID references public.users(user_id),
-    FOREIGN KEY (study_id, user_id) references surveyors (study_id, user_id),
+    FOREIGN KEY (study_id, user_id) references surveyors (study_id, user_id) ON DELETE CASCADE,
     notes TEXT
 );
 

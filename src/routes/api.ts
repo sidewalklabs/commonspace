@@ -2,11 +2,15 @@ import camelcaseKeys from 'camelcase-keys';
 import express from 'express';
 import fetch from 'node-fetch';
 import passport from 'passport';
+import { NOT_NULL_VIOLATION, UNIQUE_VIOLATION } from 'pg-error-constants';
 import uuid from 'uuid';
 
-import { NOT_NULL_VIOLATION, UNIQUE_VIOLATION } from 'pg-error-constants';
-
-import { createNewSurveyForStudy, createStudy, deleteDataPoint, deleteStudy, giveUserStudyAccess, returnStudiesForAdmin, returnStudiesUserIsAssignedTo, surveysForStudy, updateSurvey, GehlFields, createLocation, StudyType, checkUserIdIsSurveyor, addDataPointToSurveyNoStudyId, retrieveDataPointsForSurvey, userIsAdminOfStudy } from '../datastore';
+import { addDataPointToSurveyNoStudyId, deleteDataPoint, retrieveDataPointsForSurvey  } from '../datastore/datapoint';
+import { ActivityCountField } from '../datastore/utils';
+import { checkUserIdIsSurveyor, createStudy, deleteStudy, giveUserStudyAccess, returnStudiesForAdmin, returnStudiesUserIsAssignedTo, surveysForStudy, StudyType } from '../datastore/study';
+import { createNewSurveyForStudy, updateSurvey } from '../datastore/survey';
+import { userIsAdminOfStudy } from '../datastore/user';
+import { createLocation } from '../datastore/location';
 import DbPool from '../database';
 import { Feature, FeatureCollection, Point } from 'geojson';
 import { snakecasePayload } from '../utils';
@@ -55,7 +59,7 @@ export interface Survey {
 }
 
 
-const STUDY_FIELDS: GehlFields[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'note'];
+const STUDY_FIELDS: ActivityCountField[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'note'];
 
 function return500OnError(f) {
     return async (req, res) => {
@@ -159,7 +163,7 @@ router.put('/surveys/:surveyId/datapoints/:dataPointId', return500OnError((req, 
     return saveDataPoint(req, res);
 }));
 
-router.delete('/surveys/:surverId/datapoints/:dataPointId', return500OnError(async (req, res) => {
+router.delete('/surveys/:surveyId/datapoints/:dataPointId', return500OnError(async (req, res) => {
     const { surveyId, dataPointId } = req.params;
     await deleteDataPoint(DbPool, surveyId, dataPointId);
     res.status(200).send();
