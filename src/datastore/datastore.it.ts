@@ -2,7 +2,12 @@ import * as dotenv from 'dotenv';
 import * as pg from 'pg';
 import * as uuid from 'uuid';
 
-import { addDataPointToSurveyNoStudyId, addDataPointToSurveyWithStudyId, authenticateOAuthUser, getTablenameForSurveyId, createLocation, createStudy, createNewSurveyForStudy, createUser, deleteDataPoint, deleteStudy, giveUserStudyAccess, Location, Study, Survey, User, checkUserIdIsSurveyor } from './datastore';
+import { addDataPointToSurveyNoStudyId, addDataPointToSurveyWithStudyId, deleteDataPoint } from './datapoint';
+import { checkUserIdIsSurveyor, createStudy, deleteStudy, giveUserStudyAccess, Study } from './study';
+import { createNewSurveyForStudy, Survey } from './survey';
+import { authenticateOAuthUser, createUser, User } from './user';
+
+import { createLocation, Location } from './location';
 
 dotenv.config();
 
