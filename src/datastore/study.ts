@@ -3,7 +3,7 @@ import { FeatureCollection } from 'geojson';
 import { FOREIGN_KEY_VIOLATION } from 'pg-error-constants';
 
 import { createUserFromEmail } from './user';
-import { studyIdToTablename, ActivityCountField } from './utils'; 
+import { javascriptArrayToPostgresArray, studyIdToTablename, ActivityCountField } from './utils';
 
 export type StudyScale = 'district' | 'city' | 'cityCentre' | 'neighborhood' | 'blockScale' | 'singleSite';
 export type StudyType = 'activity' | 'movement';
@@ -21,6 +21,7 @@ export interface Study {
     type: 'activity' | 'movement';
     map?: FeatureCollection;
     protocolVersion: string;
+    fields: ActivityCountField[];
     notes?: string;
 }
 
@@ -49,20 +50,18 @@ function gehlFieldAsPgColumn(field: ActivityCountField) {
             return 'location geometry NOT NULL';
         case 'note':
             return 'note text';
-        case 'creation_date':
-            return 'creation_date timestamptz';
-        case 'last_updated':
-            return 'last_updated timestamptz';
         default:
             throw new Error(`Unrecognized field for activity study: ${field}`);
     }
 }
 
-function createNewTableFromActivityCountFields(study: Study, tablename: string, fields: ActivityCountField[]) {
-    const additionalColumns = fields.map(gehlFieldAsPgColumn).join(',\n');
+function createNewTableFromActivityCountFields(study: Study, tablename: string) {
+    const additionalColumns = study.fields.map(gehlFieldAsPgColumn).join(',\n');
     return `CREATE TABLE ${tablename} (
                     survey_id UUID references data_collection.survey(survey_id) ON DELETE CASCADE NOT NULL,
                     data_point_id UUID PRIMARY KEY NOT NULL,
+                    creation_date timestamptz,
+                    last_updated timestamptz,
                     ${additionalColumns} 
                     )`;
 }
@@ -87,6 +86,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                         stu.protocol_version,
                         stu.map,
                         stu.study_type,
+                        stu.fields,
                         sas.emails
                     FROM
                         data_collection.study AS stu
@@ -96,10 +96,11 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                         stu.user_id='${userId}'`;
     try {
         const { rows } = await pool.query(query);
-        const studiesForUser = rows.map(({study_id, title, protocol_version, study_type: type, emails, map}) => {
+        const studiesForUser = rows.map(({study_id, title, protocol_version, study_type: type, fields, emails, map}) => {
             const surveyors = emails && emails.length > 0 ? emails : [];
             return {
                 study_id,
+                fields,
                 title,
                 protocol_version,
                 map,
@@ -115,7 +116,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
 }
   
 export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: string) {
-   const query = `SELECT stu.study_id, stu.title as study_title, stu.protocol_version, stu.study_type, stu.map, svy.survey_id, svy.title as survey_title, svy.time_start, svy.time_stop, ST_AsGeoJSON(loc.geometry)::json as survey_location
+   const query = `SELECT stu.study_id, stu.title as study_title, stu.protocol_version, stu.study_type, stu.fields, stu.map, svy.survey_id, svy.title as survey_title, svy.time_start, svy.time_stop, ST_AsGeoJSON(loc.geometry)::json as survey_location
                  FROM data_collection.survey as svy
                  JOIN data_collection.study as stu
                  ON svy.study_id = stu.study_id
@@ -130,6 +131,7 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
                 study_title,
                 protocol_version,
                 study_type,
+                fields,
                 survey_id,
                 survey_title,
                 time_start: start_date,
@@ -141,6 +143,7 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
                 study_title,
                 protocol_version,
                 study_type,
+                fields,
                 survey_id,
                 survey_title,
                 start_date,
@@ -211,13 +214,14 @@ export async function deleteStudy(pool: pg.Pool, studyId: string) {
     }
 }
 
-export async function createStudy(pool: pg.Pool, study: Study, fields: ActivityCountField[]) {
+export async function createStudy(pool: pg.Pool, study: Study) {
     // for some unknown reason import * as uuidv4 from 'uuid/v4'; uuidv4(); fails in gcp, saying that it's not a function call
     const studyTablename = studyIdToTablename(study.studyId);
-    const newStudyDataTableQuery = createNewTableFromActivityCountFields(study, studyTablename, fields);
+    const newStudyDataTableQuery = createNewTableFromActivityCountFields(study, studyTablename);
+    const fields = javascriptArrayToPostgresArray(study.fields);
     const { studyId, title, userId, protocolVersion, type, map={} } = study;
-    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, protocol_version, study_type, table_definition, tablename, map)
-                                   VALUES('${studyId}', '${title}', '${userId}', '${protocolVersion}',  '${type}', '${JSON.stringify(fields)}', '${studyTablename}', '${JSON.stringify(map)}')`;
+    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, protocol_version, study_type, fields, tablename, map)
+                                   VALUES('${studyId}', '${title}', '${userId}', '${protocolVersion}',  '${type}', '${fields}', '${studyTablename}', '${JSON.stringify(map)}')`;
     // we want the foreign constraint to fail if we've already created a study with the specified ID
     let studyResult, newStudyDataTable;
     try {

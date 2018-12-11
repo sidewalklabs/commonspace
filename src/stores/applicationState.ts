@@ -3,8 +3,6 @@ import { observable, autorun, toJS, get, set } from 'mobx';
 import moment from 'moment';
 import uuid from 'uuid';
 
-import { AUTH, FIRESTORE } from '../web.config';
-
 import { groupArrayOfObjectsBy } from '../utils';
 import { surveysForStudy } from '../datastore/study';
 import { FeatureCollection } from 'geojson';
@@ -18,6 +16,7 @@ export interface Study {
     surveyors: string[];
     title: string;
     type: 'activity' | 'movement';
+    fields: string[];
     map: FeatureCollection;
 }
 
@@ -134,7 +133,8 @@ export async function setCurrentStudyEmptySkeleton() {
         map: {
             type: 'FeatureCollection',
             features: []
-        }
+        },
+        fields: ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'note']
     }
     applicationState.currentStudy = applicationState.studies[studyId];
 }

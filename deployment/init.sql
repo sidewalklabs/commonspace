@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS study
     user_id UUID REFERENCES public.users(user_id) NOT NULL,
     protocol_version TEXT NOT NULL,
     study_type studyType NOT NULL,
-    table_definition JSON,
+    fields VARCHAR[],
     tablename VARCHAR(63),
     map JSON,
     notes TEXT
