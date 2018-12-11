@@ -18,7 +18,7 @@ const validDataPointProperties = new Set([
 ]);
 
 
-const allActivityCountFieldsArray: ActivityCountField[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'creation_date', 'last_updated', 'note'];
+const allActivityCountFieldsArray: ActivityCountField[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'note'];
 const allActivityCountFields: Set<ActivityCountField> = new Set(allActivityCountFieldsArray);
 const allActivityCountFieldsStrings: Set<string> = allActivityCountFields;
 
@@ -33,18 +33,18 @@ function wrapInArray<T>(x: T | T[]) {
 export async function getTablenameForSurveyId(pool: pg.Pool, surveyId: string) {
     const query = `SELECT tablename
                    FROM  data_collection.survey_to_tablename
-                   WHERE survey_id = '${surveyId}'`;
-    let pgRes;
+                   WHERE survey_id = $1`;
+    const values = [surveyId];
     try {
-        pgRes = await pool.query(query);
+        const pgRes = await pool.query(query, values);
+        if (pgRes.rowCount === 1) {
+            return pgRes.rows[0]['tablename'];
+        } else {
+            throw new Error(`no tablename found for surveyId: ${surveyId}`);
+        }
     } catch (error) {
-        console.error(`postgres error: ${error} for query: ${query} `);
+        console.error(`[query ${query}] [values ${values}] ${error}`);
         throw error;
-    }
-    if (pgRes.rowCount === 1) {
-        return pgRes.rows[0]['tablename'];
-    } else {
-        throw new Error(`no tablename found for surveyId: ${surveyId}, ${JSON.stringify(pgRes)}`);
     }
 }
 
@@ -212,9 +212,10 @@ export async function retrieveDataPointsForSurvey(pool, surveyId) {
 export async function deleteDataPoint(pool: pg.Pool, surveyId: string, dataPointId: any) {
     const tablename = await getTablenameForSurveyId(pool, surveyId);
     const query = `DELETE FROM ${tablename}
-                   WHERE data_point_id = '${dataPointId}'`;
+                   WHERE data_point_id = $1`;
+    const values = [dataPointId];
     try {
-        const res = await pool.query(query);
+        const res = await pool.query(query, values);
         const { rowCount } = res;
         if (rowCount !== 1) {
             throw new Error(`[query ${query}] No data point found to delete for data_point_id: ${dataPointId}`)
