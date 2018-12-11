@@ -51,6 +51,7 @@ const thorncliffeParkStudy: Study = {
     type: 'activity',
     studyId: uuid.v4(),
     protocolVersion: '1.0',
+    fields: ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'note'],
     userId: sebastian.userId
 }
 const simpleStudy: Study = {
@@ -58,6 +59,7 @@ const simpleStudy: Study = {
     type: 'activity',
     studyId: uuid.v4(),
     protocolVersion: '1.0',
+    fields: ['gender', 'location'],
     userId: sebastian.userId
 }
 
@@ -66,6 +68,7 @@ const simpleStudyInvalidUserId: Study = {
     type: 'activity',
     studyId: uuid.v4(),
     protocolVersion: '1.0',
+    fields: ['gender', 'location'],
     userId: uuid.v4()
 }
 
@@ -129,7 +132,7 @@ const surveyNearGarbage: Survey = {
 
 async function seedDatabase() {
     const { rowCount, command } = await createUser(pool, sebastian);
-    const [studyPgResult, newTablePgResult] = await createStudy(pool, thorncliffeParkStudy, ['gender', 'location']);
+    const [studyPgResult, newTablePgResult] = await createStudy(pool, thorncliffeParkStudy );
 }
 
 test('save new user', async () => {
@@ -151,7 +154,7 @@ test('saving user with an OAuth account, should return the same value whether us
 });
 
 test('save new study', async () => {
-    const [studyPgResult, newTablePgResult] = await createStudy(pool, simpleStudy, ['gender', 'location']);
+    const [studyPgResult, newTablePgResult] = await createStudy(pool, simpleStudy);
 
     let { rowCount, command } = studyPgResult;
     expect(rowCount).toBe(1);
@@ -160,7 +163,7 @@ test('save new study', async () => {
 });
 
 test('save new study with all possible fields', async () => {
-    const [studyPgResult, newTablePgResult] = await createStudy(pool, thorncliffeParkStudy, ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'creation_date', 'last_updated', 'note']);
+    const [studyPgResult, newTablePgResult] = await createStudy(pool, thorncliffeParkStudy, );
 
     let { rowCount, command } = studyPgResult;
     expect(rowCount).toBe(1);
@@ -175,7 +178,7 @@ test('save location', async () => {
 });
 
 test('saving study with a nonexistent user errors', async () => {
-    await expect(createStudy(pool, simpleStudyInvalidUserId, ['gender', 'location']))
+    await expect(createStudy(pool, simpleStudyInvalidUserId)
         .rejects
         .toThrowError('insert or update on table "study" violates foreign key constraint "study_user_id_fkey"');
 });
@@ -314,8 +317,6 @@ test('save a data point with a single activity', async () => {
     const { rowCount, command } = await addDataPointToSurveyNoStudyId(pool, surveyNearGarbage.surveyId, dataPoint);
     expect(rowCount).toBe(1);
     expect(command).toBe('INSERT');
-
-
 });
 
 test('save a data point with multiple activities', async () => {

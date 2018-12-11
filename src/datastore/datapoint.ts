@@ -1,5 +1,5 @@
 import * as pg from 'pg';
-import { studyIdToTablename, ActivityCountField } from './utils'; 
+import { javascriptArrayToPostgresArray, studyIdToTablename, ActivityCountField } from './utils';
 
 const validDataPointProperties = new Set([
     'survey_id',
@@ -22,6 +22,13 @@ const allActivityCountFieldsArray: ActivityCountField[] = ['gender', 'age', 'mod
 const allActivityCountFields: Set<ActivityCountField> = new Set(allActivityCountFieldsArray);
 const allActivityCountFieldsStrings: Set<string> = allActivityCountFields;
 
+function wrapInArray<T>(x: T | T[]) {
+    if (Array.isArray(x)) {
+        return x;
+    } else {
+        return [x];
+    }
+}
 
 export async function getTablenameForSurveyId(pool: pg.Pool, surveyId: string) {
     const query = `SELECT tablename
@@ -40,25 +47,6 @@ export async function getTablenameForSurveyId(pool: pg.Pool, surveyId: string) {
         throw new Error(`no tablename found for surveyId: ${surveyId}, ${JSON.stringify(pgRes)}`);
     }
 }
-
-export function javascriptArrayToPostgresArray(xs) {
-    const arrayElements = xs.map(x => {
-        if (x === null) {
-            throw new Error(`Cannot convert ${JSON.stringify(xs)} into a postgres array because the array contrains the value null.`)
-        }
-        else if (typeof x === 'string') {
-            return `${x}`;
-        } else if (Array.isArray(x)) {
-            return `${javascriptArrayToPostgresArray(x)}`
-        } else if (typeof x === 'object') {
-            return x.toString();
-        } else {
-            return x;
-        }
-    }).join(', ');
-    return `{${arrayElements}}`;
-}
-
 
 function processDataPointToValue(key, value): any[] | any {
     if (key === 'location') {
@@ -100,8 +88,8 @@ function processDataPointToValue(key, value): any[] | any {
         }
     } else if (key === 'activities') {
         const activities = value;
-        const activitesAsArr = Array.isArray(activities) ? activities : [activities];
-        return `${javascriptArrayToPostgresArray(activitesAsArr)}`;
+        const activitesAsArr = javascriptArrayToPostgresArray(wrapInArray(activities));
+        return `${activitesAsArr}`;
     } else if (validDataPointProperties.has(key)) {
         // if (value === null || value === undefined) {
         //     return '';
@@ -110,14 +98,6 @@ function processDataPointToValue(key, value): any[] | any {
         //return value;
     } else {
         throw new Error(`Unexpected key ${key} in data point`);
-    }
-}
-
-function wrapInArray<T>(x: T | T[]) {
-    if (Array.isArray(x)) {
-        return x;
-    } else {
-        return [x];
     }
 }
 

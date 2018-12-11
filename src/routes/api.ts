@@ -40,6 +40,7 @@ export interface Study {
     type: StudyType;
     map?: FeatureCollection;
     surveys?: Survey[];
+    fields: ActivityCountField[];
 }
 
 export interface Survey {
@@ -68,6 +69,7 @@ function return500OnError(f) {
         } catch (error) {
             console.error(`[body ${JSON.stringify(req.body)}] ${error}`);
             res.status(500).send();
+            throw error;
         }
     }
 }
@@ -77,7 +79,7 @@ router.use(passport.authenticate('jwt', {session: false}))
 router.get('/studies', return500OnError(async (req, res) => {
     const { type = 'all' } = req.query;
     const { user_id: userId } = req.user;
-    let responseBody: Study[] = []
+    let responseBody: Study[];
     if (type === 'admin') {
         responseBody = await returnStudiesForAdmin(DbPool, userId)
     } else if (type === 'surveyor') {
@@ -89,6 +91,47 @@ router.get('/studies', return500OnError(async (req, res) => {
         responseBody = adminStudies.concat(suveyorStudies);
     }
     res.send(responseBody);
+}));
+
+router.post('/studies', return500OnError(async (req, res) => {
+    const { user_id: userId } = req.user;
+    const {protocol_version: protocolVersion, study_id: studyId, title, type, surveyors, surveys = [], map, fields} = req.body as Study;
+    try {
+        await createStudy(DbPool, { studyId, title, protocolVersion, userId, type, map, fields});
+    } catch (error) {
+        const {code, detail} = error;
+        if (code === UNIQUE_VIOLATION) {
+            res.statusMessage = 'survey_id not valid';
+            res.status(409).send();
+        }
+        throw error;
+    }
+    const newUserIds = await Promise.all(
+        surveyors.map(async email => {
+            const [_, newUserId] = await giveUserStudyAccess(DbPool, email, studyId)
+            return newUserId;
+        })
+    );
+    if (map) {
+        const surveyZoneIds = await Promise.all(
+            map.features.map(saveGeoJsonFeatureAsLocation)
+        )
+    }
+    try {
+        await Promise.all(
+            surveys.map(async survey => {
+                return createNewSurveyForStudy(DbPool, camelcaseKeys({studyId, ...survey, userEmail: survey.surveyor_email}))
+            })
+        )
+    } catch(error) {
+        console.error(error);
+
+        if (error.code === NOT_NULL_VIOLATION ) {
+            res.status(400).send();
+            return;
+        }
+    }
+        res.send(req.body)
 }));
 
 router.delete('/studies/:studyId', return500OnError(async (req, res) => {
@@ -166,47 +209,6 @@ router.delete('/surveys/:surveyId/datapoints/:dataPointId', return500OnError(asy
     const { surveyId, dataPointId } = req.params;
     await deleteDataPoint(DbPool, surveyId, dataPointId);
     res.status(200).send();
-}));
-
-router.post('/studies', return500OnError(async (req, res) => {
-    const { user_id: userId } = req.user;
-    const {protocol_version: protocolVersion, study_id: studyId, title, type, surveyors, surveys = [], map} = req.body as Study;
-    try {
-        await createStudy(DbPool, { studyId, title, protocolVersion, userId, type, map}, STUDY_FIELDS);
-    } catch (error) {
-        const {code, detail} = error;
-        if (code === UNIQUE_VIOLATION) {
-            res.statusMessage = 'survey_id not valid';
-            res.status(409).send();
-        }
-        throw error;
-    }
-    const newUserIds = await Promise.all(
-        surveyors.map(async email => {
-            const [_, newUserId] = await giveUserStudyAccess(DbPool, email, studyId)
-            return newUserId;
-        })
-    );
-    if (map) {
-        const surveyZoneIds = await Promise.all(
-            map.features.map(saveGeoJsonFeatureAsLocation)
-        )
-    }
-    try {
-        await Promise.all(
-            surveys.map(async survey => {
-                return createNewSurveyForStudy(DbPool, camelcaseKeys({studyId, ...survey, userEmail: survey.surveyor_email}))
-            })
-        )
-    } catch(error) {
-        console.error(error);
-
-        if (error.code === NOT_NULL_VIOLATION ) {
-            res.status(400).send();
-            return;
-        }
-    }
-        res.send(req.body)
 }));
 
 router.get('/studies/:studyId/surveys', return500OnError(async (req, res) => {
