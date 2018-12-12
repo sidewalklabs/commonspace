@@ -221,19 +221,19 @@ export async function createStudy(pool: pg.Pool, study: Study) {
     const fields = javascriptArrayToPostgresArray(study.fields);
     const { studyId, title, userId, protocolVersion, type, map={} } = study;
     const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, protocol_version, study_type, fields, tablename, map)
-                                   VALUES('${studyId}', '${title}', '${userId}', '${protocolVersion}',  '${type}', '${fields}', '${studyTablename}', '${JSON.stringify(map)}')`;
-    // we want the foreign constraint to fail if we've already created a study with the specified ID
+                                   VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
+    const newStudyMetadataValues = [studyId, title, userId, protocolVersion, type, fields, studyTablename, JSON.stringify(map)];
     let studyResult, newStudyDataTable;
     try {
         studyResult = await pool.query(newStudyMetadataQuery);
     } catch (error) {
-        console.error(`for studyId: ${study.studyId}, ${error}, ${newStudyMetadataQuery}`);
+        console.error(`[sql ${newStudyMetadataQuery}] ${error}`);
         throw error;
     }
     try {
-        newStudyDataTable = await pool.query(newStudyDataTableQuery);
+        newStudyDataTable = await pool.query(newStudyDataTableQuery, newStudyMetadataValues);
     } catch (error) {
-        console.error(`for studyId: ${study.studyId}, ${error}, ${newStudyDataTableQuery}`);
+        console.error(`[query ${newStudyMetadataQuery}][values ${JSON.stringify(newStudyMetadataValues)}] ${error}`);
         throw error;
     }
     return [studyResult, newStudyDataTable];
@@ -242,11 +242,12 @@ export async function createStudy(pool: pg.Pool, study: Study) {
 export async function giveUserStudyAccess(pool: pg.Pool, userEmail: string, studyId: string) {
     const query = `INSERT INTO data_collection.surveyors
                    (SELECT coalesce
-                      ((SELECT pu.user_id FROM public.users pu WHERE pu.email = '${userEmail}'),
+                      ((SELECT pu.user_id FROM public.users pu WHERE pu.email = $1),
                       '00000000-0000-0000-0000-000000000000'),
-                   '${studyId}')`
+                   $2)`
+    const values = [userEmail, studyId];
     try {
-        const pgRes = await pool.query(query);
+        const pgRes = await pool.query(query, values);
         return [pgRes, null];
     } catch (error) {
         if (error.code === FOREIGN_KEY_VIOLATION) {
@@ -254,7 +255,7 @@ export async function giveUserStudyAccess(pool: pg.Pool, userEmail: string, stud
             const pgRes2 = await pool.query(query);
             return [pgRes2, newUserId];
         }
-        console.error(`postgres error: ${JSON.stringify(error)}`);
+        console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
         throw error;
     }
 }
@@ -271,7 +272,7 @@ export async function checkUserIdIsSurveyor(pool: pg.Pool, userId: string, surve
         }
         return true
     } catch (error) {
-        console.error(`[sql ${query}] ${error}`);
+        console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
         throw error;
     }
 }
