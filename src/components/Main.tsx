@@ -8,6 +8,7 @@ import Avatar from '@material-ui/core/Avatar';
 import Icon from '@material-ui/core/Icon';
 import Toolbar from '@material-ui/core/Toolbar';
 import List from '@material-ui/core/List';
+import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
@@ -108,7 +109,22 @@ const Main = observer(
                 </AppBar>
                 {
                     token ?
-                        null
+                        <Paper>
+                            <div>
+                                <Typography
+                                    component="h1"
+                                    variant="title"
+                                    color="inherit"
+                                    noWrap
+                                    className={classes.title}
+                                >
+                                    All Studies
+                            </Typography>
+                            </div>
+                            <List>
+                                <StudiesList />
+                            </List>
+                        </Paper>
                         :
                         uiState.mode === AuthMode.Login ?
                             <LoginView /> :
@@ -131,9 +147,7 @@ const Main = observer(
                 </IconButton>
                 </div>
                 <Divider />
-                <List>
-                <StudiesList />
-                </List>
+                
                 <Icon className={classes.icon} color="primary" fontSize="large" onClick={() => prepareNewStudy()}>
                 add_circle
                 </Icon>
