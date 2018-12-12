@@ -80,7 +80,7 @@ export async function authenticateOAuthUser(pool: pg.Pool, email: string) {
                    DO UPDATE SET email=EXCLUDED.email RETURNING user_id`;
     const values = [userId, email];
     try {
-        const {rowCount, rows, command} = await pool.query(query);
+        const {rowCount, rows, command} = await pool.query(query, values);
         if (rowCount !== 1 && command !== 'INSERT') {
             throw new Error(`error OAuth authentication for email ${email}`);
         }
@@ -97,7 +97,7 @@ export async function createUserFromEmail(pool: pg.Pool, email: string) {
                    VALUES($1, $2)`;
     const values = [userId, email];
     try {
-        await pool.query(query);
+        await pool.query(query, values);
         return userId;
     } catch (error) {
         console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);

@@ -93,9 +93,10 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                         LEFT JOIN study_and_surveyors AS sas
                         ON stu.study_id = sas.study_id
                     WHERE
-                        stu.user_id='${userId}'`;
+                        stu.user_id=$1`;
+    const values = [userId];
     try {
-        const { rows } = await pool.query(query);
+        const { rows } = await pool.query(query, values);
         const studiesForUser = rows.map(({study_id, title, protocol_version, study_type: type, fields, emails, map}) => {
             const surveyors = emails && emails.length > 0 ? emails : [];
             return {
@@ -122,9 +123,10 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
                  ON svy.study_id = stu.study_id
                  JOIN data_collection.location as loc
                  ON svy.location_id = loc.location_id
-                 WHERE svy.user_id = '${userId}'`;
+                 WHERE svy.user_id = $1`;
+    const values = [userId]; 
     try {
-        const {rows}  = await pool.query(query);
+        const {rows}  = await pool.query(query, values);
         const studiesAndSurveys = rows.map((row) => {
             const {
                 study_id,
@@ -188,9 +190,10 @@ export function surveysForStudy(pool: pg.Pool, studyId: string) {
                        data_collection.survey AS s
                        JOIN public.users AS u ON s.user_id = u.user_id
                    WHERE
-                       s.study_id = '${studyId}'`;
+                       s.study_id = $1`;
+    const values = [studyId];
     try {
-        return pool.query(query);
+        return pool.query(query, values);
     } catch (error) {
         console.error(`error executing sql query: ${query}`)
         throw error;
@@ -201,15 +204,16 @@ export async function deleteStudy(pool: pg.Pool, studyId: string) {
     const tablename = await studyIdToTablename(studyId);
     const deleteStudyTable = `DROP TABLE ${tablename}`;
     const deleteStudy = `DELETE from data_collection.study
-                         WHERE study_id = '${studyId}'`;
+                         WHERE study_id = $1`;
+    const values = [studyId];
     try {
-        await pool.query(deleteStudyTable);
-        const {rowCount, command} = await pool.query(deleteStudy);
+        await pool.query(deleteStudyTable, values);
+        const {rowCount, command} = await pool.query(deleteStudy, values);
         if (rowCount !== 1 && command !== 'DELETE') {
             throw new Error(`Unable to delete study: ${studyId}`);
         }
     } catch(error) {
-        console.error(`[sql ${deleteStudyTable}] [sql ${deleteStudy}] ${error}`);
+        console.error(`[sql ${deleteStudyTable}] [query ${deleteStudy}][values ${JSON.stringify(values)}] ${error}`);
         throw error;
     }
 }
@@ -225,15 +229,15 @@ export async function createStudy(pool: pg.Pool, study: Study) {
     const newStudyMetadataValues = [studyId, title, userId, protocolVersion, type, fields, studyTablename, JSON.stringify(map)];
     let studyResult, newStudyDataTable;
     try {
-        studyResult = await pool.query(newStudyMetadataQuery);
+        studyResult = await pool.query(newStudyMetadataQuery, newStudyMetadataValues);
     } catch (error) {
-        console.error(`[sql ${newStudyMetadataQuery}] ${error}`);
+        console.error(`[query ${newStudyMetadataQuery}][values ${JSON.stringify(newStudyMetadataValues)}] ${error}`);
         throw error;
     }
     try {
-        newStudyDataTable = await pool.query(newStudyDataTableQuery, newStudyMetadataValues);
+        newStudyDataTable = await pool.query(newStudyDataTableQuery);
     } catch (error) {
-        console.error(`[query ${newStudyMetadataQuery}][values ${JSON.stringify(newStudyMetadataValues)}] ${error}`);
+        console.error(`[query ${newStudyDataTableQuery}] ${error}`);
         throw error;
     }
     return [studyResult, newStudyDataTable];
@@ -252,7 +256,7 @@ export async function giveUserStudyAccess(pool: pg.Pool, userEmail: string, stud
     } catch (error) {
         if (error.code === FOREIGN_KEY_VIOLATION) {
             const newUserId = await createUserFromEmail(pool, userEmail);
-            const pgRes2 = await pool.query(query);
+            const pgRes2 = await pool.query(query, values);
             return [pgRes2, newUserId];
         }
         console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
@@ -264,8 +268,8 @@ export async function checkUserIdIsSurveyor(pool: pg.Pool, userId: string, surve
     const query = `SELECT user_id, survey_id
                    FROM data_collection.survey
                    WHERE user_id = $1 and survey_id = $2`
+    const values = [userId, surveyId];
     try {
-        const values = [userId, surveyId];
         const { command, rowCount } = await pool.query(query, values);
         if (command !== 'SELECT' && rowCount !== 1) {
             return false
