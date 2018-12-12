@@ -79,13 +79,14 @@ export async function createNewSurveyForStudy(pool: pg.Pool, survey) {
 }
 
 export function updateSurvey(pool: pg.Pool, survey: Survey) {
+    const { title, locationId, startDate, endDate, userEmail } = survey;
    const query = `WITH t (title, location_id, time_start, time_stop, user_email) as (
                       VALUES (
-                             '${survey.title}'::text,
-                             '${survey.locationId}'::UUID,
-                             '${survey.startDate}'::timestamp with time zone,
-                             '${survey.endDate}'::timestamp with time zone,
-                             '${survey.userEmail}'::TEXT
+                             $1::text,
+                             $2::UUID,
+                             $3::timestamp with time zone,
+                             $4::timestamp with time zone,
+                             $5::TEXT
                       )
                   )
                   UPDATE date_collection.survey
@@ -94,11 +95,11 @@ export function updateSurvey(pool: pg.Pool, survey: Survey) {
                       time_start = t.time_start,
                       time_stop = t.time_stop,
                       user_email = t.user_email`
-
+    const values = [title, locationId, startDate, endDate, userEmail] ;
     try {
-        return pool.query(query);
+        return pool.query(query, values);
     } catch (error) {
-        console.error(`[query: ${query}] ${error}`)
+        console.error(`[query: ${query}][values: ${JSON.stringify(values)}] ${error}`)
         throw error;
     }
 }

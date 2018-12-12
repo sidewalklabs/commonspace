@@ -14,11 +14,11 @@ export async function createLocation(pool: pg.Pool, location: Location) {
     const { locationId, namePrimary, geometry, country='', city='', subdivision='' } = location;
     const query = `INSERT INTO data_collection.location
                    (location_id, country, city, name_primary, subdivision, geometry)
-                   VALUES ('${locationId}', '${country}', '${city}', '${namePrimary}', '${subdivision}', ST_GeomFromGeoJSON('${JSON.stringify(geometry)}'))`;
+                   VALUES ($1, $2, $3, $4, $5, ST_GeomFromGeoJSON($6))`;
+    const values = [locationId, country, city, namePrimary, subdivision, JSON.stringify(geometry)];
     try {
-        return await pool.query(query);
+        return await pool.query(query, values);
     } catch (error) {
-        console.error(error);
-        console.error(`could not add location: ${JSON.stringify(location)} with query ${query}`);
+        console.error(`[query ${query}][values ${values}] ${error}`);
     }
 }
