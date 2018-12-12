@@ -17,25 +17,31 @@ const styles = theme => ({
         width: 150
     },
     root: {
-        width: '45%',
+        width: '700px',
+        display: 'flex',
         marginTop: theme.spacing.unit * 3,
+        marginLeft: theme.spacing.unit * 3,
+        marginRight: theme.spacing.unit * 3,
         flex: '0 1 auto',
-        flexDirection: 'column'
+        alignItems: 'center',
+        flexDirection: 'column',
+        alignContent: 'center',
+        padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit * 3}px`
     },
     button: {
         justifyContent: 'flex-end',
         alignContent: 'flex-end'
     },
-    table: {
-        minWidth: 400,
-        overflow: 'auto'
+    signUpButton: {
+        marinTop: '300px',
+        width: '100%'
     },
     textField: {
         marginLeft: theme.spacing.unit,
         marginRight: theme.spacing.unit,
         width: '100%'
     }
-})
+});
 
 // @ts-ignore
 const SignUpView = withStyles(styles)(observer((props: WithStyles) => {

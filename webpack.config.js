@@ -78,8 +78,7 @@ module.exports = env => {
       ),
       new CopyWebpackPlugin([
         {from: 'css/styles.css', to: 'css/styles.css'},
-        {from: 'node_modules/leaflet/dist/leaflet.css', to: 'css/leaflet.css'},
-        {from: 'node_modules/leaflet-draw/dist/leaflet.draw.css', to: 'css/leaflet.draw.css'}
+        {from: 'expo_project/assets/images/CircleIcon.png', to: 'assests/images/CircleIcon.png'}
       ]),
       new webpack.DefinePlugin(envKeys)
     ]
