@@ -192,10 +192,9 @@ export async function addDataPointToSurveyWithStudyId(pool: pg.Pool, studyId: st
 export async function retrieveDataPointsForSurvey(pool, surveyId) {
     const tablename = await getTablenameForSurveyId(pool, surveyId);
     const query = `SELECT data_point_id, gender, age, mode, posture, activities, groups, object, creation_date, last_updated, ST_AsGeoJSON(location)::json as loc, note
-                   FROM $1`;
-    const values = [tablename]
+                   FROM ${tablename}`;
     try {
-        const res = await pool.query(query, values);
+        const res = await pool.query(query);
         return res.rows.map(r => {
             const { loc: location } = r;
             delete r['loc'];
