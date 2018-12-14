@@ -2,7 +2,6 @@ import React, { Fragment } from 'react';
 import classNames from 'classnames';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
 import Avatar from '@material-ui/core/Avatar';
 import Icon from '@material-ui/core/Icon';
@@ -10,12 +9,11 @@ import Toolbar from '@material-ui/core/Toolbar';
 import List from '@material-ui/core/List';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import Badge from '@material-ui/core/Badge';
+import Button from '@material-ui/core/Button';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import NotificationsIcon from '@material-ui/icons/Notifications';
+import Modal from '@material-ui/core/Modal';
+
 
 import { observer } from 'mobx-react';
 
@@ -49,6 +47,21 @@ const styles = theme => ({
         padding: '0 8px',
         ...theme.mixins.toolbar
     },
+    modal: {
+        top: 300,
+        left: 300
+    },
+    paper: {
+        position: 'absolute',
+        width: theme.spacing.unit * 50,
+        backgroundColor: theme.palette.background.paper,
+        boxShadow: theme.shadows[5],
+        padding: theme.spacing.unit * 4,
+        width: "50%",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)"
+    },
     appBar: {
         position: 'relative',
         display: 'flex',
@@ -74,11 +87,13 @@ function prepareNewStudy() {
     visualizeNewStudy()
 }
 
+let modalIsOpen = false;
+
 const Main = observer(
     (props: MainProps & WithStyles) => {
-        const { drawerOpen } = uiState;
+        const { editStudy } = uiState;
         const { applicationState, classes } = props;
-        const { currentStudy, token } = applicationState;
+        const { currentStudy, studies, token } = applicationState;
         return (
             <div className={classes.root}>
                 <CssBaseline />
@@ -100,63 +115,44 @@ const Main = observer(
                         <IconButton
                             color="inherit"
                             aria-label="Open Menu"
-                            onClick={() => (uiState.drawerOpen = true)}
+                            onClick={() => console.log('open menu')}
                             className={classes.menuIcon}
                         >
                             <MoreVertIcon />
                         </IconButton>
                     </Toolbar>
                 </AppBar>
-                {
-                    token ?
-                        <Paper>
-                            <div>
-                                <Typography
-                                    component="h1"
-                                    variant="title"
-                                    color="inherit"
-                                    noWrap
-                                    className={classes.title}
-                                >
-                                    All Studies
-                            </Typography>
-                            </div>
-                            <List>
-                                <StudiesList />
-                            </List>
-                        </Paper>
-                        :
-                        uiState.mode === AuthMode.Login ?
-                            <LoginView /> :
-                            <SignUpView />
-
-                }
-                {/* <Drawer
-                variant="permanent"
-                classes={{
-                paper: classNames(
-                classes.drawerPaper,
-                !drawerOpen && classes.drawerPaperClose
-                )
-                }}
-                open={drawerOpen}
-                >
-                <div className={classes.toolbarIcon}>
-                <IconButton onClick={() => (uiState.drawerOpen = false)}>
-                <ChevronLeftIcon />
-                </IconButton>
+                <div>
+                    <Typography
+                        component="h1"
+                        variant="title"
+                        color="inherit"
+                        noWrap
+                        className={classes.title}
+                    >
+                        All Studies
+                    </Typography>
+                    <Button variant="contained" onClick={prepareNewStudy}>
+                        New study
+                    </Button>
+                    <Paper>
+                        <List>
+                            <StudiesList studies={studies} />
+                        </List>
+                    </Paper>
+                    <Modal
+                        aria-labelledby="simple-modal-title"
+                        aria-describedby="simple-modal-description"
+                        open={uiState.editStudy}
+                        onClose={() => uiState.editStudy = false}
+                    >
+                        <div className={classes.paper}>
+                            <StudyView study={currentStudy} studyIsNew={uiState.currentStudyIsNew} />
+                        </div>
+                    </Modal>
                 </div>
-                <Divider />
-                
-                <Icon className={classes.icon} color="primary" fontSize="large" onClick={() => prepareNewStudy()}>
-                add_circle
-                </Icon>
-                </Drawer>
-                <main className={classes.content}>
-                <div className={classes.appBarSpacer} />
-                <StudyView study={currentStudy} studyIsNew={uiState.currentStudyIsNew} />
-                </main> */}
-            </div>
+
+            </div >
         )
     }
 );

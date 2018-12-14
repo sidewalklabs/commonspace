@@ -89,7 +89,7 @@ interface SurveyorsViewProps {
 const Row = withStyles(styles)(observer(props => {
     const { email, classes } = props;
     return (
-        <TableRow>
+        <TableRow key={email}>
             <TableCell className={classes.smallColumn} component="th" scope="row" />
             <TableCell className={classes.column} component="th" scope="row">
                 <TextField
