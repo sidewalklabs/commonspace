@@ -19,12 +19,14 @@ function typeToRouteName(type) {
   switch (type) {
     case 'activity':
       return 'SurveyScreen';
+    case 'movement':
+      return 'PeopleMovingCountScreen';
     default:
       return 'ComingSoonScreen';
   }
 }
 
-class SurveyIndexScreen extends React.Component {
+class StudyIndexScreen extends React.Component {
   state = {
     studies: [],
     loading: true,
@@ -46,8 +48,36 @@ class SurveyIndexScreen extends React.Component {
   });
 
   async componentDidMount() {
+    const fakeStudy = {
+      authorName: 'Ananta',
+      protocolVersion: '1.0',
+      studyId: '12345',
+      surveyors: ['pandananta@gmail.com', 'thorncliffesurveyorone@gmail.com'],
+      title: '000 test',
+      type: 'movement',
+      fields: [],
+      map: {},
+      surveys: [
+        {
+          endDate: '2018-10-12T22:00:00Z',
+          locationId: '0',
+          survey_location: { type: 'polygon', coordinates: [] },
+          method: 'analog',
+          representation: 'absolute',
+          startDate: '2018-10-12T21:00:00Z',
+          studyId: '12345',
+          surveyId: '1234566',
+          title: 'test',
+          type: 'peopleMovingCount',
+          surveyorEmail: 'pandananta@gmail.com',
+          userId: '123412341234',
+          zone: 'Zone 12',
+        },
+      ],
+    };
     const token = await AsyncStorage.getItem('token');
     let studies = await getStudies(token);
+    studies.push(fakeStudy);
     studies = _.sortBy(studies, 'title');
     this.setState({ token, studies, loading: false });
   }
@@ -59,7 +89,13 @@ class SurveyIndexScreen extends React.Component {
         <ScrollView style={[styles.container]}>
           {this.state.loading && <ActivityIndicator />}
           {studies.map(study => {
-            const { studyId, title: studyName, type: studyType, authorName: studyAuthor, surveys } = study;
+            const {
+              studyId,
+              title: studyName,
+              type: studyType,
+              authorName: studyAuthor,
+              surveys,
+            } = study;
             // TODO: move these to backend
             const authorUrl = 'https://parkpeople.ca/';
             const studyInstructions =
@@ -85,9 +121,14 @@ class SurveyIndexScreen extends React.Component {
                   {studyInstructions && <Paragraph>{studyInstructions}</Paragraph>}
                 </CardContent>
                 {surveys.map(survey => {
-                  const { survey_id: surveyId, title: surveyTitle, locationId, survey_location: zoneFeatureGeoJson } = survey;
-                  const zoneCoordinates = _.map(zoneFeatureGeoJson.coordinates[0], c =>{
-                    return {longitude: c[0], latitude: c[1]};
+                  const {
+                    survey_id: surveyId,
+                    title: surveyTitle,
+                    locationId,
+                    survey_location: zoneFeatureGeoJson,
+                  } = survey;
+                  const zoneCoordinates = _.map(zoneFeatureGeoJson.coordinates[0], c => {
+                    return { longitude: c[0], latitude: c[1] };
                   });
                   return (
                     <View key={surveyId}>
@@ -169,4 +210,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default withNavigation(SurveyIndexScreen);
+export default withNavigation(StudyIndexScreen);

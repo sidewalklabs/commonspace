@@ -111,7 +111,7 @@ class SurveyScreen extends React.Component {
 
   componentDidMount() {
     const surveyId = this.props.navigation.getParam('surveyId');
-    getDataPointsforSurvey(this.state.token,  surveyId).then((dataPoints) => {
+    getDataPointsforSurvey(this.state.token, surveyId).then(dataPoints => {
       const markers = dataPoints.map((d, i) => {
         const title = `Person ${i}`;
         const color = getRandomIconColor();
@@ -121,7 +121,7 @@ class SurveyScreen extends React.Component {
           title,
         };
       });
-      this.setState({markers});
+      this.setState({ markers });
     });
   }
 
@@ -317,14 +317,14 @@ class SurveyScreen extends React.Component {
       };
 
       markersCopy.push(duplicateMarker);
-      saveDataPoint(this.state.token, surveyId, duplicateMarker).
-      then(() => {
-        this.setState({ markers: markersCopy, activeMarkerId: dataPointId }, this.resetDrawer);
-      })
-      .catch((error) => {
-        markersCopy.pop();
-        this.setState({ markers: markersCopy, activeMarkerId: dataPointId }, this.resetDrawer);
-      });
+      saveDataPoint(this.state.token, surveyId, duplicateMarker)
+        .then(() => {
+          this.setState({ markers: markersCopy, activeMarkerId: dataPointId }, this.resetDrawer);
+        })
+        .catch(error => {
+          markersCopy.pop();
+          this.setState({ markers: markersCopy, activeMarkerId: dataPointId }, this.resetDrawer);
+        });
     }
   }
 
@@ -356,11 +356,14 @@ class SurveyScreen extends React.Component {
       date: date.toISOString(),
     };
 
-    saveDataPoint(this.state.token, surveyId, marker).
-      then(() => {
-        this.setState({ markers: [...markers, marker], activeMarkerId: dataPointId }, this.resetDrawer);
+    saveDataPoint(this.state.token, surveyId, marker)
+      .then(() => {
+        this.setState(
+          { markers: [...markers, marker], activeMarkerId: dataPointId },
+          this.resetDrawer,
+        );
       })
-      .catch((error) => {
+      .catch(error => {
         this.setState({ markers, activeMarkerId: dataPointId }, this.resetDrawer);
       });
   }

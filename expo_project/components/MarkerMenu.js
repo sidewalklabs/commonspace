@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Card, CardContent, Button } from 'react-native-paper';
+import { Card, Button } from 'react-native-paper';
 import PropTypes from 'prop-types';
 
 class MarkerMenu extends React.Component {
@@ -26,20 +26,24 @@ class MarkerMenu extends React.Component {
                 right: 0,
               },
             ]}>
-            <Button
-              onPress={() => {
-                this.props.onDeletePress();
-                this.props.onClose();
-              }}>
-              <Text>Delete</Text>
-            </Button>
-            <Button
-              onPress={() => {
-                this.props.onDuplicatePress();
-                this.props.onClose();
-              }}>
-              <Text>Duplicate</Text>
-            </Button>
+            {this.props.onDeletePress && (
+              <Button
+                onPress={() => {
+                  this.props.onDeletePress();
+                  this.props.onClose();
+                }}>
+                <Text>Delete</Text>
+              </Button>
+            )}
+            {this.props.onDuplicatePress && (
+              <Button
+                onPress={() => {
+                  this.props.onDuplicatePress();
+                  this.props.onClose();
+                }}>
+                <Text>Duplicate</Text>
+              </Button>
+            )}
           </Card>
         </TouchableOpacity>
       </Modal>
@@ -70,8 +74,6 @@ MarkerMenu.propTypes = {
 
 MarkerMenu.defaultProps = {
   onClose: () => null,
-  onDeletePress: () => null,
-  onDuplicatePress: () => null,
 };
 
 export default MarkerMenu;
