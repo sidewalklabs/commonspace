@@ -3,7 +3,7 @@ import { Polygon } from 'geojson';
 import * as pg from 'pg';
 import * as uuid from 'uuid';
 
-import { addDataPointToSurveyNoStudyId, addDataPointToSurveyWithStudyId, deleteDataPoint } from './datapoint';
+import { addDataPointToSurveyNoStudyId, addDataPointToSurveyWithStudyId, deleteDataPoint, retrieveDataPointsForSurvey } from './datapoint';
 import { checkUserIdIsSurveyor, createStudy, deleteStudy, giveUserStudyAccess, Study } from './study';
 import { createNewSurveyForStudy, Survey } from './survey';
 import { authenticateOAuthUser, createUser, User } from './user';
@@ -178,7 +178,7 @@ test('save location', async () => {
 });
 
 test('saving study with a nonexistent user errors', async () => {
-    await expect(createStudy(pool, simpleStudyInvalidUserId)
+    await expect(createStudy(pool, simpleStudyInvalidUserId))
         .rejects
         .toThrowError('insert or update on table "study" violates foreign key constraint "study_user_id_fkey"');
 });
@@ -361,6 +361,10 @@ test('delete a data point', async () => {
 test('delete a study after throwing information for it into the database', async() => {
     expect(async () => await deleteStudy(pool, thorncliffeParkStudy.studyId)).not.toThrowError();
 })
+
+test ('fetch the datapoints that are currently in the database', async() => {
+    expect(async () => await retrieveDataPointsForSurvey(pool, thorncliffeParkStudy.studyId)).not.toThrowError();
+});
 
 afterAll(async () => {
     try {
