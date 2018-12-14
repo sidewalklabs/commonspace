@@ -10,6 +10,7 @@ import ComingSoonScreen from '../screens/ComingSoonScreen';
 import SurveyScreen from '../screens/SurveyScreen';
 import StudyIndexScreen from '../screens/StudyIndexScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
+import PeopleMovingCountScreen from '../screens/PeopleMovingCountScreen';
 import WebViewScreen from '../screens/WebViewScreen';
 
 import DrawerNavigatorScreen from '../screens/DrawerNavigatorScreen';
@@ -29,6 +30,7 @@ const AppStack = createStackNavigator(
   {
     StudyIndexScreen,
     SurveyScreen,
+    PeopleMovingCountScreen,
     ComingSoonScreen,
     WebViewScreen,
   },

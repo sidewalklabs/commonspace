@@ -97,7 +97,7 @@ Selectable.propTypes = {
 };
 
 Selectable.defaultProps = {
-  selectedColor: colors.colorSecondary,
+  selectedColor: colors.colorPrimary,
 };
 
 export default Selectable;

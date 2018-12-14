@@ -1,5 +1,5 @@
 const tintColor = '#2f95dc';
-const colorPrimary = '#5B93D9';
+const colorPrimary = '#0271cd';
 const colorSecondary = '#1C4442';
 
 const blue = '#1565C0';

@@ -26,20 +26,17 @@ class AuthScreen extends React.Component {
         scopes: ['profile', 'email'],
       });
       if (type === 'success') {
-        const resp = await fetch(
-          'https://commons-staging.sidewalklabs.com/auth/google/token',
-          {
-            mode: "cors",
-            cache: "no-cache",
-            credentials: "same-origin",
-            redirect: 'follow',
-            referrer: 'no-referrer',
-            headers: {
-              "Content-Type": "application/json; charset=utf-8",
-              "access-token": `${accessToken}`
-            }
-          }
-        );
+        const resp = await fetch('https://commons-staging.sidewalklabs.com/auth/google/token', {
+          mode: 'cors',
+          cache: 'no-cache',
+          credentials: 'same-origin',
+          redirect: 'follow',
+          referrer: 'no-referrer',
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'access-token': `${accessToken}`,
+          },
+        });
         const body = await resp.json();
 
         console.log(body.token);
