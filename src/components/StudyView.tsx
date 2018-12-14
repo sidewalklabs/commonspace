@@ -105,11 +105,9 @@ const StudyView = observer((props: any & WithStyles) => {
 
     const { study, classes, studyIsNew } = props;
     if (study) {
+        console.log(study);
         const { title, surveys, studyId, surveyors, protocolVersion, type, map } = study as Study;
         const features = map && map.features ? map.features : [];
-        const protocolVersionUpdate = (versionValue: string) => {
-
-        }
         return (
             <Fragment>
                 <TextField

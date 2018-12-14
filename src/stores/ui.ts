@@ -7,6 +7,7 @@ interface AvailableLocation {
 
 export function visualizeNewStudy() {
     uiState.currentStudyIsNew = true;
+    uiState.editStudy = true;
 }
 
 export enum AuthMode {
@@ -18,7 +19,7 @@ interface UiState {
     addSurveyorModalText: string;
     availableLocations: AvailableLocation[]; 
     currentStudyIsNew: boolean;
-    drawerOpen: boolean;
+    editStudy: boolean;
     mode: AuthMode;
 }
 
@@ -27,7 +28,7 @@ const uiState = observable({
     addSurveyorModalText: '',
     availableLocations: [],
     currentStudyIsNew: false,
-    drawerOpen: true,
+    editStudy: false,
     mode: AuthMode.Signup
 });
 
