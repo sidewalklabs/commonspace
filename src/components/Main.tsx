@@ -14,16 +14,13 @@ import Button from '@material-ui/core/Button';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Modal from '@material-ui/core/Modal';
 
-
 import { observer } from 'mobx-react';
 
-import LoginView from './LoginView';
-import SignUpView from './SignUpView';
 import StudiesList from './StudiesList';
 import StudyView from './StudyView';
-import mapState from '../stores/map';
-import uiState, { visualizeNewStudy, AuthMode } from '../stores/ui';
-import applicationState, { setCurrentStudyEmptySkeleton, ApplicationState } from '../stores/applicationState';
+import SurveyorsView from './SurveyorsView';
+import uiState, { visualizeNewStudy, AuthMode, AvailableModals } from '../stores/ui';
+import applicationState, { setCurrentStudyEmptySkeleton, ApplicationState, studyEmptySkeleton } from '../stores/applicationState';
 
 const drawerWidth = 240;
 
@@ -82,18 +79,33 @@ const styles = theme => ({
     }
 });
 
+// @ts-ignore
+const WrapInModal = observer(withStyles(styles)(props => {
+    const { classes, children, modalType, visibleModal, onClose = () => uiState.visibleModal = null } = props;
+    return (
+        <Modal
+            open={visibleModal === modalType}
+            onClose={onClose}
+        >
+            <div className={classes.paper}>
+                {children}
+            </div>
+        </Modal>
+    )
+}));
+
 function prepareNewStudy() {
     setCurrentStudyEmptySkeleton()
     visualizeNewStudy()
 }
 
-let modalIsOpen = false;
-
 const Main = observer(
     (props: MainProps & WithStyles) => {
-        const { editStudy } = uiState;
         const { applicationState, classes } = props;
-        const { currentStudy, studies, token } = applicationState;
+        const { studies, token } = applicationState;
+        const { visibleModal } = uiState;
+        const currentStudy = applicationState.currentStudy ? applicationState.currentStudy : studyEmptySkeleton();
+        let { studyId, surveyors } = currentStudy;
         return (
             <div className={classes.root}>
                 <CssBaseline />
@@ -132,7 +144,7 @@ const Main = observer(
                     >
                         All Studies
                     </Typography>
-                    <Button variant="contained" onClick={prepareNewStudy}>
+                    <Button color="primary" variant="contained" onClick={prepareNewStudy}>
                         New study
                     </Button>
                     <Paper>
@@ -140,16 +152,12 @@ const Main = observer(
                             <StudiesList studies={studies} />
                         </List>
                     </Paper>
-                    <Modal
-                        aria-labelledby="simple-modal-title"
-                        aria-describedby="simple-modal-description"
-                        open={uiState.editStudy}
-                        onClose={() => uiState.editStudy = false}
-                    >
-                        <div className={classes.paper}>
-                            <StudyView study={currentStudy} studyIsNew={uiState.currentStudyIsNew} />
-                        </div>
-                    </Modal>
+                    <WrapInModal modalType={'study'} visibleModal={visibleModal}>
+                        <StudyView study={currentStudy} studyIsNew={uiState.currentStudyIsNew} />
+                    </WrapInModal>
+                    <WrapInModal onClose={() => uiState.visibleModal = 'study'} modalType={'surveyors'} visibleModal={visibleModal}>
+                        <SurveyorsView studyId={currentStudy.studyId} surveyors={currentStudy.surveyors} />
+                    </WrapInModal>
                 </div>
 
             </div >

@@ -87,14 +87,15 @@ interface SurveyorsViewProps {
 
 // @ts-ignore
 const Row = withStyles(styles)(observer(props => {
-    const { email, classes } = props;
+    const { email, classes, index } = props;
     return (
-        <TableRow key={email}>
-            <TableCell className={classes.smallColumn} component="th" scope="row" />
+        <TableRow key={index}>
             <TableCell className={classes.column} component="th" scope="row">
                 <TextField
+                    placeholder="Enter an email"
                     className={classes.textField}
                     value={email}
+                    onChange={e => applicationState.currentStudy.surveyors[index] = e.target.value}
                     margin="normal"
                 />
             </TableCell>
@@ -103,7 +104,7 @@ const Row = withStyles(styles)(observer(props => {
 }))
 
 function handleAddingNewSurveyor(studyId, email) {
-    uiState.addSurveyorModalIsOpen = false;
+    applicationState.currentStudy.surveyors.push('');
     addNewSurveyorToSurvey(studyId, email);
 }
 
@@ -114,46 +115,29 @@ interface SurveyorsViewProps {
 
 // todo, this is using the store components/ui.ts which may not be the best abstraction, this might be more localizable ...
 const SurveyorsView = observer((props: SurveyorsViewProps & WithStyles) => {
-    const { classes, studyId, surveyors = [] } = props;
-    const userEnteredEmail = uiState.addSurveyorModalText;
-    const tableRows = surveyors.map(email => <Row key={email} email={email} />);
+    const { classes, surveyors } = props;
+
+    const addNewEmptySurveyorToStudy = () => {
+        applicationState.currentStudy.surveyors = [...surveyors, ''];
+    }
+    const tableRows = surveyors.map((email, index) => <Row email={email} index={index} />);
     return (
         <div>
             <Paper className={classes.root}>
+                Add Surveyors
+                <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={addNewEmptySurveyorToStudy}>
+                    Add Surveyor
+                    </Button>
                 <Table className={classes.table}>
                     <TableHead>
                         <TableRow>
-                            <TableCell className={classes.smallColumn} onClick={() => uiState.addSurveyorModalIsOpen = true}>Add</TableCell>
                             <TableCell className={classes.column}>Email</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>{tableRows}</TableBody>
                 </Table>
             </Paper >
-            <Modal
-                aria-labelledby="simple-modal-title"
-                aria-describedby="simple-modal-description"
-                open={uiState.addSurveyorModalIsOpen}
-                onClose={() => uiState.addSurveyorModalIsOpen = false}
-            >
-                <div className={classes.modal}>
-                    <Typography id="modal-title">
-                        Enter an email to give access to your study
-                    </Typography>
-                    <TextField
-                        id="email-surveyor-add-text"
-                        label="email"
-                        className={classes.textField}
-                        value={userEnteredEmail}
-                        onChange={e => uiState.addSurveyorModalText = e.target.value}
-                        margin="normal"
-                    />
-                    <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={() => handleAddingNewSurveyor(studyId, userEnteredEmail)}>
-                        Add Surveyor
-                    </Button>
-                </div>
-            </Modal>
-        </div>
+        </div >
     )
 })
 
