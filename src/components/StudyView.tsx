@@ -3,6 +3,8 @@ import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
+import EditIcon from '@material-ui/icons/Edit';
+import InputAdornment from '@material-ui/core/InputAdornment';
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
 
@@ -141,6 +143,36 @@ const StudyView = observer((props: any & WithStyles) => {
                     })}
                 </TextField>
                 <TextField
+                    id="surveyors"
+                    className={classes.textField}
+                    label="Surveyors"
+                    value={`${surveyors.length} Surveyors`}
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="end" onClick={() => uiState.visibleModal = "surveyors"}>
+                                <EditIcon />
+                            </InputAdornment>
+                        ),
+                    }}
+                >
+
+                </TextField>
+                <TextField
+                    id="surveys"
+                    className={classes.textField}
+                    label="Surveys"
+                    value={"22 scheduled"}
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="end" onClick={() => uiState.visibleModal = "surveys"}>
+                                <EditIcon />
+                            </InputAdornment>
+                        ),
+                    }}
+                >
+
+                </TextField>
+                <TextField
                     id="select-protocol-version"
                     select
                     label="Gehl Protocol Version"
@@ -162,7 +194,6 @@ const StudyView = observer((props: any & WithStyles) => {
                         </MenuItem>)
                     })}
                 </TextField>
-                <SurveyorsView studyId={studyId} surveyors={surveyors} />
                 <MapView lat={33.546727} lng={-117.673965} featureCollection={map} />
                 <SurveyView surveys={Object.values(toJS(surveys))} features={features} />
                 <CreateOrUpdateButton study={study} studyIsNew={studyIsNew} />

@@ -7,33 +7,31 @@ interface AvailableLocation {
 
 export function visualizeNewStudy() {
     uiState.currentStudyIsNew = true;
-    uiState.editStudy = true;
+    uiState.visibleModal = 'study';
 }
 
 export enum AuthMode {
     Login, Signup, Authorized
 }
 
+export type AvailableModals = 'study' | 'surveyors' | 'shifts' | null
+
 interface UiState {
-    addSurveyorModalIsOpen: boolean;
-    addSurveyorModalText: string;
     availableLocations: AvailableLocation[]; 
     currentStudyIsNew: boolean;
-    editStudy: boolean;
+    visibleModal: AvailableModals;
     mode: AuthMode;
 }
 
 const uiState = observable({
-    addSurveyorModalIsOpen: false,
-    addSurveyorModalText: '',
     availableLocations: [],
     currentStudyIsNew: false,
-    editStudy: false,
+    visibleModal: null,
     mode: AuthMode.Signup
 });
 
 autorun(() => {
-    console.log(toJS(uiState.availableLocations));
+    console.log(toJS(uiState.visibleModal));
 });
 
 export default uiState;

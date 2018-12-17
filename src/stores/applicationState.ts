@@ -121,10 +121,9 @@ export async function selectNewStudy(study: any) {
     applicationState.currentStudy = await fetchSurveysForStudy(token, study.studyId);
 }
 
-export async function setCurrentStudyEmptySkeleton() {
-    const studyId =  uuid.v4()
-    applicationState.studies[studyId] = {
-        studyId,
+export function studyEmptySkeleton() {
+    return {
+        studyId: '',
         title: '',
         protocolVersion: '1.0',
         surveys: {},
@@ -135,6 +134,15 @@ export async function setCurrentStudyEmptySkeleton() {
             features: []
         },
         fields: ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'note']
+    }
+}
+
+export function setCurrentStudyEmptySkeleton() {
+    const studyId =  uuid.v4()
+    const study = studyEmptySkeleton();
+    applicationState.studies[studyId] = {
+        ...study,
+        studyId
     }
     applicationState.currentStudy = applicationState.studies[studyId];
 }
