@@ -42,11 +42,13 @@ const styles = theme => ({
 
 async function update(study) {
     await updateStudy(study);
+    uiState.visibleModal = null;
 }
 
 async function create(study) {
     await saveNewStudy(study);
     uiState.currentStudyIsNew = false;
+    uiState.visibleModal = null;
 }
 
 interface CreateOrUpdateButtonProps {

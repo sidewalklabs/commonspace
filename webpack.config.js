@@ -78,7 +78,7 @@ module.exports = env => {
       ),
       new CopyWebpackPlugin([
         {from: 'css/styles.css', to: 'css/styles.css'},
-        {from: 'expo_project/assets/images/CircleIcon.png', to: 'assests/images/CircleIcon.png'}
+        {from: 'assets/', to: 'assets/'}
       ]),
       new webpack.DefinePlugin(envKeys)
     ]

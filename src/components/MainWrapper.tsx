@@ -57,7 +57,6 @@ const MainWrapper = observer(
     (props: MainProps & WithStyles) => {
         const { classes } = props;
         const { currentStudy, token } = applicationState;
-        console.log(token);
         return (
             <div className={classes.root}>
                 <CssBaseline />
