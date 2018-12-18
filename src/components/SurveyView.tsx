@@ -1,6 +1,7 @@
 import React, { ChangeEvent } from 'react';
 import moment from 'moment';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
@@ -11,6 +12,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import TextField from '@material-ui/core/TextField';
+import Typography from '@material-ui/core/Typography';
 import uuidv4 from 'uuid/v4';
 
 import { get, set, toJS } from 'mobx';
@@ -143,8 +145,6 @@ const SurveyObjectToTableRow = observer(({ classes, survey, features }: WithStyl
     return (
         <TableRow key={surveyId}>
             <TableCell component="th" scope="row">
-            </TableCell>
-            <TableCell component="th" scope="row">
                 <TextField
                     select
                     className={classes.textField}
@@ -168,7 +168,10 @@ const SurveyObjectToTableRow = observer(({ classes, survey, features }: WithStyl
                     margin="normal"
                 />
             </TableCell>
-            <DateTableCell displayDate={startDateDisplayDate} onUpdate={e => changeStartDate(survey, e.target.value)} />
+            <DateTableCell displayDate={startDateDisplayDate} onUpdate={e => {
+                changeStartDate(survey, e.target.value);
+                changeEndDate(survey, e.target.value);
+            }} />
             <TableCell>
                 <TextField
                     type="time"
@@ -183,7 +186,6 @@ const SurveyObjectToTableRow = observer(({ classes, survey, features }: WithStyl
                     }}
                 />
             </TableCell>
-            <DateTableCell displayDate={endDateDisplayDate} onUpdate={e => changeEndDate(survey, e.target.value)} />
             <TableCell>
                 <TextField
                     type="time"
@@ -226,15 +228,23 @@ const SurveyView = observer((props: { surveys: any[], features: Feature[] } & Wi
     ));
     return (
         <Paper className={classes.root}>
+            <Typography
+                component="h2"
+                variant="title"
+                color="inherit"
+                noWrap
+                className={classes.title}
+            >
+                Edit Surveys
+            </Typography>
+            <Button color="primary" variant="contained" onClick={addNewSurveyToCurrentStudy}>New Survey</Button>
             <Table className={classes.table}>
                 <TableHead>
                     <TableRow>
-                        <TableCell onClick={addNewSurveyToCurrentStudy}>Add</TableCell>
                         <TableCell>Surveyor Email</TableCell>
                         <TableCell numeric>Title</TableCell>
                         <TableCell numeric>Start Date</TableCell>
                         <TableCell numeric>Start Time</TableCell>
-                        <TableCell numeric>End Date</TableCell>
                         <TableCell numeric>End Time</TableCell>
                         <TableCell numeric>Zone</TableCell>
                     </TableRow>

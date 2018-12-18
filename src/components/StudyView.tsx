@@ -107,7 +107,6 @@ const StudyView = observer((props: any & WithStyles) => {
 
     const { study, classes, studyIsNew } = props;
     if (study) {
-        console.log(study);
         const { title, surveys, studyId, surveyors, protocolVersion, type, map } = study as Study;
         const features = map && map.features ? map.features : [];
         return (
@@ -137,9 +136,11 @@ const StudyView = observer((props: any & WithStyles) => {
                     margin="normal"
                 >
                     {STUDY_TYPES.map(({ value, label }) => {
-                        return (<MenuItem key={value} value={value}>
-                            {label}
-                        </MenuItem>)
+                        return (
+                            <MenuItem key={value} value={value}>
+                                {label}
+                            </MenuItem>
+                        )
                     })}
                 </TextField>
                 <TextField
@@ -161,7 +162,7 @@ const StudyView = observer((props: any & WithStyles) => {
                     id="surveys"
                     className={classes.textField}
                     label="Surveys"
-                    value={"22 scheduled"}
+                    value={`${Object.keys(toJS(surveys)).length} Surveys`}
                     InputProps={{
                         startAdornment: (
                             <InputAdornment position="end" onClick={() => uiState.visibleModal = "surveys"}>
@@ -170,7 +171,6 @@ const StudyView = observer((props: any & WithStyles) => {
                         ),
                     }}
                 >
-
                 </TextField>
                 <TextField
                     id="select-protocol-version"
@@ -195,7 +195,6 @@ const StudyView = observer((props: any & WithStyles) => {
                     })}
                 </TextField>
                 <MapView lat={33.546727} lng={-117.673965} featureCollection={map} />
-                <SurveyView surveys={Object.values(toJS(surveys))} features={features} />
                 <CreateOrUpdateButton study={study} studyIsNew={studyIsNew} />
             </Fragment>
         );

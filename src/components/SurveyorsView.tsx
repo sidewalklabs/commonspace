@@ -127,7 +127,8 @@ const SurveyorsView = observer((props: SurveyorsViewProps & WithStyles) => {
                 Add Surveyors
                 <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={addNewEmptySurveyorToStudy}>
                     Add Surveyor
-                    </Button>
+                </Button>
+                <br />
                 <Table className={classes.table}>
                     <TableHead>
                         <TableRow>

@@ -12,17 +12,16 @@ import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
-import Modal from '@material-ui/core/Modal';
 
 import { observer } from 'mobx-react';
 
 import StudiesList from './StudiesList';
 import StudyView from './StudyView';
+import SurveyView from './SurveyView';
 import SurveyorsView from './SurveyorsView';
+import WrapInModal from './WrapInModal';
 import uiState, { visualizeNewStudy, AuthMode, AvailableModals } from '../stores/ui';
 import applicationState, { setCurrentStudyEmptySkeleton, ApplicationState, studyEmptySkeleton } from '../stores/applicationState';
-
-const drawerWidth = 240;
 
 interface MainProps {
     isOpen: boolean;
@@ -44,17 +43,12 @@ const styles = theme => ({
         padding: '0 8px',
         ...theme.mixins.toolbar
     },
-    modal: {
-        top: 300,
-        left: 300
-    },
     paper: {
         position: 'absolute',
         width: theme.spacing.unit * 50,
         backgroundColor: theme.palette.background.paper,
         boxShadow: theme.shadows[5],
         padding: theme.spacing.unit * 4,
-        width: "50%",
         top: "50%",
         left: "50%",
         transform: "translate(-50%, -50%)"
@@ -78,21 +72,6 @@ const styles = theme => ({
         overflow: 'auto'
     }
 });
-
-// @ts-ignore
-const WrapInModal = observer(withStyles(styles)(props => {
-    const { classes, children, modalType, visibleModal, onClose = () => uiState.visibleModal = null } = props;
-    return (
-        <Modal
-            open={visibleModal === modalType}
-            onClose={onClose}
-        >
-            <div className={classes.paper}>
-                {children}
-            </div>
-        </Modal>
-    )
-}));
 
 function prepareNewStudy() {
     setCurrentStudyEmptySkeleton()
@@ -157,6 +136,9 @@ const Main = observer(
                     </WrapInModal>
                     <WrapInModal onClose={() => uiState.visibleModal = 'study'} modalType={'surveyors'} visibleModal={visibleModal}>
                         <SurveyorsView studyId={currentStudy.studyId} surveyors={currentStudy.surveyors} />
+                    </WrapInModal>
+                    <WrapInModal onClose={() => uiState.visibleModal = 'study'} modalType={'surveys'} visibleModal={visibleModal}>
+                        <SurveyView surveys={Object.values(currentStudy.surveys)} features={currentStudy.map.features} />
                     </WrapInModal>
                 </div>
 
