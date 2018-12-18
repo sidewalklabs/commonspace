@@ -121,7 +121,7 @@ export async function selectNewStudy(study: any) {
     applicationState.currentStudy = await fetchSurveysForStudy(token, study.studyId);
 }
 
-export function studyEmptySkeleton() {
+export function studyEmptySkeleton(): Study {
     return {
         studyId: '',
         title: '',
