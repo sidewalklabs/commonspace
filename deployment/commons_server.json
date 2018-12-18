@@ -1,10 +1,10 @@
 {
   "variables": {
     "container_image_name": "us.gcr.io/nyc-tlc-1225/commons-server",
-    "version": "",
-    "gcloud_json_key": "",
-    "google_auth_client_id": "",
-    "google_auth_client_secret": "",
+    "version": "v0.0.1",
+    "gcloud_json_key": "key",
+    "google_auth_client_id": "my-id",
+    "google_auth_client_secret": "my-secret",
     "db_user": "postgres",
     "db_pass": "postgres",
     "db_host": "localhost",
@@ -63,6 +63,11 @@
       "type": "file",
       "source": "css/",
       "destination": "commons/css"
+    },
+    {
+      "type": "file",
+      "source": "assets/",
+      "destination": "commons/assets"
     },
     {
       "type": "file",

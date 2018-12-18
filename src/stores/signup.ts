@@ -28,7 +28,7 @@ export async function signUpUser() {
         body: JSON.stringify(snakecaseKeys(data)), // body data type must match "Content-Type" header
     })
     const {user, token} = await response.json();
-    init(token);
+    await init(token);
 }
 
 interface SignUpState {

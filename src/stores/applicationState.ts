@@ -72,7 +72,7 @@ async function postToApi(route: string, token: string, data: any) {
             body
         })
     } catch (err) {
-        console.log(`[uri ${route}] [data ${JSON.stringify(data)}] ${err}`)
+        console.error(`[uri ${route}] [data ${JSON.stringify(data)}] ${err}`)
         throw err;
     }
 }
@@ -161,8 +161,6 @@ export async function addNewSurveyToCurrentStudy() {
 export async function addNewSurveyorToSurvey(studyId: string, email: string) {
     const { token } = applicationState;
     applicationState.currentStudy.surveyors.push(email);
-    //const response = await postToApi(`/api/v1/studies/${studyId}/surveyors`, token, {email})
-    //console.log(response.status);
 }
 
 export async function addNewSurveyorToNewSurvey(token: string, email: string) {
@@ -171,7 +169,9 @@ export async function addNewSurveyorToNewSurvey(token: string, email: string) {
 
 export async function init(token) {
     applicationState.token = token;
-    applicationState.studies = await getStudies(token);
+    const studies = await getStudies(token);
+    applicationState.studies = studies;
+    await Promise.all(Object.keys(studies).map(s => fetchSurveysForStudy(token, s)));
 }
 
 let applicationState: ApplicationState = observable({

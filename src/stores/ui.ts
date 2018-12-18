@@ -23,7 +23,7 @@ interface UiState {
     mode: AuthMode;
 }
 
-const uiState = observable({
+const uiState: UiState = observable({
     availableLocations: [],
     currentStudyIsNew: false,
     visibleModal: null,
@@ -31,7 +31,7 @@ const uiState = observable({
 });
 
 autorun(() => {
-    console.log(toJS(uiState.visibleModal));
+    console.log('');
 });
 
 export default uiState;

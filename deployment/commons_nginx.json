@@ -37,6 +37,11 @@
     },
     {
       "type": "file",
+      "source": "assets/",
+      "destination": "commons/assets"
+    },
+    {
+      "type": "file",
       "source": "package.json",
       "destination": "commons/package.json"
     },

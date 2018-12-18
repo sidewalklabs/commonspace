@@ -120,7 +120,7 @@ const SurveyorsView = observer((props: SurveyorsViewProps & WithStyles) => {
     const addNewEmptySurveyorToStudy = () => {
         applicationState.currentStudy.surveyors = [...surveyors, ''];
     }
-    const tableRows = surveyors.map((email, index) => <Row email={email} index={index} />);
+    const tableRows = surveyors.map((email, index) => <Row key={index} email={email} index={index} />);
     return (
         <div>
             <Paper className={classes.root}>
