@@ -11,6 +11,8 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 
 import { observer } from 'mobx-react';
@@ -22,10 +24,12 @@ import SurveyorsView from './SurveyorsView';
 import WrapInModal from './WrapInModal';
 import uiState, { visualizeNewStudy, AuthMode, AvailableModals } from '../stores/ui';
 import applicationState, { setCurrentStudyEmptySkeleton, ApplicationState, studyEmptySkeleton } from '../stores/applicationState';
+import { observable } from 'mobx';
 
 interface MainProps {
     isOpen: boolean;
     applicationState: ApplicationState;
+    anchorElement: null | HTMLElement;
 }
 
 const styles = theme => ({
@@ -78,9 +82,23 @@ function prepareNewStudy() {
     visualizeNewStudy()
 }
 
+function handleLogOut() {
+    mainState.anchorElement = null;
+    applicationState.token = null;
+}
+
+interface MainState {
+    anchorElement: HTMLElement | null;
+}
+
+const mainState: MainState = observable({
+    anchorElement: null
+})
+
 const Main = observer(
     (props: MainProps & WithStyles) => {
         const { applicationState, classes } = props;
+        const { anchorElement } = mainState;
         const { studies, token } = applicationState;
         const { visibleModal } = uiState;
         const currentStudy = applicationState.currentStudy ? applicationState.currentStudy : studyEmptySkeleton();
@@ -106,11 +124,21 @@ const Main = observer(
                         <IconButton
                             color="inherit"
                             aria-label="Open Menu"
-                            onClick={() => console.log('open menu')}
+                            onClick={e => mainState.anchorElement = e.currentTarget}
                             className={classes.menuIcon}
                         >
                             <MoreVertIcon />
                         </IconButton>
+                        <Menu
+                            id="simple-menu"
+                            anchorEl={anchorElement}
+                            open={Boolean(anchorElement)}
+                            onClose={() => mainState.anchorElement = null}
+                        >
+                            <MenuItem onClick={() => mainState.anchorElement = null}>Profile</MenuItem>
+                            <MenuItem onClick={() => mainState.anchorElement = null}>My account</MenuItem>
+                            <MenuItem onClick={handleLogOut}>Logout</MenuItem>
+                        </Menu>
                     </Toolbar>
                 </AppBar>
                 <div>

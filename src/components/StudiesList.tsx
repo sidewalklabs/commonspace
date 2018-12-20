@@ -33,7 +33,6 @@ async function transitionToViewStudy(study) {
 
 export interface StudiesListProps {
     studies: { [key: string]: Study };
-    expanded: number[];
 }
 
 const ExpandedStudy = withStyles(styles)((props: WithStyles & { study: Study }) => {
@@ -79,7 +78,7 @@ const ExpandedStudy = withStyles(styles)((props: WithStyles & { study: Study }) 
 });
 
 export default withStyles(styles)(observer((props: StudiesListProps & WithStyles) => {
-    const { classes, studies, expanded = [] } = props;
+    const { classes, studies } = props;
     const studiesAsRows = Object.values(studies).map((study, index) => {
         const { studyId, title } = study;
         return (
