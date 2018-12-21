@@ -13,7 +13,7 @@ import { withNavigation } from 'react-navigation';
 import { Button, Card, CardContent, Divider, Title, Paragraph } from 'react-native-paper';
 import * as _ from 'lodash';
 
-import { getStudies, getSurveysForStudy } from '../lib/commonsClient';
+import { getStudies } from '../lib/commonsClient';
 
 function typeToRouteName(type) {
   switch (type) {
@@ -48,36 +48,60 @@ class StudyIndexScreen extends React.Component {
   });
 
   async componentDidMount() {
-    const fakeStudy = {
-      authorName: 'Ananta',
-      protocolVersion: '1.0',
-      studyId: '12345',
-      surveyors: ['pandananta@gmail.com', 'thorncliffesurveyorone@gmail.com'],
-      title: '000 test',
+    const peopleMovingDemoStudy = {
+      title: 'People Moving Demo',
       type: 'movement',
-      fields: [],
       map: {},
+      authorName: 'CommonSpace',
+      description: 'Surveys in demo mode will not save.',
       surveys: [
         {
-          endDate: '2018-10-12T22:00:00Z',
           locationId: '0',
           survey_location: { type: 'polygon', coordinates: [] },
           method: 'analog',
           representation: 'absolute',
-          startDate: '2018-10-12T21:00:00Z',
-          studyId: '12345',
-          surveyId: '1234566',
-          title: 'test',
+          survey_id: 'DEMO',
+          title: 'Demo',
           type: 'peopleMovingCount',
-          surveyorEmail: 'pandananta@gmail.com',
           userId: '123412341234',
           zone: 'Zone 12',
         },
       ],
     };
+    const stationaryActivityDemoStudy = {
+      title: 'Stationary Activity Mapping Demo',
+      type: 'activity',
+      map: {},
+      authorName: 'CommonSpace',
+      description: 'Surveys in demo mode will not save.',
+      surveys: [
+        {
+          locationId: '0',
+          survey_location: {
+            coordinates: [
+              [
+                [-117.672339677811, 33.5472427639013],
+                [-117.666631937027, 33.5459104345793],
+                [-117.668541669846, 33.5450520101751],
+                [-117.672339677811, 33.5472427639013],
+              ],
+            ],
+            type: 'Polygon',
+          },
+          method: 'analog',
+          representation: 'absolute',
+          survey_id: 'DEMO',
+          title: 'Demo',
+          type: 'peopleMovingCount',
+          userId: '123412341234',
+          zone: 'Zone 12',
+        },
+      ],
+    };
+
     const token = await AsyncStorage.getItem('token');
     let studies = await getStudies(token);
-    studies.push(fakeStudy);
+    studies.push(peopleMovingDemoStudy, stationaryActivityDemoStudy);
     studies = _.sortBy(studies, 'title');
     this.setState({ token, studies, loading: false });
   }
@@ -88,20 +112,13 @@ class StudyIndexScreen extends React.Component {
       <View style={[styles.container]}>
         <ScrollView style={[styles.container]}>
           {this.state.loading && <ActivityIndicator />}
-          {studies.map(study => {
-            const {
-              studyId,
-              title: studyName,
-              type: studyType,
-              authorName: studyAuthor,
-              surveys,
-            } = study;
+          {studies.map((study, index) => {
+            const { description, title: studyName, type: studyType, authorName, surveys } = study;
             // TODO: move these to backend
-            const authorUrl = 'https://parkpeople.ca/';
-            const studyInstructions =
-              'You will be using this app to collect observational data about what public activities people are doing in Thorncliffe Park. Following the study, a report will be made available online.';
+            const studyAuthor = authorName || 'Unknown author';
+            const authorUrl = 'https://placeholder.ca/';
             return (
-              <Card elevation={3} key={study.studyId} style={styles.card}>
+              <Card elevation={3} key={index} style={styles.card}>
                 <CardContent style={styles.studyHeader}>
                   <Title>{studyName}</Title>
                   <Paragraph>
@@ -118,15 +135,16 @@ class StudyIndexScreen extends React.Component {
                     </Text>
                   </Paragraph>
 
-                  {studyInstructions && <Paragraph>{studyInstructions}</Paragraph>}
+                  {description && <Paragraph>{description}</Paragraph>}
                 </CardContent>
                 {surveys.map(survey => {
                   const {
                     survey_id: surveyId,
-                    title: surveyTitle,
+                    title,
                     locationId,
                     survey_location: zoneFeatureGeoJson,
                   } = survey;
+                  const surveyTitle = title || 'Unnamed Survey';
                   const zoneCoordinates = _.map(zoneFeatureGeoJson.coordinates[0], c => {
                     return { longitude: c[0], latitude: c[1] };
                   });
@@ -144,7 +162,6 @@ class StudyIndexScreen extends React.Component {
                             primary
                             onPress={() =>
                               this.props.navigation.navigate(typeToRouteName(studyType), {
-                                studyId,
                                 surveyId,
                                 studyName,
                                 studyAuthor,

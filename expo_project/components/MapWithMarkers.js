@@ -3,18 +3,12 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { Platform, StyleSheet, TouchableOpacity } from 'react-native';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
-import MapConfig from '../constants/Map';
 import PersonIcon from '../components/PersonIcon';
 import * as _ from 'lodash';
 
 import { getRandomIconColor } from '../utils/color';
 
-// NOTE: A longPress is more like 500ms,
-// however there's a delay between when the longPress is registered
-// and when a new marker is created in firestore and thereafter rendered
-// Currently setting halo animation to 1000 to account for that
-// but that might confuse users who release early (e.g. at 600ms) which still ends up creating a marker
-const CIRCULAR_PROGRESS_ANIMATION_DURATION = 1000;
+const CIRCULAR_PROGRESS_ANIMATION_DURATION = 500;
 const CIRCULAR_PROGRESS_SIZE = 100;
 
 class MapWithMarkers extends React.Component {
@@ -22,7 +16,6 @@ class MapWithMarkers extends React.Component {
     super(props);
 
     this.state = {
-      region: MapConfig.defaultRegion,
       circularProgressLocation: null,
       markerColor: null,
     };
@@ -70,7 +63,8 @@ class MapWithMarkers extends React.Component {
       zoneLatLngs,
     } = this.props;
 
-    return this.state.region ? (
+    // TODO: add back points of interest markers once the backend supports them
+    return (
       <TouchableOpacity
         activeOpacity={1}
         onPressIn={e => {
@@ -89,7 +83,6 @@ class MapWithMarkers extends React.Component {
           provider="google"
           onPress={() => onMapPress()}
           onLongPress={e => onMapLongPress(e.nativeEvent.coordinate, this.state.markerColor)}
-          initialRegion={this.state.region}
           showsUserLocation
           zoomEnabled
           pitchEnabled={false}
@@ -117,7 +110,7 @@ class MapWithMarkers extends React.Component {
               </MapView.Marker>
             );
           })}
-          {MapConfig.features.map((feature, index) => {
+          {/* {MapConfig.features.map((feature, index) => {
             const { latitude, longitude, title, description } = feature;
             const coordinate = { latitude, longitude };
             return (
@@ -129,7 +122,7 @@ class MapWithMarkers extends React.Component {
                 stopPropagation
               />
             );
-          })}
+          })} */}
         </MapView>
         {this.state.circularProgressLocation && (
           <AnimatedCircularProgress
@@ -150,7 +143,7 @@ class MapWithMarkers extends React.Component {
           />
         )}
       </TouchableOpacity>
-    ) : null;
+    );
   }
 }
 
