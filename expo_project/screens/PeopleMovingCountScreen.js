@@ -14,8 +14,6 @@ import PersonIcon from '../components/PersonIcon';
 
 import SegmentedControl from '../components/SegmentedControl';
 
-import MapConfig from '../constants/Map';
-
 import * as uuid from 'uuid';
 
 class PeopleMovingCountSummary extends React.Component {
@@ -118,13 +116,36 @@ class MarkerRow extends React.Component {
 }
 
 class PeopleMovingCountScreen extends React.Component {
+  static navigationOptions = ({ navigation }) => ({
+    headerTitle: navigation.getParam('surveyTitle'),
+    headerLeft: (
+      <TouchableOpacity
+        onPress={() => {
+          navigation.goBack();
+        }}
+        style={{
+          backgroundColor: 'white',
+          paddingHorizontal: 15,
+          paddingVertical: 5,
+          borderRadius: 20,
+          marginLeft: 10,
+        }}>
+        <Text
+          style={{
+            fontSize: 14,
+            color: Theme.colors.primary,
+            fontWeight: 'bold',
+          }}>
+          Exit
+        </Text>
+      </TouchableOpacity>
+    ),
+  });
+
   constructor(props) {
     super(props);
-    // TODO: placeholder, replace with real location?
-    const { latitude, longitude } = MapConfig.defaultRegion;
     this.state = {
       activeTab: 'Count',
-      location: { latitude, longitude },
       markers: [],
       selectedAttributes: _.reduce(
         QUESTION_CONFIG,

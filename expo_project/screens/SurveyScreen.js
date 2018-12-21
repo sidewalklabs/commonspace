@@ -226,7 +226,6 @@ class SurveyScreen extends React.Component {
   setFormResponse(dataPointId, key, value, heightToScroll) {
     const markersCopy = [...this.state.markers];
     const marker = _.find(markersCopy, { dataPointId });
-    const studyId = this.props.navigation.getParam('studyId');
     const surveyId = this.props.navigation.getParam('surveyId');
     const { token } = this.state;
 
@@ -235,7 +234,10 @@ class SurveyScreen extends React.Component {
       this.setState({
         markers: markersCopy,
       });
-      saveDataPoint(token, surveyId, marker).then(() => {});
+
+      if (surveyId !== 'DEMO') {
+        saveDataPoint(token, surveyId, marker);
+      }
 
       if (heightToScroll) {
         const currentScrollPosition = this.state.formScrollPosition;
@@ -293,7 +295,6 @@ class SurveyScreen extends React.Component {
   }
 
   duplicateMarker(originalDataPointId) {
-    const studyId = this.props.navigation.getParam('studyId');
     const surveyId = this.props.navigation.getParam('surveyId');
     const markersCopy = [...this.state.markers];
     const markerToCopy = _.find(markersCopy, {
@@ -317,14 +318,18 @@ class SurveyScreen extends React.Component {
       };
 
       markersCopy.push(duplicateMarker);
-      saveDataPoint(this.state.token, surveyId, duplicateMarker)
-        .then(() => {
-          this.setState({ markers: markersCopy, activeMarkerId: dataPointId }, this.resetDrawer);
-        })
-        .catch(error => {
+      this.setState({ markers: markersCopy, activeMarkerId: dataPointId }, this.resetDrawer);
+
+      if (surveyId !== 'DEMO') {
+        saveDataPoint(this.state.token, surveyId, duplicateMarker).catch(error => {
+          // TODO: display an error message
           markersCopy.pop();
-          this.setState({ markers: markersCopy, activeMarkerId: dataPointId }, this.resetDrawer);
+          this.setState({
+            markers: markersCopy,
+            activeMarkerId: markersCopy[markersCopy.length - 1].dataPointId,
+          });
         });
+      }
     }
   }
 
@@ -338,7 +343,6 @@ class SurveyScreen extends React.Component {
   }
 
   createNewMarker(location, color) {
-    const studyId = this.props.navigation.getParam('studyId');
     const surveyId = this.props.navigation.getParam('surveyId');
     const { markers } = this.state;
     // todo creation date vs latest update date? how do we handle the numbering later w/o creation?
@@ -356,20 +360,17 @@ class SurveyScreen extends React.Component {
       date: date.toISOString(),
     };
 
-    saveDataPoint(this.state.token, surveyId, marker)
-      .then(() => {
-        this.setState(
-          { markers: [...markers, marker], activeMarkerId: dataPointId },
-          this.resetDrawer,
-        );
-      })
-      .catch(error => {
+    this.setState({ markers: [...markers, marker], activeMarkerId: dataPointId }, this.resetDrawer);
+
+    if (surveyId !== 'DEMO') {
+      saveDataPoint(this.state.token, surveyId, marker).catch(error => {
+        // TODO: Display error
         this.setState({ markers, activeMarkerId: dataPointId }, this.resetDrawer);
       });
+    }
   }
 
   setMarkerLocation(dataPointId, location) {
-    const studyId = this.props.navigation.getParam('studyId');
     const surveyId = this.props.navigation.getParam('surveyId');
     const { token } = this.state;
     const markersCopy = [...this.state.markers];
@@ -381,7 +382,9 @@ class SurveyScreen extends React.Component {
         markers: markersCopy,
       });
 
-      saveDataPoint(token, surveyId, marker).then(() => {});
+      if (surveyId !== 'DEMO') {
+        saveDataPoint(token, surveyId, marker);
+      }
     }
   }
 
