@@ -3,10 +3,10 @@ import { FeatureCollection } from 'geojson';
 import { FOREIGN_KEY_VIOLATION } from 'pg-error-constants';
 
 import { createUserFromEmail } from './user';
-import { javascriptArrayToPostgresArray, studyIdToTablename, ActivityCountField } from './utils';
+import { javascriptArrayToPostgresArray, studyIdToTablename, GehlField } from './utils';
 
 export type StudyScale = 'district' | 'city' | 'cityCentre' | 'neighborhood' | 'blockScale' | 'singleSite';
-export type StudyType = 'activity' | 'movement';
+export type StudyType = 'stationary' | 'movement';
     
 export interface Study {
     studyId: string;
@@ -18,10 +18,10 @@ export interface Study {
     scale?: StudyScale;
     areas?: any,
     userId: string;
-    type: 'activity' | 'movement';
+    type: StudyType;
     map?: FeatureCollection;
     protocolVersion: string;
-    fields: ActivityCountField[];
+    fields: GehlField[];
     notes?: string;
 }
 
@@ -30,7 +30,7 @@ function setString(s: any) {
 }
 
 // map over the list of fields the user wants to use to create their study and use type guarding to create a sql statement
-function gehlFieldAsPgColumn(field: ActivityCountField) {
+function gehlFieldAsPgColumn(field: GehlField) {
     switch (field) {
         case  'gender':
             return 'gender data_collection.gender';
@@ -55,7 +55,7 @@ function gehlFieldAsPgColumn(field: ActivityCountField) {
     }
 }
 
-function createNewTableFromActivityCountFields(study: Study, tablename: string) {
+function createNewTableFromGehlFields(study: Study, tablename: string) {
     const additionalColumns = study.fields.map(gehlFieldAsPgColumn).join(',\n');
     return `CREATE TABLE ${tablename} (
                     survey_id UUID references data_collection.survey(survey_id) ON DELETE CASCADE NOT NULL,
@@ -65,6 +65,7 @@ function createNewTableFromActivityCountFields(study: Study, tablename: string) 
                     ${additionalColumns} 
                     )`;
 }
+
 
 export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
     // TODO union with studies that do not have a surveyors yet
@@ -117,7 +118,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
 }
   
 export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: string) {
-   const query = `SELECT stu.study_id, stu.title as study_title, stu.protocol_version, stu.study_type, stu.fields, stu.map, svy.survey_id, svy.title as survey_title, svy.time_start, svy.time_stop, ST_AsGeoJSON(loc.geometry)::json as survey_location
+   const query = `SELECT stu.study_id, stu.title as study_title, stu.protocol_version, stu.study_type, stu.fields, stu.map, svy.survey_id, svy.title as survey_title, svy.start_date, svy.end_date, ST_AsGeoJSON(loc.geometry)::json as survey_location
                  FROM data_collection.survey as svy
                  JOIN data_collection.study as stu
                  ON svy.study_id = stu.study_id
@@ -127,34 +128,8 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
     const values = [userId]; 
     try {
         const {rows}  = await pool.query(query, values);
-        const studiesAndSurveys = rows.map((row) => {
-            const {
-                study_id,
-                study_title,
-                protocol_version,
-                study_type,
-                fields,
-                survey_id,
-                survey_title,
-                time_start: start_date,
-                time_stop: end_date,
-                survey_location,
-                location_id } = row;
-            return {
-                study_id,
-                study_title,
-                protocol_version,
-                study_type,
-                fields,
-                survey_id,
-                survey_title,
-                start_date,
-                end_date,
-                location_id,
-                survey_location
-            }
-        }).reduce((acc, curr) => {
-            const {study_id, study_title, protocol_version, study_type: type, survey_id, start_date, end_date, survey_location, location_id } = curr;
+        const studiesAndSurveys = rows.reduce((acc, curr) => {
+            const { study_id, study_title, protocol_version, study_type: type, map, survey_id, start_date, end_date, survey_location, location_id } = curr;
             const survey = {
                 survey_id,
                 study_title,
@@ -169,10 +144,11 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
                 acc[curr.study_id] = {
                     study_id,
                     type,
+                    map,
                     protocol_version,
                     title: study_title,
                     surveys: [survey]
-                }
+                };
             }
             return acc;
         }, {} )
@@ -185,7 +161,7 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
 
 export function surveysForStudy(pool: pg.Pool, studyId: string) {
     const query = `SELECT
-                       s.time_start, s.time_stop, u.email, s.survey_id, s.title, s.representation, s.microclimate, s.temperature_c, s.method, s.user_id, s.notes
+                       s.start_date, s.end_date, u.email, s.survey_id, s.title, s.representation, s.microclimate, s.temperature_c, s.method, s.user_id, s.notes
                    FROM
                        data_collection.survey AS s
                        JOIN public.users AS u ON s.user_id = u.user_id
@@ -221,7 +197,7 @@ export async function deleteStudy(pool: pg.Pool, studyId: string) {
 export async function createStudy(pool: pg.Pool, study: Study) {
     // for some unknown reason import * as uuidv4 from 'uuid/v4'; uuidv4(); fails in gcp, saying that it's not a function call
     const studyTablename = studyIdToTablename(study.studyId);
-    const newStudyDataTableQuery = createNewTableFromActivityCountFields(study, studyTablename);
+    const newStudyDataTableQuery = createNewTableFromGehlFields(study, studyTablename);
     const fields = javascriptArrayToPostgresArray(study.fields);
     const { studyId, title, userId, protocolVersion, type, map={} } = study;
     const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, protocol_version, study_type, fields, tablename, map)
