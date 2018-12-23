@@ -98,7 +98,7 @@ const StudyView = observer((props: any & WithStyles) => {
 
     const STUDY_TYPES = [
         {
-            value: 'activity',
+            value: 'stationary',
             label: 'Stationary Activity Count'
         },
         {

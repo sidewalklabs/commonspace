@@ -1,5 +1,5 @@
 import * as pg from 'pg';
-import { javascriptArrayToPostgresArray, studyIdToTablename, ActivityCountField } from './utils';
+import { javascriptArrayToPostgresArray, studyIdToTablename, GehlField } from './utils';
 
 const validDataPointProperties = new Set([
     'survey_id',
@@ -18,9 +18,9 @@ const validDataPointProperties = new Set([
 ]);
 
 
-const allActivityCountFieldsArray: ActivityCountField[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'note'];
-const allActivityCountFields: Set<ActivityCountField> = new Set(allActivityCountFieldsArray);
-const allActivityCountFieldsStrings: Set<string> = allActivityCountFields;
+const allGehlFieldsArray: GehlField[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'note'];
+const allGehlFields: Set<GehlField> = new Set(allGehlFieldsArray);
+const allGehlFieldsStrings: Set<string> = allGehlFields;
 
 function wrapInArray<T>(x: T | T[]) {
     if (Array.isArray(x)) {
@@ -118,8 +118,8 @@ function convertKeyToParamterBinding(index, key, value) {
     }
 }
 
-function deleteNonActivityCountFields(o: any) {
-    const unwantedKeys = Object.keys(o).filter(x => !allActivityCountFieldsStrings.has(x) || o[x] === null)
+function deleteNonGehlFields(o: any) {
+    const unwantedKeys = Object.keys(o).filter(x => !allGehlFieldsStrings.has(x) || o[x] === null)
     unwantedKeys.forEach(k => delete o[k]);
     return o;
 }
@@ -150,7 +150,7 @@ function processKeyAndValues(dataPoint) {
 
 function transformToPostgresInsert(surveyId: string, dataPoint) {
     const { data_point_id } = dataPoint;
-    const dataPointForPostgres = deleteNonActivityCountFields(dataPoint);
+    const dataPointForPostgres = deleteNonGehlFields(dataPoint);
     dataPointForPostgres.survey_id = surveyId;
     dataPointForPostgres.data_point_id = data_point_id;
     const { columns, values, parameterBindings } = processKeyAndValues(dataPointForPostgres);

@@ -23,7 +23,7 @@ ALTER ROLE data_collector SET search_path TO data_collection,"$user",public;
 SET search_path TO data_collection;
 
 CREATE TYPE studyScale AS ENUM ('district', 'city', 'cityCentre', 'neighborhood', 'blockScale', 'singleSite');
-CREATE TYPE studyType AS ENUM('activity', 'movement');
+CREATE TYPE studyType AS ENUM('stationary', 'movement');
 
 
 CREATE TABLE IF NOT EXISTS location
@@ -76,8 +76,8 @@ CREATE TABLE IF NOT EXISTS survey (
     title TEXT,
     location_id UUID,
     survey_id UUID PRIMARY KEY,
-    time_start TIMESTAMP WITH TIME ZONE,
-    time_stop TIMESTAMP WITH TIME ZONE,
+    start_date TIMESTAMP WITH TIME ZONE,
+    end_date TIMESTAMP WITH TIME ZONE,
     time_character TEXT,
     representation TEXT NOT NULL,
     microclimate TEXT,

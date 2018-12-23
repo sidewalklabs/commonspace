@@ -10,7 +10,7 @@ import {
   deleteDataPoint,
   retrieveDataPointsForSurvey
 } from "../datastore/datapoint";
-import { ActivityCountField } from "../datastore/utils";
+import { GehlField } from "../datastore/utils";
 import {
   checkUserIdIsSurveyor,
   createStudy,
@@ -54,7 +54,7 @@ export interface Study {
   type: StudyType;
   map?: FeatureCollection;
   surveys?: Survey[];
-  fields: ActivityCountField[];
+  fields: GehlField[];
 }
 
 export interface Survey {
@@ -72,7 +72,7 @@ export interface Survey {
   notes?: string;
 }
 
-const STUDY_FIELDS: ActivityCountField[] = [
+const STUDY_FIELDS: GehlField[] = [
   "gender",
   "age",
   "mode",
@@ -112,7 +112,7 @@ router.get(
         DbPool,
         userId
       )) as Study[];
-    } else {
+    } else if (type === 'all') {
       const adminStudies = await returnStudiesForAdmin(DbPool, userId);
       const suveyorStudies = (await returnStudiesUserIsAssignedTo(
         DbPool,
@@ -120,6 +120,9 @@ router.get(
       )) as Study[];
       // @ts-ignore
       responseBody = adminStudies.concat(suveyorStudies);
+    } else {
+        res.status(400).send();
+        return;
     }
     res.send(responseBody);
   })
