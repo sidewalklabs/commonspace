@@ -15,7 +15,7 @@ import { withStyles, WithStyles } from '@material-ui/core/styles';
 
 import { observer } from 'mobx-react';
 
-import { selectNewStudy, Study } from '../stores/applicationState';
+import { deleteStudy, selectNewStudy, Study } from '../stores/applicationState';
 import MapView from './MapView';
 import uiState from '../stores/ui';
 
@@ -31,6 +31,10 @@ async function transitionToViewStudy(study) {
     uiState.visibleModal = 'study';
 }
 
+async function removeStudy(studyId: string) {
+    await deleteStudy(studyId);
+}
+
 export interface StudiesListProps {
     studies: { [key: string]: Study };
 }
@@ -38,6 +42,7 @@ export interface StudiesListProps {
 const ExpandedStudy = withStyles(styles)((props: WithStyles & { study: Study }) => {
     const { classes, study } = props;
     const { title, surveyors, surveys = {}, map } = study;
+    const { studyId } = study;
     return (
         <Fragment>
             <TextField
@@ -69,6 +74,9 @@ const ExpandedStudy = withStyles(styles)((props: WithStyles & { study: Study }) 
             >
             </TextField>
             <MapView lat={33.546727} lng={-117.673965} featureCollection={map} />
+            <Button variant="contained" color="secondary" onClick={async () => await removeStudy(studyId)}>
+                Delete
+            </Button>
             <Button variant="contained" color="primary" onClick={async () => await transitionToViewStudy(study)}>
                 Edit
             </Button>

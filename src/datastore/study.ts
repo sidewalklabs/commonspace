@@ -183,7 +183,7 @@ export async function deleteStudy(pool: pg.Pool, studyId: string) {
                          WHERE study_id = $1`;
     const values = [studyId];
     try {
-        await pool.query(deleteStudyTable, values);
+        await pool.query(deleteStudyTable);
         const {rowCount, command} = await pool.query(deleteStudy, values);
         if (rowCount !== 1 && command !== 'DELETE') {
             throw new Error(`Unable to delete study: ${studyId}`);

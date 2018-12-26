@@ -206,16 +206,16 @@ router.post(
 );
 
 router.delete(
-  "/studies/:studyId",
-  return500OnError(async (req, res) => {
-    const { user_id: userId } = req.user;
-    const { studyId } = req.params;
-    if (!userIsAdminOfStudy(DbPool, studyId, userId)) {
-      res.status(409).send();
-    }
-    await deleteStudy(DbPool, studyId);
-    res.status(200).send();
-  })
+    "/studies/:studyId",
+    return500OnError(async (req, res) => {
+        const { user_id: userId } = req.user;
+        const { studyId } = req.params;
+        if (!userIsAdminOfStudy(DbPool, studyId, userId)) {
+            res.status(409).send();
+        }
+        await deleteStudy(DbPool, studyId);
+        res.status(200).send();
+    })
 );
 
 async function saveGeoJsonFeatureAsLocation(x: Feature | FeatureCollection) {

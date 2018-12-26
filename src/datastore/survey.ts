@@ -20,7 +20,7 @@ function joinSurveyWithUserEmailCTE(survey: Survey) {
     const { studyId, surveyId, title, startDate, endDate, representation, method, userEmail, locationId } = survey;
     let query, values;
     if (locationId) {
-        query = `WITH t (study_id, survey_id, title, time_start, time_stop, representation, method, user_email, location_id) AS (
+        query = `WITH t (study_id, survey_id, title, start_date, end_date, representation, method, user_email, location_id) AS (
               VALUES(
                      $1::UUID,
                      $2::UUID,
@@ -33,13 +33,13 @@ function joinSurveyWithUserEmailCTE(survey: Survey) {
                      $9::UUID
               )
             )
-            SELECT t.study_id, t.survey_id, t.title, t.time_start, t.time_stop, t.representation, t.method, u.user_id, t.location_id
+            SELECT t.study_id, t.survey_id, t.title, t.start_date, t.end_date, t.representation, t.method, u.user_id, t.location_id
             FROM  t
             JOIN public.users u
             ON t.user_email = u.email`;
         values =  [studyId, surveyId, title, startDate, endDate, representation, method, userEmail, locationId];
     } else {
-        query = `WITH t (study_id, survey_id, title, time_start, time_stop, representation, method, user_email) AS (
+        query = `WITH t (study_id, survey_id, title, start_date, end_date, representation, method, user_email) AS (
               VALUES(
                      $1::UUID,
                      $2::UUID,
@@ -51,7 +51,7 @@ function joinSurveyWithUserEmailCTE(survey: Survey) {
                      $8::TEXT
               )
             )
-            SELECT t.study_id, t.survey_id, t.title, t.time_start, t.time_stop, t.representation, t.method, u.user_id
+            SELECT t.study_id, t.survey_id, t.title, t.start_date, t.end_date, t.representation, t.method, u.user_id
             FROM  t
             JOIN public.users u
             ON t.user_email = u.email`;
@@ -63,10 +63,10 @@ function joinSurveyWithUserEmailCTE(survey: Survey) {
 export async function createNewSurveyForStudy(pool: pg.Pool, survey) {
     let { query, values } = joinSurveyWithUserEmailCTE(survey);
     if (survey.locationId ) {
-        query = `INSERT INTO data_collection.survey (study_id, survey_id, title, time_start, time_stop, representation, method, user_id, location_id)
+        query = `INSERT INTO data_collection.survey (study_id, survey_id, title, start_date, end_date, representation, method, user_id, location_id)
                    ${query};`
     } else {
-        query = `INSERT INTO data_collection.survey (study_id, survey_id, title, time_start, time_stop, representation, method, user_id)
+        query = `INSERT INTO data_collection.survey (study_id, survey_id, title, start_date, end_date, representation, method, user_id)
                    ${query};`
     }
     try {
@@ -80,7 +80,7 @@ export async function createNewSurveyForStudy(pool: pg.Pool, survey) {
 
 export function updateSurvey(pool: pg.Pool, survey: Survey) {
     const { title, locationId, startDate, endDate, userEmail } = survey;
-   const query = `WITH t (title, location_id, time_start, time_stop, user_email) as (
+   const query = `WITH t (title, location_id, start_date, end_date, user_email) as (
                       VALUES (
                              $1::text,
                              $2::UUID,
@@ -92,8 +92,8 @@ export function updateSurvey(pool: pg.Pool, survey: Survey) {
                   UPDATE date_collection.survey
                   SET title = t.title,
                       location_id = t.location_id,
-                      time_start = t.time_start,
-                      time_stop = t.time_stop,
+                      start_date = t.start_date,
+                      end_date = t.end_date,
                       user_email = t.user_email`
     const values = [title, locationId, startDate, endDate, userEmail] ;
     try {

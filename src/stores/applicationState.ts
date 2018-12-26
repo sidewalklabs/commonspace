@@ -37,10 +37,7 @@ const fetchParams: RequestInit = {
 function getFromApi(route: string) {
     return fetch(process.env.server_hostname + route, {
         ...fetchParams,
-        method: 'GET',
-        headers: {
-            "Content-Type": "application/json; charset=utf-8"
-        }
+        method: 'GET'
     })
 }
 
@@ -71,6 +68,13 @@ async function postToApi(route: string, data: any) {
         console.error(`[uri ${route}] [data ${JSON.stringify(data)}] ${err}`)
         throw err;
     }
+}
+
+function deleteFromApi(route: string) {
+    return fetch(process.env.server_hostname + route, {
+        ...fetchParams,
+        method: 'DELETE'
+    })
 }
 
 async function fetchSurveysForStudy(studyId: string) {
@@ -108,6 +112,12 @@ export async function saveNewStudy(studyInput: Study) {
         }
     });
     const response = await postToApi(`/api/studies`, study);
+}
+
+export async function deleteStudy(studyId: string) {
+    const route = `/api/studies/${studyId}`;
+    const response = await deleteFromApi(route);
+    delete applicationState.studies[studyId];
 }
 
 export async function selectNewStudy(study: any) {
