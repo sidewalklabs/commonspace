@@ -2,6 +2,7 @@ import { observable } from 'mobx';
 import snakecaseKeys from 'snakecase-keys';
 
 import { init } from './applicationState';
+import {navigate} from './router';
 
 export async function logInUser() {
     const {password, email} = loginInState;
@@ -22,7 +23,10 @@ export async function logInUser() {
         referrer: "no-referrer", // no-referrer, *client
         body: JSON.stringify(snakecaseKeys(data)), // body data type must match "Content-Type" header
     })
-    await init();
+    if (response.status === 200) {
+        await init();
+        navigate('/studies');
+    };
 }
 
 export interface LogInState {

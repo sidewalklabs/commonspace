@@ -25,6 +25,7 @@ import WrapInModal from './WrapInModal';
 import uiState, { visualizeNewStudy, AuthMode, AvailableModals } from '../stores/ui';
 import applicationState, { setCurrentStudyEmptySkeleton, ApplicationState, studyEmptySkeleton } from '../stores/applicationState';
 import { observable } from 'mobx';
+import { navigate } from '../stores/router';
 
 interface MainProps {
     isOpen: boolean;
@@ -84,7 +85,7 @@ function prepareNewStudy() {
 
 function handleLogOut() {
     mainState.anchorElement = null;
-    applicationState.token = null;
+    navigate('/login');
 }
 
 interface MainState {

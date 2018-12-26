@@ -166,7 +166,6 @@ export async function addNewSurveyorToSurvey(studyId: string, email: string) {
 }
 
 export async function init() {
-    applicationState.token = 'token';
     const studies = await getStudies();
     applicationState.studies = studies;
     const studyIds = Object.keys(studies);

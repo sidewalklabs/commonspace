@@ -3,6 +3,7 @@ import snakecaseKeys from 'snakecase-keys';
 import uuidv4 from 'uuid/v4';
 
 import { init } from './applicationState';
+import { navigate } from './router';
 
 export async function signUpUser() {
     const { name, password, passwordConfirmation, email} = signUpState;
@@ -27,8 +28,10 @@ export async function signUpUser() {
         referrer: "no-referrer", // no-referrer, *client
         body: JSON.stringify(snakecaseKeys(data)), // body data type must match "Content-Type" header
     })
-    const {user, token} = await response.json();
-    await init(token);
+    if (response.status === 200) {
+        await init();
+        navigate('/studies');
+    }
 }
 
 interface SignUpState {
