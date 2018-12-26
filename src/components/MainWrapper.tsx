@@ -10,11 +10,12 @@ import SignUpView from './SignUpView';
 
 import uiState, { AuthMode } from '../stores/ui';
 import applicationState, { ApplicationState } from '../stores/applicationState';
+import { Router } from '../stores/router';
 
 const drawerWidth = 240;
 
 interface MainProps {
-    isOpen: boolean;
+    router: Router;
     applicationState: ApplicationState;
 }
 
@@ -53,25 +54,35 @@ const styles = theme => ({
     }
 });
 
+const baseUrlMatch = /^\/([^\/]*).*$/;
+
+function body(baseRoute) {
+    switch (baseRoute) {
+        case '/signup':
+            return <SignUpView />;
+        case '/login':
+            console.log('boo');
+            return <LoginView />;
+        case '/studies':
+            return <Main applicationState={applicationState} />;
+        default:
+            return null;
+    }
+}
+
 const MainWrapper = observer(
     (props: MainProps & WithStyles) => {
-        const { classes } = props;
-        const { currentStudy, token } = applicationState;
+        const { classes, router } = props;
+        const { uri } = router;
+        const { currentStudy } = applicationState;
+        const baseRoute = baseUrlMatch.exec(uri)[0];
         return (
             <div className={classes.root}>
                 <CssBaseline />
-                {
-                    token ?
-                        <Main applicationState={applicationState} />
-                        :
-                        uiState.mode === AuthMode.Login ?
-                            <LoginView /> :
-                            <SignUpView />
-                }
+                {body(baseRoute)}
             </div>
-        )
-    }
-);
+        );
+    });
 
 // @ts-ignore
 export default withStyles(styles)(MainWrapper);

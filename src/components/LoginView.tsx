@@ -7,6 +7,7 @@ import Typography from '@material-ui/core/Typography'
 
 import { observer } from 'mobx-react';
 
+import { navigate } from '../stores/router';
 import uiState, { AuthMode } from '../stores/ui'
 import logInState, { logInUser } from '../stores/login'
 
@@ -64,7 +65,7 @@ const LogInView = withStyles(styles)(observer((props: WithStyles) => {
             <Button className={classes.logInButton} variant="contained" color="primary" onClick={logInUser}>
                 Log In
             </Button>
-            <Button color="secondary" className={classes.button} onClick={() => uiState.mode = AuthMode.Signup}>
+            <Button color="secondary" className={classes.button} onClick={() => navigate("/signup")}>
                 Need An Account? Sign Up Here
             </Button>
         </Paper >
