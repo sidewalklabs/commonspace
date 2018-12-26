@@ -4,14 +4,30 @@ import passport from 'passport';
 
 const router = express.Router();
 
+function addCookieToResponse(res, payload) {
+    const expires = new Date(Date.now() + parseInt(process.env.JWT_EXPIRATION_MS))
+    const jwtPayload = {
+        ...payload,
+        expires
+    };
+    const cookieOptions =  process.env.NODE_ENV === 'development' ?
+        { expires, httpOnly: true} :
+        { expires, httpOnly: true, secure: true }
+    const token = jwt.sign(jwtPayload, process.env.jwt_secret);
+    res.cookie('commonspacejwt', token, cookieOptions);
+    //res.cookie('commonspaceloggedin', {login: true}, {expires});
+    return res;
+}
+
 router.post('/signup', (req, res, next) => {
     passport.authenticate('signin',
                           {session: false, successRedirect: '/', failureRedirect: 'signup'},
                           (err, user)=> {
                               // TODO handle user already exists ....
+                              // TODO handle password sanitize
                               if (err) throw err;
-                              const token = jwt.sign(user, process.env.jwt_secret);
-                              return res.json({token});
+                              res = addCookieToResponse(res, user);
+                              return res.status(200).send();
                           })(req, res, next)
 })
 
@@ -20,8 +36,8 @@ router.post('/login', (req, res, next) => {
                           {session: false},
                           (err, user) => {
                               if (err) throw err;
-                              const token = jwt.sign(user, process.env.jwt_secret);
-                              return res.json({token})
+                              res = addCookieToResponse(res, user);
+                              return res.status(200).send();
                           })(req, res, next);
 })
 

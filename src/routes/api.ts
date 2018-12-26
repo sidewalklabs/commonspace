@@ -1,4 +1,5 @@
 import camelcaseKeys from "camelcase-keys";
+import cookieParser from 'cookie-parser';
 import express from "express";
 import fetch from "node-fetch";
 import passport from "passport";
@@ -30,8 +31,6 @@ import { snakecasePayload } from "../utils";
 
 const NOMINATIM_BASE_URL =
   "https://nominatim.openstreetmap.org/reverse?format=json";
-
-const router = express.Router();
 
 export interface DataPoint {
   data_point_id: string; // UUID
@@ -84,6 +83,14 @@ const STUDY_FIELDS: GehlField[] = [
   "note"
 ];
 
+
+
+const router = express.Router();
+
+router.use(cookieParser());
+
+router.use(passport.authenticate("jwt", { session: false }));
+
 function return500OnError(f) {
   return async (req, res) => {
     try {
@@ -96,8 +103,6 @@ function return500OnError(f) {
     }
   };
 }
-
-router.use(passport.authenticate("jwt", { session: false }));
 
 router.get(
   "/studies",

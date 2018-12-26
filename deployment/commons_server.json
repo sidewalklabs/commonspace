@@ -15,7 +15,8 @@
     "server_hostname": "localhost:3000",
     "jwt_secret": "B5PgrJs/WrTaJ4mUvPpREu",
     "NODE_ENV": "development",
-    "node_port": "3000"
+    "node_port": "3000",
+    "JWT_EXPIRATION_MS": "300000"
   },
   "builders": [
     {
@@ -36,6 +37,7 @@
         "ENV db_pool_size {{ user `db_pool_size` }}",
         "ENV db_client_timeout {{ user `db_client_timeout` }}",
         "ENV NODE_PORT {{ user `node_port` }}",
+        "ENV JWT_EXPIRATION_MS {{ user `JWT_EXPIRATION_MS` }}",
         "EXPOSE {{ user `node_port` }} {{ user `node_port` }}"
       ]
     }

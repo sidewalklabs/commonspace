@@ -38,8 +38,18 @@ const loginStrategy = new LocalStrategy({usernameField: 'email'}, async (email, 
     }
 })
 
+const extractAuthBearer = ExtractJwt.fromAuthHeaderAsBearerToken();
+
+function jwtFromRequest(req) {
+    if (req.cookies && req.cookies.commonspacejwt) {
+        return req.cookies.commonspacejwt;
+    } else {
+        return extractAuthBearer;
+    }
+}
+
 const jwtOptions = {
-    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    jwtFromRequest,
     secretOrKey: process.env.jwt_secret
 }
 
