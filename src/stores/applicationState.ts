@@ -21,53 +21,49 @@ export interface Study {
 }
 
 export interface ApplicationState {
+    token: null | string;
     currentStudy: null | Study;
     studies: {[key: string]: Study};
-    token: string;
 }
 
 const fetchParams: RequestInit = {
-    mode: "cors", // no-cors, cors, *same-origin
+    //mode: "sam", // no-cors, cors, *same-origin
     cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
     credentials: "same-origin", // include, same-origin, *omit
     redirect: 'follow',
     referrer: 'no-referrer'
 }
 
-function getFromApi(route: string, token: string) {
-    const {mode, cache, credentials, redirect, referrer} = fetchParams;
+function getFromApi(route: string) {
     return fetch(process.env.server_hostname + route, {
         ...fetchParams,
         method: 'GET',
         headers: {
-            "Content-Type": "application/json; charset=utf-8",
-            "Authorization": `bearer ${token}`
+            "Content-Type": "application/json; charset=utf-8"
         }
     })
 }
 
-function putToApi(route: string, token: string, data: any) {
+function putToApi(route: string, data: any) {
     const body = JSON.stringify(snakecasePayload(data))
     return fetch(process.env.server_hostname + route, {
         ...fetchParams,
         method: "PUT",
         headers: {
-            "Content-Type": "application/json; charset=utf-8",
-            "Authorization": `bearer ${token}`
+            "Content-Type": "application/json; charset=utf-8"
         },
         body
     })
 }
 
-async function postToApi(route: string, token: string, data: any) {
+async function postToApi(route: string, data: any) {
     const body = JSON.stringify(snakecasePayload(data));
     try {
         return await fetch(process.env.server_hostname + route, {
             ...fetchParams,
             method: "POST",
             headers: {
-                "Content-Type": "application/json; charset=utf-8",
-                "Authorization": `bearer ${token}`
+                "Content-Type": "application/json; charset=utf-8"
             },
             body
         })
@@ -77,18 +73,18 @@ async function postToApi(route: string, token: string, data: any) {
     }
 }
 
-async function fetchSurveysForStudy(token: string, studyId: string) {
+async function fetchSurveysForStudy(studyId: string) {
     const study = applicationState.studies[studyId];
     if (!study.surveys) {
-        const surveysReq = await getFromApi(`/api/studies/${studyId}/surveys`, token);
+        const surveysReq = await getFromApi(`/api/studies/${studyId}/surveys`);
         const surveysAsArr = camelcaseKeys(await surveysReq.json());
         study.surveys = groupArrayOfObjectsBy(surveysAsArr, 'surveyId');
     }
     return study;
 }
 
-export async function getStudies(token: string) {
-    const studiesReq = await getFromApi('/api/studies?type=admin', token);
+export async function getStudies(): Promise<{[studyId: string]: Study}> {
+    const studiesReq = await getFromApi('/api/studies?type=admin');
     const studies = camelcaseKeys(await studiesReq.json());
     return groupArrayOfObjectsBy(studies, 'studyId');
 }
@@ -98,8 +94,7 @@ export async function updateStudy(studyInput) {
     const surveys = Object.values(toJS(studyInput.surveys))
     const study = toJS(applicationState.currentStudy);
     study.surveys = surveys;
-    const { token } = applicationState;
-    const response = await putToApi(`/api/studies/${studyId}`, token, study);
+    const response = await putToApi(`/api/studies/${studyId}`, study);
 }
 
 export async function saveNewStudy(studyInput: Study) {
@@ -112,13 +107,11 @@ export async function saveNewStudy(studyInput: Study) {
             ...survey
         }
     });
-    const { token } = applicationState;
-    const response = await postToApi(`/api/studies`, token, study);
+    const response = await postToApi(`/api/studies`, study);
 }
 
 export async function selectNewStudy(study: any) {
-    const { token } = applicationState;
-    applicationState.currentStudy = await fetchSurveysForStudy(token, study.studyId);
+    applicationState.currentStudy = await fetchSurveysForStudy(study.studyId);
 }
 
 export function studyEmptySkeleton(): Study {
@@ -159,19 +152,15 @@ export async function addNewSurveyToCurrentStudy() {
 }
 
 export async function addNewSurveyorToSurvey(studyId: string, email: string) {
-    const { token } = applicationState;
     applicationState.currentStudy.surveyors.push(email);
 }
 
-export async function addNewSurveyorToNewSurvey(token: string, email: string) {
-    
-}
-
-export async function init(token) {
-    applicationState.token = token;
-    const studies = await getStudies(token);
+export async function init() {
+    applicationState.token = 'token';
+    const studies = await getStudies();
     applicationState.studies = studies;
-    await Promise.all(Object.keys(studies).map(s => fetchSurveysForStudy(token, s)));
+    const studyIds = Object.keys(studies);
+    await Promise.all(studyIds.map(fetchSurveysForStudy));
 }
 
 let applicationState: ApplicationState = observable({
