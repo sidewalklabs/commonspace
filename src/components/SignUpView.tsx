@@ -9,7 +9,7 @@ import { observer } from 'mobx-react';
 
 import { navigate } from '../stores/router';
 import signUpState, { signUpUser } from '../stores/signup'
-import uiState, { AuthMode } from '../stores/ui'
+import { addRoute } from '../stores/router'
 
 const styles = theme => ({
     hyperlinkText: {

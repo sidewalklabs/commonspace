@@ -1,16 +1,15 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import classNames from 'classnames';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { observer } from 'mobx-react';
 
 import LoginView from './LoginView';
-import Main from './Main';
+import MainView from './Main';
 import SignUpView from './SignUpView';
 
-import uiState, { AuthMode } from '../stores/ui';
 import applicationState, { ApplicationState } from '../stores/applicationState';
-import { Router } from '../stores/router';
+import { Router, addRoute } from '../stores/router';
 
 const drawerWidth = 240;
 
@@ -54,32 +53,25 @@ const styles = theme => ({
     }
 });
 
-const baseUrlMatch = /^\/([^\/]*).*$/;
-
-function body(baseRoute) {
-    switch (baseRoute) {
-        case '/signup':
-            return <SignUpView />;
-        case '/login':
-            console.log('boo');
-            return <LoginView />;
-        case '/studies':
-            return <Main applicationState={applicationState} />;
-        default:
-            return null;
-    }
-}
+const BASE_URL_MATCH = /^\/([^\/]*).*$/;
 
 const MainWrapper = observer(
     (props: MainProps & WithStyles) => {
         const { classes, router } = props;
         const { uri } = router;
-        const { currentStudy } = applicationState;
-        const baseRoute = baseUrlMatch.exec(uri)[0];
+        const SignUp = addRoute('/signup', SignUpView);
+        const Login = addRoute('/login', LoginView);
+        // TSC needs a more specific type than () => Element, but that's the definition of a React.Component, so silence typescript manually
+        // https://tylermcginnis.com/react-elements-vs-react-components/
+        // @ts-ignore
+        const Main = addRoute(() => BASE_URL_MATCH.exec(uri)[0] === '/studies', () => <MainView applicationState={applicationState} />)
+
         return (
             <div className={classes.root}>
                 <CssBaseline />
-                {body(baseRoute)}
+                <Login />
+                <SignUp />
+                <Main />
             </div>
         );
     });

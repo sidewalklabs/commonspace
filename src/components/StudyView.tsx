@@ -12,7 +12,7 @@ import SurveyorsView from './SurveyorsView';
 import MapView from './MapView';
 import SurveyView from './SurveyView';
 
-import uiState, { AuthMode } from '../stores/ui';
+import uiState from '../stores/ui';
 import applicationState, { saveNewStudy, updateStudy, Study } from '../stores/applicationState';
 import { groupArrayOfObjectsBy } from '../utils';
 import { FeatureCollection } from 'geojson';

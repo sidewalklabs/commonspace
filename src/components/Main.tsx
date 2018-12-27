@@ -22,13 +22,12 @@ import StudyView from './StudyView';
 import SurveyView from './SurveyView';
 import SurveyorsView from './SurveyorsView';
 import WrapInModal from './WrapInModal';
-import uiState, { visualizeNewStudy, AuthMode, AvailableModals } from '../stores/ui';
+import uiState, { visualizeNewStudy, AvailableModals } from '../stores/ui';
 import applicationState, { setCurrentStudyEmptySkeleton, ApplicationState, studyEmptySkeleton } from '../stores/applicationState';
 import { observable } from 'mobx';
 import { navigate } from '../stores/router';
 
 interface MainProps {
-    isOpen: boolean;
     applicationState: ApplicationState;
     anchorElement: null | HTMLElement;
 }
@@ -166,7 +165,7 @@ const Main = observer(
                     <WrapInModal onClose={() => uiState.visibleModal = 'study'} modalType={'surveyors'} visibleModal={visibleModal}>
                         <SurveyorsView studyId={currentStudy.studyId} surveyors={currentStudy.surveyors} />
                     </WrapInModal>
-                    <WrapInModal onClose={() => uiState.visibleModal = 'study'} modalType={'surveys'} visibleModal={visibleModal}>
+                    <WrapInModal onClose={() => uiState.visibleModal = 'surveys'} modalType={'surveys'} visibleModal={visibleModal}>
                         <SurveyView surveys={Object.values(currentStudy.surveys)} features={currentStudy.map.features} />
                     </WrapInModal>
                 </div>
