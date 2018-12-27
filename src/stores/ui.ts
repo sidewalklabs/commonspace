@@ -10,24 +10,18 @@ export function visualizeNewStudy() {
     uiState.visibleModal = 'study';
 }
 
-export enum AuthMode {
-    Login, Signup, Authorized
-}
-
-export type AvailableModals = 'study' | 'surveyors' | 'shifts' | null
+export type AvailableModals = 'study' | 'surveyors' | 'surveys' | null
 
 interface UiState {
     availableLocations: AvailableLocation[]; 
     currentStudyIsNew: boolean;
     visibleModal: AvailableModals;
-    mode: AuthMode;
 }
 
 const uiState: UiState = observable({
     availableLocations: [],
     currentStudyIsNew: false,
-    visibleModal: null,
-    mode: AuthMode.Signup
+    visibleModal: null
 });
 
 autorun(() => {

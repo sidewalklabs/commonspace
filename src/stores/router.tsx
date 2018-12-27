@@ -1,15 +1,22 @@
 import React, { Component, Fragment } from 'react';
 import { observable, autorun, toJS, get, set } from 'mobx';
 
-export function addRoute(route: string | any, component: (props) => any) {
-    return props => {
-        if (typeof route === 'string') {
-            return router.uri === route ? <Fragment> {component} </Fragment> : null;
-        } else {
-            return route() ? <Fragment> {component} </Fragment> : null;
+
+type BooleanFunction = (...args: any[]) => boolean;
+
+export function addRoute(route: string | BooleanFunction, WrappedComponent: typeof Component): typeof Component {
+    return class Routed extends Component {
+        render() {
+            const { props } = this;
+            if (typeof route === 'string' && router.uri === route) {
+                return <WrappedComponent {...props} />
+            } else if (typeof route === 'function' && route(router.uri)) {
+                return <WrappedComponent {...props} />
+            } else {
+                return null;
+            }
         }
     }
-
 }
 
 export function navigate(route: string) {

@@ -7,8 +7,8 @@ import Typography from '@material-ui/core/Typography'
 
 import { observer } from 'mobx-react';
 
-import { navigate } from '../stores/router';
-import uiState, { AuthMode } from '../stores/ui'
+import { addRoute, navigate } from '../stores/router';
+import uiState from '../stores/ui'
 import logInState, { logInUser } from '../stores/login'
 
 const styles = theme => ({
@@ -70,6 +70,6 @@ const LogInView = withStyles(styles)(observer((props: WithStyles) => {
             </Button>
         </Paper >
     )
-}))
+}));
 
 export default LogInView;
