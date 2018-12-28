@@ -1,10 +1,13 @@
 import React, { Component, Fragment } from 'react';
 import { observable, autorun, toJS, get, set } from 'mobx';
 
+import { init } from './applicationState';
 
 type BooleanFunction = (...args: any[]) => boolean;
+type ElementFunction = (...props: any[]) => JSX.Element
 
-export function addRoute(route: string | BooleanFunction, WrappedComponent: typeof Component): typeof Component {
+//tylermcginnis.com/react-elements-vs-react-components/
+export function addRoute(route: string | BooleanFunction, WrappedComponent: typeof Component | ElementFunction): typeof Component {
     return class Routed extends Component {
         render() {
             const { props } = this;
@@ -21,17 +24,33 @@ export function addRoute(route: string | BooleanFunction, WrappedComponent: type
 
 export function navigate(route: string) {
     history.pushState({}, '', route);
-    router.uri = window.location.pathname;
+    router.uri = sanitizedPathname();
 }
 
 export interface Router {
     uri: string;
 }
 
+const TRAILING_SLASH = /\/$/
+// nginx will sometimes add a trailing slash to a url
+function sanitizedPathname() {
+    const route = window.location.pathname
+    return route.replace(TRAILING_SLASH, '');
+}
+
 const router: Router = observable({
-    uri: '/signup'
+    uri: window.location.pathname === '/' ? '/signup' : sanitizedPathname()
 });
 
-autorun(() => console.log(router.uri));
+console.log('a ', window.location.pathname);
+console.log('b ', window.location.pathname === '/');
+console.log('c ', router.uri);
+
+autorun(async () => {
+    console.log(router.uri);
+    if (router.uri === '/studies') {
+        await init();
+    }
+});
 
 export default router;

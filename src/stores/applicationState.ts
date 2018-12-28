@@ -166,10 +166,14 @@ export async function addNewSurveyorToSurvey(studyId: string, email: string) {
 }
 
 export async function init() {
-    const studies = await getStudies();
-    applicationState.studies = studies;
-    const studyIds = Object.keys(studies);
-    await Promise.all(studyIds.map(fetchSurveysForStudy));
+    if (Object.keys(applicationState.studies).length == 0) {
+        console.log('fetch studies');
+        const studies = await getStudies();
+        console.log('hey: ', studies);
+        applicationState.studies = studies;
+        const studyIds = Object.keys(studies);
+        await Promise.all(studyIds.map(fetchSurveysForStudy));
+    }
 }
 
 let applicationState: ApplicationState = observable({
