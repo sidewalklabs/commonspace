@@ -61,11 +61,7 @@ const MainWrapper = observer(
         const { uri } = router;
         const SignUp = addRoute('/signup', SignUpView);
         const Login = addRoute('/login', LoginView);
-        // TSC needs a more specific type than () => Element, but that's the definition of a React.Component, so silence typescript manually
-        // https://tylermcginnis.com/react-elements-vs-react-components/
-        // @ts-ignore
         const Main = addRoute(() => BASE_URL_MATCH.exec(uri)[0] === '/studies', () => <MainView applicationState={applicationState} />)
-
         return (
             <div className={classes.root}>
                 <CssBaseline />
