@@ -11,7 +11,7 @@ import {
   deleteDataPoint,
   retrieveDataPointsForSurvey
 } from "../datastore/datapoint";
-import { GehlField } from "../datastore/utils";
+import { StudyField } from "../datastore/utils";
 import {
   checkUserIdIsSurveyor,
   createStudy,
@@ -53,7 +53,7 @@ export interface Study {
   type: StudyType;
   map?: FeatureCollection;
   surveys?: Survey[];
-  fields: GehlField[];
+  fields: StudyField[];
 }
 
 export interface Survey {
@@ -71,7 +71,7 @@ export interface Survey {
   notes?: string;
 }
 
-const STUDY_FIELDS: GehlField[] = [
+const STUDY_FIELDS: StudyField[] = [
   "gender",
   "age",
   "mode",

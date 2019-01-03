@@ -13,7 +13,7 @@ import MapView from './MapView';
 import SurveyView from './SurveyView';
 
 import uiState from '../stores/ui';
-import applicationState, { saveNewStudy, updateStudy, Study } from '../stores/applicationState';
+import applicationState, { saveNewStudy, updateStudy, Study, StudyFields } from '../stores/applicationState';
 import { groupArrayOfObjectsBy } from '../utils';
 import { FeatureCollection } from 'geojson';
 
@@ -109,12 +109,11 @@ const StudyView = observer((props: any & WithStyles) => {
 
     const { study, classes, studyIsNew } = props;
     if (study) {
-        const { title, surveys, studyId, surveyors, protocolVersion, type, map } = study as Study;
+        const { title, surveys, studyId, fields, surveyors, protocolVersion, type, map } = study as Study;
         const features = map && map.features ? map.features : [];
         return (
             <Fragment>
                 <TextField
-                    id="study-title"
                     label="Title"
                     className={classes.textField}
                     value={title}
@@ -122,7 +121,6 @@ const StudyView = observer((props: any & WithStyles) => {
                     margin="normal"
                 />
                 <TextField
-                    id="select-study-type"
                     select
                     label="Study Type"
                     className={classes.textField}
@@ -146,7 +144,19 @@ const StudyView = observer((props: any & WithStyles) => {
                     })}
                 </TextField>
                 <TextField
-                    id="surveyors"
+                    className={classes.textField}
+                    label="Study Fields"
+                    value={`${fields.length} Fields`}
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="end" onClick={() => uiState.visibleModal = "studyFields"}>
+                                <EditIcon />
+                            </InputAdornment>
+                        )
+                    }}
+                >
+                </TextField>
+                <TextField
                     className={classes.textField}
                     label="Surveyors"
                     value={`${surveyors.length} Surveyors`}
@@ -161,7 +171,6 @@ const StudyView = observer((props: any & WithStyles) => {
 
                 </TextField>
                 <TextField
-                    id="surveys"
                     className={classes.textField}
                     label="Surveys"
                     value={`${Object.keys(toJS(surveys)).length} Surveys`}
@@ -175,7 +184,6 @@ const StudyView = observer((props: any & WithStyles) => {
                 >
                 </TextField>
                 <TextField
-                    id="select-protocol-version"
                     select
                     label="Gehl Protocol Version"
                     className={classes.textField}
