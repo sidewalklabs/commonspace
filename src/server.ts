@@ -18,9 +18,6 @@ auth(passport);
 app.use(passport.initialize());
 
 app.use(bodyParser.json());
-if (process.env.NODE_ENV === 'development') {
-    app.use('/', express.static('./dist'));
-}
 
 app.use(function (req, res, next) {
     // Request methods you wish to allow
@@ -39,5 +36,9 @@ app.use(function (req, res, next) {
 
 app.use('/auth', authRouter);
 app.use('/api', apiRouter);
+
+if (process.env.NODE_ENV === 'development') {
+    app.use('/', express.static('./dist'));
+}
 
 app.listen(PORT, () => console.log(`listening on port ${PORT}`));

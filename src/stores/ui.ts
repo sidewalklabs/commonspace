@@ -10,7 +10,7 @@ export function visualizeNewStudy() {
     uiState.visibleModal = 'study';
 }
 
-export type AvailableModals = 'study' | 'surveyors' | 'surveys' | null
+export type AvailableModals = 'studyFields' | 'study' | 'surveyors' | 'surveys' | null
 
 interface UiState {
     availableLocations: AvailableLocation[]; 

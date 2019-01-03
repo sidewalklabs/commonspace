@@ -17,6 +17,7 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
 
 import { observer } from 'mobx-react';
 
+import FieldsList from './FieldsList';
 import StudiesList from './StudiesList';
 import StudyView from './StudyView';
 import SurveyView from './SurveyView';
@@ -102,7 +103,7 @@ const Main = observer(
         const { studies, token } = applicationState;
         const { visibleModal } = uiState;
         const currentStudy = applicationState.currentStudy ? applicationState.currentStudy : studyEmptySkeleton();
-        let { studyId, surveyors } = currentStudy;
+        let { fields, studyId, surveyors } = currentStudy;
         return (
             <div className={classes.root}>
                 <CssBaseline />
@@ -159,17 +160,19 @@ const Main = observer(
                             <StudiesList studies={studies} />
                         </List>
                     </Paper>
-                    <WrapInModal modalType={'study'} visibleModal={visibleModal}>
+                    <WrapInModal modalName={'study'} visibleModal={visibleModal}>
                         <StudyView study={currentStudy} studyIsNew={uiState.currentStudyIsNew} />
                     </WrapInModal>
-                    <WrapInModal onClose={() => uiState.visibleModal = 'study'} modalType={'surveyors'} visibleModal={visibleModal}>
+                    <WrapInModal onClose={() => uiState.visibleModal = 'study'} modalName={'surveyors'} visibleModal={visibleModal}>
                         <SurveyorsView studyId={currentStudy.studyId} surveyors={currentStudy.surveyors} />
                     </WrapInModal>
-                    <WrapInModal onClose={() => uiState.visibleModal = 'surveys'} modalType={'surveys'} visibleModal={visibleModal}>
+                    <WrapInModal onClose={() => uiState.visibleModal = 'study'} modalName={'surveys'} visibleModal={visibleModal}>
                         <SurveyView surveys={Object.values(currentStudy.surveys)} features={currentStudy.map.features} />
                     </WrapInModal>
+                    <WrapInModal onClose={() => uiState.visibleModal = 'study'} modalName={'studyFields'} visibleModal={visibleModal}>
+                        <FieldsList fields={fields} />
+                    </WrapInModal>
                 </div>
-
             </div >
         )
     }

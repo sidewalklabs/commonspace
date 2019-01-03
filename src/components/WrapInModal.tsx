@@ -19,11 +19,11 @@ const styles = theme => ({
 })
 
 // @ts-ignore
-const WrapInModal = observer(withStyles(styles)(props => {
-    const { classes, children, modalType, visibleModal, onClose = () => uiState.visibleModal = null } = props;
+const WrapInModal = withStyles(styles)(observer(props => {
+    const { classes, children, modalName, visibleModal, onClose = () => uiState.visibleModal = null } = props;
     return (
         <Modal
-            open={visibleModal === modalType}
+            open={visibleModal === modalName}
             onClose={onClose}
         >
             <div className={classes.paper}>

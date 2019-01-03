@@ -4,6 +4,7 @@ import moment from 'moment';
 import uuid from 'uuid';
 
 import { groupArrayOfObjectsBy } from '../utils';
+import { StudyField } from '../datastore/utils';
 import { surveysForStudy } from '../datastore/study';
 import { FeatureCollection } from 'geojson';
 
@@ -16,7 +17,7 @@ export interface Study {
     surveyors: string[];
     title: string;
     type: 'stationary' | 'movement';
-    fields: string[];
+    fields: StudyField[];
     map: FeatureCollection;
 }
 
@@ -136,7 +137,7 @@ export function studyEmptySkeleton(): Study {
             type: 'FeatureCollection',
             features: []
         },
-        fields: ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'note']
+        fields: []
     }
 }
 
@@ -167,9 +168,7 @@ export async function addNewSurveyorToSurvey(studyId: string, email: string) {
 
 export async function init() {
     if (Object.keys(applicationState.studies).length == 0) {
-        console.log('fetch studies');
         const studies = await getStudies();
-        console.log('hey: ', studies);
         applicationState.studies = studies;
         const studyIds = Object.keys(studies);
         await Promise.all(studyIds.map(fetchSurveysForStudy));

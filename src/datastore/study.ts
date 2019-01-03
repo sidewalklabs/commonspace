@@ -3,7 +3,7 @@ import { FeatureCollection } from 'geojson';
 import { FOREIGN_KEY_VIOLATION } from 'pg-error-constants';
 
 import { createUserFromEmail } from './user';
-import { javascriptArrayToPostgresArray, studyIdToTablename, GehlField } from './utils';
+import { javascriptArrayToPostgresArray, studyIdToTablename, StudyField } from './utils';
 
 export type StudyScale = 'district' | 'city' | 'cityCentre' | 'neighborhood' | 'blockScale' | 'singleSite';
 export type StudyType = 'stationary' | 'movement';
@@ -21,7 +21,7 @@ export interface Study {
     type: StudyType;
     map?: FeatureCollection;
     protocolVersion: string;
-    fields: GehlField[];
+    fields: StudyField[];
     notes?: string;
 }
 
@@ -30,7 +30,7 @@ function setString(s: any) {
 }
 
 // map over the list of fields the user wants to use to create their study and use type guarding to create a sql statement
-function gehlFieldAsPgColumn(field: GehlField) {
+function gehlFieldAsPgColumn(field: StudyField) {
     switch (field) {
         case  'gender':
             return 'gender data_collection.gender';
@@ -55,7 +55,7 @@ function gehlFieldAsPgColumn(field: GehlField) {
     }
 }
 
-function createNewTableFromGehlFields(study: Study, tablename: string) {
+function createNewTableFromStudyFields(study: Study, tablename: string) {
     const additionalColumns = study.fields.map(gehlFieldAsPgColumn).join(',\n');
     return `CREATE TABLE ${tablename} (
                     survey_id UUID references data_collection.survey(survey_id) ON DELETE CASCADE NOT NULL,
@@ -197,7 +197,7 @@ export async function deleteStudy(pool: pg.Pool, studyId: string) {
 export async function createStudy(pool: pg.Pool, study: Study) {
     // for some unknown reason import * as uuidv4 from 'uuid/v4'; uuidv4(); fails in gcp, saying that it's not a function call
     const studyTablename = studyIdToTablename(study.studyId);
-    const newStudyDataTableQuery = createNewTableFromGehlFields(study, studyTablename);
+    const newStudyDataTableQuery = createNewTableFromStudyFields(study, studyTablename);
     const fields = javascriptArrayToPostgresArray(study.fields);
     const { studyId, title, userId, protocolVersion, type, map={} } = study;
     const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, protocol_version, study_type, fields, tablename, map)
