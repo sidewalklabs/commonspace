@@ -29,8 +29,6 @@
         "ENV google_auth_client_id {{ user `google_auth_client_id` }}",
         "ENV google_auth_client_secret {{ user `google_auth_client_secret` }}",
         "ENV jwt_secret {{ user `jwt_secret` }}",
-        "ENV db_user {{ user `db_user` }}",
-        "ENV db_pass {{ user `db_pass` }}",
         "ENV db_host {{ user `db_host` }}",
         "ENV db_port {{ user `db_port` }}",
         "ENV db_name {{ user `db_name` }}",
