@@ -3,7 +3,6 @@ import React from 'react';
 import {
   Alert,
   Animated,
-  AsyncStorage,
   PanResponder,
   Platform,
   StyleSheet,
@@ -106,7 +105,6 @@ class SurveyScreen extends React.Component {
     this.deleteMarker = this.deleteMarker.bind(this);
     this.createNewMarker = this.createNewMarker.bind(this);
     this.duplicateMarker = this.duplicateMarker.bind(this);
-    this.setMarkerLocation = this.setMarkerLocation.bind(this);
     this.setFormResponse = this.setFormResponse.bind(this);
   }
 
@@ -394,37 +392,6 @@ class SurveyScreen extends React.Component {
     }
   }
 
-  setMarkerLocation(dataPointId, location) {
-    const surveyId = this.props.navigation.getParam('surveyId');
-    const { token } = this.state;
-    const markersCopy = [...this.state.markers];
-    const marker = _.find(markersCopy, { dataPointId });
-
-    if (marker) {
-      const oldMarkerLocation = marker.location;
-      marker.location = location;
-
-      this.setState({
-        markers: markersCopy,
-      });
-
-      if (surveyId !== 'DEMO') {
-        saveDataPoint(token, surveyId, marker).catch(error => {
-          Alert.alert(
-            'Error',
-            'Something went wrong while updating marker location. Please try again later.',
-            [{ text: 'OK' }],
-          );
-
-          marker.location = oldMarkerLocation;
-          this.setState({
-            markers: markersCopy,
-          });
-        });
-      }
-    }
-  }
-
   render() {
     const { activeMarkerId, markers } = this.state;
     const activeMarker = _.find(markers, { dataPointId: activeMarkerId });
@@ -442,7 +409,6 @@ class SurveyScreen extends React.Component {
           markers={this.state.markers}
           zoneLatLngs={this.state.zoneLatLngs}
           onMarkerPress={this.selectMarker}
-          onMarkerDragEnd={this.setMarkerLocation}
         />
         <Animated.View
           style={[styles.drawer, { transform: this.state.pan.getTranslateTransform() }]}
