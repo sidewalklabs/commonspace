@@ -1,5 +1,5 @@
 import React from 'react';
-import { AsyncStorage, Linking, StyleSheet, Text, View } from 'react-native';
+import { Alert, AsyncStorage, Linking, StyleSheet, Text, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import { Button, Paragraph, Title } from 'react-native-paper';
 import Theme from '../constants/Theme';
@@ -48,6 +48,9 @@ class AuthScreen extends React.Component {
       }
     } catch (e) {
       console.log('error', e);
+      Alert.alert('Error', 'Something went wrong during sign in. Please try again later.', [
+        { text: 'OK', onPress: () => {} },
+      ]);
     }
   };
 
