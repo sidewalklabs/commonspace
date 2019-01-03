@@ -56,7 +56,6 @@ class MapWithMarkers extends React.Component {
     const {
       markers,
       activeMarkerId,
-      onMarkerDragEnd,
       onMarkerPress,
       onMapPress,
       onMapLongPress,
@@ -102,8 +101,6 @@ class MapWithMarkers extends React.Component {
                 key={key}
                 identifier={marker.dataPointId}
                 stopPropagation
-                draggable
-                onDragEnd={e => onMarkerDragEnd(e.nativeEvent.id, e.nativeEvent.coordinate)}
                 onPress={() => onMarkerPress(marker.dataPointId)}
                 anchor={{ x: 0.5, y: 0.5 }}>
                 <PersonIcon backgroundColor={marker.color} size={selected ? 24 : 16} />
@@ -190,7 +187,6 @@ MapWithMarkers.propTypes = {
     }),
   ),
   activeMarkerId: PropTypes.string,
-  onMarkerDragEnd: PropTypes.func.isRequired,
   onMarkerPress: PropTypes.func.isRequired,
   onMapPress: PropTypes.func.isRequired,
   onMapLongPress: PropTypes.func.isRequired,
