@@ -13,7 +13,7 @@ function addCookieToResponse(res, payload) {
     const cookieOptions =  process.env.NODE_ENV === 'development' ?
         { expires, httpOnly: true} :
         { expires, httpOnly: true, secure: true }
-    const token = jwt.sign(jwtPayload, process.env.jwt_secret);
+    const token = jwt.sign(jwtPayload, process.env.JWT_SECRET);
     res.cookie('commonspacejwt', token, cookieOptions);
     //res.cookie('commonspaceloggedin', {login: true}, {expires});
     return res;
@@ -50,13 +50,13 @@ if (process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'production')
                 failureRedirect : '/'
             }),
             (req, res) => {
-                const token = jwt.sign(req.user, process.env.jwt_secret);
+                const token = jwt.sign(req.user, process.env.JWT_SECRET);
                 return res.json({token});
             });
     router.get('/google/token',
                passport.authenticate('google-token', {session: false}),
                (req, res) => {
-                   const token = jwt.sign(req.user, process.env.jwt_secret);
+                   const token = jwt.sign(req.user, process.env.JWT_SECRET);
                    return res.json({token});
                })
 }

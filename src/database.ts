@@ -3,13 +3,13 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const config = {
-    user: process.env.db_user,
-    password: process.env.db_pass,
-    host: process.env.db_host,
-    port: parseInt(process.env.db_port),
-    database: process.env.db_name,
-    max: parseInt(process.env.db_pool_size),
-    idleTimeoutMillis: parseInt(process.env.db_client_timeout),
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT),
+    database: process.env.DB_NAME,
+    max: parseInt(process.env.DB_POOL_SIZE),
+    idleTimeoutMillis: parseInt(process.env.DB_CLIENT_TIMEOUT)
 };
 
 const pool = new pg.Pool(config);

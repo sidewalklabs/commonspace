@@ -3,19 +3,19 @@
     "container_image_name": "us.gcr.io/nyc-tlc-1225/commons-server",
     "version": "v0.0.1",
     "gcloud_json_key": "key",
-    "google_auth_client_id": "my-id",
-    "google_auth_client_secret": "my-secret",
-    "db_user": "postgres",
-    "db_pass": "postgres",
-    "db_host": "localhost",
-    "db_port": "5432",
-    "db_name": "postgres",
-    "db_pool_size": "8",
-    "db_client_timeout": "8000",
-    "server_hostname": "localhost:3000",
-    "jwt_secret": "B5PgrJs/WrTaJ4mUvPpREu",
+    "GOOGLE_AUTH_CLIENT_ID": "my-id",
+    "GOOGLE_AUTH_CLIENT_SECRET": "my-secret",
+    "DB_USER": "postgres",
+    "DB_PASS": "postgres",
+    "DB_HOST": "localhost",
+    "DB_PORT": "5432",
+    "DB_NAME": "postgres",
+    "DB_POOL_SIZE": "8",
+    "DB_CLIENT_TIMEOUT": "8000",
+    "SERVER_HOSTNAME": "localhost:3000",
+    "JWT_SECRET": "B5PgrJs/WrTaJ4mUvPpREu",
     "NODE_ENV": "development",
-    "node_port": "3000",
+    "NODE_PORT": "3000",
     "JWT_EXPIRATION_MS": "300000"
   },
   "builders": [
@@ -25,7 +25,8 @@
       "commit": true,
       "changes": [
         "ENV NODE_ENV {{ user `NODE_ENV` }}",
-        "EXPOSE {{ user `node_port` }} {{ user `node_port` }}"
+        "ENV JWT_SECRET {{ user `JWT_SECRET`}}",
+        "EXPOSE {{ user `NODE_PORT` }} {{ user `NODE_PORT` }}"
       ]
     }
   ],
@@ -84,7 +85,7 @@
         "cd commons/",
 	"npm install -g -s --no-progress yarn",
 	"yarn install",
-        "yarn build --env.server_hostname={{ user `server_hostname` }} --mode=production"
+        "yarn build --env.server_hostname={{ user `SERVER_HOSTNAME` }} --mode=production"
       ]
     }
   ],
@@ -92,13 +93,13 @@
     [
       {
         "type": "docker-tag",
-        "repository": "{{user `container_image_name`}}",
-        "tag": "{{user `version`}}"
+        "repository": "{{user `CONTAINER_IMAGE_NAME`}}",
+        "tag": "{{user `VERSION`}}"
       }, {
         "type": "docker-push",
         "login": true,
         "login_username": "_json_key",
-        "login_password": "{{user `gcloud_json_key`}}",
+        "login_password": "{{user `GCLOUD_JSON_KEY`}}",
         "login_server": "https://gcr.io"
       }
     ]
