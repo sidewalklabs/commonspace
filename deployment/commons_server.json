@@ -25,17 +25,6 @@
       "commit": true,
       "changes": [
         "ENV NODE_ENV {{ user `NODE_ENV` }}",
-        "ENV server_hostname {{ user `server_hostname` }}",
-        "ENV google_auth_client_id {{ user `google_auth_client_id` }}",
-        "ENV google_auth_client_secret {{ user `google_auth_client_secret` }}",
-        "ENV jwt_secret {{ user `jwt_secret` }}",
-        "ENV db_host {{ user `db_host` }}",
-        "ENV db_port {{ user `db_port` }}",
-        "ENV db_name {{ user `db_name` }}",
-        "ENV db_pool_size {{ user `db_pool_size` }}",
-        "ENV db_client_timeout {{ user `db_client_timeout` }}",
-        "ENV NODE_PORT {{ user `node_port` }}",
-        "ENV JWT_EXPIRATION_MS {{ user `JWT_EXPIRATION_MS` }}",
         "EXPOSE {{ user `node_port` }} {{ user `node_port` }}"
       ]
     }
