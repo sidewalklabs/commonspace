@@ -19,6 +19,9 @@ spec:
       - name: cloudsql-commons-credentials
         secret:
           secretName: cloudsql-commons-credentials
+      - name: commons-config-volume
+        secret:
+          secretName: commons-config
       containers:
       - name: commons-server
         image: swl-eng/commons-server:latest
@@ -40,6 +43,10 @@ spec:
                key: password
          # [END cloudsql_secrets]
         command: ["node", "/commons/build/server.js"]
+        volumeMounts:
+          - name: commons-config-volume
+            mountPath: /commons/config
+            readOnly: true
       - name: commons-nginx
         image: swl-eng/commons-nginx:latest
         ports:
