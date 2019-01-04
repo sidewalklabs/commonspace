@@ -14,6 +14,8 @@ const PORT = process.env.NODE_PORT ? process.env.NODE_PORT : 3000;
 
 const app = express();
 
+console.log('boom: ', JSON.stringify(process.env));
+
 auth(passport);
 app.use(passport.initialize());
 
@@ -39,6 +41,8 @@ app.use('/api', apiRouter);
 
 if (process.env.NODE_ENV === 'development') {
     app.use('/', express.static('./dist'));
+} else {
+  console.log('bumble: ', JSON.stringify(process.env));
 }
 
-app.listen(PORT, () => console.log(`listening on port ${PORT}`));
+app.listen(PORT, () => console.log(`port ${PORT}`));

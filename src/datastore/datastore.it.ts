@@ -13,15 +13,15 @@ import { createLocation, Location } from './location';
 dotenv.config();
 
 // @ts-ignore: global variable
-const host = process.env.db_host;
+const host = process.env.DB_HOST;
 // @ts-ignore: global variable
-const dbUser = process.env.db_user;
+const dbUser = process.env.DB_USER;
 // @ts-ignore: global variable
-const dbPass = process.env.db_pass;
+const dbPass = process.env.DB_PASS;
 // @ts-ignore: global variables
-const dbName = process.env.db_name;
+const dbName = process.env.DB_NAME;
 // @ts-ignore: global variables
-const dbPort = parseInt(process.env.db_port);
+const dbPort = parseInt(process.env.DB_PORT);
 
 const pool = new pg.Pool({
     max: 1,

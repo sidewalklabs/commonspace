@@ -42,15 +42,20 @@ const extractAuthBearer = ExtractJwt.fromAuthHeaderAsBearerToken();
 
 function jwtFromRequest(req) {
     if (req.cookies && req.cookies.commonspacejwt) {
+        console.log('hi this is not it');
         return req.cookies.commonspacejwt;
     } else {
-        return extractAuthBearer;
+        console.log('hi, this is it!!');
+        return extractAuthBearer(req);
     }
 }
 
+
+console.log('remove: ', JSON.stringify(process.env));
+
 const jwtOptions = {
     jwtFromRequest,
-    secretOrKey: process.env.jwt_secret
+    secretOrKey: process.env.JWT_SECRET
 }
 
 const jwtStrategy = new JwtStrategy(jwtOptions, async (jwt_payload, next) => {
@@ -67,8 +72,8 @@ const init = (mode: string) => {
     return (passport: any) => {
         if (mode == 'staging' || mode === 'production') {
             const googleOAuthStrategy = new GoogleStrategy({
-                clientID: process.env.google_auth_client_id,
-                clientSecret: process.env.google_auth_client_secret,
+                clientID: process.env.GOOGLE_AUTH_CLIENT_ID,
+                clientSecret: process.env.GOOGLE_AUTH_CLIENT_SECRET,
                 callbackURL: `${process.env.server_hostname}/auth/google/callback`,
                 passReqToCallback: true
             }, async function(request, accessToken, refreshToken, profile, done) {
