@@ -85,7 +85,7 @@
         "cd commons/",
 	"npm install -g -s --no-progress yarn",
 	"yarn install",
-        "yarn build --env.server_hostname={{ user `SERVER_HOSTNAME` }} --mode=production"
+        "yarn build --env.SERVER_HOSTNAME={{ user `SERVER_HOSTNAME` }} --mode=production"
       ]
     }
   ],
@@ -93,13 +93,13 @@
     [
       {
         "type": "docker-tag",
-        "repository": "{{user `CONTAINER_IMAGE_NAME`}}",
-        "tag": "{{user `VERSION`}}"
+        "repository": "{{user `container_image_name`}}",
+        "tag": "{{user `version`}}"
       }, {
         "type": "docker-push",
         "login": true,
         "login_username": "_json_key",
-        "login_password": "{{user `GCLOUD_JSON_KEY`}}",
+        "login_password": "{{user `gcloud_json_key`}}",
         "login_server": "https://gcr.io"
       }
     ]

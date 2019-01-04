@@ -3,7 +3,7 @@ import { observable, autorun, toJS, get, set } from 'mobx';
 import moment from 'moment';
 import uuid from 'uuid';
 
-import { groupArrayOfObjectsBy } from '../utils';
+import { groupArrayOfObjectsBy, getEnvVariableRetry } from '../utils';
 import { StudyField } from '../datastore/utils';
 import { surveysForStudy } from '../datastore/study';
 import { FeatureCollection } from 'geojson';
@@ -36,7 +36,8 @@ const fetchParams: RequestInit = {
 }
 
 function getFromApi(route: string) {
-    return fetch(process.env.SERVER_HOSTNAME + route, {
+    const hostname = getEnvVariableRetry('SERVER_HOSTNAME');
+    return fetch(hostname + route, {
         ...fetchParams,
         method: 'GET'
     })
@@ -44,7 +45,8 @@ function getFromApi(route: string) {
 
 function putToApi(route: string, data: any) {
     const body = JSON.stringify(snakecasePayload(data))
-    return fetch(process.env.SERVER_HOSTNAME + route, {
+    const hostname = getEnvVariableRetry('SERVER_HOSTNAME');
+    return fetch(hostname + route, {
         ...fetchParams,
         method: "PUT",
         headers: {
@@ -57,7 +59,7 @@ function putToApi(route: string, data: any) {
 async function postToApi(route: string, data: any) {
     const body = JSON.stringify(snakecasePayload(data));
     try {
-        return await fetch(process.env.SERVER_HOSTNAME + route, {
+        return await fetch(getEnvVariableRetry('SERVER_HOSTNAME') + route, {
             ...fetchParams,
             method: "POST",
             headers: {
@@ -72,7 +74,7 @@ async function postToApi(route: string, data: any) {
 }
 
 function deleteFromApi(route: string) {
-    return fetch(process.env.SERVER_HOSTNAME + route, {
+    return fetch(getEnvVariableRetry('SERVER_HOSTNAME') + route, {
         ...fetchParams,
         method: 'DELETE'
     })

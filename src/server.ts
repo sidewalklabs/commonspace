@@ -9,40 +9,41 @@ import auth from './auth'
 import apiRouter from './routes/api';
 import authRouter from './routes/auth';
 
+function init() {
+    console.log(process.env);
+    const PORT = process.env.NODE_PORT ? process.env.NODE_PORT : 3000;
 
-const PORT = process.env.NODE_PORT ? process.env.NODE_PORT : 3000;
+    const app = express();
+    
+    auth(passport);
+    app.use(passport.initialize());
+    
+    app.use(bodyParser.json());
+    
+    app.use(function (req, res, next) {
+        // Request methods you wish to allow
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 
-const app = express();
+        // Request headers you wish to allow
+        res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+        
+        // Set to true if you need the website to include cookies in the requests sent
+        // to the API (e.g. in case you use sessions)
+        //res.setHeader('Access-Control-Allow-Credentials', true);
 
-console.log('boom: ', JSON.stringify(process.env));
+        // Pass to next layer of middleware
+        next();
+    });
 
-auth(passport);
-app.use(passport.initialize());
+    app.use('/auth', authRouter);
+    app.use('/api', apiRouter);
+    
+    if (process.env.NODE_ENV === 'development') {
+        app.use('/', express.static('./dist'));
+    }
 
-app.use(bodyParser.json());
-
-app.use(function (req, res, next) {
-    // Request methods you wish to allow
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-
-    // Request headers you wish to allow
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-
-    // Set to true if you need the website to include cookies in the requests sent
-    // to the API (e.g. in case you use sessions)
-    //res.setHeader('Access-Control-Allow-Credentials', true);
-
-    // Pass to next layer of middleware
-    next();
-});
-
-app.use('/auth', authRouter);
-app.use('/api', apiRouter);
-
-if (process.env.NODE_ENV === 'development') {
-    app.use('/', express.static('./dist'));
-} else {
-  console.log('bumble: ', JSON.stringify(process.env));
+    app.listen(PORT, () => console.log(`listening on port ${PORT}`));
 }
 
-app.listen(PORT, () => console.log(`port ${PORT}`));
+console.log('test');
+setTimeout(init, 50000);
