@@ -10,6 +10,7 @@ import { authenticateOAuthUser, createUser, findUser, findUserById, User } from 
 import DbPool from './database';
 
 import dotenv from 'dotenv';
+import { getEnvVariableRetry } from './environment';
 dotenv.config();
 
 const LocalStrategy = passportLocal.Strategy;
@@ -42,7 +43,6 @@ const extractAuthBearer = ExtractJwt.fromAuthHeaderAsBearerToken();
 
 function jwtFromRequest(req) {
     if (req.cookies && req.cookies.commonspacejwt) {
-        console.log('hi this is not it');
         return req.cookies.commonspacejwt;
     } else {
         console.log('hi, this is it!!');
@@ -51,11 +51,12 @@ function jwtFromRequest(req) {
 }
 
 
-console.log('remove: ', JSON.stringify(process.env));
+
+const secretOrKey = getEnvVariableRetry('JWT_SECRET');
 
 const jwtOptions = {
     jwtFromRequest,
-    secretOrKey: process.env.JWT_SECRET
+    secretOrKey
 }
 
 const jwtStrategy = new JwtStrategy(jwtOptions, async (jwt_payload, next) => {
@@ -71,10 +72,14 @@ const jwtStrategy = new JwtStrategy(jwtOptions, async (jwt_payload, next) => {
 const init = (mode: string) => {
     return (passport: any) => {
         if (mode == 'staging' || mode === 'production') {
+            const clientId = getEnvVariableRetry('GOOGLE_AUTH_CLIENT_ID');
+            const clientSecret = getEnvVariableRetry('GOOGLE_AUTH_CLIENT_SECRET');
+            const host = getEnvVariableRetry('SERVER_HOSTNAME');
+            const callbackURL = `${host}/auth/google/callback`
             const googleOAuthStrategy = new GoogleStrategy({
-                clientID: process.env.GOOGLE_AUTH_CLIENT_ID,
-                clientSecret: process.env.GOOGLE_AUTH_CLIENT_SECRET,
-                callbackURL: `${process.env.server_hostname}/auth/google/callback`,
+                clientId,
+                clientSecret,
+                callbackURL,
                 passReqToCallback: true
             }, async function(request, accessToken, refreshToken, profile, done) {
                 const email = profile.emails[0].value;
