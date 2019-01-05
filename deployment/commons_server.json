@@ -16,7 +16,8 @@
     "JWT_SECRET": "B5PgrJs/WrTaJ4mUvPpREu",
     "NODE_ENV": "development",
     "NODE_PORT": "3000",
-    "JWT_EXPIRATION_MS": "300000"
+    "JWT_EXPIRATION_MS": "300000",
+    "DOTENV_CONFIG_DIR": "/etc/commons"
   },
   "builders": [
     {
@@ -26,6 +27,7 @@
       "changes": [
         "ENV NODE_ENV {{ user `NODE_ENV` }}",
         "ENV JWT_SECRET {{ user `JWT_SECRET`}}",
+        "ENV DOTENV_CONFIG_DIR {{ user `DOTENV_CONFIG_DIR` }}",
         "EXPOSE {{ user `NODE_PORT` }} {{ user `NODE_PORT` }}"
       ]
     }
