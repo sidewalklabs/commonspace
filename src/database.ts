@@ -1,31 +1,24 @@
 import * as pg from 'pg';
 import dotenv from 'dotenv';
-import { getEnvVariableRetry } from './environment';
-dotenv.config();
-
-const user = getEnvVariableRetry('DB_USER');
-const password = getEnvVariableRetry('DB_PASS');
-const host = getEnvVariableRetry('DB_HOST');
-const port = parseInt(getEnvVariableRetry('DB_PORT'));
-const database = getEnvVariableRetry('DB_NAME');
-const max = parseInt(getEnvVariableRetry('DB_POOL_SIZE'));
-const idleTimeoutMillis = parseInt(getEnvVariableRetry('DB_CLIENT_TIMEOUT'));
+import path from 'path';
+//dotenv.config({ path: path.join(process.env.DOTENV_CONFIG_DIR, '.env')});
+dotenv.config({ path: process.env.DOTENV_CONFIG_DIR ? path.join(process.env.DOTENV_CONFIG_DIR, '.env'): ''});
 
 const config = {
-    user,
-    password,
-    host,
-    port,
-    database,
-    max,
-    idleTimeoutMillis
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT),
+    database: process.env.DB_NAME,
+    max: parseInt(process.env.DB_POOL_SIZE),
+    idleTimeoutMillis: parseInt(process.env.DB_CLIENT_TIMEOUT)
 };
 
 const pool = new pg.Pool(config);
 
 pool.connect(function(err, client, done) {
     if (err) {
-        console.error(`[config ${config}] ${err}`);
+        console.error(`[config ${JSON.stringify(config)}] ${err}`);
         process.exit(1);
     }
     done();

@@ -4,14 +4,14 @@ import * as passportGoogle from 'passport-google-oauth20';
 import * as passportJWT from 'passport-jwt'
 import * as passportLocal from 'passport-local';
 import GoogleTokenStrategy from './passport_strategies/GoogleTokenStrategy';
+import path from 'path';
 import * as uuid from 'uuid';
 
 import { authenticateOAuthUser, createUser, findUser, findUserById, User } from './datastore/user';
 import DbPool from './database';
 
 import dotenv from 'dotenv';
-import { getEnvVariableRetry } from './environment';
-dotenv.config();
+dotenv.config({ path: process.env.DOTENV_CONFIG_DIR ? path.join(process.env.DOTENV_CONFIG_DIR, '.env'): ''});
 
 const LocalStrategy = passportLocal.Strategy;
 const ExtractJwt = passportJWT.ExtractJwt;
@@ -52,7 +52,7 @@ function jwtFromRequest(req) {
 
 
 
-const secretOrKey = getEnvVariableRetry('JWT_SECRET');
+const secretOrKey = process.env.JWT_SECRET;
 
 const jwtOptions = {
     jwtFromRequest,
@@ -72,12 +72,12 @@ const jwtStrategy = new JwtStrategy(jwtOptions, async (jwt_payload, next) => {
 const init = (mode: string) => {
     return (passport: any) => {
         if (mode == 'staging' || mode === 'production') {
-            const clientId = getEnvVariableRetry('GOOGLE_AUTH_CLIENT_ID');
-            const clientSecret = getEnvVariableRetry('GOOGLE_AUTH_CLIENT_SECRET');
-            const host = getEnvVariableRetry('SERVER_HOSTNAME');
+            const clientID = process.env.GOOGLE_AUTH_CLIENT_ID;
+            const clientSecret = process.env.GOOGLE_AUTH_CLIENT_SECRET;
+            const host = process.env.SERVER_HOSTNAME;
             const callbackURL = `${host}/auth/google/callback`
             const googleOAuthStrategy = new GoogleStrategy({
-                clientId,
+                clientID,
                 clientSecret,
                 callbackURL,
                 passReqToCallback: true

@@ -36,7 +36,7 @@ const fetchParams: RequestInit = {
 }
 
 function getFromApi(route: string) {
-    const hostname = getEnvVariableRetry('SERVER_HOSTNAME');
+    const hostname = process.env.SERVER_HOSTNAME;
     return fetch(hostname + route, {
         ...fetchParams,
         method: 'GET'
@@ -45,7 +45,7 @@ function getFromApi(route: string) {
 
 function putToApi(route: string, data: any) {
     const body = JSON.stringify(snakecasePayload(data))
-    const hostname = getEnvVariableRetry('SERVER_HOSTNAME');
+    const hostname = process.env.SERVER_HOSTNAME;
     return fetch(hostname + route, {
         ...fetchParams,
         method: "PUT",
@@ -59,7 +59,7 @@ function putToApi(route: string, data: any) {
 async function postToApi(route: string, data: any) {
     const body = JSON.stringify(snakecasePayload(data));
     try {
-        return await fetch(getEnvVariableRetry('SERVER_HOSTNAME') + route, {
+        return await fetch(process.env.SERVER_HOSTNAME + route, {
             ...fetchParams,
             method: "POST",
             headers: {
@@ -74,7 +74,7 @@ async function postToApi(route: string, data: any) {
 }
 
 function deleteFromApi(route: string) {
-    return fetch(getEnvVariableRetry('SERVER_HOSTNAME') + route, {
+    return fetch(process.env.SERVER_HOSTNAME + route, {
         ...fetchParams,
         method: 'DELETE'
     })
