@@ -3,7 +3,7 @@ import { observable, autorun, toJS, get, set } from 'mobx';
 import moment from 'moment';
 import uuid from 'uuid';
 
-import { groupArrayOfObjectsBy, getEnvVariableRetry } from '../utils';
+import { groupArrayOfObjectsBy } from '../utils';
 import { StudyField } from '../datastore/utils';
 import { surveysForStudy } from '../datastore/study';
 import { FeatureCollection } from 'geojson';
@@ -59,7 +59,7 @@ function putToApi(route: string, data: any) {
 async function postToApi(route: string, data: any) {
     const body = JSON.stringify(snakecasePayload(data));
     try {
-        return await fetch(process.env.SERVER_HOSTNAME + route, {
+        const response = await fetch(`${process.env.SERVER_HOSTNAME}${route}`, {
             ...fetchParams,
             method: "POST",
             headers: {
@@ -67,8 +67,12 @@ async function postToApi(route: string, data: any) {
             },
             body
         })
+        if (response.status !== 200) {
+            throw Error(`${response.status} ${response.statusText}`);
+        }
+        return response;
     } catch (err) {
-        console.error(`[uri ${route}] [data ${JSON.stringify(data)}] ${err}`)
+        console.error(`[uri ${route}] [process ${process.env.SERVER_HOSTNAME}] [data ${JSON.stringify(data)}] ${err}`)
         throw err;
     }
 }
@@ -104,6 +108,16 @@ export async function updateStudy(studyInput) {
     const response = await putToApi(`/api/studies/${studyId}`, study);
 }
 
+function handleErrors(f: (...x: any[]) => Promise<Response>): (...y: any[]) => Promise<Response> {
+    return async (...args: any[]) => {
+        const response = await f(args);
+        if (response.status !== 200) {
+            throw new Error(`[args: ${args}] [stausText ${response.statusText}] ${response.status}`);
+        }
+        return response;
+    }
+}
+
 export async function saveNewStudy(studyInput: Study) {
     const study: Study = toJS(studyInput)
     study.surveys = Object.values(toJS(studyInput.surveys)).map(survey => {
@@ -114,7 +128,8 @@ export async function saveNewStudy(studyInput: Study) {
             ...survey
         }
     });
-    const response = await postToApi(`/api/studies`, study);
+    const route = `/api/studies`;
+    await postToApi(route, study);
 }
 
 export async function deleteStudy(studyId: string) {

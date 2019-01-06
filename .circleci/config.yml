@@ -39,12 +39,12 @@ jobs:
              name: build and push commons server image to GC Registry for k8s to have access
              command: |
                 docker login -u _json_key -p "${GCP_SERVICE_ACCOUNT_KEY}" https://gcr.io
-                packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-server -var SERVER_HOSTNAME="https://commons-staging.sidewalklabs.com" -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" deployment/commons_server.json
+                packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-server -var SERVER_HOSTNAME="${SERVER_HOSTNAME}" -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" -var NODE_ENV=production deployment/commons_server.json
 
           - run:
               name: build and push nginx image to GC Registry for k8s to have access
               command: |
-                packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-nginx -var SERVER_HOSTNAME="https://commons-staging.sidewalklabs.com" -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" deployment/commons_nginx.json
+                packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-nginx -var SERVER_HOSTNAME="${SERVER_HOSTNAME}" -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" -var NODE_ENV=production deployment/commons_nginx.json
 
           - run:
               name: patch K8s configs

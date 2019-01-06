@@ -10,7 +10,6 @@ import auth from './auth'
 import apiRouter from './routes/api';
 import authRouter from './routes/auth';
 
-console.log(process.env);
 const PORT = process.env.NODE_PORT ? process.env.NODE_PORT : 3000;
 
 const app = express();
