@@ -45,25 +45,17 @@ function jwtFromRequest(req) {
     if (req.cookies && req.cookies.commonspacejwt) {
         return req.cookies.commonspacejwt;
     } else {
-        const res = extractAuthBearer(req);
-        console.log(JSON.stringify(req));
-        console.log(res);
-        return res;
+        return extractAuthBearer(req);
     }
 }
 
-
-
-const secretOrKey = process.env.JWT_SECRET;
-
 const jwtOptions = {
     jwtFromRequest,
-    secretOrKey
+    secretOrKey: process.env.JWT_SECRET
 }
 
 const jwtStrategy = new JwtStrategy(jwtOptions, async (jwt_payload, next) => {
     const {user_id: userId} = jwt_payload;
-    console.log('christmas: ', JSON.stringify(userId));
     const user =  await findUserById(DbPool, userId);
     if (user) {
         next(null, {user_id: userId});
@@ -88,14 +80,12 @@ const init = (mode: string) => {
                 const email = profile.emails[0].value;
                 const user = await authenticateOAuthUser(DbPool, email);
                 request.user = { user_id: user.userId };
-                console.log('boo: ', JSON.stringify(request.user))
                 done(null, request.user);
             });
             passport.use('google-oauth', googleOAuthStrategy);
             const googleTokenStrategy = new GoogleTokenStrategy({tokenFromRequest: 'header', passReqToCallback: true}, async (request, email, done) => {
                 const user = await authenticateOAuthUser(DbPool, email);
                 request.user = user;
-                console.log('hey hey hey: ', JSON.stringify(request.user));
                 done(null, user, request);
             })
             passport.use('google-token', googleTokenStrategy);

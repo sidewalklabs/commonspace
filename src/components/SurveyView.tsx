@@ -15,7 +15,7 @@ import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import uuidv4 from 'uuid/v4';
 
-import { get, set, toJS } from 'mobx';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 
 import applicationState, { addNewSurveyToCurrentStudy } from '../stores/applicationState';

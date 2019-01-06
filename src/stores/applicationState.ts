@@ -7,6 +7,7 @@ import { groupArrayOfObjectsBy } from '../utils';
 import { StudyField } from '../datastore/utils';
 import { surveysForStudy } from '../datastore/study';
 import { FeatureCollection } from 'geojson';
+import uiState, { setSnackBar } from './ui';
 
 import {  snakecasePayload } from '../utils';
 
@@ -59,7 +60,7 @@ function putToApi(route: string, data: any) {
 async function postToApi(route: string, data: any) {
     const body = JSON.stringify(snakecasePayload(data));
     try {
-        const response = await fetch(`${process.env.SERVER_HOSTNAME}${route}`, {
+        const response = await fetch(route, {
             ...fetchParams,
             method: "POST",
             headers: {
@@ -129,7 +130,13 @@ export async function saveNewStudy(studyInput: Study) {
         }
     });
     const route = `/api/studies`;
-    await postToApi(route, study);
+    try {
+        await postToApi(route, study);
+        setSnackBar('success', 'Saved Study!')
+    } catch (error) {
+        setSnackBar('error', 'Failed to save study');
+        throw error;
+    }
 }
 
 export async function deleteStudy(studyId: string) {
