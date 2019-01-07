@@ -3,7 +3,7 @@ import { FeatureCollection } from 'geojson';
 import { FOREIGN_KEY_VIOLATION } from 'pg-error-constants';
 
 import { createUserFromEmail } from './user';
-import { javascriptArrayToPostgresArray, studyIdToTablename, StudyField } from './utils';
+import { ALL_STUDY_FIELDS, javascriptArrayToPostgresArray, studyIdToTablename, StudyField } from './utils';
 
 export type StudyScale = 'district' | 'city' | 'cityCentre' | 'neighborhood' | 'blockScale' | 'singleSite';
 export type StudyType = 'stationary' | 'movement';
@@ -55,8 +55,8 @@ function gehlFieldAsPgColumn(field: StudyField) {
     }
 }
 
-function createNewTableFromStudyFields(study: Study, tablename: string) {
-    const additionalColumns = study.fields.map(gehlFieldAsPgColumn).join(',\n');
+function createNewTableFromStudyFields(fields: StudyField[], tablename: string) {
+    const additionalColumns = fields.map(gehlFieldAsPgColumn).join(',\n');
     return `CREATE TABLE ${tablename} (
                     survey_id UUID references data_collection.survey(survey_id) ON DELETE CASCADE NOT NULL,
                     data_point_id UUID PRIMARY KEY NOT NULL,
@@ -195,9 +195,11 @@ export async function deleteStudy(pool: pg.Pool, studyId: string) {
 }
 
 export async function createStudy(pool: pg.Pool, study: Study) {
-    // for some unknown reason import * as uuidv4 from 'uuid/v4'; uuidv4(); fails in gcp, saying that it's not a function call
     const studyTablename = studyIdToTablename(study.studyId);
-    const newStudyDataTableQuery = createNewTableFromStudyFields(study, studyTablename);
+    // as a time saver create the table with all possible fields, expect client to play by the
+    // rules, and only update the fields it should, this makes it easy (no-migration requried) 
+    // to allow someone to update the fields of a study whenever they'd like
+    const newStudyDataTableQuery = createNewTableFromStudyFields(ALL_STUDY_FIELDS, studyTablename);
     const fields = javascriptArrayToPostgresArray(study.fields);
     const { studyId, title, userId, protocolVersion, type, map={} } = study;
     const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, protocol_version, study_type, fields, tablename, map)
@@ -217,6 +219,23 @@ export async function createStudy(pool: pg.Pool, study: Study) {
         throw error;
     }
     return [studyResult, newStudyDataTable];
+}
+
+export async function updateStudy(pool: pg.Pool, study: Study) {
+    const { title, protocolVersion, type, fields, map } = study;
+    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, protocol_version, study_type, fields, tablename, map)
+VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
+    const query = `${newStudyMetadataQuery}
+                   ON CONFLICT (study_id)
+                   DO UPDATE SET (title, protocol_version, study_type, fields, map)
+                       = ($1, $2, $3, $4, $5)`
+    const values = [title, protocolVersion, type, fields, JSON.stringify(map)]
+    try {
+        pool.query(query, values);
+    } catch (error) {
+        console.error(`[sql ${query}] [values ${JSON.stringify(values)}] ${error}`);
+        throw error;
+    }
 }
 
 export async function giveUserStudyAccess(pool: pg.Pool, userEmail: string, studyId: string) {

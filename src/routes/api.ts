@@ -20,7 +20,8 @@ import {
   returnStudiesForAdmin,
   returnStudiesUserIsAssignedTo,
   surveysForStudy,
-  StudyType
+    StudyType,
+    updateStudy
 } from "../datastore/study";
 import { createNewSurveyForStudy, updateSurvey } from "../datastore/survey";
 import { userIsAdminOfStudy } from "../datastore/user";
@@ -374,16 +375,18 @@ router.get(
 router.put(
   "/studies/:studyId",
   return500OnError(async (req, res) => {
-    const { surveys, study_id } = req.body as Study;
-    const pgQueries = await Promise.all(
-      surveys.map(s =>
-        updateSurvey(
-          DbPool,
-          camelcaseKeys({ study_id, ...s, userEmail: s.surveyor_email })
-        )
-      )
-    );
-    res.sendStatus(200);
+      const study  = camelcaseKeys(req.body as Study);
+      const  { surveys, study_id } = study;
+      await updateStudy(DbPool, study);
+      const pgQueries = await Promise.all(
+          surveys.map(s =>
+                  updateSurvey(
+                      DbPool,
+                      camelcaseKeys({ study_id, ...s, userEmail: s.surveyor_email })
+                  )
+                     )
+      );
+      res.sendStatus(200);
   })
 );
 

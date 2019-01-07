@@ -11,7 +11,7 @@
     "lint": "tsc --noEmit",
     "it": "jest -c jest.config.integration.js --runInBand",
     "test": "jest -c jest.config.test.js",
-    "watch": "yarn build  --env.SERVER_HOSTNAME=http://localhost:3000 --watch --mode development"
+    "watch": "yarn build  --env.SERVER_HOSTNAME=http://localhost:3000 --env.TILE_SERVER_URL=http://{s}.tile.osm.org/{z}/{x}/{y}.png --watch --mode development"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.56",
