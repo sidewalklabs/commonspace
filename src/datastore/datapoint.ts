@@ -156,8 +156,8 @@ function transformToPostgresInsert(surveyId: string, dataPoint) {
     const { columns, values, parameterBindings } = processKeyAndValues(dataPointForPostgres);
     const insert_statement = `(${(columns.join(', '))}) VALUES (${parameterBindings.join(', ')})`;
     const query = `${insert_statement}
-                   ON CONFLICT(data_point_id)
-                   DO UPDATE SET(${(columns.join(', '))}) = (${parameterBindings.join(', ')})`;
+                   ON CONFLICT (data_point_id)
+                   DO UPDATE SET (${(columns.join(', '))}) = (${parameterBindings.join(', ')})`;
     return { query, values };
 }
 

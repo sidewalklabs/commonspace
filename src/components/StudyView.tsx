@@ -13,7 +13,7 @@ import MapView from './MapView';
 import SurveyView from './SurveyView';
 
 import uiState from '../stores/ui';
-import applicationState, { saveNewStudy, updateStudy, Study, StudyFields } from '../stores/applicationState';
+import applicationState, { saveNewStudy, updateStudy, Study } from '../stores/applicationState';
 import { groupArrayOfObjectsBy } from '../utils';
 import { FeatureCollection } from 'geojson';
 
@@ -68,7 +68,7 @@ const CreateOrUpdateButton = withStyles(styles)((props: CreateOrUpdateButtonProp
         );
     } else {
         return (
-            <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={updateStudy}>
+            <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={async () => await updateStudy(study)}>
                 Update
             </Button>
         );

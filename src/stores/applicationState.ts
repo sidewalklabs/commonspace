@@ -44,17 +44,24 @@ function getFromApi(route: string) {
     })
 }
 
-function putToApi(route: string, data: any) {
+async function putToApi(route: string, data: any) {
     const body = JSON.stringify(snakecasePayload(data))
-    const hostname = process.env.SERVER_HOSTNAME;
-    return fetch(hostname + route, {
-        ...fetchParams,
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json; charset=utf-8"
-        },
-        body
-    })
+    try {
+        const response = await fetch(route, {
+            ...fetchParams,
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json; charset=utf-8"
+            },
+            body
+        })
+        if (response.status !== 200) {
+            throw Error(`${response.status} ${response.statusText}`);
+        }
+        return response;
+    } catch (err) {
+        console.error(`[route ${route}] [data ${body}] ${err}`)
+    }
 }
 
 async function postToApi(route: string, data: any) {
@@ -73,7 +80,7 @@ async function postToApi(route: string, data: any) {
         }
         return response;
     } catch (err) {
-        console.error(`[uri ${route}] [process ${process.env.SERVER_HOSTNAME}] [data ${JSON.stringify(data)}] ${err}`)
+        console.error(`[route ${route}] [data ${body}] ${err}`)
         throw err;
     }
 }
@@ -102,11 +109,17 @@ export async function getStudies(): Promise<{[studyId: string]: Study}> {
 }
 
 export async function updateStudy(studyInput) {
-    const studyId = applicationState.currentStudy.studyId;
+    const  { studyId } = studyInput;
     const surveys = Object.values(toJS(studyInput.surveys))
     const study = toJS(applicationState.currentStudy);
     study.surveys = surveys;
-    const response = await putToApi(`/api/studies/${studyId}`, study);
+    try {
+        const response = await putToApi(`/api/studies/${studyId}`, study);
+        setSnackBar('success', `Updated study ${studyInput.title}`);
+    } catch (error) {
+        setSnackBar('error', `Unable to update study ${studyInput.title}`);
+        throw error;
+    }
 }
 
 function handleErrors(f: (...x: any[]) => Promise<Response>): (...y: any[]) => Promise<Response> {

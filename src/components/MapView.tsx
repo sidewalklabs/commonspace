@@ -15,9 +15,9 @@ import { stringHash } from '../utils';
 
 const INITIAL_ZOOM_LEVEL = 17;
 const CENTER_COORDINATES = [-74.00293, 40.750496];
-const TILE_SERVER_URL = 'http://{s}.tile.osm.org/{z}/{x}/{y}.png'
+const { TILE_SERVER_URL } = process.env;
 //    'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png';
-const MAP_ATTRIBUTION = '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+const MAP_ATTRIBUTION = process.env.MAP_ATTRIBUTION ? process.env.MAP_ATTRIBUTION : '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors';
 
 const styles = theme => ({
     container: {
