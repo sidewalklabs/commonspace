@@ -222,16 +222,17 @@ export async function createStudy(pool: pg.Pool, study: Study) {
 }
 
 export async function updateStudy(pool: pg.Pool, study: Study) {
-    const { title, protocolVersion, type, fields, map } = study;
+    const { studyId, userId, title, protocolVersion, type, fields, map } = study;
+    const studyTablename = studyIdToTablename(studyId)
     const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, protocol_version, study_type, fields, tablename, map)
 VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
     const query = `${newStudyMetadataQuery}
                    ON CONFLICT (study_id)
-                   DO UPDATE SET (title, protocol_version, study_type, fields, map)
-                       = ($1, $2, $3, $4, $5)`
-    const values = [title, protocolVersion, type, fields, JSON.stringify(map)]
+                   DO UPDATE SET (title, protocol_version, fields, map)
+                       = ($9, $10, $12)`
+    const values = [studyId, title, userId, protocolVersion, type, fields, studyTablename, JSON.stringify(map), title, protocolVersion, fields, JSON.stringify(map)]
     try {
-        pool.query(query, values);
+        await pool.query(query, values);
     } catch (error) {
         console.error(`[sql ${query}] [values ${JSON.stringify(values)}] ${error}`);
         throw error;

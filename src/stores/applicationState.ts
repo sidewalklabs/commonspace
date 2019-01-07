@@ -37,8 +37,7 @@ const fetchParams: RequestInit = {
 }
 
 function getFromApi(route: string) {
-    const hostname = process.env.SERVER_HOSTNAME;
-    return fetch(hostname + route, {
+    return fetch(route, {
         ...fetchParams,
         method: 'GET'
     })
@@ -61,6 +60,7 @@ async function putToApi(route: string, data: any) {
         return response;
     } catch (err) {
         console.error(`[route ${route}] [data ${body}] ${err}`)
+        throw err;
     }
 }
 
@@ -204,12 +204,10 @@ export async function addNewSurveyorToSurvey(studyId: string, email: string) {
 }
 
 export async function init() {
-    if (Object.keys(applicationState.studies).length == 0) {
-        const studies = await getStudies();
-        applicationState.studies = studies;
-        const studyIds = Object.keys(studies);
-        await Promise.all(studyIds.map(fetchSurveysForStudy));
-    }
+    const studies = await getStudies();
+    applicationState.studies = studies;
+    const studyIds = Object.keys(studies);
+    await Promise.all(studyIds.map(fetchSurveysForStudy));
 }
 
 let applicationState: ApplicationState = observable({
@@ -219,6 +217,7 @@ let applicationState: ApplicationState = observable({
 });
 
 autorun(() => {
+    console.log(applicationState.currentStudy.protocolVersion)
 });
 
 export default applicationState;

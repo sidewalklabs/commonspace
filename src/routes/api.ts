@@ -375,14 +375,15 @@ router.get(
 router.put(
   "/studies/:studyId",
   return500OnError(async (req, res) => {
+      const { user_id: userId } = req.user;
       const study  = camelcaseKeys(req.body as Study);
-      const  { surveys, study_id } = study;
-      await updateStudy(DbPool, study);
+      const  { surveys, studyId } = study;
+      await updateStudy(DbPool, {userId, ...study});
       const pgQueries = await Promise.all(
           surveys.map(s =>
                   updateSurvey(
                       DbPool,
-                      camelcaseKeys({ study_id, ...s, userEmail: s.surveyor_email })
+                      camelcaseKeys({ studyId, ...s, userEmail: s.surveyor_email })
                   )
                      )
       );

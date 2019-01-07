@@ -81,21 +81,6 @@ interface StudyViewProps {
 }
 
 const StudyView = observer((props: any & WithStyles) => {
-    const PROTOCOL_SELECTIONS = [
-        {
-            value: 'beta',
-            label: 'beta'
-        },
-        {
-            value: '1.0',
-            label: 'latest'
-        },
-        {
-            value: '1.0',
-            label: '1.0'
-        }
-    ];
-
     const STUDY_TYPES = [
         {
             value: 'stationary',
@@ -105,12 +90,50 @@ const StudyView = observer((props: any & WithStyles) => {
             value: 'movement',
             label: 'Movement Counts'
         }
+    ];
+
+    const PROTOCOL_SELECTIONS = [
+        {
+            value: '1.0',
+            label: 'latest'
+        }
     ]
 
     const { study, classes, studyIsNew } = props;
     if (study) {
         const { title, surveys, studyId, fields, surveyors, protocolVersion, type, map } = study as Study;
         const features = map && map.features ? map.features : [];
+        const StudyTypeField = props => studyIsNew ?
+            (<TextField
+                select
+                label="Study Type"
+                className={classes.textField}
+                value={groupArrayOfObjectsBy(STUDY_TYPES, 'value')[type].value}
+                onChange={e => {
+                    study.type = e.target.value;
+                }}
+                SelectProps={{
+                    MenuProps: {
+                        className: classes.menu
+                    }
+                }}
+                margin="normal"
+            >
+                {STUDY_TYPES.map(({ value, label }) => {
+                    return <MenuItem key={label} value={value}>
+                        {label}
+                    </MenuItem>
+                })}
+            </TextField>) : (<TextField
+                label="Study Type"
+                className={classes.textField}
+                value={groupArrayOfObjectsBy(STUDY_TYPES, 'value')[type].label}
+                margin="normal"
+                InputProps={{
+                    readOnly: true
+                }}
+            />)
+
         return (
             <Fragment>
                 <TextField
@@ -120,42 +143,8 @@ const StudyView = observer((props: any & WithStyles) => {
                     onChange={e => study.title = e.target.value}
                     margin="normal"
                 />
-                <TextField
-                    select
-                    label="Study Type"
-                    className={classes.textField}
-                    value={groupArrayOfObjectsBy(STUDY_TYPES, 'value')[type].label}
-                    onChange={e => {
-                        study.type = e.target.value;
-                    }}
-                    SelectProps={{
-                        MenuProps: {
-                            className: classes.menu
-                        }
-                    }}
-                    margin="normal"
-                >
-                    {STUDY_TYPES.map(({ value, label }) => {
-                        return (
-                            <MenuItem key={value} value={value}>
-                                {label}
-                            </MenuItem>
-                        )
-                    })}
-                </TextField>
-                <TextField
-                    className={classes.textField}
-                    label="Study Fields"
-                    value={`${fields.length} Fields`}
-                    InputProps={{
-                        startAdornment: (
-                            <InputAdornment position="end" onClick={() => uiState.visibleModal = "studyFields"}>
-                                <EditIcon />
-                            </InputAdornment>
-                        )
-                    }}
-                >
-                </TextField>
+
+                <StudyTypeField />
                 <TextField
                     className={classes.textField}
                     label="Surveyors"
@@ -183,27 +172,27 @@ const StudyView = observer((props: any & WithStyles) => {
                     }}
                 >
                 </TextField>
-                <TextField
+                {/* <TextField
                     select
                     label="Gehl Protocol Version"
                     className={classes.textField}
                     value={groupArrayOfObjectsBy(PROTOCOL_SELECTIONS, 'value')[protocolVersion].label}
                     onChange={e => {
-                        study.protocolVersion = e.target.value;
+                    study.protocolVersion = e.target.value;
                     }}
                     SelectProps={{
-                        MenuProps: {
-                            className: classes.menu
-                        }
+                    MenuProps: {
+                    className: classes.menu
+                    }
                     }}
                     margin="normal"
-                >
-                    {PROTOCOL_SELECTIONS.map(({ value, label }) => {
-                        return (<MenuItem key={value} value={value}>
-                            {label}
-                        </MenuItem>)
+                    >
+                 
+                    return (<MenuItem key={value} value={value}>
+                    {label}
+                    </MenuItem>)
                     })}
-                </TextField>
+                    </TextField> */}
                 <MapView lat={33.546727} lng={-117.673965} featureCollection={map} />
                 <CreateOrUpdateButton study={study} studyIsNew={studyIsNew} />
             </Fragment>

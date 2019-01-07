@@ -42,10 +42,6 @@ const router: Router = observable({
     uri: window.location.pathname === '/' ? '/signup' : sanitizedPathname()
 });
 
-console.log('a ', window.location.pathname);
-console.log('b ', window.location.pathname === '/');
-console.log('c ', router.uri);
-
 autorun(async () => {
     console.log(router.uri);
     if (router.uri === '/studies') {
