@@ -44,10 +44,13 @@ const styles = theme => ({
     }
 });
 
+type MapDrawShape = 'line' | 'polygon';
+
 interface MapViewProps {
     lat: number;
     lng: number;
     featureCollection: FeatureCollection;
+    allowedShapes: MapDrawShape;
 }
 
 function onEdited() {
@@ -106,18 +109,9 @@ function onDeleteStart() { }
 function onDeleteStop() { }
 
 const MapView = observer((props: MapViewProps & WithStyles) => {
-    const { classes, lat, lng, featureCollection } = props;
+    const { allowedShapes, classes, lat, lng, featureCollection } = props;
     const ControlMenuOptions = {
-        polygon: {
-            allowIntersection: false, // Restricts shapes to simple polygons
-            drawError: {
-                color: '#e1e100', // Color the shape will turn when intersects
-                message: "<strong>Oh snap!<strong> you can't draw that!" // Message that will show when intersect
-            },
-            shapeOptions: {
-                color: '#97009c'
-            }
-        },
+        polygon: false,
         // disable toolbar item by setting it to false
         circlemarker: false,
         circle: false, // Turns off this drawing tool
@@ -126,6 +120,14 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
             zIndexOffset: 1000
         },
         simpleShape: false
+    }
+
+    if (allowedShapes === 'polygon') {
+        // @ts-ignore
+        ControlMenuOptions.polyline = false;
+    } else {
+        // @ts-ignore
+        ControlMenuOptions.polygon = false;
     }
 
     const geojson = toJS(featureCollection);
