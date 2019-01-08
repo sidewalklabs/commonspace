@@ -3,7 +3,8 @@
     "container_image_name": "us.gcr.io/nyc-tlc-1225/commons-nginx",
     "version": "",
     "gcloud_json_key": "",
-    "SERVER_HOSTNAME": "http://localhost:3000"
+    "SERVER_HOSTNAME": "http://localhost:3000",
+    "TILE_SERVER_URL": "http://{s}.tile.osm.org/{z}/{x}/{y}.png"
   },
   "builders": [
     {
@@ -66,7 +67,7 @@
         "cd commons/",
 	"npm install -g -s --no-progress yarn",
 	"yarn",
-        "yarn build --mode production --env.SERVER_HOSTNAME={{ user `SERVER_HOSTNAME` }}"
+        "yarn build --mode production --env.SERVER_HOSTNAME={{ user `SERVER_HOSTNAME` }} --env.TILE_SERVER_URL={{ user `TILE_SERVER_URL` }}"
       ]
     },
     {
