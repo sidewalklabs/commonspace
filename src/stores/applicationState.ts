@@ -217,7 +217,7 @@ let applicationState: ApplicationState = observable({
 });
 
 autorun(() => {
-    console.log(applicationState.currentStudy.protocolVersion)
+    console.log(applicationState.currentStudy)
 });
 
 export default applicationState;
