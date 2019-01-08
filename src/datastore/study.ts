@@ -229,7 +229,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
     const query = `${newStudyMetadataQuery}
                    ON CONFLICT (study_id)
                    DO UPDATE SET (title, protocol_version, fields, map)
-                       = ($9, $10, $12)`
+                       = ($9, $10, $11, $12)`
     const values = [studyId, title, userId, protocolVersion, type, fields, studyTablename, JSON.stringify(map), title, protocolVersion, fields, JSON.stringify(map)]
     try {
         await pool.query(query, values);
