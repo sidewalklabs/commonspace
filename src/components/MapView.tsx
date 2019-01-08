@@ -111,7 +111,16 @@ function onDeleteStop() { }
 const MapView = observer((props: MapViewProps & WithStyles) => {
     const { allowedShapes, classes, lat, lng, featureCollection } = props;
     const ControlMenuOptions = {
-        polygon: false,
+        polygon: {
+            allowIntersection: false, // Restricts shapes to simple polygons
+            drawError: {
+                color: '#e1e100', // Color the shape will turn when intersects
+                message: "<strong>Oh snap!<strong> you can't draw that!" // Message that will show when intersect
+            },
+            shapeOptions: {
+                color: '#97009c'
+            }
+        },
         // disable toolbar item by setting it to false
         circlemarker: false,
         circle: false, // Turns off this drawing tool
@@ -125,9 +134,11 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
     if (allowedShapes === 'polygon') {
         // @ts-ignore
         ControlMenuOptions.polyline = false;
-    } else {
+    } else if (allowedShapes === 'line') {
         // @ts-ignore
         ControlMenuOptions.polygon = false;
+    } else {
+        console.warn(`unrecognized map shape: ${allowedShapes}`)
     }
 
     const geojson = toJS(featureCollection);

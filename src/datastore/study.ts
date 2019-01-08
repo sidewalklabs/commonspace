@@ -122,14 +122,14 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
                  FROM data_collection.survey as svy
                  JOIN data_collection.study as stu
                  ON svy.study_id = stu.study_id
-                 JOIN data_collection.location as loc
+                 LEFT JOIN data_collection.location as loc
                  ON svy.location_id = loc.location_id
                  WHERE svy.user_id = $1`;
     const values = [userId]; 
     try {
         const {rows}  = await pool.query(query, values);
         const studiesAndSurveys = rows.reduce((acc, curr) => {
-            const { study_id, study_title, protocol_version, study_type: type, map, survey_id, start_date, end_date, survey_location, location_id } = curr;
+            const { study_id, study_title, protocol_version, study_type: type, map, survey_id, start_date, end_date, survey_location = {coordinates: [], type: 'Polygon'}, location_id } = curr;
             const survey = {
                 survey_id,
                 study_title,

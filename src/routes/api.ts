@@ -114,16 +114,16 @@ router.get(
     if (type === "admin") {
       responseBody = await returnStudiesForAdmin(DbPool, userId);
     } else if (type === "surveyor") {
-      responseBody = (await returnStudiesUserIsAssignedTo(
+      responseBody = await returnStudiesUserIsAssignedTo(
         DbPool,
         userId
-      )) as Study[];
+      ) as Study[];
     } else if (type === 'all') {
       const adminStudies = await returnStudiesForAdmin(DbPool, userId);
-      const suveyorStudies = (await returnStudiesUserIsAssignedTo(
+      const suveyorStudies = await returnStudiesUserIsAssignedTo(
         DbPool,
         userId
-      )) as Study[];
+      ) as Study[];
       // @ts-ignore
       responseBody = adminStudies.concat(suveyorStudies);
     } else {

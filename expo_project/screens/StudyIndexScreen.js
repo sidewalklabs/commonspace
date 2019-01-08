@@ -105,7 +105,8 @@ class StudyIndexScreen extends React.Component {
                     survey_location: zoneFeatureGeoJson,
                   } = survey;
                   const surveyTitle = title || 'Unnamed Survey';
-                  const zoneCoordinates = _.map(zoneFeatureGeoJson.coordinates[0], c => {
+                  const coordinates = !zoneFeatureGeoJson ? []: zoneFeatureGeoJson.coordinates[0];
+                  const zoneCoordinates = _.map(coordinates, c => {
                     return { longitude: c[0], latitude: c[1] };
                   });
                   return (
