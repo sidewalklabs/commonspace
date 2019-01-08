@@ -103,6 +103,7 @@ const StudyView = observer((props: any & WithStyles) => {
     if (study) {
         const { title, surveys, studyId, fields, surveyors, protocolVersion, type, map } = study as Study;
         const features = map && map.features ? map.features : [];
+        const allowedMapShapes = type === 'stationary' ? 'polygon' : 'line';
         const StudyTypeField = props => studyIsNew ?
             (<TextField
                 select
@@ -193,7 +194,7 @@ const StudyView = observer((props: any & WithStyles) => {
                     </MenuItem>)
                     })}
                     </TextField> */}
-                <MapView lat={33.546727} lng={-117.673965} featureCollection={map} />
+                <MapView allowedShapes={allowedMapShapes} lat={33.546727} lng={-117.673965} featureCollection={map} />
                 <CreateOrUpdateButton study={study} studyIsNew={studyIsNew} />
             </Fragment>
         );
