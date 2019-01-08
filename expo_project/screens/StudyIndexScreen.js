@@ -20,7 +20,7 @@ import { getStudies } from '../lib/commonsClient';
 
 function typeToRouteName(type) {
   switch (type) {
-    case 'activity':
+    case 'stationary':
       return 'SurveyScreen';
     case 'movement':
       return 'PeopleMovingCountScreen';
