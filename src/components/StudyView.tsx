@@ -148,6 +148,18 @@ const StudyView = observer((props: any & WithStyles) => {
                 <StudyTypeField />
                 <TextField
                     className={classes.textField}
+                    label="Study Fields"
+                    value={`${fields.length} Fields`}
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="end" onClick={() => uiState.visibleModal = "studyFields"}>
+                                <EditIcon />
+                            </InputAdornment>
+                        ),
+                    }}
+                />
+                <TextField
+                    className={classes.textField}
                     label="Surveyors"
                     value={`${surveyors.length} Surveyors`}
                     InputProps={{

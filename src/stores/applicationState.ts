@@ -5,7 +5,7 @@ import uuid from 'uuid';
 
 import { groupArrayOfObjectsBy } from '../utils';
 import { StudyField } from '../datastore/utils';
-import { surveysForStudy } from '../datastore/study';
+import { surveysForStudy, StudyType } from '../datastore/study';
 import { FeatureCollection } from 'geojson';
 import uiState, { setSnackBar } from './ui';
 
@@ -17,7 +17,7 @@ export interface Study {
     surveys: {[key: string]: any};
     surveyors: string[];
     title: string;
-    type: 'stationary' | 'movement';
+    type: StudyType;
     fields: StudyField[];
     map: FeatureCollection;
 }

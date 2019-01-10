@@ -10,8 +10,9 @@ import Typography from '@material-ui/core/Typography';
 
 import applicationState from '../stores/applicationState';
 import { StudyField } from '../datastore/utils';
+import { StudyType } from '../datastore/study';
 
-const AVAILABLE_FIELDS: StudyField[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'note']
+const AVAILABLE_FIELDS: StudyField[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'note']
 
 const styles = theme => ({
     root: {
@@ -23,15 +24,20 @@ const styles = theme => ({
 })
 
 interface FieldsListProps {
-    fields: string[]
+    fields: StudyField[];
+    studyType: StudyType;
 }
 
 // @ts-ignore
 const FieldsList = withStyles(styles)(observer((props: FieldsListProps & WithStyles) => {
-    const { classes, fields } = props;
+    const { classes, fields, studyType } = props;
     const { currentStudy } = applicationState;
 
     const chips = AVAILABLE_FIELDS.map(possibleField => {
+        // we don't allow our user to chooose mode for stationary studies
+        if (studyType === 'stationary' && possibleField === 'mode') {
+            return null;
+        }
         const index = fields.indexOf(possibleField);
         if (index === -1) {
             // for ux reasons, it's best to present the buttons in a consistent order
