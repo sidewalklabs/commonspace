@@ -72,9 +72,6 @@ const styles = theme => ({
         display: 'flex',
         marginTop: 'auto'
     },
-    icon: {
-        marginRight: theme.spacing.unit * 2,
-    },
     title: {
         marginLeft: theme.spacing.unit * 2,
         flexGrow: 1
@@ -99,6 +96,7 @@ const styles = theme => ({
     },
     icon: {
         fontSize: 20,
+        marginRight: theme.spacing.unit * 2
     },
     iconVariant: {
         opacity: 0.9,
@@ -176,7 +174,7 @@ const Main = observer(
         const { snackBar, visibleModal } = uiState;
         const { snackbarType, snackbarText } = snackBar;
         const currentStudy = applicationState.currentStudy ? applicationState.currentStudy : studyEmptySkeleton();
-        let { fields, studyId, surveyors } = currentStudy;
+        let { fields, studyId, surveyors, type } = currentStudy;
         return (
             <div className={classes.root}>
                 <CssBaseline />
@@ -243,7 +241,7 @@ const Main = observer(
                         <SurveyView surveys={Object.values(currentStudy.surveys)} features={currentStudy.map.features} />
                     </WrapInModal>
                     <WrapInModal onClose={() => uiState.visibleModal = 'study'} modalName={'studyFields'} visibleModal={visibleModal}>
-                        <FieldsList fields={fields} />
+                        <FieldsList studyType={type} fields={fields} />
                     </WrapInModal>
                     <Snackbar
                         anchorOrigin={{

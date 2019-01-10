@@ -89,7 +89,7 @@ export function updateSurvey(pool: pg.Pool, survey: Survey) {
                              $5::TEXT
                       )
                   )
-                  UPDATE date_collection.survey
+                  UPDATE data_collection.survey
                   SET title = t.title,
                       location_id = t.location_id,
                       start_date = t.start_date,
