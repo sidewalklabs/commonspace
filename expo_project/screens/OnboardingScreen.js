@@ -44,7 +44,8 @@ class OnboardingScreen extends React.Component {
   };
 
   scrollOffsetToIndex = (offset, width) => {
-    return Math.trunc(offset / width);
+    // For some reason, android width is ~0.000000001 off, so compare the truncated version
+    return Math.trunc(offset) / Math.trunc(width);
   };
 
   onIndicatorDotPress = index => {
@@ -73,6 +74,8 @@ class OnboardingScreen extends React.Component {
             bounces={false}
             showsHorizontalScrollIndicator={false}
             onScroll={this.handleScroll}
+            decelerationRate="fast"
+            overScrollMode="never"
             scrollEventThrottle={16}>
             {OnboardingSlides.map((slide, i) => (
               <View style={styles.carouselItem} key={i}>

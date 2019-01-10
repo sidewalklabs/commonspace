@@ -29,6 +29,82 @@ function typeToRouteName(type) {
   }
 }
 
+class StudyCard extends React.Component {
+  render() {
+    const { token, study, navigation } = this.props;
+    const {
+      description,
+      title: studyName,
+      type: studyType,
+      authorName,
+      surveys,
+      fields: studyFields,
+    } = study;
+    // TODO: move these to backend
+    const studyAuthor = authorName || 'Unknown author';
+    const authorUrl = 'https://placeholder.ca/';
+    return (
+      <Card elevation={3} style={styles.card}>
+        <CardContent style={styles.studyHeader}>
+          <Title>{studyName}</Title>
+          <Paragraph>
+            by{' '}
+            <Text
+              style={{ color: 'blue' }}
+              onPress={() =>
+                navigation.navigate('WebViewScreen', {
+                  uri: authorUrl,
+                  title: studyAuthor,
+                })
+              }>
+              {studyAuthor}
+            </Text>
+          </Paragraph>
+          {description && <Paragraph>{description}</Paragraph>}
+        </CardContent>
+        {surveys.map(survey => {
+          const { survey_id: surveyId, title, survey_location: zoneFeatureGeoJson } = survey;
+          const surveyTitle = title || 'Unnamed Survey';
+          const coordinates = !zoneFeatureGeoJson ? [] : zoneFeatureGeoJson.coordinates[0];
+          const zoneCoordinates = _.map(coordinates, c => {
+            return { longitude: c[0], latitude: c[1] };
+          });
+          return (
+            <View key={surveyId}>
+              <Divider />
+              <CardContent style={styles.surveyRow}>
+                <View style={styles.contentWrapper}>
+                  <Text style={styles.surveyTitle}>{surveyTitle}</Text>
+                </View>
+                <View style={styles.buttonWrapper}>
+                  <Button
+                    dark
+                    raised
+                    primary
+                    onPress={() =>
+                      this.props.navigation.navigate(typeToRouteName(studyType), {
+                        studyFields,
+                        surveyId,
+                        studyName,
+                        studyAuthor,
+                        studyType,
+                        surveyTitle,
+                        zoneCoordinates,
+                        token,
+                      })
+                    }>
+                    Enter
+                  </Button>
+                </View>
+              </CardContent>
+            </View>
+          );
+        })}
+      </Card>
+    );
+  }
+}
+
 class StudyIndexScreen extends React.Component {
   state = {
     studies: [],
@@ -58,98 +134,35 @@ class StudyIndexScreen extends React.Component {
         { text: 'OK' },
       ]);
     });
-
-    if (!studies) {
-      studies = [];
-    }
-    studies.push(peopleMovingDemoStudy, stationaryActivityDemoStudy);
-    this.setState({ token, studies, loading: false });
+    this.setState({ token, studies: studies || [], loading: false });
   }
 
   render() {
-    const { token, studies } = this.state;
+    const { loading, token, studies } = this.state;
+    const demos = [peopleMovingDemoStudy, stationaryActivityDemoStudy];
     return (
-      <View style={[styles.container]}>
-        <ScrollView style={[styles.container]}>
-          {this.state.loading && <ActivityIndicator />}
-          {studies.map((study, index) => {
-            const { description, title: studyName, type: studyType, authorName, surveys, fields: studyFields } = study;
-            // TODO: move these to backend
-            const studyAuthor = authorName || 'Unknown author';
-            const authorUrl = 'https://placeholder.ca/';
-            return (
-              <Card elevation={3} key={index} style={styles.card}>
-                <CardContent style={styles.studyHeader}>
-                  <Title>{studyName}</Title>
-                  <Paragraph>
-                    by{' '}
-                    <Text
-                      style={{ color: 'blue' }}
-                      onPress={() =>
-                        this.props.navigation.navigate('WebViewScreen', {
-                          uri: authorUrl,
-                          title: studyAuthor,
-                        })
-                      }>
-                      {studyAuthor}
-                    </Text>
-                  </Paragraph>
-
-                  {description && <Paragraph>{description}</Paragraph>}
-                </CardContent>
-                {surveys.map(survey => {
-                  const {
-                    survey_id: surveyId,
-                    title,
-                    locationId,
-                    survey_location: zoneFeatureGeoJson,
-                  } = survey;
-                  const surveyTitle = title || 'Unnamed Survey';
-                  const coordinates = !zoneFeatureGeoJson ? []: zoneFeatureGeoJson.coordinates[0];
-                  const zoneCoordinates = _.map(coordinates, c => {
-                    return { longitude: c[0], latitude: c[1] };
-                  });
-                  return (
-                    <View key={surveyId}>
-                      <Divider />
-                      <CardContent style={styles.surveyRow}>
-                        <View style={styles.contentWrapper}>
-                          <Text style={styles.surveyTitle}>{surveyTitle}</Text>
-                        </View>
-                        <View style={styles.buttonWrapper}>
-                          <Button
-                            dark
-                            raised
-                            primary
-                            onPress={() =>
-                              this.props.navigation.navigate(typeToRouteName(studyType), {
-                                studyFields,
-                                surveyId,
-                                studyName,
-                                studyAuthor,
-                                studyType,
-                                surveyTitle,
-                                zoneCoordinates,
-                                token,
-                              })
-                            }>
-                            Enter
-                          </Button>
-                        </View>
-                      </CardContent>
-                    </View>
-                  );
-                })}
-              </Card>
-            );
-          })}
-          {!this.state.loading &&
-            !this.state.studies.length && (
-              <Paragraph>
+      <View style={styles.container}>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          {loading && <ActivityIndicator />}
+          <Text style={styles.sectionTitle}>Your Studies</Text>
+          {!loading &&
+            !studies.length && (
+              <Paragraph style={styles.sectionDescription}>
                 You do not have any studies assigned to you currently. If you believe this is
                 incorrect, please reach out to your study coordinator.
               </Paragraph>
             )}
+          {studies.map((study, index) => (
+            <StudyCard key={index} study={study} token={token} navigation={this.props.navigation} />
+          ))}
+          <Divider style={styles.sectionDivider} />
+          <Text style={styles.sectionTitle}>Demos and Training</Text>
+          <Paragraph style={styles.sectionDescription}>
+            Demo studies are for training purposes, and will not save.
+          </Paragraph>
+          {demos.map((study, index) => (
+            <StudyCard key={index} study={study} token={token} navigation={this.props.navigation} />
+          ))}
         </ScrollView>
       </View>
     );
@@ -160,7 +173,9 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: 'white',
     flex: 1,
-    padding: 10,
+  },
+  scrollContainer: {
+    padding: 20,
   },
   card: {
     marginBottom: 20,
@@ -170,7 +185,15 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     backgroundColor: 'white',
-    marginBottom: 10,
+    marginVertical: 10,
+    fontWeight: 'bold',
+    color: '#9a9a9a',
+  },
+  sectionDescription: {
+    marginVertical: 10,
+  },
+  sectionDivider: {
+    marginVertical: 10,
   },
   surveyRow: {
     paddingVertical: 10,
