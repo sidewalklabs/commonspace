@@ -20,10 +20,11 @@ export const peopleMovingDemoStudy = {
 };
 export const stationaryActivityDemoStudy = {
   title: 'Stationary Activity Mapping Demo',
-  type: 'activity',
+  type: 'stationary',
   map: {},
   authorName: 'CommonSpace',
   description: 'Surveys in demo mode will not save.',
+  fields: ['gender', 'age', 'posture', 'activities', 'location'],
   surveys: [
     {
       locationId: '0',

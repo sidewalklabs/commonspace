@@ -73,7 +73,7 @@ class StudyIndexScreen extends React.Component {
         <ScrollView style={[styles.container]}>
           {this.state.loading && <ActivityIndicator />}
           {studies.map((study, index) => {
-            const { description, title: studyName, type: studyType, authorName, surveys } = study;
+            const { description, title: studyName, type: studyType, authorName, surveys, fields: studyFields } = study;
             // TODO: move these to backend
             const studyAuthor = authorName || 'Unknown author';
             const authorUrl = 'https://placeholder.ca/';
@@ -123,6 +123,7 @@ class StudyIndexScreen extends React.Component {
                             primary
                             onPress={() =>
                               this.props.navigation.navigate(typeToRouteName(studyType), {
+                                studyFields,
                                 surveyId,
                                 studyName,
                                 studyAuthor,

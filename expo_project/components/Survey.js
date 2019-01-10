@@ -27,10 +27,11 @@ class Survey extends React.Component {
   };
 
   render() {
-    const { activeMarker } = this.props;
+    const { activeMarker, fields } = this.props;
+    const questions = _.filter(QUESTION_CONFIG, ({questionKey}) => fields.indexOf(questionKey) !== -1);
     return (
       <View>
-        {_.map(QUESTION_CONFIG, question => {
+        {_.map(questions, question => {
           const { questionKey, questionLabel, questionType, options } = question;
           const selectedValue = activeMarker[questionKey];
           return (
