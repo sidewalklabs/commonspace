@@ -393,6 +393,7 @@ class SurveyScreen extends React.Component {
   }
 
   render() {
+    const { studyFields } = this.props.navigation.state.params;
     const { activeMarkerId, markers } = this.state;
     const activeMarker = _.find(markers, { dataPointId: activeMarkerId });
     const note = _.get(activeMarker, 'note', '');
@@ -458,7 +459,7 @@ class SurveyScreen extends React.Component {
               scrollEventThrottle={0}
               showsHorizontalScrollIndicator={false}
               showsVerticalScrollIndicator={false}>
-              <Survey activeMarker={activeMarker} onSelect={this.setFormResponse} />
+              <Survey fields={studyFields} activeMarker={activeMarker} onSelect={this.setFormResponse} />
               <Divider style={{ marginTop: 10 }} />
               <View style={styles.drawerFooter}>
                 <Button
