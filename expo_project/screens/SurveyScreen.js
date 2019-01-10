@@ -379,7 +379,6 @@ class SurveyScreen extends React.Component {
     };
 
     this.setState({ markers: [...markers, marker], activeMarkerId: dataPointId }, this.resetDrawer);
-
     if (surveyId !== 'DEMO') {
       saveDataPoint(this.state.token, surveyId, marker).catch(error => {
         Alert.alert(
@@ -459,7 +458,11 @@ class SurveyScreen extends React.Component {
               scrollEventThrottle={0}
               showsHorizontalScrollIndicator={false}
               showsVerticalScrollIndicator={false}>
-              <Survey fields={studyFields} activeMarker={activeMarker} onSelect={this.setFormResponse} />
+              <Survey
+                fields={studyFields}
+                activeMarker={activeMarker}
+                onSelect={this.setFormResponse}
+              />
               <Divider style={{ marginTop: 10 }} />
               <View style={styles.drawerFooter}>
                 <Button

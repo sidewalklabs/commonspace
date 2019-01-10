@@ -224,20 +224,24 @@ class PeopleMovingCountScreen extends React.Component {
             <PeopleMovingCountSummary markers={this.state.markers} />
             <Card style={styles.card} elevation={3}>
               <View style={styles.cardContent}>
-                {_.map(QUESTION_CONFIG, question => {
-                  const { questionKey, questionLabel, options } = question;
-                  return (
-                    <Selectable
-                      key={questionKey}
-                      onSelectablePress={(value, buttonHeight) => {
-                        this.toggleValue(questionKey, value);
-                      }}
-                      selectedValue={this.state.selectedAttributes[questionKey]}
-                      title={questionLabel}
-                      options={options}
-                    />
-                  );
-                })}
+                <ScrollView>
+                  <View onStartShouldSetResponder={() => true}>
+                    {_.map(QUESTION_CONFIG, question => {
+                      const { questionKey, questionLabel, options } = question;
+                      return (
+                        <Selectable
+                          key={questionKey}
+                          onSelectablePress={(value, buttonHeight) => {
+                            this.toggleValue(questionKey, value);
+                          }}
+                          selectedValue={this.state.selectedAttributes[questionKey]}
+                          title={questionLabel}
+                          options={options}
+                        />
+                      );
+                    })}
+                  </View>
+                </ScrollView>
                 <View style={styles.buttonWrapper}>
                   <Button
                     dark
@@ -273,13 +277,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   content: {
+    display: 'flex',
     flex: 1,
     padding: 20,
   },
   card: {
     backgroundColor: '#fff',
+    flex: 1,
+    display: 'flex',
   },
   cardContent: {
+    flex: 1,
     backgroundColor: `${Theme.colors.primary}10`,
   },
   buttonWrapper: {
@@ -306,7 +314,7 @@ const styles = StyleSheet.create({
     color: Theme.colors.primary,
   },
   summaryContainer: {
-    flex: 1,
+    flexShrink: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
