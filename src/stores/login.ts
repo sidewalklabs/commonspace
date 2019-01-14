@@ -2,6 +2,7 @@ import { observable } from 'mobx';
 import snakecaseKeys from 'snakecase-keys';
 
 import {navigate} from './router';
+import { setSnackBar } from './ui';
 
 export async function logInUser() {
     const {password, email} = loginInState;
@@ -24,7 +25,10 @@ export async function logInUser() {
     })
     if (response.status === 200) {
         navigate('/studies');
-    };
+    } else {
+        console.error(response.statusText);
+        setSnackBar('error', `Unable to Log In: ${response.statusText}`);
+    }
 }
 
 export interface LogInState {

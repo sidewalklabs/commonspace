@@ -6,6 +6,8 @@ import passport from "passport";
 import { NOT_NULL_VIOLATION, UNIQUE_VIOLATION } from "pg-error-constants";
 import uuid from "uuid";
 
+import { return500OnError } from './utils';
+
 import {
   addDataPointToSurveyNoStudyId,
   deleteDataPoint,
@@ -91,19 +93,6 @@ const router = express.Router();
 router.use(cookieParser());
 
 router.use(passport.authenticate("jwt", { session: false }));
-
-function return500OnError(f) {
-  return async (req, res) => {
-    try {
-      const result = await f(req, res);
-      return result;
-    } catch (error) {
-      console.error(`[body ${JSON.stringify(req.body)}] ${error}`);
-      res.status(500).send();
-      throw error;
-    }
-  };
-}
 
 router.get(
   "/studies",
