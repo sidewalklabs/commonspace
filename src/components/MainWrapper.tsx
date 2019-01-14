@@ -4,11 +4,13 @@ import { withStyles, WithStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { observer } from 'mobx-react';
 
+import ErrorDisplay from './ErrorDisplay';
 import LoginView from './LoginView';
 import MainView from './Main';
 import SignUpView from './SignUpView';
 
 import applicationState, { ApplicationState } from '../stores/applicationState';
+import { UiState } from '../stores/ui';
 import { Router, addRoute } from '../stores/router';
 
 const drawerWidth = 240;
@@ -16,6 +18,7 @@ const drawerWidth = 240;
 interface MainProps {
     router: Router;
     applicationState: ApplicationState;
+    uiState: UiState;
 }
 
 const styles = theme => ({
@@ -57,8 +60,9 @@ const BASE_URL_MATCH = /^\/([^\/]*).*$/;
 
 const MainWrapper = observer(
     (props: MainProps & WithStyles) => {
-        const { classes, router } = props;
+        const { classes, router, uiState } = props;
         const { uri } = router;
+        const { snackBar } = uiState;
         const SignUp = addRoute('/signup', SignUpView);
         const Login = addRoute('/login', LoginView);
         const Main = addRoute(() => BASE_URL_MATCH.exec(uri)[0] === '/studies', () => <MainView applicationState={applicationState} />)
@@ -68,6 +72,7 @@ const MainWrapper = observer(
                 <Login />
                 <SignUp />
                 <Main />
+                <ErrorDisplay snackBar={snackBar} />
             </div>
         );
     });

@@ -10,36 +10,35 @@ export function visualizeNewStudy() {
     uiState.visibleModal = 'study';
 }
 
-
 export type AvailableModals = 'studyFields' | 'study' | 'surveyors' | 'surveys' | 'error' | null
 type AvailableSnackbarType = 'success' | 'error' | null
 
-interface UiState {
+export interface SnackBar {
+        snackBarType: AvailableSnackbarType;
+        snackBarText: string;
+}
+
+export interface UiState {
     availableLocations: AvailableLocation[]; 
     currentStudyIsNew: boolean;
     visibleModal: AvailableModals;
-    snackBar: {
-        snackbarType: AvailableSnackbarType;
-        snackbarText: string;
-    };
+    snackBar: SnackBar;
 }
 
-export function setSnackBar(snackbarType: AvailableSnackbarType, snackbarText: string) {
+export function setSnackBar(snackBarType: AvailableSnackbarType, snackBarText: string) {
     uiState.snackBar = {
-        snackbarType,
-        snackbarText
+        snackBarType,
+        snackBarText
     }
 }
 
-
-// TODO cascade setting of modal on setting errorText?
 const uiState: UiState = observable({
     availableLocations: [],
     currentStudyIsNew: false,
     visibleModal: null,
     snackBar: {
-        snackbarType: null,
-        snackbarText: '',
+        snackBarType: null,
+        snackBarText: ''
     }
 });
 

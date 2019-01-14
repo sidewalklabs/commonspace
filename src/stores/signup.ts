@@ -2,6 +2,7 @@ import { observable } from 'mobx';
 import snakecaseKeys from 'snakecase-keys';
 
 import { navigate } from './router';
+import { setSnackBar } from './ui';
 
 export async function signUpUser() {
     const { name, password, passwordConfirmation, email} = signUpState;
@@ -28,6 +29,9 @@ export async function signUpUser() {
     })
     if (response.status === 200) {
         navigate('/studies');
+    } else {
+        console.error(response.statusText);
+        setSnackBar('error', `Unable to Sign In ${response.statusText}`);
     }
 }
 
