@@ -34,7 +34,7 @@ export interface Router {
 const TRAILING_SLASH = /\/$/
 // nginx will sometimes add a trailing slash to a url
 function sanitizedPathname() {
-    const route = window.location.pathname
+    const route = window.location.pathname + window.location.search
     return route.replace(TRAILING_SLASH, '');
 }
 
