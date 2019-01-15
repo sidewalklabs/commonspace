@@ -1,22 +1,11 @@
-import { Icon } from 'expo';
+import { WebBrowser } from 'expo';
 import React from 'react';
-import {
-  Alert,
-  ActivityIndicator,
-  AsyncStorage,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import { Button, Card, CardContent, Divider, Title, Paragraph } from 'react-native-paper';
 import * as _ from 'lodash';
-
-import { peopleMovingDemoStudy, stationaryActivityDemoStudy } from '../config/demoStudies';
-
-import { getStudies } from '../lib/commonsClient';
+import moment from 'moment';
+import Theme from '../constants/Theme';
 
 function typeToRouteName(type) {
   switch (type) {
@@ -30,8 +19,12 @@ function typeToRouteName(type) {
 }
 
 class StudyCard extends React.Component {
+  _openLink = async uri => {
+    return await WebBrowser.openBrowserAsync(uri);
+  };
+
   render() {
-    const { token, study, navigation } = this.props;
+    const { token, study } = this.props;
     const {
       description,
       title: studyName,
@@ -49,14 +42,7 @@ class StudyCard extends React.Component {
           <Title>{studyName}</Title>
           <Paragraph>
             by{' '}
-            <Text
-              style={{ color: 'blue' }}
-              onPress={() =>
-                navigation.navigate('WebViewScreen', {
-                  uri: authorUrl,
-                  title: studyAuthor,
-                })
-              }>
+            <Text style={{ color: 'blue' }} onPress={() => this._openLink(authorUrl)}>
               {studyAuthor}
             </Text>
           </Paragraph>
@@ -69,18 +55,27 @@ class StudyCard extends React.Component {
           const zoneCoordinates = _.map(coordinates, c => {
             return { longitude: c[0], latitude: c[1] };
           });
+          let inProgressNow = false;
+          if (survey.start_date && survey.end_date) {
+            const today = moment();
+            const startDate = moment(survey.start_date);
+            const endDate = moment(survey.end_date);
+            inProgressNow = today.isBetween(startDate, endDate);
+          }
           return (
             <View key={surveyId}>
               <Divider />
-              <CardContent style={styles.surveyRow}>
+              <CardContent style={[styles.surveyRow, inProgressNow && styles.activeSurveyRow]}>
                 <View style={styles.contentWrapper}>
                   <Text style={styles.surveyTitle}>{surveyTitle}</Text>
+                  {inProgressNow && <Text style={styles.inProgressText}>In Progress</Text>}
                 </View>
                 <View style={styles.buttonWrapper}>
                   <Button
-                    dark
+                    dark={inProgressNow}
                     raised
-                    primary
+                    primary={inProgressNow}
+                    theme={{ ...Theme, roundness: 20 }}
                     onPress={() =>
                       this.props.navigation.navigate(typeToRouteName(studyType), {
                         studyFields,
@@ -93,7 +88,7 @@ class StudyCard extends React.Component {
                         token,
                       })
                     }>
-                    Enter
+                    <Text>Start</Text>
                   </Button>
                 </View>
               </CardContent>
@@ -105,62 +100,15 @@ class StudyCard extends React.Component {
   }
 }
 
-class StudyIndexScreen extends React.Component {
-  state = {
-    studies: [],
-    loading: true,
-  };
-
-  static navigationOptions = ({ navigation }) => ({
-    headerTitle: 'Your Studies',
-    headerLeft: (
-      <TouchableOpacity
-        onPress={() => {
-          navigation.toggleDrawer();
-        }}
-        style={{
-          paddingHorizontal: 12,
-        }}>
-        <Icon.MaterialCommunityIcons name="menu" color="white" size={24} />
-      </TouchableOpacity>
-    ),
-  });
-
-  async componentDidMount() {
-    const token = await AsyncStorage.getItem('token');
-    let studies = await getStudies(token).catch(e => {
-      console.log('error', e);
-      Alert.alert('Error', 'Unable to load your studies. Only demo studies will be available.', [
-        { text: 'OK' },
-      ]);
-    });
-    this.setState({ token, studies: studies || [], loading: false });
-  }
-
+class StudyFeed extends React.Component {
   render() {
-    const { loading, token, studies } = this.state;
-    const demos = [peopleMovingDemoStudy, stationaryActivityDemoStudy];
+    const { token, title, studies } = this.props;
+
     return (
       <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
-          {loading && <ActivityIndicator />}
-          <Text style={styles.sectionTitle}>Your Studies</Text>
-          {!loading &&
-            !studies.length && (
-              <Paragraph style={styles.sectionDescription}>
-                You do not have any studies assigned to you currently. If you believe this is
-                incorrect, please reach out to your study coordinator.
-              </Paragraph>
-            )}
+          <Text style={styles.sectionTitle}>{title}</Text>
           {studies.map((study, index) => (
-            <StudyCard key={index} study={study} token={token} navigation={this.props.navigation} />
-          ))}
-          <Divider style={styles.sectionDivider} />
-          <Text style={styles.sectionTitle}>Demos and Training</Text>
-          <Paragraph style={styles.sectionDescription}>
-            Demo studies are for training purposes, and will not save.
-          </Paragraph>
-          {demos.map((study, index) => (
             <StudyCard key={index} study={study} token={token} navigation={this.props.navigation} />
           ))}
         </ScrollView>
@@ -201,8 +149,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  activeSurveyRow: {
+    backgroundColor: `${Theme.colors.primary}10`,
+  },
   surveyTitle: {
     fontWeight: 'bold',
+  },
+  inProgressText: {
+    color: Theme.colors.primary,
+    marginTop: 5,
   },
   contentWrapper: {
     flex: 1,
@@ -212,4 +167,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default withNavigation(StudyIndexScreen);
+export default withNavigation(StudyFeed);

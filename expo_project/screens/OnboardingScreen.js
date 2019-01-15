@@ -1,10 +1,11 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import { Button, Subheading, Title } from 'react-native-paper';
-import { Icon, LinearGradient } from 'expo';
+import { LinearGradient } from 'expo';
 import Theme from '../constants/Theme';
 import Layout from '../constants/Layout';
+import { WebBrowser } from 'expo';
 
 import OnboardingSlides from '../config/onboarding';
 
@@ -62,10 +63,14 @@ class OnboardingScreen extends React.Component {
     }
   };
 
+  _openLink = async uri => {
+    return await WebBrowser.openBrowserAsync(uri);
+  };
+
   render() {
     return (
       <View style={styles.container}>
-        <LinearGradient colors={['#4e87ec', '#0c3987']} style={styles.graddientContainer}>
+        <LinearGradient colors={['#0048FF00', '#01C7E0']} style={styles.graddientContainer}>
           <ScrollView
             ref={ref => (this.carousel = ref)}
             horizontal
@@ -79,17 +84,11 @@ class OnboardingScreen extends React.Component {
             scrollEventThrottle={16}>
             {OnboardingSlides.map((slide, i) => (
               <View style={styles.carouselItem} key={i}>
-                <Icon.Ionicons name={slide.ionicon} size={160} color="#f9cf52" />
+                <Image source={slide.imageSource} />
                 <Title style={styles.title}>{slide.title}</Title>
                 <Subheading style={styles.description}>{slide.description}</Subheading>
                 {slide.linkToWebview && (
-                  <Button
-                    onPress={() =>
-                      this.props.navigation.navigate('WebViewScreen', {
-                        uri: slide.linkToWebview.uri,
-                        title: slide.linkToWebview.webviewTitle,
-                      })
-                    }>
+                  <Button onPress={() => this._openLink(slide.linkToWebview.uri)}>
                     {slide.linkToWebview.cta}
                   </Button>
                 )}
@@ -98,11 +97,12 @@ class OnboardingScreen extends React.Component {
           </ScrollView>
           <View style={styles.footer}>
             <Button
+              style={{ padding: 10 }}
               raised
-              color="#f9cf52"
-              theme={{ ...Theme, roundness: 100 }}
+              color="#ffcf2b"
+              theme={{ ...Theme, roundness: 10 }}
               onPress={() => this.props.navigation.navigate('AuthScreen')}>
-              Get Started
+              <Text style={styles.buttonText}>Get Started</Text>
             </Button>
             <IndicatorDots
               quantity={OnboardingSlides.length}
@@ -117,8 +117,13 @@ class OnboardingScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
+  buttonText: {
+    fontWeight: 'bold',
+    fontSize: '16px',
+  },
   container: {
     flex: 1,
+    backgroundColor: '#008FEE',
   },
   graddientContainer: {
     flex: 1,
@@ -153,9 +158,9 @@ const styles = StyleSheet.create({
   indicatorDot: {
     backgroundColor: 'white',
     opacity: 0.5,
-    borderRadius: 5,
-    height: 5,
-    width: 5,
+    borderRadius: 10,
+    height: 10,
+    width: 10,
     marginRight: 5,
   },
   indicatorDotActive: {

@@ -1,9 +1,10 @@
 import React from 'react';
-import { Alert, AsyncStorage, Linking, StyleSheet, Text, View } from 'react-native';
+import { Alert, AsyncStorage, Image, Linking, StyleSheet, Text, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import { Button, Paragraph, Title } from 'react-native-paper';
 import Theme from '../constants/Theme';
-import { Icon } from 'expo';
+import { Icon, LinearGradient } from 'expo';
+import { WebBrowser } from 'expo';
 
 class AuthScreen extends React.Component {
   static navigationOptions = {
@@ -65,43 +66,55 @@ class AuthScreen extends React.Component {
     });
   };
 
+  _openLink = async uri => {
+    return await WebBrowser.openBrowserAsync(uri);
+  };
+
   render() {
     return (
       <View style={styles.container}>
-        <Title style={styles.title}>Log in to CommonSpace</Title>
-        <Paragraph style={styles.paragraph}>
-          If you are volunteering to conduct a survey, log in below. Sidewalk Labs, the app
-          developer, will only use your information to authenticate you to the app and notify you
-          about the studies you have opted into.
-        </Paragraph>
-        <Paragraph style={styles.paragraph}>
-          View the privacy policy below or email{' '}
-          <Text style={{ color: 'blue' }} onPress={this._openEmailDialog}>
-            privacy@sidewalklabs.com
-          </Text>{' '}
-          with any questions about how your personal information is used.
-        </Paragraph>
-        <Button
-          raised
-          primary
-          dark
-          theme={{ ...Theme, roundness: 100 }}
-          onPress={this._signIn}
-          icon={({ size, color }) => (
-            <Icon.Ionicons name="logo-google" size={size} color={color} />
-          )}>
-          Connect with Google
-        </Button>
-        <Button
-          primary
-          onPress={() =>
-            this.props.navigation.navigate('WebViewScreen', {
-              uri: 'http://www.sidewalktoronto.com/privacy',
-              title: 'Privacy & Terms',
-            })
-          }>
-          Privacy & Terms
-        </Button>
+        <LinearGradient colors={['#0048FF00', '#01C7E0']} style={styles.graddientContainer}>
+          <View style={styles.content}>
+            <Image source={require('../assets/images/CSIcon_36_white.png')} style={styles.logo} />
+            <Title style={styles.title}>Get started with CommonSpace</Title>
+            <Paragraph style={styles.paragraph}>
+              If you are a volunteer or existing organizer, log in with your google account and
+              start your study.
+            </Paragraph>
+            <Button
+              light
+              raised
+              style={styles.cta}
+              color="#ffcf2b"
+              theme={{ ...Theme, roundness: 10 }}
+              onPress={this._signIn}
+              icon={({ size, color }) => (
+                <Icon.Ionicons name="logo-google" size={size} color={color} />
+              )}>
+              <Text style={styles.ctaCopy}>Connect with Google</Text>
+            </Button>
+            <Button
+              dark
+              raised
+              color="#ffffff20"
+              style={styles.cta}
+              theme={{ ...Theme, roundness: 10 }}
+              onPress={() => this.props.navigation.navigate('DemoStack')}>
+              <Text style={styles.ctaCopy}>Try a Demo</Text>
+            </Button>
+          </View>
+          <View style={styles.footer}>
+            <Button
+              raised
+              dark
+              color="#ffffff00"
+              style={styles.cta}
+              theme={{ ...Theme, roundness: 10 }}
+              onPress={() => this._openLink('http://www.sidewalktoronto.com/privacy')}>
+              <Text style={styles.ctaCopy}>Privacy & Terms</Text>
+            </Button>
+          </View>
+        </LinearGradient>
       </View>
     );
   }
@@ -110,19 +123,49 @@ class AuthScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#008FEE',
+  },
+  graddientContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
+  },
+  content: {
+    flex: 1,
+    alignSelf: 'stretch',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  logo: {
+    marginBottom: 24,
+  },
+  cta: {
+    padding: 10,
+    marginBottom: 10,
+    alignSelf: 'stretch',
+    textAlign: 'center',
+  },
+  ctaCopy: {
+    fontWeight: 'bold',
+    fontSize: 17,
   },
   title: {
     fontSize: 25,
+    fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
+    color: 'white',
   },
   paragraph: {
+    fontSize: 17,
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
+    color: 'white',
+  },
+  footer: {
+    alignSelf: 'stretch',
+    justifyContent: 'flex-end',
   },
 });
 

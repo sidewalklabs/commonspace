@@ -14,7 +14,6 @@ const CIRCULAR_PROGRESS_SIZE = 100;
 class MapWithMarkers extends React.Component {
   constructor(props) {
     super(props);
-
     this.state = {
       circularProgressLocation: null,
       markerColor: null,
@@ -41,11 +40,20 @@ class MapWithMarkers extends React.Component {
     // timeout hack to make sure map is loaded :/
     setTimeout(() => {
       this.map.fitToCoordinates(this.props.zoneLatLngs, {
-        edgePadding: { top: 20, right: 20, bottom: 100, left: 20 },
         animated: true,
       });
     }, 2000);
   };
+
+  componentDidUpdate(prevProps) {
+    const newMarkers = _.difference(this.props.markers, prevProps.markers);
+    if (newMarkers.length && this.map) {
+      const { location } = newMarkers[0];
+      setTimeout(() => {
+        this.map.animateToCoordinate(location, 400);
+      }, 200);
+    }
+  }
 
   render() {
     /* 
@@ -60,6 +68,7 @@ class MapWithMarkers extends React.Component {
       onMapPress,
       onMapLongPress,
       zoneLatLngs,
+      mapPadding,
     } = this.props;
 
     // TODO: add back points of interest markers once the backend supports them
@@ -77,12 +86,15 @@ class MapWithMarkers extends React.Component {
           ref={ref => {
             this.map = ref;
           }}
+          mapPadding={mapPadding}
           onLayout={this.fitToCoordinates}
           style={styles.mapStyle}
           provider="google"
           onPress={() => onMapPress()}
           onLongPress={e => onMapLongPress(e.nativeEvent.coordinate, this.state.markerColor)}
           showsUserLocation
+          loadingEnabled
+          moveOnMarkerPress={false}
           zoomEnabled
           pitchEnabled={false}
           mapType="satellite">

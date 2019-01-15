@@ -4,15 +4,10 @@ import { StyleSheet, View, ScrollView, Text, TouchableOpacity } from 'react-nati
 import Selectable from '../components/Selectable';
 import * as _ from 'lodash';
 import Theme from '../constants/Theme';
-
 import { Button, Card } from 'react-native-paper';
-
 import QUESTION_CONFIG from '../config/peopleMovingQuestions';
 import { getRandomIconColor } from '../utils/color';
 import moment from 'moment';
-import PersonIcon from '../components/PersonIcon';
-
-import SegmentedControl from '../components/SegmentedControl';
 
 import * as uuid from 'uuid';
 
@@ -45,102 +40,46 @@ class PeopleMovingCountSummary extends React.Component {
   }
 }
 
-class MarkerRow extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      expanded: false,
-    };
-  }
-
-  toggleRow = () => {
-    this.setState({ expanded: !this.state.expanded });
-  };
-
-  render() {
-    const { marker, onUpdate } = this.props;
-    const { color, title, dateLabel, dataPointId } = marker;
-    return (
-      <Card
-        key={this.state.expanded}
-        elevation={this.state.expanded ? 3 : 0}
-        style={[
-          {
-            flex: 1,
-            padding: 10,
-            marginHorizontal: 0,
-            marginTop: 0,
-            marginBottom: this.state.expanded ? 10 : 0,
-            borderBottomColor: this.state.expanded ? 'transparent' : '#bbb',
-            borderBottomWidth: StyleSheet.hairlineWidth,
-          },
-        ]}>
-        <TouchableOpacity style={{ flex: 1 }} onPress={this.toggleRow}>
-          <View style={{ flex: 1 }}>
-            <View
-              style={{
-                flex: 1,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}>
-              <PersonIcon backgroundColor={color} size={40} />
-              <View style={{ flex: 1, marginHorizontal: 10 }}>
-                <Text style={[styles.label]}>{title}</Text>
-                <Text>{dateLabel}</Text>
-              </View>
-            </View>
-            {this.state.expanded && (
-              <View>
-                {_.map(QUESTION_CONFIG, question => {
-                  const { questionKey, questionLabel, options } = question;
-                  return (
-                    <Selectable
-                      key={questionKey}
-                      onSelectablePress={(value, buttonHeight) => {
-                        onUpdate(dataPointId, questionKey, value);
-                      }}
-                      selectedValue={marker[questionKey]}
-                      title={questionLabel}
-                      options={options}
-                    />
-                  );
-                })}
-              </View>
-            )}
-          </View>
-        </TouchableOpacity>
-      </Card>
-    );
-  }
-}
-
 class PeopleMovingCountScreen extends React.Component {
-  static navigationOptions = ({ navigation }) => ({
-    headerTitle: navigation.getParam('surveyTitle'),
-    headerLeft: (
-      <TouchableOpacity
-        onPress={() => {
-          navigation.goBack();
-        }}
-        style={{
-          backgroundColor: 'white',
-          paddingHorizontal: 15,
-          paddingVertical: 5,
-          borderRadius: 20,
-          marginLeft: 10,
-        }}>
-        <Text
+  static navigationOptions = ({ navigation }) => {
+    const { params = {} } = navigation.state;
+    return {
+      headerTitle: navigation.getParam('surveyTitle'),
+      headerLeft: (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            navigation.goBack();
+          }}
           style={{
-            fontSize: 14,
-            color: Theme.colors.primary,
-            fontWeight: 'bold',
+            backgroundColor: 'white',
+            paddingHorizontal: 15,
+            paddingVertical: 5,
+            borderRadius: 20,
+            marginLeft: 10,
           }}>
-          Exit
-        </Text>
-      </TouchableOpacity>
-    ),
-  });
+          <Text
+            style={{
+              fontSize: 14,
+              color: Theme.colors.primary,
+              fontWeight: 'bold',
+            }}>
+            Exit
+          </Text>
+        </TouchableOpacity>
+      ),
+      headerRight: (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => params.navigateToMarkerList()}
+          style={{
+            marginRight: 10,
+          }}>
+          <Icon.MaterialIcons name="people" size="30" color="white" />
+        </TouchableOpacity>
+      ),
+    };
+  };
 
   constructor(props) {
     super(props);
@@ -158,6 +97,24 @@ class PeopleMovingCountScreen extends React.Component {
       ),
     };
   }
+
+  componentDidMount() {
+    this.props.navigation.setParams({
+      navigateToMarkerList: this.navigateToMarkerList,
+    });
+    // TODO: Load all markers from study when mounting
+  }
+
+  navigateToMarkerList = () => {
+    // TODO: read this from study fields once available
+    // TODO use helpers for updating and deleting markers
+    this.props.navigation.navigate('MarkerListScreen', {
+      markers: this.state.markers,
+      questions: QUESTION_CONFIG,
+      onUpdate: () => console.log('update'),
+      onDelete: () => console.log('update'),
+    });
+  };
 
   toggleValue = (questionKey, value) => {
     const selectedAttributes = { ...this.state.selectedAttributes };
@@ -177,16 +134,7 @@ class PeopleMovingCountScreen extends React.Component {
     const dataPointId = uuid.v4();
     const previousColor = markersCopy.length ? markersCopy[markersCopy.length - 1].color : null;
     const color = getRandomIconColor([previousColor]);
-
-    // Placeholder for generating client side title
-    // Once we pull in backend changes, we will generate these rather than saving them
-    const primaryAttribute = QUESTION_CONFIG[0];
-    const { questionKey } = primaryAttribute;
-    const selectedPrimary = this.state.selectedAttributes[questionKey];
-    const number = _.filter(this.state.markers, {
-      [questionKey]: selectedPrimary,
-    }).length;
-    const title = `${selectedPrimary || 'Person'}  ${number}`;
+    const title = `Person  ${markersCopy.length + 1}`;
 
     const marker = {
       dataPointId,
@@ -201,6 +149,15 @@ class PeopleMovingCountScreen extends React.Component {
     this.setState({ markers: markersCopy });
   };
 
+  deleteLastMarker = () => {
+    const markersCopy = [...this.state.markers];
+    if (markersCopy.length) {
+      // TODO: delete in backend
+      const lastMarker = markersCopy.pop();
+      this.setState({ markers: markersCopy });
+    }
+  };
+
   updateMarker = (dataPointId, questionKey, value) => {
     const markersCopy = [...this.state.markers];
     const marker = _.find(markersCopy, { dataPointId });
@@ -211,61 +168,55 @@ class PeopleMovingCountScreen extends React.Component {
   };
 
   render() {
-    const { activeTab } = this.state;
     return (
       <View style={styles.container}>
-        <SegmentedControl
-          labels={['Count', 'List']}
-          activeTab={this.state.activeTab}
-          onTabSelect={activeTab => this.setState({ activeTab })}
-        />
-        {this.state.activeTab === 'Count' && (
-          <View style={styles.content}>
-            <PeopleMovingCountSummary markers={this.state.markers} />
-            <Card style={styles.card} elevation={3}>
-              <View style={styles.cardContent}>
-                <ScrollView>
-                  <View onStartShouldSetResponder={() => true}>
-                    {_.map(QUESTION_CONFIG, question => {
-                      const { questionKey, questionLabel, options } = question;
-                      return (
-                        <Selectable
-                          key={questionKey}
-                          onSelectablePress={(value, buttonHeight) => {
-                            this.toggleValue(questionKey, value);
-                          }}
-                          selectedValue={this.state.selectedAttributes[questionKey]}
-                          title={questionLabel}
-                          options={options}
-                        />
-                      );
-                    })}
-                  </View>
-                </ScrollView>
-                <View style={styles.buttonWrapper}>
-                  <Button
-                    dark
-                    raised
-                    primary
-                    onPress={() => {
-                      this.addMarker();
-                    }}
-                    theme={{ ...Theme, roundness: 20 }}>
-                    Add
-                  </Button>
-                </View>
+        <PeopleMovingCountSummary markers={this.state.markers} />
+        <Card style={styles.card} elevation={3}>
+          <View style={styles.cardContent}>
+            <ScrollView>
+              <View onStartShouldSetResponder={() => true}>
+                {_.map(QUESTION_CONFIG, question => {
+                  const { questionKey, questionLabel, options } = question;
+                  return (
+                    <Selectable
+                      key={questionKey}
+                      onSelectablePress={(value, buttonHeight) => {
+                        this.toggleValue(questionKey, value);
+                      }}
+                      selectedValue={this.state.selectedAttributes[questionKey]}
+                      title={questionLabel}
+                      options={options}
+                    />
+                  );
+                })}
               </View>
-            </Card>
+            </ScrollView>
+            <View style={styles.buttonWrapper}>
+              <Button
+                style={styles.footerButton}
+                raised
+                uppercase={false}
+                onPress={() => {
+                  this.deleteLastMarker();
+                }}
+                theme={{ ...Theme, roundness: 20 }}>
+                <Text>Undo</Text>
+              </Button>
+              <Button
+                style={styles.footerButton}
+                dark
+                raised
+                primary
+                uppercase={false}
+                onPress={() => {
+                  this.addMarker();
+                }}
+                theme={{ ...Theme, roundness: 20 }}>
+                <Text>Add</Text>
+              </Button>
+            </View>
           </View>
-        )}
-        {this.state.activeTab === 'List' && (
-          <ScrollView style={{ flex: 1 }}>
-            {_.map(this.state.markers, marker => {
-              return <MarkerRow marker={marker} onUpdate={this.updateMarker} />;
-            })}
-            {!this.state.markers.length && <Text>You have not counted any people.</Text>}
-          </ScrollView>
-        )}
+        </Card>
       </View>
     );
   }
@@ -275,10 +226,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-  },
-  content: {
-    display: 'flex',
-    flex: 1,
     padding: 20,
   },
   card: {
@@ -292,6 +239,12 @@ const styles = StyleSheet.create({
   },
   buttonWrapper: {
     margin: 10,
+    display: 'flex',
+    flex: 0,
+    flexDirection: 'row',
+  },
+  footerButton: {
+    flex: 1,
   },
   tabs: {
     flex: 0,
