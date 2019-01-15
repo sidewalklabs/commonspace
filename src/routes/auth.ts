@@ -1,9 +1,9 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import passport from 'passport';
-
-//import DbPool from "../database";
-//import { removeEmail } from '../datastore/emailVerify';
+import { return500OnError } from './utils';
+import { emailForResetToken, resetPassword, sendEmailResetLink} from '../auth';
+import DbPool from '../database'
 
 const router = express.Router();
 
@@ -68,6 +68,28 @@ router.post('/login', (req, res, next) => {
                           })(req, res, next);
     })
 
+router.post('/request_reset_password', return500OnError(async (req: Request, res: Response) => {
+    const { body } = req;
+    if (!body.email) {
+        res.statusMessage = 'Missing email field'
+        res.status(400).send();
+    }
+    await sendEmailResetLink(body.email);
+    res.status(200).send();
+}));
+
+router.post('/reset_password', return500OnError(async (req: Request, res: Response) => {
+    const { token } = req.query;
+    const { password } = req.body;
+    if (!token || !password) {
+        res.status(404).send();
+        return;
+    }
+    await resetPassword(DbPool, password, token);
+    res.status(200).send();
+    return
+}))
+
 // router.get('/verify', return500OnError(function(req,res){
 //     const { id, email } = req.query;
 //     try {
@@ -80,7 +102,6 @@ router.post('/login', (req, res, next) => {
 //         res.end("<h1>Bad Request</h1>");
 //     }
 // }))
-;
 
 if (process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'production') {
     router.get('/google', passport.authenticate('google', { scope : ['profile', 'email'] }));
@@ -89,13 +110,13 @@ if (process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'production')
                 successRedirect : '/',
                 failureRedirect : '/'
             }),
-            (req, res) => {
+            (req: Request, res: Response) => {
                 const token = jwt.sign(req.user, process.env.JWT_SECRET);
                 return res.json({token});
             });
     router.get('/google/token',
                passport.authenticate('google-token', {session: false}),
-               (req, res) => {
+               (req: Request, res: Response) => {
                    const token = jwt.sign(req.user, process.env.JWT_SECRET);
                    return res.json({token});
                })

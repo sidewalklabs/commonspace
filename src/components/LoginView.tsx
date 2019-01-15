@@ -65,6 +65,9 @@ const LogInView = withStyles(styles)(observer((props: WithStyles) => {
             <Button className={classes.logInButton} variant="contained" color="primary" onClick={logInUser}>
                 Log In
             </Button>
+            <Button color="secondary" className={classes.button} onClick={() => navigate("/reset")}>
+                Forgot Password
+            </Button>
             <Button color="secondary" className={classes.button} onClick={() => navigate("/signup")}>
                 Need An Account? Sign Up Here
             </Button>

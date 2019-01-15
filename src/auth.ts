@@ -1,14 +1,16 @@
+import crypto from 'crypto';
 import * as jwt from 'jsonwebtoken';
 import * as passport from 'passport';
 import * as passportGoogle from 'passport-google-oauth20';
 import * as passportJWT from 'passport-jwt'
 import * as passportLocal from 'passport-local';
+import {Pool} from 'pg';
 import nodemailer from 'nodemailer';
 import GoogleTokenStrategy from './passport_strategies/GoogleTokenStrategy';
 import path from 'path';
 import * as uuid from 'uuid';
 
-import { authenticateOAuthUser, createUser, findUserWithPassword, findUserById, User } from './datastore/user';
+import { authenticateOAuthUser, createUser, findUserWithPassword, findUserById, User, changeUserPassword } from './datastore/user';
 import DbPool from './database';
 
 import dotenv from 'dotenv';
@@ -22,6 +24,8 @@ const MAX_PASSWORD_LENGTH = 1000
 const MIN_PASSWORD_LENGTH = 7
 const SPECIAL_CHARACTERS = ['!', '@', '#', '$', '%', '^', '&', '*', '?']
 
+const N_RAND_BYTES = 32;
+
 const SMTP_TRANSPORT = nodemailer.createTransport({
     service: "Gmail",
     auth: {
@@ -29,6 +33,76 @@ const SMTP_TRANSPORT = nodemailer.createTransport({
         pass: process.env.GMAIL_PASSWORD
     }
 });
+
+async function saveTokenForPasswordReset(pool: Pool, email: string, token: string): Promise<void> {
+    const query = `INSERT INTO password_reset (email, token)
+                   VALUES ($1, $2)`;
+    const values = [email, token];
+    try {
+        await pool.query(query, values);
+    } catch (error) {
+        console.error(`[query ${query}][values ${values}] ${error}`);
+        throw error;
+    }
+}
+
+async function removePasswordResetToken(pool: Pool, token: string): Promise<void> {
+    const query = `DELETE FROM password_reset
+                   WHERE token = $1`
+    const values = [token];
+    try {
+        await pool.query(query, values);
+    } catch (error) {
+        console.error(`[query ${query}][values ${values}] ${error}`);
+        throw error;
+    }
+}
+
+export async function emailForResetToken(pool: Pool, token: string): Promise<string> {
+    const query = `SELECT email from password_reset
+                   WHERE token = $1`
+    const values = [token];
+    try {
+        const {rowCount, rows } = await pool.query(query, values);
+        if (rowCount !== 1) {
+            throw new Error(`Invalid token`)
+        }
+        const { email } = rows[0];
+        return email;
+    } catch (error) {
+        console.error(`[query ${query}][values ${values}] ${error}`);
+        throw error;
+    }
+}
+
+export async function resetPassword(pool: Pool, password:string, token: string): Promise<void> {
+    const email = await emailForResetToken(DbPool, token);
+    if (email) {
+        await changeUserPassword(DbPool, email, password);
+        await removePasswordResetToken(pool, token);
+    }
+    return;
+}
+
+export async function sendEmailResetLink(email: string) {
+    const buffer = await crypto.randomBytes(N_RAND_BYTES);
+    const token = buffer.toString('hex');
+    const link = `${process.env.SERVER_HOSTNAME}/reset_password?token=${token}`
+    const html = `Hello ${email},<br> Please Click on the link to reset your email.<br><a href="${link}">Click Here To Reset</a>`
+    const mailOptions: nodemailer.SendMailOptions = {
+        from: `Gehl Data Collector <thorncliffeparkpubliclifepilot@gmail.com>`,
+        to: email,
+        subject: 'Password reset for CommonSpace',
+        html
+    };
+    try {
+        await SMTP_TRANSPORT.sendMail(mailOptions);
+        await saveTokenForPasswordReset(DbPool, email, token)
+    } catch (error) {
+        console.error(`[mailOptions ${JSON.stringify(mailOptions)}] [mailUrl ${link}] ${error}`)
+        throw error;
+    }
+}
 
 export function sendSignupVerificationEmail(host: string, email: string) {
     const rand =Math.floor((Math.random() * 100) + 39);

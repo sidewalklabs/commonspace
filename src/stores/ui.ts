@@ -43,7 +43,7 @@ const uiState: UiState = observable({
 });
 
 autorun(() => {
-    console.log('');
+    console.log(uiState.snackBar.snackBarText);
 });
 
 export default uiState;

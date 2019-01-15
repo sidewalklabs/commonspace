@@ -67,6 +67,20 @@ export async function findUserById(pool: pg.Pool, userId: string) {
     }
 }
 
+export async function changeUserPassword(pool: pg.Pool, email:string, password: string) {
+    const hash = await bcrypt.hash(password, 14)
+    const query = `UPDATE users
+                   SET password = $1
+                   WHERE email = $2`
+    const values = [hash, email]
+    try {
+        await pool.query(query, values)
+    } catch (error) {
+        console.error(`[query ${query}][values ${values}] ${error}`)
+        throw error
+    }
+}
+
 export async function createUser(pool: pg.Pool, user: User): Promise<void> {
     const { userId, email, name, password } = user;
     const hash = await bcrypt.hash(user.password, 14)

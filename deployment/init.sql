@@ -15,6 +15,12 @@ CREATE TABLE IF NOT EXISTS users
     name TEXT
 );
 
+CREATE TABLE IF NOT EXISTS password_reset
+(
+    email TEXT REFERENCES users(email),
+    token TEXT PRIMARY KEY
+);
+
 CREATE UNIQUE INDEX users_lower_email_unique_idx ON users (lower(email));
 
 CREATE SCHEMA IF NOT EXISTS data_collection;

@@ -1,5 +1,4 @@
 import { observable } from 'mobx';
-import snakecaseKeys from 'snakecase-keys';
 
 import {navigate} from './router';
 import { setSnackBar } from './ui';
@@ -21,7 +20,7 @@ export async function logInUser() {
         },
         redirect: "follow", // manual, *follow, error
         referrer: "no-referrer", // no-referrer, *client
-        body: JSON.stringify(snakecaseKeys(data)), // body data type must match "Content-Type" header
+        body: JSON.stringify(data), // body data type must match "Content-Type" header
     })
     if (response.status === 200) {
         navigate('/studies');
