@@ -1,17 +1,18 @@
 import { Icon } from 'expo';
 import React from 'react';
-import { StyleSheet, View, ScrollView, Text, TouchableOpacity } from 'react-native';
+import { Alert, StyleSheet, View, ScrollView, Text, TouchableOpacity } from 'react-native';
 import Selectable from '../components/Selectable';
 import * as _ from 'lodash';
 import Theme from '../constants/Theme';
 import { Card } from 'react-native-paper';
 import Banner from '../components/Banner';
 import PersonIcon from '../components/PersonIcon';
+import MarkerMenu from '../components/MarkerMenu';
 
 class MarkerRow extends React.Component {
   // TODO: add options sheet for deleting
   render() {
-    const { marker, onUpdate, expanded, onDelete, onToggle, questions } = this.props;
+    const { marker, onUpdate, expanded, onToggle, questions, onMenuButtonPress } = this.props;
     const { color, title, dateLabel, dataPointId } = marker;
     return (
       <Card
@@ -46,6 +47,15 @@ class MarkerRow extends React.Component {
                 <Text style={[styles.label]}>{title}</Text>
                 <Text>{dateLabel}</Text>
               </View>
+              <TouchableOpacity
+                style={styles.markerMenuButton}
+                activeOpacity={1}
+                onPress={e => {
+                  const { pageY } = e.nativeEvent;
+                  onMenuButtonPress(marker.dataPointId, pageY + 5);
+                }}>
+                <Icon.MaterialCommunityIcons name="dots-vertical" color="#787878" size={24} />
+              </TouchableOpacity>
             </View>
             {expanded && (
               <View style={{ paddingBottom: 10 }}>
@@ -74,58 +84,138 @@ class MarkerRow extends React.Component {
 }
 
 class PeopleMovingCountScreen extends React.Component {
-  static navigationOptions = ({ navigation }) => ({
-    headerTitle: 'Study List',
-    headerLeft: (
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => {
-          navigation.goBack();
-        }}
-        style={{
-          marginLeft: 10,
-        }}>
-        <Icon.Feather name="arrow-left" size="30" color="white" />
-      </TouchableOpacity>
-    ),
-  });
+  static navigationOptions = ({ navigation }) => {
+    const { params = {} } = navigation.state;
+    return {
+      headerTitle: 'Study List',
+      headerLeft: (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={params.syncAndGoBack}
+          style={{
+            marginLeft: 10,
+          }}>
+          <Icon.Feather name="arrow-left" size="30" color="white" />
+        </TouchableOpacity>
+      ),
+    };
+  };
 
   constructor(props) {
     super(props);
     this.state = {
-      expandedMarker: null,
+      markers: [],
+      expandedMarkerId: null,
+      markerMenuMarkerId: null,
+      markerMenuTopLocation: null,
     };
   }
 
+  componentDidMount() {
+    this.props.navigation.setParams({
+      syncAndGoBack: this.syncAndGoBack,
+    });
+
+    const markers = this.props.navigation.getParam('markers', []);
+    this.setState({ markers });
+  }
+
+  syncAndGoBack = () => {
+    this.props.navigation.state.params.sync(this.state.markers);
+    this.props.navigation.goBack();
+  };
+
   onToggle = dataPointId => {
-    const expandedMarker = this.state.expandedMarker === dataPointId ? null : dataPointId;
-    this.setState({ expandedMarker });
+    const expandedMarkerId = this.state.expandedMarkerId === dataPointId ? null : dataPointId;
+    this.setState({ expandedMarkerId });
+  };
+
+  onUpdate = (dataPointId, questionKey, value) => {
+    const { token, surveyId, onUpdate } = this.props.navigation.state.params;
+
+    const markersCopy = [...this.state.markers];
+    const marker = _.find(markersCopy, { dataPointId });
+
+    if (marker) {
+      const oldMarkerValue = marker[questionKey];
+      marker[questionKey] = value;
+      this.setState({
+        markers: markersCopy,
+      });
+
+      if (surveyId !== 'DEMO') {
+        onUpdate(token, surveyId, marker).catch(error => {
+          Alert.alert(
+            'Error',
+            'Something went wrong while updating marker. Please try again later.',
+            [{ text: 'OK' }],
+          );
+
+          marker[questionKey] = oldMarkerValue;
+          this.setState({
+            markers: markersCopy,
+          });
+        });
+      }
+    }
+  };
+
+  onDelete = dataPointId => {
+    const { token, surveyId, onDelete } = this.props.navigation.state.params;
+    const markers = _.reject(this.state.markers, { dataPointId });
+    this.setState({ markers });
+
+    if (surveyId !== 'DEMO') {
+      onDelete(token, surveyId, dataPointId).catch(function(error) {
+        Alert.alert('Error', 'Something went wrong removing datapoint. Please try again later.', [
+          { text: 'OK' },
+        ]);
+      });
+    }
+  };
+
+  onMenuButtonPress = (markerMenuMarkerId, markerMenuTopLocation) => {
+    this.setState({ markerMenuMarkerId, markerMenuTopLocation });
   };
 
   render() {
-    const { markers, questions, onUpdate, onDelete } = this.props.navigation.state.params;
+    const { questions, emptyTitle, emptyDescription } = this.props.navigation.state.params;
+    // render in reverse so most recent markers are at the top
+    const reveresedMarkers = _.reverse([...this.state.markers]);
+    const { expandedMarkerId, markerMenuMarkerId } = this.state;
 
     return (
       <View style={styles.container}>
-        {markers.length ? (
+        {this.state.markers.length ? (
           <ScrollView style={{ flex: 1 }}>
-            {_.map(markers, marker => {
+            {_.map(reveresedMarkers, marker => {
               return (
                 <MarkerRow
                   marker={marker}
-                  onUpdate={onUpdate}
-                  onDelete={onDelete}
-                  expanded={this.state.expandedMarker === marker.dataPointId}
+                  onUpdate={this.onUpdate}
+                  onMenuButtonPress={this.onMenuButtonPress}
+                  expanded={expandedMarkerId === marker.dataPointId}
                   onToggle={this.onToggle}
                   questions={questions}
                 />
               );
             })}
+            {this.state.markerMenuTopLocation && (
+              <MarkerMenu
+                topLocation={this.state.markerMenuTopLocation}
+                onDeletePress={() => {
+                  this.onDelete(markerMenuMarkerId);
+                }}
+                onClose={() => {
+                  this.setState({ markerMenuTopLocation: null });
+                }}
+              />
+            )}
           </ScrollView>
         ) : (
           <Banner
-            title="Placeholder placeholder placeholder"
-            description="Placeholder placeholder placeholder"
+            title={emptyTitle}
+            description={emptyDescription}
             cta="Try it out"
             ctaOnPress={() => this.props.navigation.goBack()}
           />
@@ -204,6 +294,9 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  markerMenuButton: {
+    padding: 20,
   },
 });
 

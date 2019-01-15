@@ -123,6 +123,7 @@ class SurveyScreen extends React.Component {
     this.duplicateMarker = this.duplicateMarker.bind(this);
     this.setFormResponse = this.setFormResponse.bind(this);
     this.navigateToMarkerList = this.navigateToMarkerList.bind(this);
+    this.syncMarkersWithListView = this.syncMarkersWithListView.bind(this);
   }
 
   componentDidMount() {
@@ -317,7 +318,7 @@ class SurveyScreen extends React.Component {
         });
       })
       .catch(function(error) {
-        Alert.alert('Error', 'Something went wrong remiving datapoint. Please try again later.', [
+        Alert.alert('Error', 'Something went wrong removing datapoint. Please try again later.', [
           { text: 'OK' },
         ]);
       });
@@ -336,7 +337,7 @@ class SurveyScreen extends React.Component {
       const dateLabel = date.format('HH:mm');
       const title = 'Person ' + (markersCopy.length + 1);
       const dataPointId = uuid.v4();
-      const color = getRandomIconColor();
+      const color = getRandomIconColor([markerToCopy.color]);
       const { activeMarkerId: oldActiveMarkerId } = this.state;
 
       const duplicateMarker = {
@@ -408,17 +409,28 @@ class SurveyScreen extends React.Component {
     }
   }
 
+  syncMarkersWithListView(markers) {
+    const activeMarkerId = markers.length ? markers[markers.length - 1].dataPointId : undefined;
+    this.setState({ markers, activeMarkerId });
+  }
+
   navigateToMarkerList() {
-    const { studyFields } = this.props.navigation.state.params;
+    const { token, studyFields, surveyId } = this.props.navigation.state.params;
     const questions = _.filter(
       QUESTION_CONFIG,
       ({ questionKey }) => studyFields.indexOf(questionKey) !== -1,
     );
     this.props.navigation.navigate('MarkerListScreen', {
       markers: this.state.markers,
+      token,
+      surveyId,
       questions,
-      onUpdate: () => console.log('update'),
-      onDelete: () => console.log('update'),
+      onUpdate: saveDataPoint,
+      onDelete: deleteDataPoint,
+      sync: this.syncMarkersWithListView,
+      emptyTitle: 'Take a snapshot',
+      emptyDescription:
+        'Drop a pin for every person you see in your zone, then select their attributes. Rest easy when your snapshot is done.',
     });
   }
 

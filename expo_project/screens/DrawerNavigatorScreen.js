@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     borderColor: Theme.colors.primary,
   },
   divider: {
-    marginVertical: 1,
+    height: 1,
   },
 });
 
