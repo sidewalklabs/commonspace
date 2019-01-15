@@ -105,14 +105,25 @@ class PeopleMovingCountScreen extends React.Component {
     // TODO: Load all markers from study when mounting
   }
 
+  syncMarkersWithListView = markers => {
+    this.setState({ markers });
+  };
+
   navigateToMarkerList = () => {
     // TODO: read this from study fields once available
-    // TODO use helpers for updating and deleting markers
+    // TODO: swap out delete and update functions once backend is available
+    const { token, surveyId } = this.props.navigation.state.params;
     this.props.navigation.navigate('MarkerListScreen', {
+      token,
+      surveyId,
       markers: this.state.markers,
       questions: QUESTION_CONFIG,
       onUpdate: () => console.log('update'),
       onDelete: () => console.log('update'),
+      sync: this.syncMarkersWithListView,
+      emptyTitle: 'Add people as they go by',
+      emptyDescription:
+        'Select attributes of the person you see, then tap add to make a record of them crossing your line of sight.',
     });
   };
 
@@ -147,12 +158,15 @@ class PeopleMovingCountScreen extends React.Component {
 
     markersCopy.push(marker);
     this.setState({ markers: markersCopy });
+    // TODO: add in backend
+    // TODO: add error handling after incorporating backend
   };
 
   deleteLastMarker = () => {
     const markersCopy = [...this.state.markers];
     if (markersCopy.length) {
       // TODO: delete in backend
+      // TODO: add error handling after incorporating backend
       const lastMarker = markersCopy.pop();
       this.setState({ markers: markersCopy });
     }
@@ -164,6 +178,8 @@ class PeopleMovingCountScreen extends React.Component {
     if (marker) {
       marker[questionKey] = value;
       this.setState({ markers: markersCopy });
+      // TODO: update in backend
+      // TODO: add error handling after incorporating backend
     }
   };
 

@@ -40,7 +40,7 @@ class AuthScreen extends React.Component {
         });
         const body = await resp.json();
 
-        console.log(body.token);
+        // TODO: add name and email
         await AsyncStorage.setItem('token', body.token);
 
         this.props.navigation.navigate('App');

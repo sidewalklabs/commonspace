@@ -59,8 +59,7 @@ const styles = StyleSheet.create({
   },
   modalCotent: {
     justifyContent: 'center',
-    alignItems: 'center',
-    height: 100,
+    alignItems: 'stretch',
     width: 150,
   },
 });
