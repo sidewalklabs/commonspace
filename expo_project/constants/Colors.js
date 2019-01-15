@@ -1,5 +1,7 @@
+//TODO: combine this file with Theme and remove redundancies
+
 const tintColor = '#2f95dc';
-const colorPrimary = '#0271cd';
+const colorPrimary = '#4A90E2';
 const colorSecondary = '#1C4442';
 
 const blue = '#1565C0';

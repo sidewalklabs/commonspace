@@ -7,13 +7,20 @@ import Theme from '../constants/Theme';
 import AuthScreen from '../screens/AuthScreen';
 import AuthLoadingScreen from '../screens/AuthLoadingScreen';
 import ComingSoonScreen from '../screens/ComingSoonScreen';
+import DemoStudyIndexScreen from '../screens/DemoStudyIndexScreen';
+import DrawerNavigatorScreen from '../screens/DrawerNavigatorScreen';
 import SurveyScreen from '../screens/SurveyScreen';
-import StudyIndexScreen from '../screens/StudyIndexScreen';
+import MarkerListScreen from '../screens/MarkerListScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import PeopleMovingCountScreen from '../screens/PeopleMovingCountScreen';
-import WebViewScreen from '../screens/WebViewScreen';
+import PersonalStudyIndexScreen from '../screens/PersonalStudyIndexScreen';
 
-import DrawerNavigatorScreen from '../screens/DrawerNavigatorScreen';
+const studyScreens = {
+  SurveyScreen,
+  MarkerListScreen,
+  PeopleMovingCountScreen,
+  ComingSoonScreen,
+};
 
 const navigationOptions = {
   headerStyle: {
@@ -28,22 +35,30 @@ const navigationOptions = {
 
 const AppStack = createStackNavigator(
   {
-    StudyIndexScreen,
-    SurveyScreen,
-    PeopleMovingCountScreen,
-    ComingSoonScreen,
-    WebViewScreen,
+    PersonalStudyIndexScreen,
+    ...studyScreens,
   },
   {
-    initialRouteName: 'StudyIndexScreen',
+    initialRouteName: 'PersonalStudyIndexScreen',
     navigationOptions,
   },
 );
+
+const DemoStack = createStackNavigator(
+  {
+    DemoStudyIndexScreen,
+    ...studyScreens,
+  },
+  {
+    initialRouteName: 'DemoStudyIndexScreen',
+    navigationOptions,
+  },
+);
+
 const AuthStack = createStackNavigator(
   {
     AuthScreen,
     OnboardingScreen,
-    WebViewScreen,
   },
   {
     initialRouteName: 'OnboardingScreen',
@@ -53,7 +68,8 @@ const AuthStack = createStackNavigator(
 
 const DrawerNavigator = createDrawerNavigator(
   {
-    AppStack,
+    AppStack: { screen: AppStack },
+    DemoStack: { screen: DemoStack },
   },
   {
     initialRouteName: 'AppStack',
