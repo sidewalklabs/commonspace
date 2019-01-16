@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS users
 
 CREATE TABLE IF NOT EXISTS password_reset
 (
-    email TEXT REFERENCES users(email),
+    email TEXT UNIQUE REFERENCES users(email) ON DELETE CASCADE,
     token TEXT PRIMARY KEY
 );
 

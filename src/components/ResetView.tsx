@@ -41,7 +41,7 @@ interface ResetProps {
     email: string;
 }
 
-const ResetView = withStyles(styles)(observer((props: ResetProps & WithStyles) => {
+const ResetView = observer((props: ResetProps & WithStyles) => {
     const { classes, email } = props;
     return (
         <Paper className={classes.root}>
@@ -58,6 +58,7 @@ const ResetView = withStyles(styles)(observer((props: ResetProps & WithStyles) =
             </Button>
         </Paper >
     )
-}))
+})
 
-export default ResetView;
+// @ts-ignore
+export default withStyles(styles)(ResetView);

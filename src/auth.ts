@@ -36,8 +36,12 @@ const SMTP_TRANSPORT = nodemailer.createTransport({
 
 async function saveTokenForPasswordReset(pool: Pool, email: string, token: string): Promise<void> {
     const query = `INSERT INTO password_reset (email, token)
-                   VALUES ($1, $2)`;
-    const values = [email, token];
+                   VALUES ($1, $2)
+                   ON CONFLICT (email)
+                   DO
+                     UPDATE
+                     SET token = $3`
+    const values = [email, token, token];
     try {
         await pool.query(query, values);
     } catch (error) {
