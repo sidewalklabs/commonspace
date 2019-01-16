@@ -25,6 +25,7 @@ export async function resetPasswordRequest () {
     })
     if (response.status === 200) {
         navigate('/signup');
+        setSnackBar('success', 'Email sent with reset link')
     } else {
         console.error(response.statusText);
         setSnackBar('error', `Error sending reset email: ${response.statusText}`);

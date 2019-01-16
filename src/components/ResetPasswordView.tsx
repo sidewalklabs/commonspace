@@ -74,11 +74,13 @@ const ResetPassword = observer((props: ResetPasswordProps & WithStyles) => {
             <TextField
                 id="password"
                 label="New Password"
+                type="password"
                 onChange={e => state.password = e.target.value}
                 className={classes.textField} />
             <TextField
                 id="verify-password"
                 label="Verify Password"
+                type="password"
                 onChange={e => state.verifyPassword = e.target.value}
                 className={classes.textField} />
             <Button className={classes.button} variant="contained" color="primary" onClick={async () => await ResetPasswordRequest(token)}>
