@@ -154,23 +154,13 @@ test('saving user with an OAuth account, should return the same value whether us
     expect(user1.userId).toEqual(user2.userId);
 });
 
-// test('save new study', async () => {
-//     const [studyPgResult, newTablePgResult] = await createStudy(pool, simpleStudy);
+test('save new study', async () => {
+    expect(async () => await createStudy(pool, simpleStudy)).not.toThrow();
+});
 
-//     let { rowCount, command } = studyPgResult;
-//     expect(rowCount).toBe(1);
-//     expect(command).toBe('INSERT');
-//     expect(newTablePgResult.command).toBe('CREATE');
-// });
-
-// test('save new study with all possible fields', async () => {
-//     const [studyPgResult, newTablePgResult] = await createStudy(pool, thorncliffeParkStudy, );
-
-//     let { rowCount, command } = studyPgResult;
-//     expect(rowCount).toBe(1);
-//     expect(command).toBe('INSERT');
-//     expect(newTablePgResult.command).toBe('CREATE');
-// });
+test('save new study with all possible fields', async () => {
+    expect(async () => await createStudy(pool, thorncliffeParkStudy)).not.toThrow();
+});
 
 test('save location', async () => {
     const { rowCount, command } = await createLocation(pool, location);

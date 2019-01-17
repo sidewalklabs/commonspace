@@ -4,7 +4,7 @@ module.exports = {
     "<rootDir>/functions/src"
   ],
   "transform": {
-    "^.+\\.tsx?$": "ts-jest"
+    "^.+\\.tsx?$": "babel-jest"
   },
   "testRegex": "(\\.|/)(test|spec)\\.tsx?$",
   "moduleFileExtensions": [

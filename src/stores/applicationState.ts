@@ -9,7 +9,7 @@ import { groupArrayOfObjectsBy } from '../utils';
 import { StudyField } from '../datastore/utils';
 import { StudyType } from '../datastore/study';
 import { setSnackBar } from './ui';
-import { snakecasePayload } from '../utils';
+import { postToApi, snakecasePayload } from '../utils';
 
 
 const DEFAULT_LATITUDE = 40.730819
@@ -94,27 +94,7 @@ async function putToApi(route: string, data: any) {
     }
 }
 
-async function postToApi(route: string, data: any) {
-    const body = JSON.stringify(snakecasePayload(data));
-    try {
-        const response = await fetch(route, {
-            ...fetchParams,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json; charset=utf-8"
-            },
-            body
-        })
-        if (response.status !== 200) {
-            throw Error(`${response.status} ${response.statusText}`);
-        }
-        const data = await response.json();
-        return camelcaseKeys(data);
-    } catch (err) {
-        console.error(`[route ${route}] [data ${body}] ${err}`)
-        throw err;
-    }
-}
+
 
 function deleteFromApi(route: string) {
     return fetch(route, {
@@ -133,7 +113,7 @@ async function fetchSurveysForStudy(studyId: string) {
     return study;
 }
 
-export async function getStudies(): Promise<{ [studyId: string]: Study }> {
+export async function getStudies(): Promise<{[studyId: string]: Study}> {
     try {
         const studiesReq = await getFromApi('/api/studies?type=admin');
         const studies = camelcaseKeys(await studiesReq.json());
@@ -168,7 +148,7 @@ function handleErrors(f: (...x: any[]) => Promise<Response>): (...y: any[]) => P
     }
 }
 
-export async function saveNewStudy(studyInput: Study) {
+export async function saveNewStudy(studyInput: Study, token?: string) {
     const study: Study = toJS(studyInput)
     if (study.fields.indexOf('notes') === -1) {
         study.fields = [...study.fields, 'notes']
@@ -183,7 +163,7 @@ export async function saveNewStudy(studyInput: Study) {
     });
     const route = `/api/studies`;
     try {
-        const createdStudy = await postToApi(route, study) as Study;
+        const createdStudy = await postToApi(route, study, token) as Study;
         applicationState.studies[study.studyId] = createdStudy;
         setSnackBar('success', 'Saved Study!')
     } catch (error) {

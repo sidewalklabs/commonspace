@@ -1,6 +1,6 @@
 {
   "variables": {
-    "container_image_name": "us.gcr.io/nyc-tlc-1225/commons-server",
+    "container_image_name": "us.gcr.io/nyc-tlc-1225/commons-integration",
     "version": "v0.0.1",
     "gcloud_json_key": "key",
     "GOOGLE_AUTH_CLIENT_ID": "my-id",
@@ -14,7 +14,7 @@
     "DB_CLIENT_TIMEOUT": "8000",
     "SERVER_HOSTNAME": "localhost:3000",
     "JWT_SECRET": "B5PgrJs/WrTaJ4mUvPpREu",
-    "NODE_ENV": "development",
+    "NODE_ENV": "staging",
     "NODE_PORT": "3000",
     "JWT_EXPIRATION_MS": "300000",
     "DOTENV_CONFIG_DIR": "/etc/commons",
@@ -93,7 +93,7 @@
         "cd commons/",
 	"npm install -g -s --no-progress yarn",
 	"yarn install",
-        "yarn build --env.SERVER_HOSTNAME={{ user `SERVER_HOSTNAME` }} --env.TILE_SERVER_URL={{ user `TILE_SERVER_URL` }} --mode={{ user `NODE_ENV` }}"
+        "yarn build --env.SERVER_HOSTNAME={{ user `SERVER_HOSTNAME` }} --env.TILE_SERVER_URL={{ user `TILE_SERVER_URL` }} --mode=production"
       ]
     },
     {
