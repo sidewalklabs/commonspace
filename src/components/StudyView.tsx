@@ -75,6 +75,30 @@ const CreateOrUpdateButton = withStyles(styles)((props: CreateOrUpdateButtonProp
     }
 });
 
+interface LocationTextFieldProps {
+    location: string;
+    editable: boolean;
+}
+
+// @ts-ignore
+const LocationTextField = withStyles(styles)(observer((props: LocationTextFieldProps & WithStyles) => {
+    const { editable, location, classes } = props;
+    if (editable) {
+        return (<TextField
+            className={classes.textField}
+            label="Location"
+            value={location}
+            onChange={(e) => applicationState.currentStudy.location = e.target.value}
+        />)
+    } else {
+        return (<TextField
+            className={classes.textField}
+            label="Location"
+            value={location}
+        />)
+    }
+}))
+
 interface StudyViewProps {
     study: Study;
     studyIsNew: boolean;
@@ -101,7 +125,7 @@ const StudyView = observer((props: any & WithStyles) => {
 
     const { study, classes, studyIsNew } = props;
     if (study) {
-        const { title, surveys, studyId, fields, surveyors, protocolVersion, type, map } = study as Study;
+        const { title, location, surveys, studyId, fields, surveyors, protocolVersion, type, map } = study as Study;
         const features = map && map.features ? map.features : [];
         const allowedMapShapes = type === 'stationary' ? 'polygon' : 'line';
         const StudyTypeField = props => studyIsNew ?
@@ -185,6 +209,7 @@ const StudyView = observer((props: any & WithStyles) => {
                     }}
                 >
                 </TextField>
+                <LocationTextField location={location} editable={studyIsNew} />
                 {/* <TextField
                     select
                     label="Gehl Protocol Version"

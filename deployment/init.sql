@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS study
     study_type studyType NOT NULL,
     fields VARCHAR[],
     tablename VARCHAR(63),
+    location TEXT,
     map JSON,
     notes TEXT
 );

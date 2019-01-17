@@ -23,6 +23,7 @@ export interface Study {
     protocolVersion: string;
     fields: StudyField[];
     notes?: string;
+    location: string;
 }
 
 function setString(s: any) {
@@ -88,6 +89,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                         stu.map,
                         stu.study_type,
                         stu.fields,
+                        stu.location,
                         sas.emails
                     FROM
                         data_collection.study AS stu
@@ -98,7 +100,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
     const values = [userId];
     try {
         const { rows } = await pool.query(query, values);
-        const studiesForUser = rows.map(({study_id, title, protocol_version, study_type: type, fields, emails, map}) => {
+        const studiesForUser = rows.map(({study_id, title, location, protocol_version, study_type: type, fields, emails, map}) => {
             const surveyors = emails && emails.length > 0 ? emails : [];
             return {
                 study_id,
@@ -106,6 +108,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                 title,
                 protocol_version,
                 map,
+                location,
                 type,
                 surveyors
             }
@@ -118,7 +121,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
 }
   
 export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: string) {
-   const query = `SELECT stu.study_id, stu.title as study_title, stu.protocol_version, stu.study_type, stu.fields, stu.map, svy.survey_id, svy.title as survey_title, svy.start_date, svy.end_date, ST_AsGeoJSON(loc.geometry)::json as survey_location
+   const query = `SELECT stu.study_id, stu.title as study_title, stu.location, stu.protocol_version, stu.study_type, stu.fields, stu.map, svy.survey_id, svy.title as survey_title, svy.start_date, svy.end_date, ST_AsGeoJSON(loc.geometry)::json as survey_location
                  FROM data_collection.survey as svy
                  JOIN data_collection.study as stu
                  ON svy.study_id = stu.study_id
@@ -129,7 +132,7 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
     try {
         const {rows}  = await pool.query(query, values);
         const studiesAndSurveys = rows.reduce((acc, curr) => {
-            const { study_id, study_title, protocol_version, study_type: type, map, survey_id, start_date, end_date, survey_location = {coordinates: [], type: 'Polygon'}, location_id } = curr;
+            const { study_id, study_title, location, protocol_version, fields, study_type: type, map, survey_id, start_date, end_date, survey_location = {coordinates: [], type: 'Polygon'}, location_id } = curr;
             const survey = {
                 survey_id,
                 study_title,
@@ -145,6 +148,8 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
                     study_id,
                     type,
                     map,
+                    fields,
+                    location,
                     protocol_version,
                     title: study_title,
                     surveys: [survey]
@@ -201,10 +206,10 @@ export async function createStudy(pool: pg.Pool, study: Study) {
     // to allow someone to update the fields of a study whenever they'd like
     const newStudyDataTableQuery = createNewTableFromStudyFields(ALL_STUDY_FIELDS, studyTablename);
     const fields = javascriptArrayToPostgresArray(study.fields);
-    const { studyId, title, userId, protocolVersion, type, map={} } = study;
-    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, protocol_version, study_type, fields, tablename, map)
-                                   VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
-    const newStudyMetadataValues = [studyId, title, userId, protocolVersion, type, fields, studyTablename, JSON.stringify(map)];
+    const { studyId, title, userId, protocolVersion, type, location, map={} } = study;
+    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, protocol_version, study_type, fields, tablename, map, location)
+                                   VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
+    const newStudyMetadataValues = [studyId, title, userId, protocolVersion, type, fields, studyTablename, JSON.stringify(map), location];
     let studyResult, newStudyDataTable;
     try {
         studyResult = await pool.query(newStudyMetadataQuery, newStudyMetadataValues);
@@ -222,15 +227,15 @@ export async function createStudy(pool: pg.Pool, study: Study) {
 }
 
 export async function updateStudy(pool: pg.Pool, study: Study) {
-    const { studyId, userId, title, protocolVersion, type, fields, map } = study;
+    const { studyId, userId, title, protocolVersion, type, fields, location, map } = study;
     const studyTablename = studyIdToTablename(studyId)
-    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, protocol_version, study_type, fields, tablename, map)
-VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
+    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, protocol_version, study_type, fields, tablename, map, location)
+VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
     const query = `${newStudyMetadataQuery}
                    ON CONFLICT (study_id)
-                   DO UPDATE SET (title, protocol_version, fields, map)
-                       = ($9, $10, $11, $12)`
-    const values = [studyId, title, userId, protocolVersion, type, fields, studyTablename, JSON.stringify(map), title, protocolVersion, fields, JSON.stringify(map)]
+                   DO UPDATE SET (title, protocol_version, fields, map, location)
+                       = ($10, $11, $12, $13, $14)`
+    const values = [studyId, title, userId, protocolVersion, type, fields, studyTablename, JSON.stringify(map), location, title, protocolVersion, fields, JSON.stringify(map), location]
     try {
         await pool.query(query, values);
     } catch (error) {
