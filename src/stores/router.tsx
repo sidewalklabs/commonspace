@@ -38,6 +38,10 @@ function sanitizedPathname() {
     return route.replace(TRAILING_SLASH, '');
 }
 
+if (window.location.pathname === '/' || (document.cookie.indexOf('commonspacepsuedo=') === -1 && (window.location.pathname !== '/signup' && window.location.pathname !== '/login'))) {
+    window.location.pathname = '/signup';
+}
+
 const router: Router = observable({
     uri: window.location.pathname === '/' ? '/signup' : sanitizedPathname()
 });
