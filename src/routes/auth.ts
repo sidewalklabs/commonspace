@@ -26,6 +26,7 @@ function respondWithCookie(res: Response, user: User) {
     res = addCookieToResponse(res, user, 'commonspacejwt', process.env.NODE_ENV !== 'development');
     res = addCookieToResponse(res, {stuff: 'nothing'}, 'commonspacepsuedo', false);
     res.status(200).send();
+    return;
 }
 
 function respondWithJWT(res: Response, user: User) {
@@ -46,17 +47,19 @@ router.post('/signup', (req, res, next) => {
     if (!body.email) {
         res.statusMessage = 'Missing email field'
         res.status(400).send();
+        return;
     }
     if (!body.password) {
         res.statusMessage = 'Missing password field'
         res.status(400).send();
+        return;
     }
     passport.authenticate('signup',
                           {session: false, successRedirect: '/', failureRedirect: '/signup'},
                           (err, user)=> {
                               if (err) {
                                   res.statusMessage = err;
-                                  res.status(400).end();
+                                  res.status(400).send();
                                   return;
                               }
                               return respondWithAuthentication(req, res, user);
@@ -68,16 +71,18 @@ router.post('/login', (req, res, next) => {
     if (!body.email) {
         res.statusMessage = 'Missing email field'
         res.status(400).send();
+        return;
     } if (!body.password) {
         res.statusMessage = 'Missing password field'
         res.status(400).send();
+        return;
     }
     passport.authenticate('login',
                           {session: false},
                           (err, user) => {
                               if (err) {
                                   res.statusMessage = err;
-                                  res.status(400).end();
+                                  res.status(400).send();
                                   return;
                               }
                               return respondWithAuthentication(req, res, user);

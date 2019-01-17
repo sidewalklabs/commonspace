@@ -69,7 +69,6 @@ function createNewTableFromStudyFields(fields: StudyField[], tablename: string) 
                     )`;
 }
 
-
 export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
     // TODO union with studies that do not have a surveyors yet
     const query = `WITH
@@ -100,6 +99,8 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                         sas.emails
                     FROM
                         data_collection.study AS stu
+                        LEFT JOIN data_collection.survey sur
+                        ON stu.study_id = sur.study_id
                         LEFT JOIN study_and_surveyors AS sas
                         ON stu.study_id = sas.study_id
                     WHERE
@@ -181,6 +182,20 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
     }
 }
 
+export async function deleteUserFromSurveyors(pool: pg.Pool, userId: string): Promise<void> {
+    const query = `DELETE
+                   FROM data_collection.surveyors
+                   WHERE user_id = $1`;
+    const values = [userId]
+    try {
+        await pool.query(query, values);
+        return;
+    } catch (error) {
+        console.error(`[sql ${query}][values ${JSON.stringify(values)}] ${error}`)
+        throw error;
+    }
+}
+
 export function surveysForStudy(pool: pg.Pool, studyId: string) {
     const query = `SELECT
                        s.start_date, s.end_date, u.email, s.survey_id, s.title, s.representation, s.microclimate, s.temperature_c, s.method, s.user_id, s.notes
@@ -193,7 +208,7 @@ export function surveysForStudy(pool: pg.Pool, studyId: string) {
     try {
         return pool.query(query, values);
     } catch (error) {
-        console.error(`error executing sql query: ${query}`)
+        console.error(`[sql ${query}][values ${JSON.stringify(values)}] ${error}`)
         throw error;
     }
 }
@@ -216,6 +231,46 @@ export async function deleteStudy(pool: pg.Pool, studyId: string) {
     }
 }
 
+export async function deleteStudiesForEmail(pool: pg.Pool, email: string): Promise<void> {
+    const query = `DELETE
+                   FROM data_collection.study stu
+                   USING public.users usr
+                   WHERE usr.user_id = stu.user_id and usr.email = $1
+                   returning tablename`
+    const values = [email];
+    const { rowCount: rc1, rows } = await pool.query(query, values);
+    await Promise.all(rows.map(({tablename}) => {
+        return pool.query(`drop table ${tablename}`);
+    }))
+}
+
+export async function deleteStudiesForUserId(pool: pg.Pool, userId: string): Promise<void> {
+    const query = `DELETE
+                   FROM data_collection.study stu
+                   WHERE stu.user_id= $1
+                   returning tablename`
+    const values = [userId];
+    let rows, rowCount;
+    try {
+        const res = await pool.query(query, values);
+        rows = res.rows; 
+        rowCount = res.rowCount;
+    } catch (error) {
+        console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`)
+        throw error;
+    }
+    await Promise.all(rows.map(({tablename}) => {
+        try {
+            const query = `drop table ${tablename}`;
+            return pool.query(`drop table ${tablename}`);
+        } catch (error) {
+                console.error(`[query ${query}] ${error}`)
+            throw error;
+        }
+    }))
+    return rowCount;
+}
+
 export async function createStudy(pool: pg.Pool, study: Study): Promise<{created_at: number, last_updated: number}> {
     const studyTablename = studyIdToTablename(study.studyId);
     // as a time saver create the table with all possible fields, expect client to play by the
@@ -231,8 +286,6 @@ export async function createStudy(pool: pg.Pool, study: Study): Promise<{created
     let studyResult, newStudyDataTable;
     try {
         studyResult = await pool.query(newStudyMetadataQuery, newStudyMetadataValues);
-        const { rows } = studyResult;
-        const { created_at, last_updated } = rows[0];
     } catch (error) {
         console.error(`[query ${newStudyMetadataQuery}][values ${JSON.stringify(newStudyMetadataValues)}] ${error}`);
         throw error;

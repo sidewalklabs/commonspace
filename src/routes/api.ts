@@ -1,11 +1,12 @@
 import camelcaseKeys from "camelcase-keys";
 import cookieParser from 'cookie-parser';
-import express from "express";
+import express, { Request, Response } from "express";
 import fetch from "node-fetch";
 import passport from "passport";
 import { NOT_NULL_VIOLATION, UNIQUE_VIOLATION } from "pg-error-constants";
 import uuid from "uuid";
 
+import { deleteLocation, IdNotFoundError } from '../datastore/location';
 import { return500OnError } from './utils';
 
 import {
@@ -18,15 +19,17 @@ import {
   checkUserIdIsSurveyor,
   createStudy,
   deleteStudy,
+  deleteUserFromSurveyors,
   giveUserStudyAccess,
   returnStudiesForAdmin,
   returnStudiesUserIsAssignedTo,
   surveysForStudy,
     StudyType,
-    updateStudy
+    updateStudy,
+    deleteStudiesForUserId
 } from "../datastore/study";
 import { createNewSurveyForStudy, updateSurvey } from "../datastore/survey";
-import { userIsAdminOfStudy } from "../datastore/user";
+import { userIsAdminOfStudy, deleteUser } from "../datastore/user";
 import { createLocation } from "../datastore/location";
 import DbPool from "../database";
 import { Feature, FeatureCollection, Point } from "geojson";
@@ -100,9 +103,17 @@ router.use(cookieParser());
 
 router.use(passport.authenticate("jwt", { session: false }));
 
+router.delete('/user', return500OnError(async (req: Request, res: Response) => {
+    const { user_id: userId } = req.user;
+    await deleteUserFromSurveyors(DbPool, userId);
+    await deleteStudiesForUserId(DbPool, userId);
+    await deleteUser(DbPool, userId);
+    res.status(200).send();
+}));
+
 router.get(
   "/studies",
-  return500OnError(async (req, res) => {
+  return500OnError(async (req: Request, res: Response) => {
     const { type = "all" } = req.query;
     const { user_id: userId } = req.user;
     let responseBody: Study[];
@@ -131,7 +142,7 @@ router.get(
 
 router.post(
   "/studies",
-  return500OnError(async (req, res) => {
+  return500OnError(async (req: Request, res: Response) => {
     const { user_id: userId } = req.user;
     const {
         protocol_version: protocolVersion,
@@ -167,8 +178,9 @@ router.post(
     } catch (error) {
       const { code, detail } = error;
       if (code === UNIQUE_VIOLATION) {
-        res.statusMessage = "survey_id not valid";
-        res.status(409).send();
+          res.statusMessage = "study_id already in use";
+          res.status(409).send();
+          return;
       }
       throw error;
     }
@@ -215,7 +227,7 @@ router.post(
 
 router.delete(
     "/studies/:studyId",
-    return500OnError(async (req, res) => {
+    return500OnError(async (req: Request, res: Response) => {
         const { user_id: userId } = req.user;
         const { studyId } = req.params;
         if (!userIsAdminOfStudy(DbPool, studyId, userId)) {
@@ -260,7 +272,7 @@ async function saveGeoJsonFeatureAsLocation(x: Feature | FeatureCollection) {
   }
 }
 
-async function saveDataPoint(req, res) {
+async function saveDataPoint(req: Request, res: Response) {
   const { user_id: userId } = req.user;
   const { surveyId, dataPointId } = req.params;
   const userCanAccessSurvey = await checkUserIdIsSurveyor(
@@ -290,7 +302,7 @@ async function saveDataPoint(req, res) {
 
 router.get(
   "/surveys/:surveyId/datapoints",
-  return500OnError(async (req, res) => {
+  return500OnError(async (req: Request, res: Response) => {
     const { user_id: userId } = req.user;
     const { surveyId } = req.params;
     const userCanAccessSurvey = await checkUserIdIsSurveyor(
@@ -299,7 +311,7 @@ router.get(
       surveyId
     );
     if (!userCanAccessSurvey) {
-      res.statusMessage("not allowed to access survey");
+      res.statusMessage = 'not allowed to access survey';
       res.status(401).send();
       return;
     }
@@ -313,7 +325,7 @@ router.get(
 
 router.post(
   "/surveys/:surveyId/datapoints/:dataPointId",
-  return500OnError((req, res) => {
+  return500OnError((req: Request, res: Response) => {
     const datapoint = req.body as DataPoint;
     req.body.creation_date = datapoint.date;
     req.body.last_updated = datapoint.date;
@@ -323,7 +335,7 @@ router.post(
 
 router.put(
   "/surveys/:surveyId/datapoints/:dataPointId",
-  return500OnError((req, res) => {
+  return500OnError((req: Request, res: Response) => {
     const datapoint = req.body as DataPoint;
     req.body.last_updated = datapoint.date;
     return saveDataPoint(req, res);
@@ -332,7 +344,7 @@ router.put(
 
 router.delete(
   "/surveys/:surveyId/datapoints/:dataPointId",
-  return500OnError(async (req, res) => {
+  return500OnError(async (req: Request, res: Response) => {
     const { surveyId, dataPointId } = req.params;
     await deleteDataPoint(DbPool, surveyId, dataPointId);
     res.status(200).send();
@@ -381,7 +393,7 @@ router.get(
 
 router.put(
   "/studies/:studyId",
-  return500OnError(async (req, res) => {
+  return500OnError(async (req: Request, res: Response) => {
       const { user_id: userId } = req.user;
       const study  = camelcaseKeys(req.body as Study);
       const  { surveys, studyId } = study;
@@ -404,5 +416,23 @@ router.post(
     res.send({ email, studyId, newUserId });
   })
 );
+
+
+router.delete(
+    '/locations/:locationId',
+    return500OnError(async (req: Request, res: Response) => {
+        const { locationId } = req.params;
+        try {
+            await deleteLocation(DbPool, locationId);
+        } catch (error) {
+            if (error instanceof IdNotFoundError) {
+                res.status(404).end();
+                return
+            }
+            throw error;
+        }
+        res.status(200).end();
+    })
+)
 
 export default router;

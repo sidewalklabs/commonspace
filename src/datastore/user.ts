@@ -111,6 +111,24 @@ export async function createUser(pool: pg.Pool, user: User): Promise<void> {
     }
 }
 
+export class IdDoesNotExist extends Error { }
+
+export async function deleteUser(pool: pg.Pool, userId: string): Promise<void> {
+    const query = `DELETE
+                   FROM public.users
+                   WHERE users.user_id = $1`
+    const values = [userId];
+    try {
+        const {rowCount} = await pool.query(query, values);
+        if (rowCount === 0) {
+            throw new IdDoesNotExist(`Could not delete user for user_id: ${userId}`);
+        }
+    } catch (error) {
+        console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
+        throw error;
+    }
+}
+
 export async function authenticateOAuthUser(pool: pg.Pool, email: string) {
     const userId = uuid.v4();
     const query = `INSERT INTO users (user_id, email)

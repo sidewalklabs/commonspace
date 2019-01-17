@@ -13,6 +13,7 @@ jobs:
          command: |
              packer validate deployment/commons_nginx.json
              packer validate deployment/commons_server.json
+             packer validate deployment/commons_integration_test.json
 
 
   build-containers:
@@ -47,6 +48,11 @@ jobs:
                 packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-nginx -var GOOGLE_AUTH_CLIENT_ID="${GOOGLE_AUTH_CLIENT_ID}" -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" -var TILE_SERVER_URL=https://{s}.tile.osm.org/{z}/{x}/{y}.png -var NODE_ENV=production deployment/commons_nginx.json
 
           - run:
+              name: build and push integration test container to GC Registry
+              command: |
+                packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-integration -var SERVER_HOSTNAME=https://commons-staging.sidewalklabs.com -var GOOGLE_AUTH_CLIENT_ID="${GOOGLE_AUTH_CLIENT_ID}" -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" -var TILE_SERVER_URL=https://{s}.tile.osm.org/{z}/{x}/{y}.png -var NODE_ENV=production deployment/commons_integration_test.json
+
+          - run:
               name: patch K8s configs
               command: |
                 mkdir /tmp/k8s
@@ -69,6 +75,21 @@ jobs:
                         }
                       }
                   }' -f deployment/commons.yml > /tmp/k8s/commons.yml
+                kubectl patch --local -o yaml -p \ '
+                  {
+                    "spec": {
+                       "template": {
+                            "spec": {
+                              "containers": [
+                                    {
+                                        "name": "commons-integration",
+                                        "image": "us.gcr.io/nyc-tlc-1225/commons-integration:'$(git rev-parse --short=8 HEAD)'"
+                                    }
+                                ]
+                            }
+                        }
+                      }
+                  }' -f deployment/commons_integration_test.yml > /tmp/k8s/commons_integration_test.yml
                 cp deployment/commons_nginx_service.yml /tmp/k8s/
                 cp deployment/commons_server_service.yml /tmp/k8s/
 
@@ -95,6 +116,21 @@ jobs:
             kubectl apply -f /tmp/k8s/commons_nginx_service.yml
             kubectl apply -f /tmp/k8s/commons_server_service.yml
 
+  run-integration-test:
+    docker:
+      - image: node:10.15
+
+    steps:
+      - checkout
+
+      - run: yarn install
+
+      - run: yarn global add typescript ts-node
+
+      - run: yarn add typescript ts-node
+
+      - run: ts-node src/integration_test.it.ts
+
 workflows:
   version: 2
   build-and-deploy:
@@ -109,3 +145,9 @@ workflows:
           filters:
             branches:
               only: master
+      - run-integration-test:
+           requires:
+             - deploy-staging
+           filters:
+             branches:
+               only: master
