@@ -41,7 +41,7 @@ export interface StudiesListProps {
 
 const ExpandedStudy = withStyles(styles)((props: WithStyles & { study: Study }) => {
     const { classes, study } = props;
-    const { title, fields, surveyors, surveys = {}, map } = study;
+    const { title, fields, surveyors, location, surveys = {}, map } = study;
     const { studyId } = study;
     return (
         <Fragment>
@@ -74,7 +74,7 @@ const ExpandedStudy = withStyles(styles)((props: WithStyles & { study: Study }) 
             <TextField
                 className={classes.textField}
                 label="Location"
-                value={'307 Lakeshore Blvd E.'}
+                value={location}
                 margin="normal"
             >
             </TextField>

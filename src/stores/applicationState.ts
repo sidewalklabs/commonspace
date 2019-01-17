@@ -20,6 +20,7 @@ export interface Study {
     type: StudyType;
     fields: StudyField[];
     map: FeatureCollection;
+    location: string;
 }
 
 export interface ApplicationState {
@@ -36,11 +37,20 @@ const fetchParams: RequestInit = {
     referrer: 'no-referrer'
 }
 
-function getFromApi(route: string) {
-    return fetch(route, {
-        ...fetchParams,
-        method: 'GET'
-    })
+async function getFromApi(route: string) {
+    try {
+        const response = await fetch(route, {
+            ...fetchParams,
+            method: 'GET'
+        })
+        if (response.status !== 200) {
+            throw Error(`${response.status} ${response.statusText}`);
+        }
+        return response;
+    } catch (err) {
+        console.error(`[route ${route}] ${err}`)
+        throw err;
+    }
 }
 
 async function putToApi(route: string, data: any) {
@@ -103,9 +113,14 @@ async function fetchSurveysForStudy(studyId: string) {
 }
 
 export async function getStudies(): Promise<{[studyId: string]: Study}> {
-    const studiesReq = await getFromApi('/api/studies?type=admin');
-    const studies = camelcaseKeys(await studiesReq.json());
-    return groupArrayOfObjectsBy(studies, 'studyId');
+    try {
+        const studiesReq = await getFromApi('/api/studies?type=admin');
+        const studies = camelcaseKeys(await studiesReq.json());
+        return groupArrayOfObjectsBy(studies, 'studyId');
+    } catch (error) {
+        setSnackBar('error', `Could not load studies: ${error}`);
+        throw error;
+    }
 }
 
 export async function updateStudy(studyInput) {
@@ -167,6 +182,7 @@ export function studyEmptySkeleton(): Study {
     return {
         studyId: uuid.v4(),
         title: '',
+        location: '',
         protocolVersion: '1.0',
         surveys: {},
         surveyors: [],

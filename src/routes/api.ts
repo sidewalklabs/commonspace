@@ -49,14 +49,15 @@ export interface DataPoint {
 }
 
 export interface Study {
-  study_id: string;
-  title: string;
-  protocol_version: string;
-  surveyors: string[];
-  type: StudyType;
-  map?: FeatureCollection;
-  surveys?: Survey[];
-  fields: StudyField[];
+    study_id: string;
+    title: string;
+    protocol_version: string;
+    surveyors: string[];
+    type: StudyType;
+    map?: FeatureCollection;
+    surveys?: Survey[];
+    fields: StudyField[];
+    location: string;
 }
 
 export interface Survey {
@@ -128,24 +129,26 @@ router.post(
   return500OnError(async (req, res) => {
     const { user_id: userId } = req.user;
     const {
-      protocol_version: protocolVersion,
-      study_id: studyId,
-      title,
-      type,
-      surveyors,
-      surveys = [],
-      map,
-      fields
+        protocol_version: protocolVersion,
+        study_id: studyId,
+        title,
+        location,
+        type,
+        surveyors,
+        surveys = [],
+        map,
+        fields
     } = req.body as Study;
     try {
       await createStudy(DbPool, {
-        studyId,
-        title,
-        protocolVersion,
-        userId,
-        type,
-        map,
-        fields
+          studyId,
+          title,
+          protocolVersion,
+          userId,
+          type,
+          map,
+          location,
+          fields
       });
     } catch (error) {
       const { code, detail } = error;

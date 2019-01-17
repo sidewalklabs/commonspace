@@ -51,6 +51,7 @@ interface MapViewProps {
     lng: number;
     featureCollection: FeatureCollection;
     allowedShapes: MapDrawShape;
+    editable?: boolean;
 }
 
 function onEdited() {
@@ -109,7 +110,7 @@ function onDeleteStart() { }
 function onDeleteStop() { }
 
 const MapView = observer((props: MapViewProps & WithStyles) => {
-    const { allowedShapes, classes, lat, lng, featureCollection } = props;
+    const { allowedShapes, classes, lat, lng, featureCollection, editable } = props;
     const ControlMenuOptions = {
         polygon: {
             allowIntersection: false, // Restricts shapes to simple polygons
@@ -146,26 +147,27 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
 
     return (
         <Paper className={classes.root}>
-            <Map className={classes.map} center={[lat, lng]} zoom={17} zoomControl={false}>
+            <Map className={classes.map} center={[lat, lng]} zoom={17} boxZoom={editable} doubleClickZoom={editable} scrollWheelZoom={editable} dragging={editable} zoomControl={false}>
                 <TileLayer
                     attribution={MAP_ATTRIBUTION}
                     url={TILE_SERVER_URL}
                 />
                 <GeoJSON data={geojson} key={geojsonHash} />
-                <FeatureGroup>
-                    <EditControl
-                        position='topright'
-                        onEdited={onEdited}
-                        onCreated={onCreated}
-                        onDeleted={onDeleted}
-                        onMounted={onMounted}
-                        onEditStart={onEditStart}
-                        onEditStop={onEditStop}
-                        onDeleteStart={onDeleteStart}
-                        onDeleteStop={onDeleteStop}
-                        draw={ControlMenuOptions}
-                    />
-                </FeatureGroup>
+                {editable ?
+                    <FeatureGroup>
+                        <EditControl
+                            position='topright'
+                            onEdited={onEdited}
+                            onCreated={onCreated}
+                            onDeleted={onDeleted}
+                            onMounted={onMounted}
+                            onEditStart={onEditStart}
+                            onEditStop={onEditStop}
+                            onDeleteStart={onDeleteStart}
+                            onDeleteStop={onDeleteStop}
+                            draw={ControlMenuOptions}
+                        />
+                    </FeatureGroup> : null}
             </Map>
         </Paper >
     );
