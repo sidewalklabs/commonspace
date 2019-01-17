@@ -2,7 +2,7 @@ import { observable } from 'mobx';
 import snakecaseKeys from 'snakecase-keys';
 
 import { navigate } from './router';
-import { setSnackBar } from './ui';
+import uiState, { setSnackBar } from './ui';
 
 export async function signUpUser() {
     const { name, password, passwordConfirmation, email} = signUpState;

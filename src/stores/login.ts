@@ -1,7 +1,7 @@
 import { observable } from 'mobx';
 
 import {navigate} from './router';
-import { setSnackBar } from './ui';
+import uiState, { setSnackBar } from './ui';
 
 export async function logInUser() {
     const {password, email} = loginInState;

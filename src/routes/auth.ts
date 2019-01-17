@@ -7,18 +7,17 @@ import DbPool from '../database'
 
 const router = express.Router();
 
-function addCookieToResponse(res, payload) {
+function addCookieToResponse(res, payload, name: string, secure: boolean) {
     const expires = new Date(Date.now() + parseInt(process.env.JWT_EXPIRATION_MS))
     const jwtPayload = {
         ...payload,
         expires
     };
-    const cookieOptions =  process.env.NODE_ENV === 'development' ?
-        { expires, httpOnly: true} :
-        { expires, httpOnly: true, secure: true }
+    const cookieOptions =  secure ?
+        { expires, httpOnly: true, secure: true} :
+        { expires }
     const token = jwt.sign(jwtPayload, process.env.JWT_SECRET);
-    res.cookie('commonspacejwt', token, cookieOptions);
-    //res.cookie('commonspaceloggedin', {login: true}, {expires});
+    res.cookie(name, token, cookieOptions);
     return res;
 }
 
@@ -27,7 +26,8 @@ router.post('/signup', (req, res, next) => {
     if (!body.email) {
         res.statusMessage = 'Missing email field'
         res.status(400).send();
-    } if (!body.password) {
+    }
+    if (!body.password) {
         res.statusMessage = 'Missing password field'
         res.status(400).send();
     }
@@ -36,10 +36,11 @@ router.post('/signup', (req, res, next) => {
                           (err, user)=> {
                               if (err) {
                                   res.statusMessage = err;
-                                  res.status(400).send();
+                                  res.status(400).end();
                                   return;
                               }
-                              res = addCookieToResponse(res, user);
+                              res = addCookieToResponse(res, user, 'commonspacejwt', process.env.NODE_ENV !== 'development');
+                              res = addCookieToResponse(res, {stuff: 'nothing'}, 'commonspacepsuedo', false);
                               res.status(200).send();
                               return;
                           })(req, res, next);
@@ -59,14 +60,15 @@ router.post('/login', (req, res, next) => {
                           (err, user) => {
                               if (err) {
                                   res.statusMessage = err;
-                                  res.status(400).send();
+                                  res.status(400).end();
                                   return;
                               }
-                              res = addCookieToResponse(res, user);
+                              res = addCookieToResponse(res, user, 'commonspacejwt', process.env.NODE_ENV !== 'development');
+                              res = addCookieToResponse(res, {stuff: 'nothing'}, 'commonspacepsuedo', false);
                               res.status(200).send();
                               return;
                           })(req, res, next);
-    })
+})
 
 router.post('/request_reset_password', return500OnError(async (req: Request, res: Response) => {
     const { body } = req;
