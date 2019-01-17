@@ -22,7 +22,7 @@ import StudyView from './StudyView';
 import SurveyView from './SurveyView';
 import SurveyorsView from './SurveyorsView';
 import WrapInModal from './WrapInModal';
-import uiState, { visualizeNewStudy, AvailableModals } from '../stores/ui';
+import uiState from '../stores/ui';
 import applicationState, { setCurrentStudyEmptySkeleton, ApplicationState, studyEmptySkeleton } from '../stores/applicationState';
 import { observable } from 'mobx';
 import { navigate } from '../stores/router';
@@ -52,8 +52,10 @@ const styles = theme => ({
 });
 
 function prepareNewStudy() {
-    setCurrentStudyEmptySkeleton()
-    visualizeNewStudy()
+    const newStudy = studyEmptySkeleton();
+    uiState.currentStudyIsNew = true;
+    applicationState.currentStudy = newStudy;
+    uiState.visibleModal = 'study';
 }
 
 function handleLogOut() {
