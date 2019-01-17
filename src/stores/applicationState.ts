@@ -145,6 +145,7 @@ export async function saveNewStudy(studyInput: Study) {
     const route = `/api/studies`;
     try {
         await postToApi(route, study);
+        applicationState.studies[study.studyId] = study;
         setSnackBar('success', 'Saved Study!')
     } catch (error) {
         setSnackBar('error', 'Failed to save study');
@@ -164,7 +165,7 @@ export async function selectNewStudy(study: any) {
 
 export function studyEmptySkeleton(): Study {
     return {
-        studyId: '',
+        studyId: uuid.v4(),
         title: '',
         protocolVersion: '1.0',
         surveys: {},
@@ -179,13 +180,9 @@ export function studyEmptySkeleton(): Study {
 }
 
 export function setCurrentStudyEmptySkeleton() {
-    const studyId =  uuid.v4()
     const study = studyEmptySkeleton();
-    applicationState.studies[studyId] = {
-        ...study,
-        studyId
-    }
-    applicationState.currentStudy = applicationState.studies[studyId];
+    applicationState.studies[study.studyId] = study
+    applicationState.currentStudy = applicationState.studies[study.studyId];
 }
 
 export async function addNewSurveyToCurrentStudy() {

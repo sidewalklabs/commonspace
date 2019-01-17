@@ -5,11 +5,6 @@ interface AvailableLocation {
     name: string;
 }
 
-export function visualizeNewStudy() {
-    uiState.currentStudyIsNew = true;
-    uiState.visibleModal = 'study';
-}
-
 export type AvailableModals = 'studyFields' | 'study' | 'surveyors' | 'surveys' | 'error' | null
 type AvailableSnackbarType = 'success' | 'error' | null
 
