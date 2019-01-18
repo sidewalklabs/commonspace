@@ -62,7 +62,7 @@ class PeopleMovingCountScreen extends React.Component {
             style={{
               fontSize: 14,
               color: Theme.colors.primary,
-              fontWeight: 'bold',
+              fontFamily: 'roboto-medium',
             }}>
             Exit
           </Text>
@@ -262,26 +262,6 @@ const styles = StyleSheet.create({
   footerButton: {
     flex: 1,
   },
-  tabs: {
-    flex: 0,
-    flexDirection: 'row',
-  },
-  tab: {
-    padding: 20,
-    flex: 1,
-    borderBottomColor: '#bbb',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  activeTab: {
-    borderBottomColor: Theme.colors.primary,
-    borderBottomWidth: 2,
-  },
-  tabText: {
-    fontWeight: 'bold',
-    color: Theme.colors.primary,
-  },
   summaryContainer: {
     flexShrink: 0,
     flexDirection: 'row',
@@ -292,7 +272,8 @@ const styles = StyleSheet.create({
     color: Theme.colors.primary,
   },
   label: {
-    fontWeight: 'bold',
+    fontFamily: 'roboto-medium',
+    fontWeight: 'medium',
   },
   labelNumber: { color: Theme.colors.primary },
   grid: {

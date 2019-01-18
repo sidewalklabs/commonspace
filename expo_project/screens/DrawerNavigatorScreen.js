@@ -6,10 +6,11 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableHighlight,
   View,
 } from 'react-native';
 import PropTypes from 'prop-types';
-import { Button, Divider } from 'react-native-paper';
+import { Divider } from 'react-native-paper';
 import { WebBrowser } from 'expo';
 import { SafeAreaView } from 'react-navigation';
 import Theme from '../constants/Theme';
@@ -56,8 +57,8 @@ class DrawerNavigatorScreen extends React.Component {
               <Divider style={styles.divider} />
               <ScrollView>
                 {token && (
-                  <Button
-                    primary
+                  <TouchableHighlight
+                    underlayColor={`${Theme.colors.primary}30`}
                     style={[styles.button, activeItemKey === 'AppStack' && styles.activeButton]}
                     onPress={() => navigation.navigate('AppStack')}>
                     <Text
@@ -67,10 +68,10 @@ class DrawerNavigatorScreen extends React.Component {
                       ]}>
                       Studies
                     </Text>
-                  </Button>
+                  </TouchableHighlight>
                 )}
-                <Button
-                  primary
+                <TouchableHighlight
+                  underlayColor={`${Theme.colors.primary}30`}
                   style={[styles.button, activeItemKey === 'DemoStack' && styles.activeButton]}
                   onPress={() => navigation.navigate('DemoStack')}>
                   <Text
@@ -80,24 +81,33 @@ class DrawerNavigatorScreen extends React.Component {
                     ]}>
                     Demo Studies
                   </Text>
-                </Button>
-                <Button primary style={styles.button} onPress={this._openPrivacyPage}>
+                </TouchableHighlight>
+                <TouchableHighlight
+                  underlayColor={`${Theme.colors.primary}30`}
+                  style={styles.button}
+                  onPress={this._openPrivacyPage}>
                   <Text style={styles.buttonText}>Help & Feedback</Text>
-                </Button>
+                </TouchableHighlight>
                 <Divider style={styles.divider} />
-                <Button primary style={styles.button} onPress={this._openPrivacyPage}>
+                <TouchableHighlight
+                  underlayColor={`${Theme.colors.primary}30`}
+                  style={styles.button}
+                  onPress={this._openPrivacyPage}>
                   <Text style={styles.buttonText}>Privacy Policy</Text>
-                </Button>
-                <Button primary style={styles.button} onPress={this._openPrivacyPage}>
+                </TouchableHighlight>
+                <TouchableHighlight
+                  underlayColor={`${Theme.colors.primary}30`}
+                  style={styles.button}
+                  onPress={this._openPrivacyPage}>
                   <Text style={styles.buttonText}>Terms of Service</Text>
-                </Button>
+                </TouchableHighlight>
               </ScrollView>
               <Divider style={styles.divider} />
               <View style={styles.footer}>
                 {token && (
                   <View style={styles.loggedInAsContainer}>
-                    <Text numberOfLines={1} ellipsizeMode="tail" style={{ fontWeight: 'bold' }}>
-                      First name Last name
+                    <Text numberOfLines={1} ellipsizeMode="tail">
+                      Logged in as
                     </Text>
                     <Text numberOfLines={1} ellipsizeMode="tail">
                       myemailyolo@gmail.com
@@ -105,7 +115,8 @@ class DrawerNavigatorScreen extends React.Component {
                   </View>
                 )}
                 <View style={styles.signOutContainer}>
-                  <Button
+                  <TouchableHighlight
+                    underlayColor={`${Theme.colors.primary}30`}
                     primary
                     style={styles.signOutButton}
                     onPress={this._signOut}
@@ -113,7 +124,7 @@ class DrawerNavigatorScreen extends React.Component {
                     <Text style={[styles.buttonText, styles.activeButtonText]}>
                       {token ? 'Sign Out' : 'Exit Demo'}
                     </Text>
-                  </Button>
+                  </TouchableHighlight>
                 </View>
               </View>
             </View>
@@ -130,12 +141,12 @@ const styles = StyleSheet.create({
   },
   button: {
     margin: 10,
+    padding: 10,
   },
   activeButton: {
     backgroundColor: `${Theme.colors.primary}30`,
   },
   buttonText: {
-    fontWeight: 'bold',
     color: 'black',
   },
   activeButtonText: {
@@ -149,7 +160,8 @@ const styles = StyleSheet.create({
   },
   logo: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: 'medium',
+    fontFamily: 'roboto-medium',
     marginLeft: 10,
   },
   footer: {
@@ -167,6 +179,9 @@ const styles = StyleSheet.create({
   },
   signOutButton: {
     borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderColor: Theme.colors.primary,
   },
   divider: {

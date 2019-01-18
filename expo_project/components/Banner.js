@@ -32,8 +32,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
+    fontFamily: 'roboto-medium',
     textAlign: 'center',
-    fontWeight: 'bold',
     fontSize: '50',
     marginBottom: 30,
   },
@@ -43,7 +43,6 @@ const styles = StyleSheet.create({
   },
   ctaCopy: {
     fontSize: '20',
-    fontWeight: 'bold',
     color: 'white',
     marginBottom: 30,
   },

@@ -9,9 +9,9 @@ export default {
     accent: '#1C4442',
   },
   fonts: {
-    regular: 'System',
-    medium: 'System',
-    light: 'System',
-    thin: 'System',
+    regular: 'roboto',
+    medium: 'roboto-medium',
+    light: 'roboto-light',
+    thin: 'roboto-thin',
   },
 };

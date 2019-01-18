@@ -31,9 +31,10 @@ class MapWithMarkers extends React.Component {
   };
 
   stopProgressAnimation = () => {
-    this.setState({
-      circularProgressLocation: null,
-    });
+    this.state.circularProgressLocation &&
+      this.setState({
+        circularProgressLocation: null,
+      });
   };
 
   fitToCoordinates = () => {
@@ -44,16 +45,6 @@ class MapWithMarkers extends React.Component {
       });
     }, 2000);
   };
-
-  componentDidUpdate(prevProps) {
-    const newMarkers = _.difference(this.props.markers, prevProps.markers);
-    if (newMarkers.length && this.map) {
-      const { location } = newMarkers[0];
-      setTimeout(() => {
-        this.map.animateToCoordinate(location, 400);
-      }, 200);
-    }
-  }
 
   render() {
     /* 
@@ -96,6 +87,7 @@ class MapWithMarkers extends React.Component {
           loadingEnabled
           moveOnMarkerPress={false}
           zoomEnabled
+          onRegionChange={this.stopProgressAnimation}
           pitchEnabled={false}
           mapType="satellite">
           <MapView.Polyline coordinates={zoneLatLngs} strokeColor="#D77C61" strokeWidth={6} />

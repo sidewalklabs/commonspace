@@ -7,13 +7,8 @@ export default [
   },
   {
     title: 'Work together to understand spaces',
-    description:
-      'Public life activity data is used to improve the design of public spaces. Click below to learn how from the Gehl Institute.',
+    description: 'Public life activity data is used to improve the design of public spaces.',
     imageSource: require('../assets/images/Welcome_Tree.png'),
-    linkToWebview: {
-      cta: 'Learn More',
-      uri: 'https://gehlinstitute.org/work/the-public-life-101-series/',
-    },
   },
   {
     title: 'Share your findings with the world',

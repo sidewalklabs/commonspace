@@ -77,7 +77,7 @@ class SurveyScreen extends React.Component {
             style={{
               fontSize: 14,
               color: Theme.colors.primary,
-              fontWeight: 'bold',
+              fontFamily: 'roboto-medium',
             }}>
             Exit
           </Text>
@@ -401,7 +401,7 @@ class SurveyScreen extends React.Component {
       saveDataPoint(this.state.token, surveyId, marker).catch(error => {
         Alert.alert(
           'Error',
-          'Something went wrong while creating marker. Please try again later.',
+          'Something went wrong while creating a marker. Please try again later.',
           [{ text: 'OK' }],
         );
         this.setState({ markers, activeMarkerId: oldActiveMarkerId });
@@ -441,13 +441,19 @@ class SurveyScreen extends React.Component {
     const note = _.get(activeMarker, 'note', '');
     const noteButtonLabel = note ? 'Edit note' : 'Add note';
 
+    // Adjust map viewport when the drawer slides up, to keep new marker in view
+    const mapObscuredHeight = Layout.drawer.height - this._drawerY;
+    // But don't do it *every time* the drawer moves
+    const mapMaxPadding = Layout.drawer.height - MID_DRAWER_TRANSLATE_Y;
+    const mapBottomPadding = Math.min(mapObscuredHeight, mapMaxPadding);
+
     return (
       <View style={styles.container}>
         <MapWithMarkers
           mapPadding={{
             top: 20,
             right: 20,
-            bottom: Layout.drawer.height - this._drawerY,
+            bottom: mapBottomPadding,
             left: 20,
           }}
           onMapPress={this.resetDrawer}
@@ -602,8 +608,14 @@ const styles = StyleSheet.create({
   markerMenuButton: {
     padding: 20,
   },
-  titleContainer: { paddingVertical: 10, paddingHorizontal: 20, flexGrow: 1 },
-  title: { fontWeight: 'bold' },
+  titleContainer: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    flexGrow: 1,
+  },
+  title: {
+    fontFamily: 'roboto-medium',
+  },
   personIconWrapper: {
     padding: 12,
     justifyContent: 'center',
