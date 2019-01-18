@@ -132,10 +132,10 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
     try {
         const {rows}  = await pool.query(query, values);
         const studiesAndSurveys = rows.reduce((acc, curr) => {
-            const { study_id, study_title, location, protocol_version, fields, study_type: type, map, survey_id, start_date, end_date, survey_location = {coordinates: [], type: 'Polygon'}, location_id } = curr;
+            const { study_id, study_title, location, protocol_version, fields, study_type: type, map, survey_id, start_date, survey_title, end_date, survey_location = {coordinates: [], type: 'Polygon'}, location_id } = curr;
             const survey = {
                 survey_id,
-                study_title,
+                survey_title,
                 start_date,
                 end_date,
                 survey_location,
