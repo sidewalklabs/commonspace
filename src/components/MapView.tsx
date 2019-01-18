@@ -8,7 +8,7 @@ import { observer } from 'mobx-react';
 import { Map, Marker, Popup, TileLayer, FeatureGroup, Feature, GeoJSON } from 'react-leaflet'
 import { EditControl } from 'react-leaflet-draw'
 
-import applicationState from '../stores/applicationState'
+import applicationState, { updateFeatureName, Study } from '../stores/applicationState'
 import { FeatureCollection } from 'geojson';
 import { stringHash } from '../utils';
 
@@ -52,54 +52,80 @@ interface MapViewProps {
     featureCollection: FeatureCollection;
     allowedShapes: MapDrawShape;
     editable?: boolean;
+    study: Study;
 }
 
 function onEdited() {
 }
 
+function createMarkerFromLeafletLayer(layer, name: string): Feature {
+    const { _latlng } = layer;
+    const { lat, lng } = _latlng;
+    return {
+        type: 'Feature',
+        geometry: {
+            type: 'Point',
+            coordinates: [lng, lat]
+        },
+        properties: {
+            name,
+            locationId: uuid.v4()
+        }
+    }
+}
+
+function createPolygonFromLeafletLayer(layer, name: string): Feature {
+    const { _latlngs } = layer;
+    const lngLats = _latlngs[0].map(({ lat, lng }) => [lng, lat]);
+    const coordinates = [...lngLats, lngLats[0]]
+    return {
+        type: 'Feature',
+        geometry: {
+            type: 'Polygon',
+            coordinates: [coordinates],
+        },
+        properties: {
+            name,
+            locationId: uuid.v4()
+        }
+    }
+}
+
+function createLineFromLeafletLayer(layer, name: string): Feature {
+    const { _latlngs } = layer;
+    const lngLats = _latlngs[0].map(({ lat, lng }) => [lng, lat]);
+    const coordinates = [...lngLats, lngLats[0]]
+    return {
+        type: 'Feature',
+        geometry: {
+            type: 'line',
+            coordinates: [coordinates],
+        },
+        properties: {
+            name,
+            locationId: uuid.v4()
+        }
+
+    }
+}
 
 function onCreated(e) {
     const { layer, layerType } = e;
     const features = applicationState.currentStudy.map.features;
     if (layerType === 'marker') {
-        // Do marker specific actions
-        const { _latlng } = layer;
-        const { lat, lng } = _latlng;
-        const newMarker: Feature = {
-            type: 'Feature',
-            geometry: {
-                type: 'Point',
-                coordinates: [lng, lat]
-            },
-            properties: {
-                name: 'marker: ' + features.length.toString()
-            }
-        }
-
+        const newMarker = createMarkerFromLeafletLayer(layer, 'marker_' + features.length.toString());
         applicationState.currentStudy.map.features = [...features, newMarker];
     }
 
     if (layerType === 'polygon') {
-        const { _latlngs } = layer;
-        const lngLats = _latlngs[0].map(({ lat, lng }) => [lng, lat]);
-        const coordinates = [...lngLats, lngLats[0]]
-        const newPolygon: Feature = {
-            type: 'Feature',
-            geometry: {
-                type: 'Polygon',
-                coordinates: [coordinates],
-            },
-            properties: {
-                name: 'zone_' + features.length.toString(),
-                locationId: uuid.v4()
-            }
-        }
+        const newPolygon = createPolygonFromLeafletLayer(layer, 'zone_' + features.length.toString());
 
         applicationState.currentStudy.map.features = [...features, newPolygon];
-        const index = features.length - 1;
-        layer.on('click', () => {
-            console.log('click');
-        });
+    }
+
+    if (layerType === 'polyline') {
+        const newLine = createLineFromLeafletLayer(layer, 'line_' + features.length.toString())
+        applicationState.currentStudy.map.features = [...features, newLine];
     }
 }
 function onDeleted() { }
@@ -110,7 +136,7 @@ function onDeleteStart() { }
 function onDeleteStop() { }
 
 const MapView = observer((props: MapViewProps & WithStyles) => {
-    const { allowedShapes, classes, lat, lng, featureCollection, editable } = props;
+    const { study, allowedShapes, classes, lat, lng, featureCollection, editable } = props;
     const ControlMenuOptions = {
         polygon: {
             allowIntersection: false, // Restricts shapes to simple polygons
@@ -145,29 +171,47 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
     const geojson = toJS(featureCollection);
     const geojsonHash = stringHash(JSON.stringify(geojson));
 
+    const onEachFeature = (feature, layer) => {
+        if (feature.properties && feature.properties.name) {
+            const { locationId, name } = feature.properties;
+            layer.bindPopup(`<form>
+                                 User name:<br>
+                                 <input id="${locationId}" type="text" name="username"><br>
+                             </form>`);
+            layer.on('click', e => {
+                const inputBox = document.getElementById(locationId) as HTMLInputElement;
+                inputBox.value = feature.properties.name;
+                inputBox.onchange = f => {
+                    // @ts-ignore this event type is wrong
+                    updateFeatureName(study, locationId, f.target.value)
+                }
+            });
+        }
+    }
+
     return (
         <Paper className={classes.root}>
-            <Map className={classes.map} center={[lat, lng]} zoom={17} boxZoom={editable} doubleClickZoom={editable} scrollWheelZoom={editable} dragging={editable} zoomControl={false}>
+            <Map className={classes.map} center={[lat, lng]} zoom={17} zoomControl={false}>
                 <TileLayer
                     attribution={MAP_ATTRIBUTION}
                     url={TILE_SERVER_URL}
                 />
-                <GeoJSON data={geojson} key={geojsonHash} />
-                {editable ?
-                    <FeatureGroup>
-                        <EditControl
-                            position='topright'
-                            onEdited={onEdited}
-                            onCreated={onCreated}
-                            onDeleted={onDeleted}
-                            onMounted={onMounted}
-                            onEditStart={onEditStart}
-                            onEditStop={onEditStop}
-                            onDeleteStart={onDeleteStart}
-                            onDeleteStop={onDeleteStop}
-                            draw={ControlMenuOptions}
-                        />
-                    </FeatureGroup> : null}
+
+                <GeoJSON data={geojson} key={geojsonHash} onEachFeature={(feature, layer) => layer.on({ click: () => onEachFeature(feature, layer) })} />
+                <FeatureGroup>
+                    <EditControl
+                        position='topright'
+                        onEdited={onEdited}
+                        onCreated={onCreated}
+                        onDeleted={onDeleted}
+                        onMounted={onMounted}
+                        onEditStart={onEditStart}
+                        onEditStop={onEditStop}
+                        onDeleteStart={onDeleteStart}
+                        onDeleteStop={onDeleteStop}
+                        draw={ControlMenuOptions}
+                    />
+                </FeatureGroup>
             </Map>
         </Paper >
     );

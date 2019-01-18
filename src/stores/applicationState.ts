@@ -178,6 +178,29 @@ export async function selectNewStudy(study: any) {
     applicationState.currentStudy = await fetchSurveysForStudy(study.studyId);
 }
 
+export function updateFeatureName(study: Study, locationId: string, name: string) {
+    const { features } = study.map;
+    const index = features.findIndex(({properties}) => {
+        if (!properties) return false;
+        const {name, locationId: currentId} = properties;
+        return currentId === locationId
+    });
+    if (index === -1) {
+        throw new Error(`could not location a feature with locationId: ${locationId}`)
+    }
+
+    let newFeatures;
+    const newFeature = features[index]
+    newFeature.properties = {name, locationId}
+    if (index === 0) {
+        newFeatures = [newFeature, ...features.slice(1)]
+    } else if (index === features.length) {
+        newFeatures = [...features.slice(0, index), newFeature]
+    } else {
+        newFeatures = [...features.slice(0, index), {name, locationId}, ...features.slice(index+1)]
+    }
+}
+
 export function studyEmptySkeleton(): Study {
     return {
         studyId: uuid.v4(),
@@ -230,7 +253,9 @@ let applicationState: ApplicationState = observable({
 });
 
 autorun(() => {
-    console.log(applicationState.currentStudy)
+    if (applicationState.currentStudy) {
+        console.log(toJS(applicationState.currentStudy.map))
+    }
 });
 
 export default applicationState;

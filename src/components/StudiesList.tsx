@@ -16,7 +16,7 @@ import { withStyles, WithStyles } from '@material-ui/core/styles';
 import { observer } from 'mobx-react';
 
 import { deleteStudy, selectNewStudy, Study } from '../stores/applicationState';
-import MapView from './MapView';
+import LockedMapView from './LockedMapView';
 import uiState from '../stores/ui';
 
 const styles = theme => ({
@@ -78,7 +78,7 @@ const ExpandedStudy = withStyles(styles)((props: WithStyles & { study: Study }) 
                 margin="normal"
             >
             </TextField>
-            <MapView lat={33.546727} lng={-117.673965} featureCollection={map} />
+            <LockedMapView lat={33.546727} lng={-117.673965} featureCollection={map} />
             <Button variant="contained" color="secondary" onClick={async () => await removeStudy(studyId)}>
                 Delete
             </Button>

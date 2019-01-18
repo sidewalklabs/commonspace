@@ -208,11 +208,13 @@ const SurveyObjectToTableRow = observer(({ classes, survey, features }: WithStyl
                     onChange={e => applicationState.currentStudy.surveys[surveyId].locationId = e.target.value}
                     margin="normal"
                 >
-                    {features.map(({ properties }) => (
-                        <MenuItem key={properties.locationId} value={properties.locationId}>
-                            {properties.name}
-                        </MenuItem>
-                    ))}
+                    {features.map(({ properties }) => {
+                        return (
+                            <MenuItem key={properties.locationId} value={properties.locationId}>
+                                {properties.name}
+                            </MenuItem>
+                        )
+                    })}
                 </TextField>
             </TableCell>
         </TableRow>
