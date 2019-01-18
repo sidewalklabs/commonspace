@@ -322,11 +322,6 @@ const styles = StyleSheet.create({
     borderBottomColor: Theme.colors.primary,
     borderBottomWidth: 2,
   },
-  tabText: {
-    fontWeight: 'medium',
-    fontFamily: 'roboto-medium',
-    color: Theme.colors.primary,
-  },
   summaryContainer: {
     flexShrink: 0,
     flexDirection: 'row',
