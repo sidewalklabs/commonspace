@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'roboto-medium',
     textAlign: 'center',
-    fontSize: '50',
+    fontSize: 50,
     marginBottom: 30,
   },
   description: {
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   ctaCopy: {
-    fontSize: '20',
+    fontSize: 20,
     color: 'white',
     marginBottom: 30,
   },
