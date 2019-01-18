@@ -93,13 +93,12 @@ function createPolygonFromLeafletLayer(layer, name: string): Feature {
 
 function createLineFromLeafletLayer(layer, name: string): Feature {
     const { _latlngs } = layer;
-    const lngLats = _latlngs[0].map(({ lat, lng }) => [lng, lat]);
-    const coordinates = [...lngLats, lngLats[0]]
+    const coordinates = _latlngs.map(({ lat, lng }) => [lng, lat]);
     return {
         type: 'Feature',
         geometry: {
-            type: 'line',
-            coordinates: [coordinates],
+            type: 'LineString',
+            coordinates
         },
         properties: {
             name,
