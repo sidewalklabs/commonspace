@@ -109,7 +109,6 @@ class OnboardingScreen extends React.Component {
 
 const styles = StyleSheet.create({
   buttonText: {
-    fontWeight: 'medium',
     fontFamily: 'roboto-medium',
     fontSize: 16,
   },

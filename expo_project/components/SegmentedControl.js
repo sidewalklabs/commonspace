@@ -61,7 +61,6 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontFamily: 'roboto-medium',
-    fontWeight: 'medium',
     color: Theme.colors.primary,
   },
 });

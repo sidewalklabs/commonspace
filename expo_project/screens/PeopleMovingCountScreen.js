@@ -273,7 +273,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: 'roboto-medium',
-    fontWeight: 'medium',
   },
   labelNumber: { color: Theme.colors.primary },
   grid: {
