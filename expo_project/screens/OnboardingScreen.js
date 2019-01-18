@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontWeight: 'medium',
     fontFamily: 'roboto-medium',
-    fontSize: '16px',
+    fontSize: 16,
   },
   container: {
     flex: 1,
