@@ -1,6 +1,14 @@
 import { Icon } from 'expo';
 import React from 'react';
-import { Alert, StyleSheet, View, ScrollView, Text, TouchableOpacity } from 'react-native';
+import {
+  Animated,
+  Alert,
+  StyleSheet,
+  View,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+} from 'react-native';
 import Selectable from '../components/Selectable';
 import * as _ from 'lodash';
 import Theme from '../constants/Theme';
@@ -10,7 +18,45 @@ import PersonIcon from '../components/PersonIcon';
 import MarkerMenu from '../components/MarkerMenu';
 
 class MarkerRow extends React.Component {
-  // TODO: add options sheet for deleting
+  constructor(props) {
+    super(props);
+    this.state = {
+      collapsibleHeaderHeight: 0,
+      collapsibleContentHeight: 0,
+      animation: new Animated.Value(),
+    };
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.expanded !== prevProps.expanded) {
+      const collapsedHeight = this.state.collapsibleHeaderHeight;
+      const expandedHeight = collapsedHeight + this.state.collapsibleContentHeight;
+
+      const currentHeightValue = prevProps.expanded ? expandedHeight : collapsedHeight;
+      const toValue = this.props.expanded ? expandedHeight : collapsedHeight;
+
+      this.state.animation.setValue(currentHeightValue);
+      Animated.timing(this.state.animation, {
+        toValue,
+        duration: 200,
+      }).start();
+    }
+  }
+
+  setCollapsibleHeaderHeight = event => {
+    const collapsibleHeaderHeight = event.nativeEvent.layout.height;
+    this.setState({ collapsibleHeaderHeight });
+    if (!this.props.expanded) {
+      // set initial value to header height
+      this.state.animation.setValue(collapsibleHeaderHeight);
+    }
+  };
+
+  setCollapsibleContentHeight = event => {
+    const collapsibleContentHeight = event.nativeEvent.layout.height;
+    this.setState({ collapsibleContentHeight });
+  };
+
   render() {
     const { marker, onUpdate, expanded, onToggle, questions, onMenuButtonPress } = this.props;
     const { color, title, dateLabel, dataPointId } = marker;
@@ -33,22 +79,24 @@ class MarkerRow extends React.Component {
           style={{ flex: 1 }}
           activeOpacity={1}
           onPress={() => onToggle(marker.dataPointId)}>
-          <View style={{ flex: 1 }}>
+          <Animated.View style={[{ overflow: 'hidden', height: this.state.animation }]}>
             <View
               style={{
-                flex: 1,
+                flex: 0,
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 padding: 10,
-              }}>
+              }}
+              onLayout={
+                !this.state.collapsibleHeaderHeight ? this.setCollapsibleHeaderHeight : undefined
+              }>
               <PersonIcon backgroundColor={color} size={40} />
               <View style={{ flex: 1, marginHorizontal: 10 }}>
                 <Text style={[styles.label]}>{title}</Text>
                 <Text>{dateLabel}</Text>
               </View>
               <TouchableOpacity
-                style={styles.markerMenuButton}
                 activeOpacity={1}
                 onPress={e => {
                   const { pageY } = e.nativeEvent;
@@ -57,8 +105,13 @@ class MarkerRow extends React.Component {
                 <Icon.MaterialCommunityIcons name="dots-vertical" color="#787878" size={24} />
               </TouchableOpacity>
             </View>
-            {expanded && (
-              <View style={{ paddingBottom: 10 }}>
+            <View style={{ flex: 0, paddingBottom: 10, overflow: 'hidden' }}>
+              <View
+                onLayout={
+                  !this.state.collapsibleContentHeight
+                    ? this.setCollapsibleContentHeight
+                    : undefined
+                }>
                 {_.map(questions, question => {
                   const { questionKey, questionLabel, options } = question;
                   return (
@@ -75,15 +128,15 @@ class MarkerRow extends React.Component {
                   );
                 })}
               </View>
-            )}
-          </View>
+            </View>
+          </Animated.View>
         </TouchableOpacity>
       </Card>
     );
   }
 }
 
-class PeopleMovingCountScreen extends React.Component {
+class MarkerListScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
     const { params = {} } = navigation.state;
     return {
@@ -270,7 +323,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
   },
   tabText: {
-    fontWeight: 'bold',
+    fontWeight: 'medium',
+    fontFamily: 'roboto-medium',
     color: Theme.colors.primary,
   },
   summaryContainer: {
@@ -283,7 +337,7 @@ const styles = StyleSheet.create({
     color: Theme.colors.primary,
   },
   label: {
-    fontWeight: 'bold',
+    fontFamily: 'roboto-medium',
   },
   labelNumber: { color: Theme.colors.primary },
   grid: {
@@ -295,9 +349,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  markerMenuButton: {
-    padding: 20,
-  },
 });
 
-export default PeopleMovingCountScreen;
+export default MarkerListScreen;

@@ -134,7 +134,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     backgroundColor: 'white',
     marginVertical: 10,
-    fontWeight: 'bold',
+    fontWeight: 'medium',
+    fontFamily: 'roboto-medium',
     color: '#9a9a9a',
   },
   sectionDescription: {
@@ -153,7 +154,8 @@ const styles = StyleSheet.create({
     backgroundColor: `${Theme.colors.primary}10`,
   },
   surveyTitle: {
-    fontWeight: 'bold',
+    fontWeight: 'medium',
+    fontFamily: 'roboto-medium',
   },
   inProgressText: {
     color: Theme.colors.primary,

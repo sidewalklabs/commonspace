@@ -6,7 +6,7 @@ import { peopleMovingDemoStudy, stationaryActivityDemoStudy } from '../config/de
 
 import StudyFeed from '../components/StudyFeed';
 
-const DEMO_STUDIES = [peopleMovingDemoStudy, stationaryActivityDemoStudy];
+const DEMO_STUDIES = [stationaryActivityDemoStudy, peopleMovingDemoStudy];
 
 class DemoStudyIndexScreen extends React.Component {
   static navigationOptions = ({ navigation }) => ({

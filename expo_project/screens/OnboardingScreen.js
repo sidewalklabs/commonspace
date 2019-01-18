@@ -63,10 +63,6 @@ class OnboardingScreen extends React.Component {
     }
   };
 
-  _openLink = async uri => {
-    return await WebBrowser.openBrowserAsync(uri);
-  };
-
   render() {
     return (
       <View style={styles.container}>
@@ -87,11 +83,6 @@ class OnboardingScreen extends React.Component {
                 <Image source={slide.imageSource} />
                 <Title style={styles.title}>{slide.title}</Title>
                 <Subheading style={styles.description}>{slide.description}</Subheading>
-                {slide.linkToWebview && (
-                  <Button onPress={() => this._openLink(slide.linkToWebview.uri)}>
-                    {slide.linkToWebview.cta}
-                  </Button>
-                )}
               </View>
             ))}
           </ScrollView>
@@ -118,7 +109,8 @@ class OnboardingScreen extends React.Component {
 
 const styles = StyleSheet.create({
   buttonText: {
-    fontWeight: 'bold',
+    fontWeight: 'medium',
+    fontFamily: 'roboto-medium',
     fontSize: '16px',
   },
   container: {
@@ -138,7 +130,7 @@ const styles = StyleSheet.create({
   title: {
     color: 'white',
     textAlign: 'center',
-    fontSize: 28,
+    fontSize: 24,
     marginVertical: 20,
   },
   description: {

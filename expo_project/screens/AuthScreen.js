@@ -147,12 +147,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   ctaCopy: {
-    fontWeight: 'bold',
+    fontFamily: 'roboto-medium',
     fontSize: 17,
   },
   title: {
     fontSize: 25,
-    fontWeight: 'bold',
+    fontFamily: 'roboto-medium',
     textAlign: 'center',
     marginBottom: 24,
     color: 'white',

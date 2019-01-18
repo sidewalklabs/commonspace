@@ -1,15 +1,18 @@
 import React from 'react';
-import { StatusBar, View } from 'react-native';
+import { StatusBar, Text, View } from 'react-native';
 import { AppLoading, Font, Icon } from 'expo';
 import AppNavigator from './navigation/AppNavigator';
 import { Provider as PaperProvider } from 'react-native-paper';
 import Theme from './constants/Theme';
-import monaco from './assets/fonts/monaco.ttf';
 
 export default class App extends React.Component {
-  state = {
-    isLoadingComplete: false,
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      isLoadingComplete: false,
+    };
+    Text.defaultProps.style = { fontFamily: 'roboto' };
+  }
 
   render() {
     if (!this.state.isLoadingComplete && !this.props.skipLoadingScreen) {
@@ -31,7 +34,11 @@ export default class App extends React.Component {
   _loadResourcesAsync = async () => {
     return Font.loadAsync({
       ...Icon.Ionicons.font,
-      monaco,
+      monaco: require('./assets/fonts/monaco.ttf'),
+      roboto: require('./assets/fonts/Roboto-Regular.ttf'),
+      'roboto-thin': require('./assets/fonts/Roboto-Thin.ttf'),
+      'roboto-light': require('./assets/fonts/Roboto-Light.ttf'),
+      'roboto-medium': require('./assets/fonts/Roboto-Medium.ttf'),
     });
   };
 
