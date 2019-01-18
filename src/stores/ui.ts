@@ -5,7 +5,7 @@ interface AvailableLocation {
     name: string;
 }
 
-export type AvailableModals = 'studyFields' | 'study' | 'surveyors' | 'surveys' | 'error' | null
+export type AvailableModals = 'studyFields' | 'study' | 'surveyors' | 'surveys' | 'error' | 'map' | null
 type AvailableSnackbarType = 'success' | 'error' | null
 
 export interface SnackBar {
