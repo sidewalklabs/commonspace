@@ -17,6 +17,7 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
 import { observer } from 'mobx-react';
 
 import FieldsList from './FieldsList';
+import MapView from './MapView';
 import StudiesList from './StudiesList';
 import StudyView from './StudyView';
 import SurveyView from './SurveyView';
@@ -78,7 +79,8 @@ const Main = observer(
         const { studies, token } = applicationState;
         const { snackBar, visibleModal } = uiState;
         const currentStudy = applicationState.currentStudy ? applicationState.currentStudy : studyEmptySkeleton();
-        let { fields, studyId, surveyors, type } = currentStudy;
+        let { fields, studyId, surveyors, map, type } = currentStudy;
+        const allowedMapShapes = type === 'stationary' ? 'polygon' : 'line';
         return (
             <div className={classes.root}>
                 <CssBaseline />
@@ -146,6 +148,9 @@ const Main = observer(
                     </WrapInModal>
                     <WrapInModal onClose={() => uiState.visibleModal = 'study'} modalName={'studyFields'} visibleModal={visibleModal}>
                         <FieldsList studyType={type} fields={fields} />
+                    </WrapInModal>
+                    <WrapInModal onClose={() => uiState.visibleModal = 'study'} modalName={'map'} visibleModal={visibleModal}>
+                        <MapView study={currentStudy} allowedShapes={allowedMapShapes} lat={33.546727} lng={-117.673965} featureCollection={map} />
                     </WrapInModal>
                 </div>
             </div >

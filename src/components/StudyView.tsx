@@ -9,7 +9,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
 
 import SurveyorsView from './SurveyorsView';
-import MapView from './MapView';
+import LockedMapView from './LockedMapView';
 import SurveyView from './SurveyView';
 
 import uiState from '../stores/ui';
@@ -127,7 +127,6 @@ const StudyView = observer((props: any & WithStyles) => {
     if (study) {
         const { title, location, surveys, studyId, fields, surveyors, protocolVersion, type, map } = study as Study;
         const features = map && map.features ? map.features : [];
-        const allowedMapShapes = type === 'stationary' ? 'polygon' : 'line';
         const StudyTypeField = props => studyIsNew ?
             (<TextField
                 select
@@ -231,7 +230,7 @@ const StudyView = observer((props: any & WithStyles) => {
                     </MenuItem>)
                     })}
                     </TextField> */}
-                <MapView allowedShapes={allowedMapShapes} lat={33.546727} lng={-117.673965} featureCollection={map} />
+                <LockedMapView isEditable lat={33.546727} lng={-117.673965} featureCollection={map} />
                 <CreateOrUpdateButton study={study} studyIsNew={studyIsNew} />
             </Fragment>
         );
