@@ -38,7 +38,7 @@ const NOMINATIM_BASE_URL =
 export interface DataPoint {
   data_point_id: string; // UUID
   gender?: string;
-  age?: number;
+  age?: string;
   mode?: string;
   posture?: string;
   activities?: string[];
