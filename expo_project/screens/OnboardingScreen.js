@@ -88,12 +88,12 @@ class OnboardingScreen extends React.Component {
           </ScrollView>
           <View style={styles.footer}>
             <Button
-              style={{ padding: 10 }}
+              style={{ padding:6}}
               raised
               color="#ffcf2b"
-              theme={{ ...Theme, roundness: 10 }}
+              theme={{ ...Theme, roundness: 12 }}
               onPress={() => this.props.navigation.navigate('AuthScreen')}>
-              <Text style={styles.buttonText}>Get Started</Text>
+              <Text style={styles.buttonText}>GET STARTED</Text>
             </Button>
             <IndicatorDots
               quantity={OnboardingSlides.length}
@@ -125,6 +125,8 @@ const styles = StyleSheet.create({
     paddingVertical: 80,
     width: CAROUSEL_ITEM_WIDTH,
     alignItems: 'center',
+    flexDirection: 'column',
+    justifyContent: 'center',
   },
   title: {
     color: 'white',
