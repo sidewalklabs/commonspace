@@ -134,6 +134,7 @@ const styles = StyleSheet.create({
   title: {
     color: 'white',
     textAlign: 'center',
+    fontFamily: 'product-bold',
     fontSize: 24,
     marginVertical: 20,
   },
@@ -155,8 +156,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     opacity: 0.5,
     borderRadius: 10,
-    height: 10,
-    width: 10,
+    height: 6,
+    width: 6,
     marginRight: 5,
   },
   indicatorDotActive: {
