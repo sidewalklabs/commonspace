@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     fontSize: 20,
-    fontFamily: 'roboto-medium',
+    fontFamily: 'product-medium',
     marginLeft: 10,
   },
   footer: {

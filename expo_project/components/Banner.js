@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontFamily: 'roboto-medium',
+    fontFamily: 'product-medium',
     textAlign: 'center',
     fontSize: 50,
     marginBottom: 30,

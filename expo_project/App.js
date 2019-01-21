@@ -11,7 +11,7 @@ export default class App extends React.Component {
     this.state = {
       isLoadingComplete: false,
     };
-    Text.defaultProps.style = { fontFamily: 'roboto' };
+    Text.defaultProps.style = { fontFamily: 'product' };
   }
 
   render() {
@@ -34,11 +34,19 @@ export default class App extends React.Component {
   _loadResourcesAsync = async () => {
     return Font.loadAsync({
       ...Icon.Ionicons.font,
+      
       monaco: require('./assets/fonts/monaco.ttf'),
+
       roboto: require('./assets/fonts/Roboto-Regular.ttf'),
       'roboto-thin': require('./assets/fonts/Roboto-Thin.ttf'),
       'roboto-light': require('./assets/fonts/Roboto-Light.ttf'),
       'roboto-medium': require('./assets/fonts/Roboto-Medium.ttf'),
+
+      product: require('./assets/fonts/GoogleSans-Regular.ttf'),
+      'product-regular': require('./assets/fonts/GoogleSans-Regular.ttf'),
+      'product-medium': require('./assets/fonts/GoogleSans-Medium.ttf'),
+      'product-bold': require('./assets/fonts/GoogleSans-Bold.ttf'),
+      'product-italic': require('./assets/fonts/GoogleSans-Italic.ttf'),
     });
   };
 

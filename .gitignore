@@ -9,5 +9,4 @@ config/env.yml
 .expo/
 .DS_Store
 node_modules/*
-expo_project/.DS_Store
-expo_project/.DS_Store
+.vscode/*
