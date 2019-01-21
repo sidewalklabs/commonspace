@@ -86,11 +86,10 @@ class AuthScreen extends React.Component {
               raised
               style={styles.cta}
               color="#ffcf2b"
-              theme={{ ...Theme, roundness: 10 }}
+              theme={{ ...Theme, roundness: 12 }}
               onPress={this._signIn}
-              icon={({ size, color }) => (
-                <Icon.Ionicons name="logo-google" size={size} color={color} />
-              )}>
+              icon={ require('../assets/images/logo-google.png') }
+            >
               <Text style={styles.ctaCopy}>Connect with Google</Text>
             </Button>
             <Button
@@ -141,23 +140,27 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   cta: {
-    padding: 10,
-    marginBottom: 10,
+    marginBottom: 20,
     alignSelf: 'stretch',
   },
   ctaCopy: {
     fontFamily: 'product-medium',
-    fontSize: 17,
+    fontSize: 16,
+    height:48,
+    lineHeight:30,
+    letterSpacing: 0.5,
+    margin:0,
+    padding:0,
   },
   title: {
-    fontSize: 25,
-    fontFamily: 'product-medium',
+    fontSize: 24,
+    fontFamily: 'product-bold',
     textAlign: 'center',
     marginBottom: 24,
     color: 'white',
   },
   paragraph: {
-    fontSize: 17,
+    fontSize: 16,
     textAlign: 'center',
     marginBottom: 24,
     color: 'white',
@@ -165,6 +168,7 @@ const styles = StyleSheet.create({
   footer: {
     alignSelf: 'stretch',
     justifyContent: 'flex-end',
+    padding: 20,
   },
 });
 
