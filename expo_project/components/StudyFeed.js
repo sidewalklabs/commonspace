@@ -1,8 +1,9 @@
 import { WebBrowser } from 'expo';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, Image } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import { Button, Card, CardContent, Divider, Title, Paragraph } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
 import * as _ from 'lodash';
 import moment from 'moment';
 import Theme from '../constants/Theme';
@@ -37,16 +38,19 @@ class StudyCard extends React.Component {
     const studyAuthor = authorName || 'Unknown author';
     const authorUrl = 'https://placeholder.ca/';
     return (
-      <Card elevation={3} style={styles.card}>
+      <Card elevation={2} style={styles.card}>
         <CardContent style={styles.studyHeader}>
-          <Title>{studyName}</Title>
-          <Paragraph>
-            by{' '}
-            <Text style={{ color: 'blue' }} onPress={() => this._openLink(authorUrl)}>
+          <Title style={styles.studyTitle}>{studyName}</Title>
+          <View style={{flexDirection:"row",marginTop:4,}}>
+            <Image
+              source={require('../assets/images/icon-info-circle.png')}
+              style={{width: 20, height: 20,marginRight:8,opacity:0.5,}}
+            />
+            <Text style={{ flex:1,color: 'rgba(0,0,0,0.6)',lineHeight:20,fontFamily:'product-regular',marginBottom:4 }} onPress={() => this._openLink(authorUrl)}>
               {studyAuthor}
             </Text>
-          </Paragraph>
-          {description && <Paragraph>{description}</Paragraph>}
+          </View>
+          {description && <Paragraph style={{color: 'rgba(0,0,0,0.6)',}}>{description}</Paragraph>}
         </CardContent>
         {surveys.map(survey => {
           const { survey_id: surveyId, title, survey_location: zoneFeatureGeoJson } = survey;
@@ -73,9 +77,9 @@ class StudyCard extends React.Component {
                 <View style={styles.buttonWrapper}>
                   <Button
                     dark={inProgressNow}
-                    raised
                     primary={inProgressNow}
                     theme={{ ...Theme, roundness: 20 }}
+                    style={styles.surveyButton}
                     onPress={() =>
                       this.props.navigation.navigate(typeToRouteName(studyType), {
                         studyFields,
@@ -88,7 +92,7 @@ class StudyCard extends React.Component {
                         token,
                       })
                     }>
-                    <Text>Start</Text>
+                    <Text style={styles.surveyButtonText}>Start</Text>
                   </Button>
                 </View>
               </CardContent>
@@ -119,29 +123,41 @@ class StudyFeed extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
+    backgroundColor: '#FAFAFA',
     flex: 1,
   },
   scrollContainer: {
-    padding: 20,
+    paddingLeft: 0,
+    paddingRight: 0,
   },
   card: {
-    marginBottom: 20,
+    marginBottom: 12,
+    marginLeft:14,
+    marginRight:14,
   },
   studyHeader: {
-    paddingBottom: 10,
+    paddingBottom: 8,
+  },
+  studyTitle:{
+    fontFamily: 'product-bold',
+    fontSize:20,
+    lineHeight:24,
+    color:"rgba(0,0,0,0.8)"
   },
   sectionTitle: {
-    backgroundColor: 'white',
-    marginVertical: 10,
+    marginTop: 24,
+    marginBottom:8,
+    fontSize:14,
     fontFamily: 'product-medium',
-    color: '#9a9a9a',
+    color: 'rgba(0,0,0,0.6)',
+    marginLeft:16,
+    marginRight:16,
   },
   sectionDescription: {
     marginVertical: 10,
   },
   sectionDivider: {
-    marginVertical: 10,
+    marginVertical: 4,
   },
   surveyRow: {
     paddingVertical: 10,
@@ -149,11 +165,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  surveyButton:{
+    borderWidth:1.5,
+    borderColor: `${Theme.colors.primary}50`,
+  },
+  surveyButtonText:{
+    fontFamily:'product-bold',
+    color: Theme.colors.primary,
+  },
   activeSurveyRow: {
     backgroundColor: `${Theme.colors.primary}10`,
   },
   surveyTitle: {
-    fontFamily: 'product-medium',
+    fontSize:16,
+    fontFamily: 'product-bold',
   },
   inProgressText: {
     color: Theme.colors.primary,
