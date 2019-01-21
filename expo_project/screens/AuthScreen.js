@@ -144,15 +144,14 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
     alignSelf: 'stretch',
-    textAlign: 'center',
   },
   ctaCopy: {
-    fontFamily: 'roboto-medium',
+    fontFamily: 'product-medium',
     fontSize: 17,
   },
   title: {
     fontSize: 25,
-    fontFamily: 'roboto-medium',
+    fontFamily: 'product-medium',
     textAlign: 'center',
     marginBottom: 24,
     color: 'white',

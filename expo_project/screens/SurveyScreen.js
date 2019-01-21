@@ -77,7 +77,7 @@ class SurveyScreen extends React.Component {
             style={{
               fontSize: 14,
               color: Theme.colors.primary,
-              fontFamily: 'roboto-medium',
+              fontFamily: 'product-medium',
             }}>
             Exit
           </Text>
@@ -614,7 +614,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   title: {
-    fontFamily: 'roboto-medium',
+    fontFamily: 'product-medium',
   },
   personIconWrapper: {
     padding: 12,

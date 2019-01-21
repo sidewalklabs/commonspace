@@ -62,7 +62,7 @@ class PeopleMovingCountScreen extends React.Component {
             style={{
               fontSize: 14,
               color: Theme.colors.primary,
-              fontFamily: 'roboto-medium',
+              fontFamily: 'product-medium',
             }}>
             Exit
           </Text>
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     color: Theme.colors.primary,
   },
   label: {
-    fontFamily: 'roboto-medium',
+    fontFamily: 'product-medium',
   },
   labelNumber: { color: Theme.colors.primary },
   grid: {

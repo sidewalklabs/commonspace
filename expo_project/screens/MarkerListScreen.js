@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
     color: Theme.colors.primary,
   },
   label: {
-    fontFamily: 'roboto-medium',
+    fontFamily: 'product-medium',
   },
   labelNumber: { color: Theme.colors.primary },
   grid: {

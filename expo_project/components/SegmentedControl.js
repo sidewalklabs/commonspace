@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
   },
   tabText: {
-    fontFamily: 'roboto-medium',
+    fontFamily: 'product-medium',
     color: Theme.colors.primary,
   },
 });

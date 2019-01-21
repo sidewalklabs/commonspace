@@ -9,9 +9,11 @@ export default {
     accent: '#1C4442',
   },
   fonts: {
-    regular: 'roboto',
-    medium: 'roboto-medium',
-    light: 'roboto-light',
-    thin: 'roboto-thin',
+    thin: 'product-regular',
+    light: 'product-regular',
+    regular: 'product-regular',
+    medium: 'product-medium',
+    bold: 'product-bold',
+    italic: 'product-italic',
   },
 };
