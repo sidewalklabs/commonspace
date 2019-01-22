@@ -24,7 +24,7 @@ import SurveyView from './SurveyView';
 import SurveyorsView from './SurveyorsView';
 import WrapInModal from './WrapInModal';
 import uiState from '../stores/ui';
-import applicationState, { setCurrentStudyEmptySkeleton, ApplicationState, studyEmptySkeleton } from '../stores/applicationState';
+import applicationState, { setCurrentStudyEmptySkeleton, getMapCenterForStudy, ApplicationState, studyEmptySkeleton } from '../stores/applicationState';
 import { observable } from 'mobx';
 import { navigate } from '../stores/router';
 
@@ -81,6 +81,8 @@ const Main = observer(
         const currentStudy = applicationState.currentStudy ? applicationState.currentStudy : studyEmptySkeleton();
         let { fields, studyId, surveyors, map, type } = currentStudy;
         const allowedMapShapes = type === 'stationary' ? 'polygon' : 'line';
+        const { latitude, longitude } = getMapCenterForStudy(studyId);
+
         return (
             <div className={classes.root}>
                 <CssBaseline />
@@ -150,7 +152,7 @@ const Main = observer(
                         <FieldsList studyType={type} fields={fields} />
                     </WrapInModal>
                     <WrapInModal onClose={() => uiState.visibleModal = 'study'} modalName={'map'} visibleModal={visibleModal}>
-                        <MapView study={currentStudy} allowedShapes={allowedMapShapes} lat={33.546727} lng={-117.673965} featureCollection={map} />
+                        <MapView study={currentStudy} allowedShapes={allowedMapShapes} lat={latitude} lng={longitude} featureCollection={map} />
                     </WrapInModal>
                 </div>
             </div >

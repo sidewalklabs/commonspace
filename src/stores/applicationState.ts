@@ -1,15 +1,29 @@
 import camelcaseKeys from 'camelcase-keys';
-import { observable, autorun, toJS, get, set } from 'mobx';
+import { FeatureCollection } from 'geojson';
+import { observable, autorun, toJS, get, set, computed } from 'mobx';
 import moment from 'moment';
+import { center } from '@turf/turf';
 import uuid from 'uuid';
 
 import { groupArrayOfObjectsBy } from '../utils';
 import { StudyField } from '../datastore/utils';
 import { surveysForStudy, StudyType } from '../datastore/study';
-import { FeatureCollection } from 'geojson';
 import uiState, { setSnackBar } from './ui';
-
 import {  snakecasePayload } from '../utils';
+
+
+const DEFAULT_LATITUDE = 40.730819
+const DEFAULT_LONGITUDE = -73.997461
+
+export const DEFAULT_CENTER = {
+    longitude: DEFAULT_LONGITUDE,
+    latitude: DEFAULT_LATITUDE
+}
+
+interface LongitudeLatitude {
+    longitude: number;
+    latitude: number;
+}
 
 export interface Study {
     studyId: string;
@@ -27,6 +41,7 @@ export interface ApplicationState {
     token: null | string;
     currentStudy: null | Study;
     studies: {[key: string]: Study};
+    mapCenters: {[key: string]: LongitudeLatitude};
 }
 
 const fetchParams: RequestInit = {
@@ -249,8 +264,74 @@ export async function init() {
 let applicationState: ApplicationState = observable({
     currentStudy: null,
     studies: {},
-    token: null
+    token: null,
+    mapCenters: {}
 });
+
+async function calculateMapCenter(map: FeatureCollection): Promise<LongitudeLatitude> {
+    let latitude, longitude;
+    if (map.features && map.features.length > 0) {
+        // @ts-ignore
+        const { geometry } = center(map);
+        longitude = geometry.coordinates[0];
+        latitude = geometry.coordinates[1];
+    } else if (navigator.geolocation) {
+        const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(position => {
+                resolve(position);
+            }, err => {
+                reject(err)
+            })
+        })
+        // @ts-ignore
+        longitude = position.coords.longitude
+        // @ts-ignore
+        latitude = position.coords.latitude
+    } else {
+        longitude = DEFAULT_LONGITUDE;
+        latitude = DEFAULT_LATITUDE;
+    }
+    return { longitude, latitude }
+}
+
+const mapCentersComputation = computed(async () => {
+    const { studies} = applicationState;
+    const studyIdToCenter: {[key: string]: LongitudeLatitude}[] = await Promise.all(Object.keys(studies).map(async studyId => {
+        const study = studies[studyId];
+        let res: {[key: string]: LongitudeLatitude} = {};
+        if (study.map) {
+            res[studyId] = await calculateMapCenter(study.map)
+        } else {
+            res[studyId] = DEFAULT_CENTER
+        }
+        return res;
+    }));
+    const result: {[key: string]: LongitudeLatitude}= Object.assign({}, ...studyIdToCenter);
+    return result;
+});
+
+mapCentersComputation.observe(async change => {
+    const { mapCenters } = applicationState;
+    const newValue = await change.newValue;
+    if (newValue) {
+        applicationState.mapCenters = newValue;
+    }
+})
+
+
+export function getMapCenterForStudy(studyId: string) {
+    let latitude, longitude;
+    const { mapCenters } = applicationState;
+    if (mapCenters[studyId]) {
+        const studyCenter = mapCenters[studyId];
+        latitude = studyCenter.latitude;
+        longitude = studyCenter.longitude;
+    } else {
+        latitude = DEFAULT_CENTER.latitude;
+        longitude = DEFAULT_CENTER.longitude;
+    }
+    return { latitude, longitude }
+}
 
 autorun(() => {
     if (applicationState.currentStudy) {

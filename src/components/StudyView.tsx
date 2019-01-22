@@ -13,7 +13,7 @@ import LockedMapView from './LockedMapView';
 import SurveyView from './SurveyView';
 
 import uiState from '../stores/ui';
-import applicationState, { saveNewStudy, updateStudy, Study } from '../stores/applicationState';
+import applicationState, { saveNewStudy, updateStudy, Study, getMapCenterForStudy } from '../stores/applicationState';
 import { groupArrayOfObjectsBy } from '../utils';
 import { FeatureCollection } from 'geojson';
 
@@ -88,7 +88,7 @@ const LocationTextField = withStyles(styles)(observer((props: LocationTextFieldP
             className={classes.textField}
             label="Location"
             value={location}
-            onChange={(e) => applicationState.currentStudy.location = e.target.value}
+            onChange={e => applicationState.currentStudy.location = e.target.value}
         />)
     } else {
         return (<TextField
@@ -126,6 +126,7 @@ const StudyView = observer((props: any & WithStyles) => {
     const { study, classes, studyIsNew } = props;
     if (study) {
         const { title, location, surveys, studyId, fields, surveyors, protocolVersion, type, map } = study as Study;
+        const { latitude, longitude } = getMapCenterForStudy(studyId);
         const features = map && map.features ? map.features : [];
         const StudyTypeField = props => studyIsNew ?
             (<TextField
@@ -230,7 +231,7 @@ const StudyView = observer((props: any & WithStyles) => {
                     </MenuItem>)
                     })}
                     </TextField> */}
-                <LockedMapView isEditable lat={33.546727} lng={-117.673965} featureCollection={map} />
+                <LockedMapView isEditable lat={latitude} lng={longitude} featureCollection={map} />
                 <CreateOrUpdateButton study={study} studyIsNew={studyIsNew} />
             </Fragment>
         );

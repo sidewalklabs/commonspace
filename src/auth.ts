@@ -207,6 +207,8 @@ const init = (mode: string) => {
                 const email = profile.emails[0].value;
                 const user = await authenticateOAuthUser(DbPool, email);
                 request.user = { user_id: user.userId };
+                console.log('email: ', email);
+                console.log('user: ', user);
                 done(null, request.user);
             });
             passport.use('google-oauth', googleOAuthStrategy);

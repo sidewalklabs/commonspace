@@ -1,4 +1,8 @@
-import { observable, autorun, toJS } from 'mobx';
+import { autorun, observable, computed, toJS } from 'mobx';
+
+
+const DEFAULT_LATITUDE = 40.730819
+const DEFAULT_LONGITUDE = -73.997461
 
 interface AvailableLocation {
     locationId: string;
@@ -35,10 +39,6 @@ const uiState: UiState = observable({
         snackBarType: null,
         snackBarText: ''
     }
-});
-
-autorun(() => {
-    console.log(uiState.snackBar.snackBarText);
 });
 
 export default uiState;

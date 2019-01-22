@@ -3,10 +3,11 @@ import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import uuid from 'uuid';
 
-import { get, set, toJS } from 'mobx';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { Map, Marker, Popup, TileLayer, FeatureGroup, Feature, GeoJSON } from 'react-leaflet'
+import { Map, Marker, Popup, TileLayer, FeatureGroup, Feature, GeoJSON, withLeaflet } from 'react-leaflet'
 import { EditControl } from 'react-leaflet-draw'
+import { ReactLeafletSearch } from 'react-leaflet-search'
 
 import applicationState, { updateFeatureName, Study } from '../stores/applicationState'
 import { FeatureCollection } from 'geojson';
@@ -14,7 +15,6 @@ import { stringHash } from '../utils';
 
 
 const INITIAL_ZOOM_LEVEL = 17;
-const CENTER_COORDINATES = [-74.00293, 40.750496];
 const { TILE_SERVER_URL } = process.env;
 //    'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png';
 const MAP_ATTRIBUTION = process.env.MAP_ATTRIBUTION ? process.env.MAP_ATTRIBUTION : '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors';
@@ -108,6 +108,8 @@ function createLineFromLeafletLayer(layer, name: string): Feature {
     }
 }
 
+const WrappedLeaftletSearch = withLeaflet(ReactLeafletSearch);
+
 function onCreated(e) {
     const { layer, layerType } = e;
     const features = applicationState.currentStudy.map.features;
@@ -118,7 +120,6 @@ function onCreated(e) {
 
     if (layerType === 'polygon') {
         const newPolygon = createPolygonFromLeafletLayer(layer, 'zone_' + features.length.toString());
-
         applicationState.currentStudy.map.features = [...features, newPolygon];
     }
 
@@ -197,6 +198,7 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
                 />
 
                 <GeoJSON data={geojson} key={geojsonHash} onEachFeature={(feature, layer) => layer.on({ click: () => onEachFeature(feature, layer) })} />
+                <WrappedLeaftletSearch position="topleft" />
                 <FeatureGroup>
                     <EditControl
                         position='topright'
