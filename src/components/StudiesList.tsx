@@ -15,7 +15,7 @@ import { withStyles, WithStyles } from '@material-ui/core/styles';
 
 import { observer } from 'mobx-react';
 
-import { deleteStudy, selectNewStudy, Study } from '../stores/applicationState';
+import { deleteStudy, selectNewStudy, Study, getMapCenterForStudy } from '../stores/applicationState';
 import LockedMapView from './LockedMapView';
 import uiState from '../stores/ui';
 
@@ -39,10 +39,11 @@ export interface StudiesListProps {
     studies: { [key: string]: Study };
 }
 
-const ExpandedStudy = withStyles(styles)((props: WithStyles & { study: Study }) => {
+const ExpandedStudy = withStyles(styles)(observer((props: WithStyles & { study: Study }) => {
     const { classes, study } = props;
     const { title, fields, surveyors, location, surveys = {}, map } = study;
     const { studyId } = study;
+    const { latitude, longitude } = getMapCenterForStudy(studyId);
     return (
         <Fragment>
             <TextField
@@ -78,7 +79,7 @@ const ExpandedStudy = withStyles(styles)((props: WithStyles & { study: Study }) 
                 margin="normal"
             >
             </TextField>
-            <LockedMapView lat={33.546727} lng={-117.673965} featureCollection={map} />
+            <LockedMapView lat={latitude} lng={longitude} featureCollection={map} />
             <Button variant="contained" color="secondary" onClick={async () => await removeStudy(studyId)}>
                 Delete
             </Button>
@@ -88,7 +89,7 @@ const ExpandedStudy = withStyles(styles)((props: WithStyles & { study: Study }) 
         </Fragment >
     )
 
-});
+}));
 
 export default withStyles(styles)(observer((props: StudiesListProps & WithStyles) => {
     const { classes, studies } = props;

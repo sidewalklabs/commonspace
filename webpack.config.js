@@ -66,7 +66,20 @@ module.exports = env => {
               babelrc: true
             }
           }
-        }
+        },
+        {
+        test: /\.css$/,
+          use: [
+                {
+                    loader: "style-loader",
+                    options: { singleton: true }
+                },
+                {
+                    loader: "css-loader",
+                    options: { modules: true }
+                }
+            ]
+      }
       ]
     },
     plugins: [
