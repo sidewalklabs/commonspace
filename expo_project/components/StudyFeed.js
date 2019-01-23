@@ -40,17 +40,17 @@ class StudyCard extends React.Component {
     return (
       <Card elevation={2} style={styles.card}>
         <CardContent style={styles.studyHeader}>
-          <Title style={styles.studyTitle}>{studyName}</Title>
-          <View style={{flexDirection:"row",marginTop:4,}}>
+          <Text style={styles.studyTitle}>{studyName}</Text>
+          <View style={{ flexDirection: 'row', marginTop: 4 }}>
             <Image
               source={require('../assets/images/icon-info-circle.png')}
-              style={{width: 20, height: 20,marginRight:8,opacity:0.5,}}
+              style={{ width: 20, height: 20, marginRight: 8, opacity: 0.5 }}
             />
-            <Text style={{ flex:1,color: 'rgba(0,0,0,0.6)',lineHeight:20,fontFamily:'product-regular',marginBottom:4 }} onPress={() => this._openLink(authorUrl)}>
+            <Text style={styles.studySubtitle} onPress={() => this._openLink(authorUrl)}>
               {studyAuthor}
             </Text>
           </View>
-          {description && <Paragraph style={{color: 'rgba(0,0,0,0.6)',}}>{description}</Paragraph>}
+          {description && <Text style={styles.studyDescription}>{description}</Text>}
         </CardContent>
         {surveys.map(survey => {
           const { survey_id: surveyId, title, survey_location: zoneFeatureGeoJson } = survey;
@@ -132,26 +132,39 @@ const styles = StyleSheet.create({
   },
   card: {
     marginBottom: 12,
-    marginLeft:14,
-    marginRight:14,
+    marginLeft: 14,
+    marginRight: 14,
   },
   studyHeader: {
     paddingBottom: 8,
   },
-  studyTitle:{
+  studyTitle: {
     fontFamily: 'product-bold',
-    fontSize:20,
-    lineHeight:24,
-    color:"rgba(0,0,0,0.8)"
+    fontSize: 20,
+    lineHeight: 24,
+    color: 'rgba(0,0,0,0.8)',
+  },
+  studySubtitle: {
+    flex: 1,
+    color: 'rgba(0,0,0,0.6)',
+    fontFamily: 'product-regular',
+    lineHeight: 20,
+    marginBottom: 4,
+  },
+  studyDescription: {
+    color: 'rgba(0,0,0,0.6)',
+    fontFamily: 'product-regular',
+    lineHeight: 20,
+    marginBottom: 4,
   },
   sectionTitle: {
     marginTop: 24,
-    marginBottom:8,
-    fontSize:14,
+    marginBottom: 8,
+    fontSize: 14,
     fontFamily: 'product-medium',
     color: 'rgba(0,0,0,0.6)',
-    marginLeft:16,
-    marginRight:16,
+    marginLeft: 16,
+    marginRight: 16,
   },
   sectionDescription: {
     marginVertical: 10,
@@ -165,19 +178,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  surveyButton:{
-    borderWidth:1.5,
+  surveyButton: {
+    borderWidth: 1.5,
     borderColor: `${Theme.colors.primary}50`,
   },
-  surveyButtonText:{
-    fontFamily:'product-bold',
+  surveyButtonText: {
+    fontFamily: 'product-bold',
     color: Theme.colors.primary,
   },
   activeSurveyRow: {
     backgroundColor: `${Theme.colors.primary}10`,
   },
   surveyTitle: {
-    fontSize:16,
+    fontSize: 16,
     fontFamily: 'product-bold',
   },
   inProgressText: {
