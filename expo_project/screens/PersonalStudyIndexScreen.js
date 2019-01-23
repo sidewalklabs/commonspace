@@ -58,6 +58,7 @@ class PersonalStudyIndexScreen extends React.Component {
     return (
       <View style={styles.container}>
         {loading && <ActivityIndicator />}
+
         {!loading &&
           !studies.length && (
             <Banner
