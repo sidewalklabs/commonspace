@@ -1,10 +1,11 @@
 import { Icon } from 'expo';
 import React from 'react';
-import { StyleSheet, View, ScrollView, Text, TouchableOpacity } from 'react-native';
+import { Alert, StyleSheet, View, ScrollView, Text, TouchableOpacity } from 'react-native';
 import Selectable from '../components/Selectable';
 import * as _ from 'lodash';
 import Theme from '../constants/Theme';
 import { Button, Card } from 'react-native-paper';
+import { deleteDataPoint, getDataPointsforSurvey, saveDataPoint } from '../lib/commonsClient';
 import QUESTION_CONFIG from '../config/peopleMovingQuestions';
 import { getRandomIconColor } from '../utils/color';
 import moment from 'moment';
@@ -13,8 +14,7 @@ import * as uuid from 'uuid';
 
 class PeopleMovingCountSummary extends React.Component {
   render() {
-    const { markers } = this.props;
-    const primaryAttribute = QUESTION_CONFIG[0];
+    const { markers, primaryAttribute } = this.props;
     const { options, questionKey } = primaryAttribute;
     const grouped = _.groupBy(markers, questionKey);
     return (
@@ -24,11 +24,11 @@ class PeopleMovingCountSummary extends React.Component {
           <Text style={styles.label}>People</Text>
         </View>
         <View style={styles.grid}>
-          {_.map(options, option => {
+          {_.map(options, (option, index) => {
             const optionSubset = grouped[option.value];
             const count = optionSubset ? optionSubset.length : 0;
             return (
-              <View style={styles.gridRow}>
+              <View key={index} style={styles.gridRow}>
                 <Text style={styles.label}>{option.label}</Text>
                 <Text style={styles.labelNumber}>{count}</Text>
               </View>
@@ -75,7 +75,7 @@ class PeopleMovingCountScreen extends React.Component {
           style={{
             marginRight: 10,
           }}>
-          <Icon.MaterialIcons name="people" size="30" color="white" />
+          <Icon.MaterialIcons name="people" size={30} color="white" />
         </TouchableOpacity>
       ),
     };
@@ -86,15 +86,10 @@ class PeopleMovingCountScreen extends React.Component {
     this.state = {
       activeTab: 'Count',
       markers: [],
-      selectedAttributes: _.reduce(
-        QUESTION_CONFIG,
-        (result, question) => {
-          const { questionKey } = question;
-          result[questionKey] = '';
-          return result;
-        },
-        {},
-      ),
+      token: props.navigation.state.params.token,
+      studyFields: props.navigation.state.params.studyFields,
+      selectedAttributes: {},
+      surveyId: this.props.navigation.state.params.surveyId,
     };
   }
 
@@ -102,7 +97,19 @@ class PeopleMovingCountScreen extends React.Component {
     this.props.navigation.setParams({
       navigateToMarkerList: this.navigateToMarkerList,
     });
-    // TODO: Load all markers from study when mounting
+    const { surveyId, token } = this.state;
+    getDataPointsforSurvey(token, surveyId).then(dataPoints => {
+      const markers = dataPoints.map((d, i) => {
+        const title = `Person ${i}`;
+        const color = getRandomIconColor();
+        return {
+          ...d,
+          color,
+          title,
+        };
+      });
+      this.setState({ markers });
+    });
   }
 
   syncMarkersWithListView = markers => {
@@ -110,9 +117,7 @@ class PeopleMovingCountScreen extends React.Component {
   };
 
   navigateToMarkerList = () => {
-    // TODO: read this from study fields once available
-    // TODO: swap out delete and update functions once backend is available
-    const { token, surveyId } = this.props.navigation.state.params;
+    const { token, surveyId } = this.state;
     this.props.navigation.navigate('MarkerListScreen', {
       token,
       surveyId,
@@ -132,13 +137,13 @@ class PeopleMovingCountScreen extends React.Component {
     if (selectedAttributes[questionKey] !== value) {
       selectedAttributes[questionKey] = value;
     } else {
-      selectedAttributes[questionKey] = '';
+      _.reject(selectedAttributes, questionKey);
     }
     this.setState({ selectedAttributes });
   };
 
   addMarker = () => {
-    const { location } = this.state;
+    const { selectedAttributes, surveyId, token } = this.state;
     const markersCopy = [...this.state.markers];
     const date = moment();
     const dateLabel = date.format('HH:mm');
@@ -149,49 +154,86 @@ class PeopleMovingCountScreen extends React.Component {
 
     const marker = {
       dataPointId,
-      location,
       color,
       title,
       dateLabel,
-      ...this.state.selectedAttributes,
+      ...selectedAttributes,
     };
 
     markersCopy.push(marker);
+    const oldMarkers = this.state.markers;
     this.setState({ markers: markersCopy });
-    // TODO: add in backend
-    // TODO: add error handling after incorporating backend
-  };
-
-  deleteLastMarker = () => {
-    const markersCopy = [...this.state.markers];
-    if (markersCopy.length) {
-      // TODO: delete in backend
-      // TODO: add error handling after incorporating backend
-      const lastMarker = markersCopy.pop();
-      this.setState({ markers: markersCopy });
+    if (surveyId !== 'DEMO') {
+      saveDataPoint(token, surveyId, marker).catch(error => {
+        Alert.alert(
+          'Error',
+          'Something went wrong while creating a marker. Please try again later.',
+          [{ text: 'OK' }],
+        );
+        this.setState({ markers: oldMarkers });
+      });
     }
   };
 
-  updateMarker = (dataPointId, questionKey, value) => {
+  deleteLastMarker = () => {
+    const { surveyId, token } = this.state;
     const markersCopy = [...this.state.markers];
-    const marker = _.find(markersCopy, { dataPointId });
-    if (marker) {
-      marker[questionKey] = value;
+
+    const markerToRemove = _.last(markersCopy);
+    const { dataPointId } = markerToRemove;
+    if (dataPointId && surveyId !== 'DEMO') {
+      const lastMarker = markersCopy.pop();
       this.setState({ markers: markersCopy });
-      // TODO: update in backend
-      // TODO: add error handling after incorporating backend
+      deleteDataPoint(token, surveyId, dataPointId)
+        .then(() => {
+          // this callback is called regardless of whether a marker is deleted or not :/
+          const newMarkers = _.reject(this.state.markers, {
+            dataPointId,
+          });
+          const newActiveMarkerId = newMarkers.length
+            ? newMarkers[newMarkers.length - 1].dataPointId
+            : null;
+          this.setState({
+            markers: newMarkers,
+            activeMarkerId: newActiveMarkerId,
+          });
+        })
+        .catch(function(error) {
+          Alert.alert('Error', 'Something went wrong removing datapoint. Please try again later.', [
+            { text: 'OK' },
+          ]);
+        });
+    } else {
+      const lastMarker = markersCopy.pop();
+      this.setState({ markers: markersCopy });
+      const newMarkers = _.reject(this.state.markers, {
+        dataPointId,
+      });
+      const newActiveMarkerId = newMarkers.length
+        ? newMarkers[newMarkers.length - 1].dataPointId
+        : null;
+      this.setState({
+        markers: newMarkers,
+        activeMarkerId: newActiveMarkerId,
+      });
     }
   };
 
   render() {
+    const { token, studyFields, surveyId, markers } = this.state;
+    const questions = _.filter(
+      QUESTION_CONFIG,
+      ({ questionKey }) => studyFields.indexOf(questionKey) !== -1,
+    );
+
     return (
       <View style={styles.container}>
-        <PeopleMovingCountSummary markers={this.state.markers} />
+        <PeopleMovingCountSummary markers={this.state.markers} primaryAttribute={questions[0]} />
         <Card style={styles.card} elevation={3}>
           <View style={styles.cardContent}>
             <ScrollView>
               <View onStartShouldSetResponder={() => true}>
-                {_.map(QUESTION_CONFIG, question => {
+                {_.map(questions, question => {
                   const { questionKey, questionLabel, options } = question;
                   return (
                     <Selectable

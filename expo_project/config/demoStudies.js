@@ -4,6 +4,7 @@ export const peopleMovingDemoStudy = {
   map: {},
   authorName: 'CommonSpace',
   description: 'Surveys in demo mode will not save.',
+  fields: ['mode', 'gender', 'age', 'posture', 'activities'],
   surveys: [
     {
       locationId: '2',
@@ -11,7 +12,7 @@ export const peopleMovingDemoStudy = {
       method: 'analog',
       representation: 'absolute',
       survey_id: 'DEMO',
-      title: 'Demo',
+      survey_title: 'Demo',
       type: 'peopleMovingCount',
       userId: '123412341234',
       zone: 'Zone 12',
@@ -44,7 +45,7 @@ export const stationaryActivityDemoStudy = {
       method: 'analog',
       representation: 'absolute',
       survey_id: 'DEMO',
-      title: 'Demo',
+      survey_title: 'Demo',
       type: 'peopleMovingCount',
       userId: '123412341234',
       zone: 'Zone 12',

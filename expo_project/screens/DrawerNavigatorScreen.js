@@ -49,10 +49,7 @@ class DrawerNavigatorScreen extends React.Component {
           {!loading && (
             <View style={styles.container}>
               <View style={styles.header}>
-                <Image
-                  source={require('../assets/images/CSIcon_24_blue.png')}
-                  style={styles.logo}
-                />
+                <Image source={require('../assets/images/CSIcon_24_blue.png')} />
                 <Text style={styles.logoText}>CommonSpace</Text>
               </View>
               <Divider style={styles.divider} />

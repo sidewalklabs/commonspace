@@ -4,9 +4,9 @@ export default [
     questionLabel: 'Mode',
     questionType: 'select',
     options: [
-      { value: 'Bicycle', label: 'Bicycle' },
-      { value: 'Pedestrian', label: 'Pedestrian' },
-      { value: 'Other', label: 'Other' },
+      { value: 'bicyclist', label: 'Bicycle' },
+      { value: 'pedestrian', label: 'Pedestrian' },
+      { value: 'other', label: 'Other' },
     ],
   },
   {
@@ -14,9 +14,9 @@ export default [
     questionLabel: 'Gender',
     questionType: 'select',
     options: [
-      { value: 'Male', label: 'Male' },
-      { value: 'Female', label: 'Female' },
-      { value: 'Unknown', label: 'Other/ Unsure' },
+      { value: 'male', label: 'Male' },
+      { value: 'female', label: 'Female' },
+      { value: 'unknown', label: 'Other/ Unsure' },
     ],
   },
   {

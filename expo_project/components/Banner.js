@@ -30,8 +30,8 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft:24,
-    marginRight:24,
+    marginLeft: 24,
+    marginRight: 24,
     flex: 1,
   },
   title: {
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'product-bold',
     fontSize: 36,
-    lineHeight:42,
+    lineHeight: 42,
     marginBottom: 8,
   },
   description: {
@@ -47,13 +47,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     color: '#333333',
     fontSize: 16,
-    lineHeight:20,
+    lineHeight: 20,
   },
   ctaCopy: {
     fontFamily: 'product-medium',
     fontSize: 16,
-    height:48,
-    lineHeight:30,
+    height: 48,
+    lineHeight: 30,
     letterSpacing: 0.5,
   },
   button: {
@@ -65,7 +65,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  
 });
 
 Banner.propTypes = {

@@ -53,8 +53,11 @@ class StudyCard extends React.Component {
           {description && <Text style={styles.studyDescription}>{description}</Text>}
         </CardContent>
         {surveys.map(survey => {
-          const { survey_id: surveyId, title, survey_location: zoneFeatureGeoJson } = survey;
-          const surveyTitle = title || 'Unnamed Survey';
+          const {
+            survey_id: surveyId,
+            survey_title: surveyTitle = 'Unnamed Survey',
+            survey_location: zoneFeatureGeoJson,
+          } = survey;
           const coordinates = !zoneFeatureGeoJson ? [] : zoneFeatureGeoJson.coordinates[0];
           const zoneCoordinates = _.map(coordinates, c => {
             return { longitude: c[0], latitude: c[1] };
