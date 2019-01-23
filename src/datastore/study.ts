@@ -48,7 +48,7 @@ function gehlFieldAsPgColumn(field: StudyField) {
         case 'object':
             return 'object data_collection.object';
         case 'location':
-            return 'location geometry NOT NULL';
+            return 'location geometry';
         case 'note':
             return 'note text';
         default:

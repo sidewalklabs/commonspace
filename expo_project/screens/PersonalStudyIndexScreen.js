@@ -68,7 +68,7 @@ class PersonalStudyIndexScreen extends React.Component {
               style={styles.banner}
               ctaOnPress={() => this.props.navigation.navigate('DemoStack')}
             />
-        )}
+          )}
       </View>
     );
   }

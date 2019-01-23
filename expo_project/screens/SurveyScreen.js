@@ -104,6 +104,7 @@ class SurveyScreen extends React.Component {
       markers: [],
       zoneLatLngs: props.navigation.state.params.zoneCoordinates,
       token: props.navigation.state.params.token,
+      studyFields: props.navigation.state.params.studyFields,
       markerMenuTopLocation: undefined,
       noteModalVisible: false,
       formScrollPosition: 0,
