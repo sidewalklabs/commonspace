@@ -88,7 +88,7 @@ class OnboardingScreen extends React.Component {
           </ScrollView>
           <View style={styles.footer}>
             <Button
-              style={{ height:48}}
+              style={{ height: 48 }}
               raised
               color="#ffcf2b"
               theme={{ ...Theme, roundness: 12 }}
@@ -111,8 +111,8 @@ const styles = StyleSheet.create({
   buttonText: {
     fontFamily: 'product-medium',
     fontSize: 16,
-    height:48,
-    lineHeight:30,
+    height: 48,
+    lineHeight: 30,
     letterSpacing: 0.5,
   },
   container: {

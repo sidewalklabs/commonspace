@@ -58,33 +58,36 @@ class PersonalStudyIndexScreen extends React.Component {
     return (
       <View style={styles.container}>
         {loading && <ActivityIndicator />}
-        {!loading &&
-          !studies.length && (
-            // <Banner
-            //   title="You do not have any studies"
-            //   description="You do not have any studies assigned to you currently. If you believe this is
-            //     incorrect, please reach out to your study coordinator. In the mean time, try a demo study"
-            //   cta="Try a demo"
-            //   style={styles.banner}
-            //   ctaOnPress={() => this.props.navigation.navigate('DemoStack')}
-            // />
-            <View style={styles.zeroMessage}>
-              <Title style={styles.title}>No Studies Found</Title>
-              <Subheading style={styles.description}>There are no studies assigned to you. If this is an error, reach out to your study coordinator.</Subheading>
-              <View style={styles.footer}>
-                <Button
-                  style={styles.button}
-                  raised
-                  color="#ffcf2b"
-                  theme={{ ...Theme, roundness: 12 }}
-                  onPress={() => this.props.navigation.navigate('DemoStack')}>
-                  <Text style={styles.buttonText}>Try the Demo</Text>
-                </Button>
-              </View>
+        {!loading && !studies.length && (
+          // <Banner
+          //   title="You do not have any studies"
+          //   description="You do not have any studies assigned to you currently. If you believe this is
+          //     incorrect, please reach out to your study coordinator. In the mean time, try a demo study"
+          //   cta="Try a demo"
+          //   style={styles.banner}
+          //   ctaOnPress={() => this.props.navigation.navigate('DemoStack')}
+          // />
+          <View style={styles.zeroMessage}>
+            <Title style={styles.title}>No Studies Found</Title>
+            <Subheading style={styles.description}>
+              There are no studies assigned to you. If this is an error, reach out to your study
+              coordinator.
+            </Subheading>
+            <View style={styles.footer}>
+              <Button
+                style={styles.button}
+                raised
+                color="#ffcf2b"
+                theme={{ ...Theme, roundness: 12 }}
+                onPress={() => this.props.navigation.navigate('DemoStack')}>
+                <Text style={styles.buttonText}>Try the Demo</Text>
+              </Button>
             </View>
+          </View>
         )}
-        {!loading &&
-          studies.length && <StudyFeed token={token} studies={studies} title="Your studies" />}
+        {!loading && studies.length && (
+          <StudyFeed token={token} studies={studies} title="Your studies" />
+        )}
       </View>
     );
   }
@@ -101,9 +104,9 @@ const styles = StyleSheet.create({
     fontFamily: 'product-bold',
     marginVertical: 20,
   },
-  zeroMessage:{
-    marginLeft:24,
-    marginRight:24,
+  zeroMessage: {
+    marginLeft: 24,
+    marginRight: 24,
     flex: 1,
     justifyContent: 'center',
     flex: 1,
@@ -113,14 +116,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'product-bold',
     fontSize: 36,
-    lineHeight:42,
+    lineHeight: 42,
     marginBottom: 10,
   },
   description: {
     color: '#333333',
     textAlign: 'center',
     fontSize: 16,
-    lineHeight:20,
+    lineHeight: 20,
   },
   button: {
     marginTop: 20,
@@ -130,8 +133,8 @@ const styles = StyleSheet.create({
   buttonText: {
     fontFamily: 'product-medium',
     fontSize: 16,
-    height:48,
-    lineHeight:30,
+    height: 48,
+    lineHeight: 30,
     letterSpacing: 0.5,
   },
   footer: {
