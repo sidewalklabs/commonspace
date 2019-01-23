@@ -11,14 +11,16 @@ class Banner extends React.Component {
       <View style={styles.container}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.description}>{description}</Text>
-        <Button
-          primary
-          raised
-          style={styles.button}
-          onPress={ctaOnPress}
-          theme={{ ...Theme, roundness: 20 }}>
-          <Text style={styles.ctaCopy}>{cta}</Text>
-        </Button>
+        <View style={styles.footer}>
+          <Button
+            raised
+            style={styles.button}
+            onPress={ctaOnPress}
+            color="#ffcf2b"
+            theme={{ ...Theme, roundness: 12 }}>
+            <Text style={styles.ctaCopy}>{cta}</Text>
+          </Button>
+        </View>
       </View>
     );
   }
@@ -26,26 +28,44 @@ class Banner extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    marginLeft:24,
+    marginRight:24,
+    flex: 1,
   },
   title: {
-    fontFamily: 'product-medium',
+    color: '#333333',
     textAlign: 'center',
-    fontSize: 50,
-    marginBottom: 30,
+    fontFamily: 'product-bold',
+    fontSize: 36,
+    lineHeight:42,
+    marginBottom: 8,
   },
   description: {
     textAlign: 'center',
-    marginBottom: 30,
+    marginBottom: 8,
+    color: '#333333',
+    fontSize: 16,
+    lineHeight:20,
   },
   ctaCopy: {
-    fontSize: 20,
-    color: 'white',
-    marginBottom: 30,
+    fontFamily: 'product-medium',
+    fontSize: 16,
+    height:48,
+    lineHeight:30,
+    letterSpacing: 0.5,
   },
+  button: {
+    alignItems: 'center',
+    flexDirection: 'column',
+  },
+  footer: {
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
 });
 
 Banner.propTypes = {
