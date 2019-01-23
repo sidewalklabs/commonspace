@@ -58,35 +58,15 @@ class PersonalStudyIndexScreen extends React.Component {
     return (
       <View style={styles.container}>
         {loading && <ActivityIndicator />}
-        {!loading && !studies.length && (
-          // <Banner
-          //   title="You do not have any studies"
-          //   description="You do not have any studies assigned to you currently. If you believe this is
-          //     incorrect, please reach out to your study coordinator. In the mean time, try a demo study"
-          //   cta="Try a demo"
-          //   style={styles.banner}
-          //   ctaOnPress={() => this.props.navigation.navigate('DemoStack')}
-          // />
-          <View style={styles.zeroMessage}>
-            <Title style={styles.title}>No Studies Found</Title>
-            <Subheading style={styles.description}>
-              There are no studies assigned to you. If this is an error, reach out to your study
-              coordinator.
-            </Subheading>
-            <View style={styles.footer}>
-              <Button
-                style={styles.button}
-                raised
-                color="#ffcf2b"
-                theme={{ ...Theme, roundness: 12 }}
-                onPress={() => this.props.navigation.navigate('DemoStack')}>
-                <Text style={styles.buttonText}>Try the Demo</Text>
-              </Button>
-            </View>
-          </View>
-        )}
-        {!loading && studies.length && (
-          <StudyFeed token={token} studies={studies} title="Your studies" />
+        {!loading &&
+          !studies.length && (
+            <Banner
+              title="No Studies Found"
+              description="There are no studies assigned to you. If this is an error, reach out to your study coordinator."
+              cta="Try the Demo"
+              style={styles.banner}
+              ctaOnPress={() => this.props.navigation.navigate('DemoStack')}
+            />
         )}
       </View>
     );
