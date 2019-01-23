@@ -34,7 +34,7 @@ export default class App extends React.Component {
   _loadResourcesAsync = async () => {
     return Font.loadAsync({
       ...Icon.Ionicons.font,
-      
+
       monaco: require('./assets/fonts/monaco.ttf'),
 
       roboto: require('./assets/fonts/Roboto-Regular.ttf'),
