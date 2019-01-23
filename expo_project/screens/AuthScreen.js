@@ -88,8 +88,7 @@ class AuthScreen extends React.Component {
               color="#ffcf2b"
               theme={{ ...Theme, roundness: 12 }}
               onPress={this._signIn}
-              icon={ require('../assets/images/logo-google.png') }
-            >
+              icon={require('../assets/images/logo-google.png')}>
               <Text style={styles.ctaCopy}>Connect with Google</Text>
             </Button>
             <Button
@@ -146,11 +145,11 @@ const styles = StyleSheet.create({
   ctaCopy: {
     fontFamily: 'product-medium',
     fontSize: 16,
-    height:48,
-    lineHeight:30,
+    height: 48,
+    lineHeight: 30,
     letterSpacing: 0.5,
-    margin:0,
-    padding:0,
+    margin: 0,
+    padding: 0,
   },
   title: {
     fontSize: 24,
