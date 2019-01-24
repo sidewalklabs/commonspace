@@ -9,7 +9,10 @@ import AuthLoadingScreen from '../screens/AuthLoadingScreen';
 import ComingSoonScreen from '../screens/ComingSoonScreen';
 import DemoStudyIndexScreen from '../screens/DemoStudyIndexScreen';
 import DrawerNavigatorScreen from '../screens/DrawerNavigatorScreen';
+import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
+import SignUpWithEmailScreen from '../screens/SignUpWithEmailScreen';
 import SurveyScreen from '../screens/SurveyScreen';
+import LogInWithEmailScreen from '../screens/LogInWithEmailScreen';
 import MarkerListScreen from '../screens/MarkerListScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import PeopleMovingCountScreen from '../screens/PeopleMovingCountScreen';
@@ -25,6 +28,7 @@ const studyScreens = {
 const navigationOptions = {
   headerStyle: {
     backgroundColor: Theme.colors.primary,
+    borderBottomWidth: 0,
   },
   headerTintColor: '#fff',
   headerTitleStyle: {
@@ -59,10 +63,23 @@ const AuthStack = createStackNavigator(
   {
     AuthScreen,
     OnboardingScreen,
+    LogInWithEmailScreen,
+    SignUpWithEmailScreen,
+    ForgotPasswordScreen,
   },
   {
     initialRouteName: 'OnboardingScreen',
-    navigationOptions,
+    navigationOptions: {
+      ...navigationOptions,
+      headerStyle: {
+        ...navigationOptions.headerStyle,
+        backgroundColor: 'transparent',
+        position: 'absolute', // Hack to make header transparent. Otherwise it's black
+        top: 0,
+        left: 0,
+        right: 0,
+      },
+    },
   },
 );
 

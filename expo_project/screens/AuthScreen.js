@@ -1,14 +1,16 @@
 import React from 'react';
 import { Alert, AsyncStorage, Image, Linking, StyleSheet, Text, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
-import { Button, Paragraph, Title } from 'react-native-paper';
+import { Button } from 'react-native-paper';
+import SharedGradient from '../components/SharedGradient';
 import Theme from '../constants/Theme';
-import { Icon, LinearGradient } from 'expo';
 import { WebBrowser } from 'expo';
 
 class AuthScreen extends React.Component {
   static navigationOptions = {
-    header: null,
+    headerTitle: '',
+    headerLeft: null,
+    gesturesEnabled: false,
   };
 
   constructor(props) {
@@ -17,15 +19,16 @@ class AuthScreen extends React.Component {
 
   _signIn = async () => {
     try {
-      const { type, idToken, accessToken } = await Expo.Google.logInAsync({
+      const { type, user, accessToken } = await Expo.Google.logInAsync({
         androidClientId: '8677857213-avso90qgtscpsfj9cs1r5ri2p9i1nh4q.apps.googleusercontent.com',
         androidStandaloneAppClientId:
           '8677857213-pp4g0meb9ah2bfbvt851n7u32st7gt14.apps.googleusercontent.com',
         iosClientId: '8677857213-j9dn9ebe425td60q8c9tc20gomjbojip.apps.googleusercontent.com',
         iosStandaloneAppClientId:
           '8677857213-s1rosh2e597b3nccpqv67dbfpmc3q53o.apps.googleusercontent.com',
-        scopes: ['profile', 'email'],
+        scopes: ['email'],
       });
+
       if (type === 'success') {
         const resp = await fetch('https://commons-staging.sidewalklabs.com/auth/google/token', {
           mode: 'cors',
@@ -39,10 +42,8 @@ class AuthScreen extends React.Component {
           },
         });
         const body = await resp.json();
-
-        // TODO: add name and email
-        await AsyncStorage.setItem('token', body.token);
-
+        const { email } = user;
+        await AsyncStorage.multiSet([['token', body.token], ['email', email]]);
         this.props.navigation.navigate('App');
       } else {
         console.log('cancelled');
@@ -73,14 +74,14 @@ class AuthScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <LinearGradient colors={['#0048FF00', '#01C7E0']} style={styles.graddientContainer}>
+        <SharedGradient>
           <View style={styles.content}>
             <Image source={require('../assets/images/CSIcon_36_white.png')} style={styles.logo} />
-            <Title style={styles.title}>Get started with CommonSpace</Title>
-            <Paragraph style={styles.paragraph}>
+            <Text style={styles.title}>Get started with CommonSpace</Text>
+            <Text style={styles.paragraph}>
               If you are a volunteer or existing organizer, log in with your google account and
               start your study.
-            </Paragraph>
+            </Text>
             <Button
               light
               raised
@@ -97,11 +98,20 @@ class AuthScreen extends React.Component {
               color="#ffffff20"
               style={styles.cta}
               theme={{ ...Theme, roundness: 10 }}
-              onPress={() => this.props.navigation.navigate('DemoStack')}>
-              <Text style={styles.ctaCopy}>Try a Demo</Text>
+              onPress={() => this.props.navigation.navigate('LogInWithEmailScreen')}>
+              <Text style={styles.ctaCopy}>Login with Email</Text>
             </Button>
           </View>
           <View style={styles.footer}>
+            <Button
+              raised
+              dark
+              color="#ffffff00"
+              style={styles.cta}
+              theme={{ ...Theme, roundness: 10 }}
+              onPress={() => this.props.navigation.navigate('DemoStack')}>
+              <Text style={styles.ctaCopy}>Try a Demo</Text>
+            </Button>
             <Button
               raised
               dark
@@ -112,7 +122,7 @@ class AuthScreen extends React.Component {
               <Text style={styles.ctaCopy}>Privacy & Terms</Text>
             </Button>
           </View>
-        </LinearGradient>
+        </SharedGradient>
       </View>
     );
   }
@@ -163,6 +173,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
     color: 'white',
+    opacity: 0.8,
   },
   footer: {
     alignSelf: 'stretch',

@@ -14,10 +14,10 @@ export default [
     questionLabel: 'Age',
     questionType: 'select',
     options: [
-      { value: '0-14', label: '0-14' },
-      { value: '15-24', label: '15-24' },
-      { value: '25-64', label: '25-64' },
-      { value: '65+', label: '65+' },
+      { value: 'child', label: '0-14' },
+      { value: 'young', label: '15-24' },
+      { value: 'adult', label: '25-64' },
+      { value: 'elderly', label: '65+' },
     ],
   },
   {
@@ -58,10 +58,10 @@ export default [
     questionLabel: 'Groups',
     questionType: 'select',
     options: [
-      { value: 'group_1', label: '1 Person' },
-      { value: 'group_2', label: '2 People' },
-      { value: 'group_3-7', label: '3-7 People' },
-      { value: 'group_8+', label: '8+' },
+      { value: 'single', label: '1 Person' },
+      { value: 'pair', label: '2 People' },
+      { value: 'group', label: '3-7 People' },
+      { value: 'crowd', label: '8+' },
     ],
   },
   {
