@@ -2,12 +2,10 @@ import React from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import { Button, Subheading, Title } from 'react-native-paper';
-import { LinearGradient } from 'expo';
+import SharedGradient from '../components/SharedGradient';
+import OnboardingSlides from '../config/onboarding';
 import Theme from '../constants/Theme';
 import Layout from '../constants/Layout';
-import { WebBrowser } from 'expo';
-
-import OnboardingSlides from '../config/onboarding';
 
 const CAROUSEL_ITEM_WIDTH = Layout.window.width;
 
@@ -30,7 +28,8 @@ class IndicatorDots extends React.Component {
 
 class OnboardingScreen extends React.Component {
   static navigationOptions = {
-    header: null,
+    headerTitle: '',
+    headerLeft: null,
   };
 
   constructor(props) {
@@ -66,7 +65,7 @@ class OnboardingScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <LinearGradient colors={['#0048FF00', '#01C7E0']} style={styles.graddientContainer}>
+        <SharedGradient>
           <ScrollView
             ref={ref => (this.carousel = ref)}
             horizontal
@@ -101,7 +100,7 @@ class OnboardingScreen extends React.Component {
               onPress={this.onIndicatorDotPress}
             />
           </View>
-        </LinearGradient>
+        </SharedGradient>
       </View>
     );
   }

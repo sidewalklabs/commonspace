@@ -18,7 +18,7 @@ import Theme from '../constants/Theme';
 
 class DrawerNavigatorScreen extends React.Component {
   state = {
-    token: null,
+    email: null,
     loading: true,
   };
 
@@ -32,12 +32,12 @@ class DrawerNavigatorScreen extends React.Component {
   };
 
   async componentDidMount() {
-    const token = await AsyncStorage.getItem('token');
-    this.setState({ token, loading: false });
+    const email = await AsyncStorage.getItem('email');
+    this.setState({ email, loading: false });
   }
 
   render() {
-    const { loading, token } = this.state;
+    const { loading, email } = this.state;
     const { navigation, activeItemKey } = this.props;
     // TODO: Swap out links for the real ones
     // TODO: make sure the navigation stack isn't growing infinitely
@@ -49,12 +49,15 @@ class DrawerNavigatorScreen extends React.Component {
           {!loading && (
             <View style={styles.container}>
               <View style={styles.header}>
-                <Image source={require('../assets/images/CSIcon_24_blue.png')} />
+                <Image
+                  style={styles.logo}
+                  source={require('../assets/images/CSIcon_24_blue.png')}
+                />
                 <Text style={styles.logoText}>CommonSpace</Text>
               </View>
               <Divider style={styles.divider} />
               <ScrollView>
-                {token && (
+                {email && (
                   <TouchableHighlight
                     underlayColor={`${Theme.colors.primary}15`}
                     style={[styles.button, activeItemKey === 'AppStack' && styles.activeButton]}
@@ -136,7 +139,7 @@ class DrawerNavigatorScreen extends React.Component {
               </ScrollView>
               <Divider style={styles.divider} />
               <View style={styles.footer}>
-                {token && (
+                {email && (
                   <View style={styles.loggedInAsContainer}>
                     <Text
                       numberOfLines={1}
@@ -148,7 +151,7 @@ class DrawerNavigatorScreen extends React.Component {
                       numberOfLines={1}
                       style={{ fontSize: 12, color: 'rgba(0, 0, 0, 0.8)' }}
                       ellipsizeMode="tail">
-                      myemailyolo@gmail.com
+                      {email}
                     </Text>
                   </View>
                 )}
@@ -159,7 +162,7 @@ class DrawerNavigatorScreen extends React.Component {
                     style={styles.signOutButton}
                     onPress={this._signOut}
                     theme={{ ...Theme, roundness: 20 }}>
-                    <Text style={styles.signOutButtonText}>{token ? 'Sign Out' : 'Exit Demo'}</Text>
+                    <Text style={styles.signOutButtonText}>{email ? 'Sign Out' : 'Exit Demo'}</Text>
                   </TouchableHighlight>
                 </View>
               </View>

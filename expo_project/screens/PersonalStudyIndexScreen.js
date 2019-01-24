@@ -7,10 +7,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
-  Text,
 } from 'react-native';
-import { Button, Subheading, Title } from 'react-native-paper';
-import Theme from '../constants/Theme';
 import { withNavigation } from 'react-navigation';
 import { getStudies } from '../lib/commonsClient';
 import Banner from '../components/Banner';
@@ -58,7 +55,6 @@ class PersonalStudyIndexScreen extends React.Component {
     return (
       <View style={styles.container}>
         {loading && <ActivityIndicator />}
-
         {!loading &&
           !studies.length && (
             <Banner
@@ -69,6 +65,8 @@ class PersonalStudyIndexScreen extends React.Component {
               ctaOnPress={() => this.props.navigation.navigate('DemoStack')}
             />
           )}
+        {!loading &&
+          studies.length && <StudyFeed token={token} studies={studies} title="Your studies" />}
       </View>
     );
   }
@@ -78,50 +76,6 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FAFAFA',
     flex: 1,
-  },
-  banner: {
-    color: '#333333',
-    textAlign: 'center',
-    fontFamily: 'product-bold',
-    marginVertical: 20,
-  },
-  zeroMessage: {
-    marginLeft: 24,
-    marginRight: 24,
-    flex: 1,
-    justifyContent: 'center',
-    flex: 1,
-  },
-  title: {
-    color: '#333333',
-    textAlign: 'center',
-    fontFamily: 'product-bold',
-    fontSize: 36,
-    lineHeight: 42,
-    marginBottom: 10,
-  },
-  description: {
-    color: '#333333',
-    textAlign: 'center',
-    fontSize: 16,
-    lineHeight: 20,
-  },
-  button: {
-    marginTop: 20,
-    alignItems: 'center',
-    flexDirection: 'column',
-  },
-  buttonText: {
-    fontFamily: 'product-medium',
-    fontSize: 16,
-    height: 48,
-    lineHeight: 30,
-    letterSpacing: 0.5,
-  },
-  footer: {
-    padding: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });
 
