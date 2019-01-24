@@ -4,6 +4,7 @@ import passport from 'passport';
 import { return500OnError } from './utils';
 import { emailForResetToken, resetPassword, sendEmailResetLink} from '../auth';
 import DbPool from '../database'
+import { User } from '../datastore/user';
 
 const router = express.Router();
 
@@ -19,6 +20,25 @@ function addCookieToResponse(res, payload, name: string, secure: boolean) {
     const token = jwt.sign(jwtPayload, process.env.JWT_SECRET);
     res.cookie(name, token, cookieOptions);
     return res;
+}
+
+function respondWithCookie(res: Response, user: User) {
+    res = addCookieToResponse(res, user, 'commonspacejwt', process.env.NODE_ENV !== 'development');
+    res = addCookieToResponse(res, {stuff: 'nothing'}, 'commonspacepsuedo', false);
+    res.status(200).send();
+}
+
+function respondWithJWT(res: Response, user: User) {
+    const token = jwt.sign(user, process.env.JWT_SECRET);
+    return res.json({token});
+}
+
+function respondWithAuthentication(req: Request, res: Response, user: User) {
+    if (req.headers['Accept'] && req.headers.Accept === 'application/bearer.token+json') {
+        return respondWithJWT(res, user);
+    } else {
+        return respondWithCookie(res, user);
+    }
 }
 
 router.post('/signup', (req, res, next) => {
@@ -39,10 +59,7 @@ router.post('/signup', (req, res, next) => {
                                   res.status(400).end();
                                   return;
                               }
-                              res = addCookieToResponse(res, user, 'commonspacejwt', process.env.NODE_ENV !== 'development');
-                              res = addCookieToResponse(res, {stuff: 'nothing'}, 'commonspacepsuedo', false);
-                              res.status(200).send();
-                              return;
+                              return respondWithAuthentication(req, res, user);
                           })(req, res, next);
 });
 
@@ -63,10 +80,7 @@ router.post('/login', (req, res, next) => {
                                   res.status(400).end();
                                   return;
                               }
-                              res = addCookieToResponse(res, user, 'commonspacejwt', process.env.NODE_ENV !== 'development');
-                              res = addCookieToResponse(res, {stuff: 'nothing'}, 'commonspacepsuedo', false);
-                              res.status(200).send();
-                              return;
+                              return respondWithAuthentication(req, res, user);
                           })(req, res, next);
 })
 
@@ -113,14 +127,14 @@ if (process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'production')
                 failureRedirect : '/'
             }),
             (req: Request, res: Response) => {
-                const token = jwt.sign(req.user, process.env.JWT_SECRET);
-                return res.json({token});
+                //respondWithJWT(res, req.user);
+                return respondWithAuthentication(req, res, req.user);
             });
     router.get('/google/token',
                passport.authenticate('google-token', {session: false}),
                (req: Request, res: Response) => {
-                   const token = jwt.sign(req.user, process.env.JWT_SECRET);
-                   return res.json({token});
+                   //respondWithJWT(res, req.user);
+                   return respondWithAuthentication(req, res, req.user);
                })
 }
 

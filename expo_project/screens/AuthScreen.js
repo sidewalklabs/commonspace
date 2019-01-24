@@ -39,6 +39,7 @@ class AuthScreen extends React.Component {
           referrer: 'no-referrer',
           headers: {
             'Content-Type': 'application/json; charset=utf-8',
+            'Accept': 'application/bearer.token+json',
             'access-token': `${accessToken}`,
           },
         });

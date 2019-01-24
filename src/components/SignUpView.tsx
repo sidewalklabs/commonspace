@@ -4,12 +4,13 @@ import Button from '@material-ui/core/Button'
 import Paper from '@material-ui/core/Paper'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
+import { GoogleLogin } from 'react-google-login';
 
 import { observer } from 'mobx-react';
 
-import { navigate } from '../stores/router';
-import signUpState, { signUpUser } from '../stores/signup'
-import { addRoute } from '../stores/router'
+import signUpState, { signUpUser, logInUserGoogleOAuth } from '../stores/signup'
+import { addRoute, navigate } from '../stores/router'
+import { setSnackBar } from '../stores/ui';
 
 const styles = theme => ({
     hyperlinkText: {
@@ -34,7 +35,6 @@ const styles = theme => ({
         alignContent: 'flex-end'
     },
     signUpButton: {
-        marinTop: '300px',
         width: '100%'
     },
     textField: {
@@ -44,11 +44,23 @@ const styles = theme => ({
     }
 });
 
+const responseGoogleFailure = (response) => {
+    console.error(response);
+    setSnackBar('error', 'Unable to authenticate with Google OAuth');
+}
+
 // @ts-ignore
 const SignUpView = withStyles(styles)(observer((props: WithStyles) => {
     const { classes } = props;
     return (
         <Paper className={classes.root}>
+            <GoogleLogin
+                clientId={process.env.GOOGLE_AUTH_CLIENT_ID}
+                buttonText="Login With Google"
+                onSuccess={logInUserGoogleOAuth}
+                onFailure={responseGoogleFailure}
+            />
+            OR
             <TextField
                 id="signUp-email"
                 label="Email"

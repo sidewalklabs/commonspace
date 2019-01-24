@@ -74,6 +74,11 @@
     },
     {
       "type": "file",
+      "source": "googleaa1e3a1a700a74d0.html",
+      "destination": "commons/googleaa1e3a1a700a74d0.html"
+    },
+    {
+      "type": "file",
       "source": "yarn.lock",
       "destination": "commons/yarn.lock"
     },
