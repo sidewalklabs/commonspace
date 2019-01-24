@@ -111,7 +111,7 @@ async function postToApi(route: string, data: any) {
 }
 
 function deleteFromApi(route: string) {
-    return fetch(process.env.SERVER_HOSTNAME + route, {
+    return fetch(route, {
         ...fetchParams,
         method: 'DELETE'
     })

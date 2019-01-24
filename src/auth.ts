@@ -123,7 +123,7 @@ export function sendSignupVerificationEmail(host: string, email: string) {
 
 export class PasswordValidationError extends Error {}
 
-function checkPassword(password: string) {
+function checkPasswordRequirements(password: string): string {
     if (password.length < MIN_PASSWORD_LENGTH) {
         throw new PasswordValidationError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters long`);
     }
@@ -145,7 +145,7 @@ function checkPassword(password: string) {
 const signupStrategy = new LocalStrategy({passReqToCallback: true, usernameField: 'email'}, async (req, email, password, done) => {
     try {
         const userId = uuid.v4();
-        const user = {email, password: checkPassword(password), userId, name: '' };
+        const user = {email, password: checkPasswordRequirements(password), userId, name: '' };
         await createUser(DbPool, user);
         // await sendSignupVerificationEmail(req.get('host'), user.email);
         req.user = user;

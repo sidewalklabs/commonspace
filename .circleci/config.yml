@@ -44,7 +44,7 @@ jobs:
           - run:
               name: build and push nginx image to GC Registry for k8s to have access
               command: |
-                packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-nginx -var SERVER_HOSTNAME="${SERVER_HOSTNAME}" -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" -var TILE_SERVER_URL=https://{s}.tile.osm.org/{z}/{x}/{y}.png -var NODE_ENV=production deployment/commons_nginx.json
+                packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-nginx -var GOOGLE_AUTH_CLIENT_ID="${GOOGLE_AUTH_CLIENT_ID}" -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" -var TILE_SERVER_URL=https://{s}.tile.osm.org/{z}/{x}/{y}.png -var NODE_ENV=production deployment/commons_nginx.json
 
           - run:
               name: patch K8s configs
@@ -106,6 +106,3 @@ workflows:
       - deploy-staging:
           requires:
             - build-containers
-          filters:
-            branches:
-              only: master

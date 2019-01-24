@@ -91,7 +91,8 @@ module.exports = env => {
       ),
       new CopyWebpackPlugin([
         {from: 'css/styles.css', to: 'css/styles.css'},
-        {from: 'assets/', to: 'assets/'}
+        {from: 'assets/', to: 'assets/'},
+        {from: 'googleaa1e3a1a700a74d0.html', to: 'googleaa1e3a1a700a74d0.html'}
       ]),
       new webpack.DefinePlugin(envKeys)
     ]
