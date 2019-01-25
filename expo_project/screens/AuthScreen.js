@@ -1,10 +1,11 @@
 import React from 'react';
-import { Alert, AsyncStorage, Image, Linking, StyleSheet, Text, View } from 'react-native';
+import { Alert, AsyncStorage, Image, Linking, Text, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import { Button } from 'react-native-paper';
 import SharedGradient from '../components/SharedGradient';
 import Theme from '../constants/Theme';
 import { WebBrowser } from 'expo';
+import authStyles from '../stylesheets/auth';
 
 class AuthScreen extends React.Component {
   static navigationOptions = {
@@ -73,113 +74,57 @@ class AuthScreen extends React.Component {
 
   render() {
     return (
-      <View style={styles.container}>
-        <SharedGradient>
-          <View style={styles.content}>
-            <Image source={require('../assets/images/CSIcon_36_white.png')} style={styles.logo} />
-            <Text style={styles.title}>Get started with CommonSpace</Text>
-            <Text style={styles.paragraph}>
-              If you are a volunteer or existing organizer, log in with your google account and
-              start your study.
-            </Text>
-            <Button
-              light
-              raised
-              style={styles.cta}
-              color="#ffcf2b"
-              theme={{ ...Theme, roundness: 12 }}
-              onPress={this._signIn}
-              icon={require('../assets/images/logo-google.png')}>
-              <Text style={styles.ctaCopy}>Connect with Google</Text>
-            </Button>
-            <Button
-              dark
-              raised
-              color="#ffffff20"
-              style={styles.cta}
-              theme={{ ...Theme, roundness: 10 }}
-              onPress={() => this.props.navigation.navigate('LogInWithEmailScreen')}>
-              <Text style={styles.ctaCopy}>Login with Email</Text>
-            </Button>
-          </View>
-          <View style={styles.footer}>
-            <Button
-              raised
-              dark
-              color="#ffffff00"
-              style={styles.cta}
-              theme={{ ...Theme, roundness: 10 }}
-              onPress={() => this.props.navigation.navigate('DemoStack')}>
-              <Text style={styles.ctaCopy}>Try a Demo</Text>
-            </Button>
-            <Button
-              raised
-              dark
-              color="#ffffff00"
-              style={styles.cta}
-              theme={{ ...Theme, roundness: 10 }}
-              onPress={() => this._openLink('http://www.sidewalktoronto.com/privacy')}>
-              <Text style={styles.ctaCopy}>Privacy & Terms</Text>
-            </Button>
-          </View>
-        </SharedGradient>
-      </View>
+      <SharedGradient style={authStyles.container}>
+        <Image source={require('../assets/images/CSIcon_36_white.png')} style={authStyles.logo} />
+        <View style={authStyles.content}>
+          <Text style={authStyles.title}>{`Get started with\nCommonSpace`}</Text>
+          <Text style={authStyles.paragraph}>
+            If you are a volunteer or existing organizer, log in with your google account and start
+            your study.
+          </Text>
+          <Button
+            light
+            raised
+            style={[authStyles.cta, { marginBottom: 20 }]}
+            color="#ffcf2b"
+            theme={{ ...Theme, roundness: 10 }}
+            onPress={this._signIn}
+            icon={require('../assets/images/logo-google.png')}>
+            <Text style={[authStyles.ctaCopy, authStyles.primaryCtaCopy]}>Connect with Google</Text>
+          </Button>
+          <Button
+            dark
+            raised
+            color="#00000010"
+            style={authStyles.cta}
+            theme={{ ...Theme, roundness: 10 }}
+            onPress={() => this.props.navigation.navigate('LogInWithEmailScreen')}>
+            <Text style={[authStyles.ctaCopy, authStyles.primaryCtaCopy]}>Login with Email</Text>
+          </Button>
+        </View>
+        <View style={authStyles.footer}>
+          <Button
+            raised
+            dark
+            color="#ffffff00"
+            style={authStyles.cta}
+            theme={{ ...Theme, roundness: 10 }}
+            onPress={() => this.props.navigation.navigate('DemoStack')}>
+            <Text style={authStyles.ctaCopy}>Try a Demo</Text>
+          </Button>
+          <Button
+            raised
+            dark
+            color="#ffffff00"
+            style={authStyles.cta}
+            theme={{ ...Theme, roundness: 10 }}
+            onPress={() => this._openLink('http://www.sidewalktoronto.com/privacy')}>
+            <Text style={authStyles.ctaCopy}>Privacy & Terms</Text>
+          </Button>
+        </View>
+      </SharedGradient>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#008FEE',
-  },
-  graddientContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  content: {
-    flex: 1,
-    alignSelf: 'stretch',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  logo: {
-    marginBottom: 24,
-  },
-  cta: {
-    marginBottom: 20,
-    alignSelf: 'stretch',
-  },
-  ctaCopy: {
-    fontFamily: 'product-medium',
-    fontSize: 16,
-    height: 48,
-    lineHeight: 30,
-    letterSpacing: 0.5,
-    margin: 0,
-    padding: 0,
-  },
-  title: {
-    fontSize: 24,
-    fontFamily: 'product-bold',
-    textAlign: 'center',
-    marginBottom: 24,
-    color: 'white',
-  },
-  paragraph: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 24,
-    color: 'white',
-    opacity: 0.8,
-  },
-  footer: {
-    alignSelf: 'stretch',
-    justifyContent: 'flex-end',
-    padding: 20,
-  },
-});
 
 export default withNavigation(AuthScreen);

@@ -21,7 +21,20 @@ function typeToRouteName(type) {
 
 class StudyCard extends React.Component {
   _openLink = async uri => {
-    return await WebBrowser.openBrowserAsync(uri);
+    if (uri) {
+      return await WebBrowser.openBrowserAsync(uri);
+    }
+  };
+
+  getIndicatorLabel = () => {
+    const { type, isDemo } = this.props.study;
+    if (isDemo) {
+      return 'Demo';
+    } else if (type === 'stationary') {
+      return 'Activity Map';
+    } else {
+      return 'Moving Count';
+    }
   };
 
   render() {
@@ -31,15 +44,16 @@ class StudyCard extends React.Component {
       title: studyName,
       type: studyType,
       authorName,
+      authorUrl,
       surveys,
       fields: studyFields,
     } = study;
     // TODO: move these to backend
     const studyAuthor = authorName || 'Unknown author';
-    const authorUrl = 'https://placeholder.ca/';
     return (
       <Card elevation={2} style={styles.card}>
         <CardContent style={styles.studyHeader}>
+          <Text style={styles.studyIndicator}>{this.getIndicatorLabel().toUpperCase()}</Text>
           <Text style={styles.studyTitle}>{studyName}</Text>
           <View style={{ flexDirection: 'row', marginTop: 4 }}>
             <Image
@@ -80,7 +94,7 @@ class StudyCard extends React.Component {
                 <View style={styles.buttonWrapper}>
                   <Button
                     dark={inProgressNow}
-                    primary={inProgressNow}
+                    primary
                     theme={{ ...Theme, roundness: 20 }}
                     style={styles.surveyButton}
                     onPress={() =>
@@ -141,10 +155,15 @@ const styles = StyleSheet.create({
   studyHeader: {
     paddingBottom: 8,
   },
+  studyIndicator: {
+    fontFamily: 'product-bold',
+    fontSize: 12,
+    lineHeight: 24,
+    color: Theme.colors.primary,
+  },
   studyTitle: {
     fontFamily: 'product-bold',
     fontSize: 20,
-    lineHeight: 24,
     color: 'rgba(0,0,0,0.8)',
   },
   studySubtitle: {

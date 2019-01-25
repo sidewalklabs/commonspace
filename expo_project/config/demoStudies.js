@@ -1,10 +1,12 @@
 export const peopleMovingDemoStudy = {
-  title: 'People Moving Demo',
+  title: 'People Moving Count',
   type: 'movement',
   map: {},
   authorName: 'CommonSpace',
-  description: 'Surveys in demo mode will not save.',
+  description:
+    'This is a sample study to show the functionality of the people moving count study type in CommonSpace. Demo studies will not save.',
   fields: ['mode', 'gender', 'age', 'posture', 'activities'],
+  isDemo: true,
   surveys: [
     {
       locationId: '2',
@@ -22,12 +24,14 @@ export const peopleMovingDemoStudy = {
   ],
 };
 export const stationaryActivityDemoStudy = {
-  title: 'Stationary Activity Mapping Demo',
+  title: 'Stationary Activity Map',
   type: 'stationary',
   map: {},
   authorName: 'CommonSpace',
-  description: 'Surveys in demo mode will not save.',
+  description:
+    'This is a sample study to show the functionality of the stationary activity mapping study type in CommonSpace. Demo studies will not save.',
   fields: ['gender', 'age', 'posture', 'activities', 'location'],
+  isDemo: true,
   surveys: [
     {
       locationId: '0',
