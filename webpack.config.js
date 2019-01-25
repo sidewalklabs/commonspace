@@ -57,7 +57,6 @@ module.exports = env => {
           test: /\.(t|j)sx?$/,
           exclude: /(node_modules|expo_project|.test.ts$)/,
           resolve: {
-            // Add `.ts` and `.tsx` as a resolvable extension.
             extensions: [".ts", ".tsx", ".js"]
           },
           use: {
@@ -68,7 +67,10 @@ module.exports = env => {
           }
         },
         {
-        test: /\.css$/,
+          test: /\.css$/,
+          resolve: {
+            extensions: ['.css']
+          },
           use: [
                 {
                     loader: "style-loader",
@@ -90,9 +92,10 @@ module.exports = env => {
         }
       ),
       new CopyWebpackPlugin([
-        {from: 'css/styles.css', to: 'css/styles.css'},
+        {from: 'css/styles.css', to: 'css/'},
         {from: 'assets/', to: 'assets/'},
-        {from: 'googleaa1e3a1a700a74d0.html', to: 'googleaa1e3a1a700a74d0.html'}
+        {from: 'googleaa1e3a1a700a74d0.html', to: 'googleaa1e3a1a700a74d0.html'},
+        {from: 'node_modules/react-leaflet-search/lib/react-leaflet-search.css', to: 'css/'}
       ]),
       new webpack.DefinePlugin(envKeys)
     ]
