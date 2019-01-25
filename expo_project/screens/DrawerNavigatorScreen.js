@@ -15,6 +15,7 @@ import { WebBrowser } from 'expo';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-navigation';
 import Theme from '../constants/Theme';
+import urls from '../config/urls';
 
 class DrawerNavigatorScreen extends React.Component {
   state = {
@@ -27,8 +28,8 @@ class DrawerNavigatorScreen extends React.Component {
     this.props.navigation.navigate('Auth');
   };
 
-  _openPrivacyPage = async () => {
-    return await WebBrowser.openBrowserAsync('http://www.sidewalktoronto.com/privacy');
+  _openUrl = async url => {
+    return await WebBrowser.openBrowserAsync(url);
   };
 
   async componentDidMount() {
@@ -108,7 +109,7 @@ class DrawerNavigatorScreen extends React.Component {
                 <TouchableHighlight
                   underlayColor={`${Theme.colors.primary}15`}
                   style={styles.button}
-                  onPress={this._openPrivacyPage}>
+                  onPress={() => this._openUrl(urls.homepage)}>
                   <View style={styles.buttonRow}>
                     <Ionicons
                       style={styles.buttonIcon}
@@ -123,7 +124,7 @@ class DrawerNavigatorScreen extends React.Component {
                 <TouchableHighlight
                   underlayColor={`${Theme.colors.primary}15`}
                   style={styles.button}
-                  onPress={this._openPrivacyPage}>
+                  onPress={() => this._openUrl(urls.privacy)}>
                   <View style={styles.buttonRow}>
                     <Text style={styles.buttonText}>Privacy Policy</Text>
                   </View>
@@ -131,7 +132,7 @@ class DrawerNavigatorScreen extends React.Component {
                 <TouchableHighlight
                   underlayColor={`${Theme.colors.primary}15`}
                   style={styles.button}
-                  onPress={this._openPrivacyPage}>
+                  onPress={() => this._openUrl(urls.terms)}>
                   <View style={styles.buttonRow}>
                     <Text style={styles.buttonText}>Terms of Service</Text>
                   </View>

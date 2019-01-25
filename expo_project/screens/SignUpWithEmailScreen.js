@@ -7,6 +7,7 @@ import Theme from '../constants/Theme';
 import { Icon, WebBrowser } from 'expo';
 import { signUpUser } from '../lib/commonsClient';
 import authStyles from '../stylesheets/auth';
+import urls from '../config/urls';
 
 class SignUpWithEmailScreen extends React.Component {
   static navigationOptions = ({ navigation }) => ({
@@ -112,7 +113,7 @@ class SignUpWithEmailScreen extends React.Component {
             color="#ffffff00"
             style={authStyles.cta}
             theme={{ ...Theme, roundness: 10 }}
-            onPress={() => this._openLink('http://www.sidewalktoronto.com/privacy')}>
+            onPress={() => this._openLink(urls.privacy)}>
             <Text style={authStyles.ctaCopy}>Privacy & Terms</Text>
           </Button>
         </View>
