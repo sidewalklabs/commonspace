@@ -1,5 +1,5 @@
 ## Running the Administrator Frontend and API Server Locally on Kubernetes
-[Kubernetes] is an open source project designed to automate the deployent, scaling, and management of cloud based applications. Commons uses kubernetes to run in the cloud. Various cloud services provide support for running and monitoring applications in a kubernetes environment. In order to test out and debug issues related to prodution environments developers should run commons using [minikube], which allows developers to run kubernetes environments on a single machine. Follow the appropriate install [instructions](minikube-install-instrutions) for your machine. Once installed you can use the following command line instructions to run Commons in a cloud-like environment. Note before running the application in kubernetes, [we will need access to an appropriate postgres instance] (## Setting Up Postgres) 
+[Kubernetes] is an open source project designed to automate the deployent, scaling, and management of cloud based applications. Commons uses kubernetes to run in the cloud. Various cloud services provide support for running and monitoring applications in a kubernetes environment. In order to test out and debug issues related to prodution environments developers should run commons using [minikube], which allows developers to run kubernetes environments on a single machine. Follow the appropriate install [instructions](minikube-install-instrutions) for your machine. Once installed you can use the following command line instructions to run Commons in a cloud-like environment. Note before running the application in kubernetes, [we will need access to an appropriate postgres instance] (## Connecting to postgres from minikube)
 
 ``` bash
 minikube start
@@ -24,14 +24,27 @@ kubectl patch --local -o yaml -p \ '
                         }
                     }
                   }
-              }' -f deployment/commons.yml > deployment/commons.yml
-kubectl apply -f development-postgres-endpoint.yml
-kubectl apply -f commons.yml
-kubectl apply -f commons_nginx_service.yml
-kubectl apply -f commons_ingress.yml
+              }' -f deployment/commons-development-template.yml > deployment/commons-development.yml
+kubectl create secret generic commons-config --from-file=.env=config/development.env
+kubectl apply -f deployment/development-postgres-endpoint.yml
+kubectl apply -f deployment/commons-development.yml
+kubectl apply -f deployment/commons_server_service.yml
+kubectl apply -f deployment/commons_nginx_service.yml
+kubectl apply -f deployment/commons_ingress.yml
+cd deployment/ && ./develop.sh
+```
+
+``` bash
+kubectl delete -f deployment/development-postgres-endpoint.yml
+kubectl delete -f deployment/commons-development.yml
+kubectl delete -f deployment/commons_server_service.yml
+kubectl delete -f deployment/commons_nginx_service.yml
+kubectl delete -f deployment/commons_ingress.yml
+
 ```
 
 N.B.
+Two Things: Dont forget to add your secrets to kubernetes correctly, otherwise you get silent errors
 Don't forget to turn off your minikube when you're all done, you probably could have guessed:
 ``` bash
 minikube stop

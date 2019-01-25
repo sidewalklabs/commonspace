@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: postgres-db-svc
+  # namespace: common-space
+spec:
+  selector:
+    app: postgres-server
+  ports:
+    - name: port
+      port: 5431
+      targetPort: 5431
+      protocol: TCP
+  type: NodePort

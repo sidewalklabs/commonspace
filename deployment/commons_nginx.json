@@ -1,10 +1,11 @@
 {
   "variables": {
     "container_image_name": "us.gcr.io/nyc-tlc-1225/commons-nginx",
-    "version": "",
+    "version": "v0.0.1",
+    "NODE_ENV": "development",
     "gcloud_json_key": "",
     "TILE_SERVER_URL": "http://{s}.tile.osm.org/{z}/{x}/{y}.png",
-    "GOOGLE_AUTH_CLIENT_ID": ""
+    "GOOGLE_AUTH_CLIENT_ID": "NEEDS_ANY_VALUE_TO_ALLOW_WEBPACK_TO_COMPILE"
   },
   "builders": [
     {
@@ -72,7 +73,7 @@
         "cd commons/",
 	"npm install -g -s --no-progress yarn",
 	"yarn",
-        "yarn build --mode production --env.GOOGLE_AUTH_CLIENT_ID={{ user `GOOGLE_AUTH_CLIENT_ID` }} --env.TILE_SERVER_URL={{ user `TILE_SERVER_URL` }}"
+        "yarn build --env.GOOGLE_AUTH_CLIENT_ID={{ user `GOOGLE_AUTH_CLIENT_ID` }} --env.TILE_SERVER_URL={{ user `TILE_SERVER_URL` }} --mode={{ user `NODE_ENV` }}"
       ]
     },
     {
