@@ -13,6 +13,8 @@ import applicationState, { updateFeatureName, Study } from '../stores/applicatio
 import { FeatureCollection } from 'geojson';
 import { stringHash } from '../utils';
 
+import searchboxCss from 'leaflet_search_css';
+
 
 const INITIAL_ZOOM_LEVEL = 17;
 const { TILE_SERVER_URL } = process.env;
