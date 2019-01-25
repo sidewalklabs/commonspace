@@ -193,7 +193,7 @@ const jwtStrategy = new JwtStrategy(jwtOptions, async (jwt_payload, next) => {
 
 const init = (mode: string) => {
     return (passport: any) => {
-        if (mode == 'staging' || mode === 'production') {
+        if (mode === 'staging' || mode === 'production') {
             const clientID = process.env.GOOGLE_AUTH_CLIENT_ID;
             const clientSecret = process.env.GOOGLE_AUTH_CLIENT_SECRET;
             const host = process.env.SERVER_HOSTNAME;

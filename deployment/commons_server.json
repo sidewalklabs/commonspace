@@ -93,8 +93,12 @@
         "cd commons/",
 	"npm install -g -s --no-progress yarn",
 	"yarn install",
-        "yarn build --env.SERVER_HOSTNAME={{ user `SERVER_HOSTNAME` }} --env.TILE_SERVER_URL={{ user `TILE_SERVER_URL` }} --mode=production"
+        "yarn build --env.SERVER_HOSTNAME={{ user `SERVER_HOSTNAME` }} --env.TILE_SERVER_URL={{ user `TILE_SERVER_URL` }} --mode={{ user `NODE_ENV` }}"
       ]
+    },
+    {
+      "type": "shell",
+      "inline": ["cp -r /commons/dist/ /commons/build/"]
     }
   ],
   "post-processors": [
