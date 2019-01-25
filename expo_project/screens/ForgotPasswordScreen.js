@@ -1,11 +1,12 @@
 import React from 'react';
-import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import { Button } from 'react-native-paper';
 import SharedGradient from '../components/SharedGradient';
 import Theme from '../constants/Theme';
 import { Icon, WebBrowser } from 'expo';
 import { sendPasswordResetEmail } from '../lib/commonsClient';
+import authStyles from '../stylesheets/auth';
 
 class ForgotPasswordScreen extends React.Component {
   static navigationOptions = ({ navigation }) => ({
@@ -26,6 +27,7 @@ class ForgotPasswordScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      fetching: false,
       email: props.navigation.state.params.email,
     };
   }
@@ -33,6 +35,7 @@ class ForgotPasswordScreen extends React.Component {
   _resetPassword = async () => {
     const { email } = this.state;
     try {
+      this.setState({ fetching: true });
       await sendPasswordResetEmail(email);
       Alert.alert(
         'Password reset email sent!',
@@ -42,6 +45,7 @@ class ForgotPasswordScreen extends React.Component {
     } catch (error) {
       Alert.alert(error.name, error.message, [{ text: 'OK' }]);
     }
+    this.setState({ fetching: false });
   };
 
   _openLink = async uri => {
@@ -50,94 +54,46 @@ class ForgotPasswordScreen extends React.Component {
 
   render() {
     return (
-      <View style={styles.container}>
-        <SharedGradient>
-          <View style={styles.content}>
-            <Image source={require('../assets/images/CSIcon_36_white.png')} style={styles.logo} />
-            <Text style={styles.title}>Reset Password</Text>
-            <View
-              style={{
-                backgroundColor: 'white',
-                padding: 10,
-                borderRadius: 20,
-                alignSelf: 'stretch',
-              }}>
-              <TextInput
-                style={{ height: 40 }}
-                placeholder="Email Address"
-                onChangeText={email => this.setState({ email })}
-                value={this.state.email}
-                autoCapitalize="none"
-                autoCorrect={false}
-                textContentType="emailAddress"
-              />
-            </View>
-            <Button
-              light
-              raised
-              style={styles.cta}
-              color="#ffcf2b"
-              theme={{ ...Theme, roundness: 10 }}
-              onPress={this._resetPassword}>
-              <Text style={styles.ctaCopy}>Reset Password</Text>
-            </Button>
+      <SharedGradient style={authStyles.container}>
+        <Image source={require('../assets/images/CSIcon_36_white.png')} style={authStyles.logo} />
+        <View style={authStyles.content}>
+          <Text style={authStyles.title}>{`Reset\nPassword`}</Text>
+          <View style={authStyles.formContainer}>
+            <TextInput
+              style={{ height: 40 }}
+              placeholder="Email Address"
+              onChangeText={email => this.setState({ email })}
+              value={this.state.email}
+              autoCapitalize="none"
+              autoCorrect={false}
+              textContentType="emailAddress"
+            />
           </View>
-          <View style={styles.footer}>
-            <Button
-              raised
-              dark
-              color="#ffffff00"
-              style={styles.cta}
-              theme={{ ...Theme, roundness: 10 }}
-              onPress={() => this._openLink('http://www.sidewalktoronto.com/privacy')}>
-              <Text style={styles.ctaCopy}>Privacy & Terms</Text>
-            </Button>
-          </View>
-        </SharedGradient>
-      </View>
+          <Button
+            light
+            raised
+            disabled={this.state.fetching}
+            style={authStyles.cta}
+            color="#ffcf2b"
+            theme={{ ...Theme, roundness: 10 }}
+            onPress={this._resetPassword}>
+            <Text style={[authStyles.ctaCopy, authStyles.primaryCtaCopy]}>Reset Password</Text>
+          </Button>
+        </View>
+        <View style={authStyles.footer}>
+          <Button
+            raised
+            dark
+            color="#ffffff00"
+            style={authStyles.cta}
+            theme={{ ...Theme, roundness: 10 }}
+            onPress={() => this._openLink('http://www.sidewalktoronto.com/privacy')}>
+            <Text style={authStyles.ctaCopy}>Privacy & Terms</Text>
+          </Button>
+        </View>
+      </SharedGradient>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#008FEE',
-  },
-  content: {
-    flex: 1,
-    alignSelf: 'stretch',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  logo: {
-    marginBottom: 24,
-  },
-  cta: {
-    marginBottom: 20,
-    alignSelf: 'stretch',
-  },
-  ctaCopy: {
-    fontFamily: 'product-medium',
-    fontSize: 16,
-    height: 48,
-    lineHeight: 30,
-    letterSpacing: 0.5,
-    margin: 0,
-    padding: 0,
-  },
-  title: {
-    fontSize: 24,
-    fontFamily: 'product-bold',
-    textAlign: 'center',
-    marginBottom: 24,
-    color: 'white',
-  },
-  footer: {
-    alignSelf: 'stretch',
-    justifyContent: 'flex-end',
-  },
-});
 
 export default withNavigation(ForgotPasswordScreen);

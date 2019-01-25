@@ -74,11 +74,8 @@ const AuthStack = createStackNavigator(
       headerStyle: {
         ...navigationOptions.headerStyle,
         backgroundColor: 'transparent',
-        position: 'absolute', // Hack to make header transparent. Otherwise it's black
-        top: 0,
-        left: 0,
-        right: 0,
       },
+      headerTransparent: true,
     },
   },
 );

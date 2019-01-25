@@ -20,6 +20,10 @@ class MapWithMarkers extends React.Component {
     };
   }
 
+  componentWillUnmount = () => {
+    clearTimeout(this.timeout);
+  };
+
   startProgressAnimation = (locationX, locationY) => {
     this.setState({
       markerColor: getRandomIconColor([this.state.markerColor]),
@@ -39,7 +43,7 @@ class MapWithMarkers extends React.Component {
 
   fitToCoordinates = () => {
     // timeout hack to make sure map is loaded :/
-    setTimeout(() => {
+    this.timeout = setTimeout(() => {
       this.map.fitToCoordinates(this.props.zoneLatLngs, {
         animated: true,
       });

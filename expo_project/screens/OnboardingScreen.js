@@ -1,7 +1,7 @@
 import React from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
-import { Button, Subheading, Title } from 'react-native-paper';
+import { Button } from 'react-native-paper';
 import SharedGradient from '../components/SharedGradient';
 import OnboardingSlides from '../config/onboarding';
 import Theme from '../constants/Theme';
@@ -64,71 +64,59 @@ class OnboardingScreen extends React.Component {
 
   render() {
     return (
-      <View style={styles.container}>
-        <SharedGradient>
-          <ScrollView
-            ref={ref => (this.carousel = ref)}
-            horizontal
-            removeClippedSubviews
-            pagingEnabled
-            bounces={false}
-            showsHorizontalScrollIndicator={false}
-            onScroll={this.handleScroll}
-            decelerationRate="fast"
-            overScrollMode="never"
-            scrollEventThrottle={16}>
-            {OnboardingSlides.map((slide, i) => (
-              <View style={styles.carouselItem} key={i}>
-                <Image source={slide.imageSource} />
-                <Title style={styles.title}>{slide.title}</Title>
-                <Subheading style={styles.description}>{slide.description}</Subheading>
-              </View>
-            ))}
-          </ScrollView>
-          <View style={styles.footer}>
-            <Button
-              style={{ height: 48 }}
-              raised
-              color="#ffcf2b"
-              theme={{ ...Theme, roundness: 12 }}
-              onPress={() => this.props.navigation.navigate('AuthScreen')}>
-              <Text style={styles.buttonText}>GET STARTED</Text>
-            </Button>
-            <IndicatorDots
-              quantity={OnboardingSlides.length}
-              activeIndex={this.state.indicatorIndex}
-              onPress={this.onIndicatorDotPress}
-            />
-          </View>
-        </SharedGradient>
-      </View>
+      <SharedGradient style={styles.container}>
+        <ScrollView
+          ref={ref => (this.carousel = ref)}
+          horizontal
+          removeClippedSubviews
+          pagingEnabled
+          bounces={false}
+          showsHorizontalScrollIndicator={false}
+          onScroll={this.handleScroll}
+          decelerationRate="fast"
+          overScrollMode="never"
+          scrollEventThrottle={16}>
+          {OnboardingSlides.map((slide, i) => (
+            <View style={styles.carouselItem} key={i}>
+              <Image source={slide.imageSource} />
+              <Text style={styles.title}>{slide.title}</Text>
+              <Text style={styles.description}>{slide.description}</Text>
+            </View>
+          ))}
+        </ScrollView>
+        <View style={styles.footer}>
+          <Button
+            style={{ height: 48 }}
+            raised
+            color="#ffcf2b"
+            theme={{ ...Theme, roundness: 12 }}
+            onPress={() => this.props.navigation.navigate('AuthScreen')}>
+            <Text style={styles.buttonText}>GET STARTED</Text>
+          </Button>
+          <IndicatorDots
+            quantity={OnboardingSlides.length}
+            activeIndex={this.state.indicatorIndex}
+            onPress={this.onIndicatorDotPress}
+          />
+        </View>
+      </SharedGradient>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  buttonText: {
-    fontFamily: 'product-medium',
-    fontSize: 16,
-    height: 48,
-    lineHeight: 30,
-    letterSpacing: 0.5,
-  },
   container: {
     flex: 1,
     backgroundColor: '#008FEE',
-  },
-  graddientContainer: {
-    flex: 1,
+    alignItems: 'center',
+    paddingTop: Layout.header.height,
   },
   carouselItem: {
     flex: 1,
     paddingHorizontal: 40,
-    paddingVertical: 80,
     width: CAROUSEL_ITEM_WIDTH,
     alignItems: 'center',
     flexDirection: 'column',
-    justifyContent: 'center',
   },
   title: {
     color: 'white',
@@ -138,11 +126,21 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   description: {
+    fontFamily: 'product',
+    fontSize: 17,
     color: 'white',
     textAlign: 'center',
     opacity: 0.8,
   },
+  buttonText: {
+    fontFamily: 'product-medium',
+    fontSize: 16,
+    height: 48,
+    lineHeight: 30,
+    letterSpacing: 0.5,
+  },
   footer: {
+    flex: 0,
     padding: 10,
     justifyContent: 'center',
     alignItems: 'center',
