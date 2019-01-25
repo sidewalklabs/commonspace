@@ -1,13 +1,15 @@
 import { Icon } from 'expo';
 import React from 'react';
 import {
-  Animated,
   Alert,
-  StyleSheet,
+  FlatList,
+  LayoutAnimation,
+  Platform,
   View,
-  ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
+  UIManager,
 } from 'react-native';
 import Selectable from '../components/Selectable';
 import * as _ from 'lodash';
@@ -21,40 +23,28 @@ class MarkerRow extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      collapsibleHeaderHeight: 0,
       collapsibleContentHeight: 0,
-      animation: new Animated.Value(),
+      collapsibleCurrentHeight: 'auto',
     };
+
+    if (Platform.OS === 'android') {
+      UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.expanded !== prevProps.expanded) {
-      const collapsedHeight = this.state.collapsibleHeaderHeight;
+      const collapsedHeight = 0;
       const expandedHeight = collapsedHeight + this.state.collapsibleContentHeight;
-
-      const currentHeightValue = prevProps.expanded ? expandedHeight : collapsedHeight;
       const toValue = this.props.expanded ? expandedHeight : collapsedHeight;
-
-      this.state.animation.setValue(currentHeightValue);
-      Animated.timing(this.state.animation, {
-        toValue,
-        duration: 200,
-      }).start();
+      LayoutAnimation.easeInEaseOut();
+      this.setState({ collapsibleCurrentHeight: toValue });
     }
   }
 
-  setCollapsibleHeaderHeight = event => {
-    const collapsibleHeaderHeight = event.nativeEvent.layout.height;
-    this.setState({ collapsibleHeaderHeight });
-    if (!this.props.expanded) {
-      // set initial value to header height
-      this.state.animation.setValue(collapsibleHeaderHeight);
-    }
-  };
-
   setCollapsibleContentHeight = event => {
     const collapsibleContentHeight = event.nativeEvent.layout.height;
-    this.setState({ collapsibleContentHeight });
+    this.setState({ collapsibleContentHeight, collapsibleCurrentHeight: 0 });
   };
 
   render() {
@@ -79,57 +69,56 @@ class MarkerRow extends React.Component {
           style={{ flex: 1 }}
           activeOpacity={1}
           onPress={() => onToggle(marker.dataPointId)}>
-          <Animated.View style={[{ overflow: 'hidden', height: this.state.animation }]}>
+          <View
+            style={{
+              flex: 0,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: 10,
+            }}>
+            <PersonIcon backgroundColor={color} size={40} />
+            <View style={{ flex: 1, marginHorizontal: 10 }}>
+              <Text style={[styles.label]}>{title}</Text>
+              <Text>{dateLabel}</Text>
+            </View>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={e => {
+                const { pageY } = e.nativeEvent;
+                onMenuButtonPress(marker.dataPointId, pageY + 5);
+              }}>
+              <Icon.MaterialCommunityIcons name="dots-vertical" color="#787878" size={24} />
+            </TouchableOpacity>
+          </View>
+          <View style={{ flex: 0, height: this.state.collapsibleCurrentHeight }}>
             <View
-              style={{
-                flex: 0,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: 10,
-              }}
+              style={[
+                {
+                  paddingBottom: 10,
+                },
+                !this.state.collapsibleContentHeight && { position: 'absolute', top: -10000 },
+              ]}
               onLayout={
-                !this.state.collapsibleHeaderHeight ? this.setCollapsibleHeaderHeight : undefined
+                !this.state.collapsibleContentHeight ? this.setCollapsibleContentHeight : undefined
               }>
-              <PersonIcon backgroundColor={color} size={40} />
-              <View style={{ flex: 1, marginHorizontal: 10 }}>
-                <Text style={[styles.label]}>{title}</Text>
-                <Text>{dateLabel}</Text>
-              </View>
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={e => {
-                  const { pageY } = e.nativeEvent;
-                  onMenuButtonPress(marker.dataPointId, pageY + 5);
-                }}>
-                <Icon.MaterialCommunityIcons name="dots-vertical" color="#787878" size={24} />
-              </TouchableOpacity>
+              {_.map(questions, question => {
+                const { questionKey, questionLabel, options } = question;
+                return (
+                  <Selectable
+                    key={questionKey}
+                    onSelectablePress={(value, buttonHeight) => {
+                      onUpdate(dataPointId, questionKey, value);
+                    }}
+                    selectedValue={marker[questionKey]}
+                    selectedColor={color}
+                    title={questionLabel}
+                    options={options}
+                  />
+                );
+              })}
             </View>
-            <View style={{ flex: 0, paddingBottom: 10, overflow: 'hidden' }}>
-              <View
-                onLayout={
-                  !this.state.collapsibleContentHeight
-                    ? this.setCollapsibleContentHeight
-                    : undefined
-                }>
-                {_.map(questions, question => {
-                  const { questionKey, questionLabel, options } = question;
-                  return (
-                    <Selectable
-                      key={questionKey}
-                      onSelectablePress={(value, buttonHeight) => {
-                        onUpdate(dataPointId, questionKey, value);
-                      }}
-                      selectedValue={marker[questionKey]}
-                      selectedColor={color}
-                      title={questionLabel}
-                      options={options}
-                    />
-                  );
-                })}
-              </View>
-            </View>
-          </Animated.View>
+          </View>
         </TouchableOpacity>
       </Card>
     );
@@ -158,6 +147,7 @@ class MarkerListScreen extends React.Component {
     super(props);
     this.state = {
       markers: [],
+      delayListRender: true,
       expandedMarkerId: null,
       markerMenuMarkerId: null,
       markerMenuTopLocation: null,
@@ -231,28 +221,35 @@ class MarkerListScreen extends React.Component {
     this.setState({ markerMenuMarkerId, markerMenuTopLocation });
   };
 
+  _keyExtractor = (marker, index) => marker.dataPointId;
+
+  _renderItem = ({ item: marker }) => (
+    <MarkerRow
+      marker={marker}
+      onUpdate={this.onUpdate}
+      onMenuButtonPress={this.onMenuButtonPress}
+      expanded={this.state.expandedMarkerId === marker.dataPointId}
+      onToggle={this.onToggle}
+      questions={this.props.navigation.state.params.questions}
+    />
+  );
+
   render() {
-    const { questions, emptyTitle, emptyDescription } = this.props.navigation.state.params;
+    const { emptyTitle, emptyDescription } = this.props.navigation.state.params;
     // render in reverse so most recent markers are at the top
     const reveresedMarkers = _.reverse([...this.state.markers]);
-    const { expandedMarkerId, markerMenuMarkerId } = this.state;
+    const { markerMenuMarkerId } = this.state;
 
     return (
       <View style={styles.container}>
         {this.state.markers.length ? (
-          <ScrollView style={{ flex: 1 }}>
-            {_.map(reveresedMarkers, marker => {
-              return (
-                <MarkerRow
-                  marker={marker}
-                  onUpdate={this.onUpdate}
-                  onMenuButtonPress={this.onMenuButtonPress}
-                  expanded={expandedMarkerId === marker.dataPointId}
-                  onToggle={this.onToggle}
-                  questions={questions}
-                />
-              );
-            })}
+          <View style={{ flex: 1 }}>
+            <FlatList
+              data={reveresedMarkers}
+              extraData={this.state}
+              keyExtractor={this._keyExtractor}
+              renderItem={this._renderItem}
+            />
             {this.state.markerMenuTopLocation && (
               <MarkerMenu
                 topLocation={this.state.markerMenuTopLocation}
@@ -264,7 +261,7 @@ class MarkerListScreen extends React.Component {
                 }}
               />
             )}
-          </ScrollView>
+          </View>
         ) : (
           <Banner
             title={emptyTitle}
