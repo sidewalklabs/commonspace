@@ -34,7 +34,7 @@ function respondWithJWT(res: Response, user: User) {
 }
 
 function respondWithAuthentication(req: Request, res: Response, user: User) {
-    if (req.headers['Accept'] && req.headers.Accept === 'application/bearer.token+json') {
+    if (req.headers['accept'] && req.headers['accept'] === 'application/bearer.token+json') {
         return respondWithJWT(res, user);
     } else {
         return respondWithCookie(res, user);
@@ -127,13 +127,11 @@ if (process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'production')
                 failureRedirect : '/'
             }),
             (req: Request, res: Response) => {
-                //respondWithJWT(res, req.user);
                 return respondWithAuthentication(req, res, req.user);
             });
     router.get('/google/token',
                passport.authenticate('google-token', {session: false}),
                (req: Request, res: Response) => {
-                   //respondWithJWT(res, req.user);
                    return respondWithAuthentication(req, res, req.user);
                })
 }
