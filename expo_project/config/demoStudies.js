@@ -1,8 +1,11 @@
+import urls from '../config/urls';
+
 export const peopleMovingDemoStudy = {
   title: 'People Moving Count',
   type: 'movement',
   map: {},
   authorName: 'CommonSpace',
+  authorUrl: urls.homepage,
   description:
     'This is a sample study to show the functionality of the people moving count study type in CommonSpace. Demo studies will not save.',
   fields: ['mode', 'gender', 'age', 'posture', 'activities'],
@@ -28,6 +31,7 @@ export const stationaryActivityDemoStudy = {
   type: 'stationary',
   map: {},
   authorName: 'CommonSpace',
+  authorUrl: urls.homepage,
   description:
     'This is a sample study to show the functionality of the stationary activity mapping study type in CommonSpace. Demo studies will not save.',
   fields: ['gender', 'age', 'posture', 'activities', 'location'],
