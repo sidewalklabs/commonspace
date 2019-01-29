@@ -19,6 +19,7 @@ import Banner from '../components/Banner';
 import PersonIcon from '../components/PersonIcon';
 import MarkerMenu from '../components/MarkerMenu';
 import BackArrow from '../components/BackArrow';
+import { deleteDataPoint, saveDataPoint } from '../lib/commonsClient';
 
 class MarkerRow extends React.Component {
   constructor(props) {
@@ -49,7 +50,7 @@ class MarkerRow extends React.Component {
   };
 
   render() {
-    const { marker, onUpdate, expanded, onToggle, questions, onMenuButtonPress } = this.props;
+    const { marker, expanded, onToggle, questions, onMenuButtonPress } = this.props;
     const { color, title, dateLabel, dataPointId } = marker;
     return (
       <Card
@@ -166,7 +167,7 @@ class MarkerListScreen extends React.Component {
   };
 
   onUpdate = (dataPointId, questionKey, value) => {
-    const { token, surveyId, onUpdate } = this.props.navigation.state.params;
+    const { token, surveyId } = this.props.navigation.state.params;
 
     const markersCopy = [...this.state.markers];
     const marker = _.find(markersCopy, { dataPointId });
@@ -179,7 +180,7 @@ class MarkerListScreen extends React.Component {
       });
 
       if (surveyId !== 'DEMO') {
-        onUpdate(token, surveyId, marker).catch(error => {
+        saveDataPoint(token, surveyId, marker).catch(error => {
           Alert.alert(
             'Error',
             'Something went wrong while updating marker. Please try again later.',
@@ -196,12 +197,12 @@ class MarkerListScreen extends React.Component {
   };
 
   onDelete = dataPointId => {
-    const { token, surveyId, onDelete } = this.props.navigation.state.params;
+    const { token, surveyId } = this.props.navigation.state.params;
     const markers = _.reject(this.state.markers, { dataPointId });
     this.setState({ markers });
 
     if (surveyId !== 'DEMO') {
-      onDelete(token, surveyId, dataPointId).catch(function(error) {
+      deleteDataPoint(token, surveyId, dataPointId).catch(function(error) {
         Alert.alert('Error', 'Something went wrong removing datapoint. Please try again later.', [
           { text: 'OK' },
         ]);

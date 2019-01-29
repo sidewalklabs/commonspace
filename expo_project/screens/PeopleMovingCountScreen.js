@@ -125,8 +125,6 @@ class PeopleMovingCountScreen extends React.Component {
       surveyId,
       markers: this.state.markers,
       questions: QUESTION_CONFIG,
-      onUpdate: () => console.log('update'),
-      onDelete: () => console.log('update'),
       sync: this.syncMarkersWithListView,
       emptyTitle: 'Add people as they go by',
       emptyDescription:
@@ -184,42 +182,24 @@ class PeopleMovingCountScreen extends React.Component {
 
       const markerToRemove = _.last(markersCopy);
       const { dataPointId } = markerToRemove;
+
+      const oldMarkers = [...this.state.markers];
+      const newMarkers = _.reject(this.state.markers, {
+        dataPointId,
+      });
+
+      this.setState({
+        markers: newMarkers,
+      });
+
       if (dataPointId && surveyId !== 'DEMO') {
-        const lastMarker = markersCopy.pop();
-        this.setState({ markers: markersCopy });
-        deleteDataPoint(token, surveyId, dataPointId)
-          .then(() => {
-            // this callback is called regardless of whether a marker is deleted or not :/
-            const newMarkers = _.reject(this.state.markers, {
-              dataPointId,
-            });
-            const newActiveMarkerId = newMarkers.length
-              ? newMarkers[newMarkers.length - 1].dataPointId
-              : null;
-            this.setState({
-              markers: newMarkers,
-              activeMarkerId: newActiveMarkerId,
-            });
-          })
-          .catch(function(error) {
-            Alert.alert(
-              'Error',
-              'Something went wrong removing datapoint. Please try again later.',
-              [{ text: 'OK' }],
-            );
+        deleteDataPoint(token, surveyId, dataPointId).catch(function(error) {
+          Alert.alert('Error', 'Something went wrong removing datapoint. Please try again later.', [
+            { text: 'OK' },
+          ]);
+          this.setState({
+            markers: oldMarkers,
           });
-      } else {
-        const lastMarker = markersCopy.pop();
-        this.setState({ markers: markersCopy });
-        const newMarkers = _.reject(this.state.markers, {
-          dataPointId,
-        });
-        const newActiveMarkerId = newMarkers.length
-          ? newMarkers[newMarkers.length - 1].dataPointId
-          : null;
-        this.setState({
-          markers: newMarkers,
-          activeMarkerId: newActiveMarkerId,
         });
       }
     }

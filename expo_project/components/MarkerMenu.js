@@ -19,7 +19,7 @@ class MarkerMenu extends React.Component {
         <TouchableOpacity activeOpacity={1} style={styles.container} onPress={this.props.onClose}>
           <Card
             style={[
-              styles.modalCotent,
+              styles.modalContent,
               topLocation && {
                 position: 'absolute',
                 top: Math.max(topLocation, 0),
@@ -28,6 +28,7 @@ class MarkerMenu extends React.Component {
             ]}>
             {this.props.onDeletePress && (
               <TouchableOpacity
+                style={styles.button}
                 onPress={() => {
                   this.props.onDeletePress();
                   this.props.onClose();
@@ -37,6 +38,7 @@ class MarkerMenu extends React.Component {
             )}
             {this.props.onDuplicatePress && (
               <TouchableOpacity
+                style={styles.button}
                 onPress={() => {
                   this.props.onDuplicatePress();
                   this.props.onClose();
@@ -57,10 +59,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  modalCotent: {
+  modalContent: {
     justifyContent: 'center',
     alignItems: 'stretch',
     width: 150,
+  },
+  button: {
+    alignSelf: 'stretch',
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

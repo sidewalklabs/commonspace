@@ -304,25 +304,29 @@ class SurveyScreen extends React.Component {
   deleteMarker(dataPointId) {
     const surveyId = this.props.navigation.getParam('surveyId');
 
-    deleteDataPoint(this.state.token, surveyId, dataPointId)
-      .then(() => {
-        // this callback is called regardless of whether a marker is deleted or not :/
-        const newMarkers = _.reject(this.state.markers, {
-          dataPointId,
-        });
-        const newActiveMarkerId = newMarkers.length
-          ? newMarkers[newMarkers.length - 1].dataPointId
-          : null;
-        this.setState({
-          markers: newMarkers,
-          activeMarkerId: newActiveMarkerId,
-        });
-      })
-      .catch(function(error) {
+    const markersCopy = [...this.state.markers];
+    const newMarkers = _.reject(markersCopy, { dataPointId });
+    const newActiveMarkerId = newMarkers.length
+      ? newMarkers[newMarkers.length - 1].dataPointId
+      : null;
+
+    const oldMarkers = [...this.state.markers];
+    this.setState({
+      markers: newMarkers,
+      activeMarkerId: newActiveMarkerId,
+    });
+
+    if (surveyId !== 'DEMO') {
+      deleteDataPoint(this.state.token, surveyId, dataPointId).catch(function(error) {
         Alert.alert('Error', 'Something went wrong removing datapoint. Please try again later.', [
           { text: 'OK' },
         ]);
+        this.setState({
+          markers: oldMarkers,
+          activeMarkerId: dataPointId,
+        });
       });
+    }
     this.resetDrawer(MAX_DRAWER_TRANSLATE_Y);
   }
 
@@ -426,8 +430,6 @@ class SurveyScreen extends React.Component {
       token,
       surveyId,
       questions,
-      onUpdate: saveDataPoint,
-      onDelete: deleteDataPoint,
       sync: this.syncMarkersWithListView,
       emptyTitle: 'Take a snapshot',
       emptyDescription:
@@ -499,7 +501,7 @@ class SurveyScreen extends React.Component {
                       markerMenuTopLocation: pageY - 120,
                     });
                   }}>
-                  {/* <Icon.MaterialCommunityIcons name="dots-vertical" color="#787878" size={24} /> */}
+                  <Icon.MaterialCommunityIcons name="dots-vertical" color="#787878" size={24} />
                 </TouchableOpacity>
               </View>
             )}
