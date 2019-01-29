@@ -1,11 +1,19 @@
 import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableHighlight,
+  View,
+} from 'react-native';
 import { withNavigation } from 'react-navigation';
-import { Button } from 'react-native-paper';
 import SharedGradient from '../components/SharedGradient';
 import OnboardingSlides from '../config/onboarding';
-import Theme from '../constants/Theme';
 import Layout from '../constants/Layout';
+import authStyles from '../stylesheets/auth';
+import color from 'color';
 
 const CAROUSEL_ITEM_WIDTH = Layout.window.width;
 
@@ -64,7 +72,7 @@ class OnboardingScreen extends React.Component {
 
   render() {
     return (
-      <SharedGradient style={styles.container}>
+      <SharedGradient style={authStyles.container}>
         <ScrollView
           ref={ref => (this.carousel = ref)}
           horizontal
@@ -79,20 +87,21 @@ class OnboardingScreen extends React.Component {
           {OnboardingSlides.map((slide, i) => (
             <View style={styles.carouselItem} key={i}>
               <Image source={slide.imageSource} />
-              <Text style={styles.title}>{slide.title}</Text>
-              <Text style={styles.description}>{slide.description}</Text>
+              <Text style={authStyles.title}>{slide.title}</Text>
+              <Text style={authStyles.paragraph}>{slide.description}</Text>
             </View>
           ))}
         </ScrollView>
         <View style={styles.footer}>
-          <Button
-            style={{ height: 48 }}
-            raised
-            color="#ffcf2b"
-            theme={{ ...Theme, roundness: 12 }}
+          <TouchableHighlight
+            underlayColor={color('#ffcf2b').darken(0.2)}
+            style={[authStyles.cta, authStyles.primaryCta]}
             onPress={() => this.props.navigation.navigate('AuthScreen')}>
-            <Text style={styles.buttonText}>GET STARTED</Text>
-          </Button>
+            <Text
+              style={[authStyles.ctaCopy, { fontFamily: 'product-bold', paddingHorizontal: 20 }]}>
+              GET STARTED
+            </Text>
+          </TouchableHighlight>
           <IndicatorDots
             quantity={OnboardingSlides.length}
             activeIndex={this.state.indicatorIndex}
@@ -105,39 +114,12 @@ class OnboardingScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#008FEE',
-    alignItems: 'center',
-    paddingTop: Layout.header.height,
-  },
   carouselItem: {
     flex: 1,
     paddingHorizontal: 40,
     width: CAROUSEL_ITEM_WIDTH,
     alignItems: 'center',
     flexDirection: 'column',
-  },
-  title: {
-    color: 'white',
-    textAlign: 'center',
-    fontFamily: 'product-bold',
-    fontSize: 24,
-    marginVertical: 20,
-  },
-  description: {
-    fontFamily: 'product',
-    fontSize: 17,
-    color: 'white',
-    textAlign: 'center',
-    opacity: 0.8,
-  },
-  buttonText: {
-    fontFamily: 'product-medium',
-    fontSize: 16,
-    height: 48,
-    lineHeight: 30,
-    letterSpacing: 0.5,
   },
   footer: {
     flex: 0,

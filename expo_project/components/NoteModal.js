@@ -2,6 +2,7 @@ import React from 'react';
 import { Modal, StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import PropTypes from 'prop-types';
+import Layout from '../constants/Layout';
 
 class NoteModal extends React.Component {
   constructor(props) {
@@ -31,8 +32,9 @@ class NoteModal extends React.Component {
         </View>
         <View style={styles.modalBody}>
           <View>
+            <Text style={styles.title}>Add a note</Text>
+            <Text style={styles.subtitle}>Avoid using personally identifying information</Text>
             <TextInput
-              label="Add a note"
               returnKeyLabel="Done"
               autoFocus
               value={this.state.text}
@@ -60,17 +62,23 @@ class NoteModal extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: 'white',
-  },
   modalHeader: {
+    paddingTop: Layout.header.height / 2,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   modalBody: {
     padding: 20,
+  },
+  title: {
+    color: '#333333',
+    fontFamily: 'product-bold',
+    fontSize: 24,
+  },
+  subtitle: {
+    color: '#333333',
+    fontFamily: 'product',
+    fontSize: 17,
   },
   buttonWrapper: {
     marginTop: 20,

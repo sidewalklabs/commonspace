@@ -47,6 +47,7 @@ class Survey extends React.Component {
               }
               selectedValue={selectedValue}
               selectedColor={activeMarker.color}
+              showDividers
               title={questionLabel}
               options={options}
             />

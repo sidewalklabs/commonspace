@@ -1,9 +1,8 @@
 import { WebBrowser } from 'expo';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View, Image } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableHighlight, View, Image } from 'react-native';
 import { withNavigation } from 'react-navigation';
-import { Button, Card, CardContent, Divider, Title, Paragraph } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
+import { Card, CardContent, Divider } from 'react-native-paper';
 import * as _ from 'lodash';
 import moment from 'moment';
 import Theme from '../constants/Theme';
@@ -92,11 +91,9 @@ class StudyCard extends React.Component {
                   {inProgressNow && <Text style={styles.inProgressText}>In Progress</Text>}
                 </View>
                 <View style={styles.buttonWrapper}>
-                  <Button
-                    dark={inProgressNow}
-                    primary
-                    theme={{ ...Theme, roundness: 20 }}
-                    style={styles.surveyButton}
+                  <TouchableHighlight
+                    underlayColor={`${Theme.colors.primary}15`}
+                    style={[styles.surveyButton, inProgressNow && styles.activeSurveyButton]}
                     onPress={() =>
                       this.props.navigation.navigate(typeToRouteName(studyType), {
                         studyFields,
@@ -109,8 +106,14 @@ class StudyCard extends React.Component {
                         token,
                       })
                     }>
-                    <Text style={styles.surveyButtonText}>Start</Text>
-                  </Button>
+                    <Text
+                      style={[
+                        styles.surveyButtonText,
+                        inProgressNow && styles.activeSurveyButtonText,
+                      ]}>
+                      Start
+                    </Text>
+                  </TouchableHighlight>
                 </View>
               </CardContent>
             </View>
@@ -202,11 +205,20 @@ const styles = StyleSheet.create({
   },
   surveyButton: {
     borderWidth: 1.5,
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
     borderColor: `${Theme.colors.primary}50`,
+  },
+  activeSurveyButton: {
+    backgroundColor: Theme.colors.primary,
   },
   surveyButtonText: {
     fontFamily: 'product-bold',
     color: Theme.colors.primary,
+  },
+  activeSurveyButtonText: {
+    color: 'white',
   },
   activeSurveyRow: {
     backgroundColor: `${Theme.colors.primary}10`,

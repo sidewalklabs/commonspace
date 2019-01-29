@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Button, Paragraph, Divider } from 'react-native-paper';
+import { Divider, Paragraph } from 'react-native-paper';
 import { withNavigation } from 'react-navigation';
 import * as _ from 'lodash';
 import moment from 'moment';
@@ -90,7 +90,7 @@ class SurveyScreen extends React.Component {
           style={{
             marginRight: 10,
           }}>
-          <Icon.MaterialIcons name="people" size="30" color="white" />
+          <Icon.MaterialIcons name="people" size={30} color="white" />
         </TouchableOpacity>
       ),
     };
@@ -499,7 +499,7 @@ class SurveyScreen extends React.Component {
                       markerMenuTopLocation: pageY - 120,
                     });
                   }}>
-                  <Icon.MaterialCommunityIcons name="dots-vertical" color="#787878" size={24} />
+                  {/* <Icon.MaterialCommunityIcons name="dots-vertical" color="#787878" size={24} /> */}
                 </TouchableOpacity>
               </View>
             )}
@@ -522,24 +522,22 @@ class SurveyScreen extends React.Component {
                 activeMarker={activeMarker}
                 onSelect={this.setFormResponse}
               />
-              <Divider style={{ marginTop: 10 }} />
+              <Divider />
               <View style={styles.drawerFooter}>
-                <Button
+                <TouchableOpacity
                   onPress={() =>
                     this.setState({
                       noteModalVisible: true,
                     })
                   }
-                  style={styles.greyButton}
-                  theme={{ ...Theme, roundness: 20 }}>
+                  style={styles.greyButton}>
                   <Text>{noteButtonLabel}</Text>
-                </Button>
-                <Button
+                </TouchableOpacity>
+                <TouchableOpacity
                   onPress={() => this.resetDrawer(MAX_DRAWER_TRANSLATE_Y)}
-                  theme={{ ...Theme, roundness: 20 }}
                   style={styles.greyButton}>
                   <Text>Back to Map</Text>
-                </Button>
+                </TouchableOpacity>
               </View>
             </ScrollView>
           )}
@@ -601,6 +599,7 @@ const styles = StyleSheet.create({
   },
   drawerHeader: {
     alignSelf: 'stretch',
+    marginBottom: 10,
   },
   headerContent: {
     flexDirection: 'row',
@@ -630,11 +629,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   greyButton: {
-    width: Layout.window.width,
-    flexShrink: 1,
+    flex: 1,
     backgroundColor: '#FAFAFA',
     borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.12)',
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 5,
   },
   bottomGuard: {
     // This view adds whitespace below the drawer, in case the user over-pans it

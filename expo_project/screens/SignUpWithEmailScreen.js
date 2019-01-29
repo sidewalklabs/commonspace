@@ -1,28 +1,17 @@
 import React from 'react';
 import { AsyncStorage, Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
-import { Button } from 'react-native-paper';
+import BackArrow from '../components/BackArrow';
 import SharedGradient from '../components/SharedGradient';
-import Theme from '../constants/Theme';
-import { Icon, WebBrowser } from 'expo';
+import { WebBrowser } from 'expo';
 import { signUpUser } from '../lib/commonsClient';
 import authStyles from '../stylesheets/auth';
 import urls from '../config/urls';
+import color from 'color';
 
 class SignUpWithEmailScreen extends React.Component {
   static navigationOptions = ({ navigation }) => ({
-    headerLeft: (
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => {
-          navigation.goBack();
-        }}
-        style={{
-          marginLeft: 10,
-        }}>
-        <Icon.Feather name="arrow-left" size="30" color="white" />
-      </TouchableOpacity>
-    ),
+    headerLeft: <BackArrow goBack={navigation.goBack} />,
   });
 
   constructor(props) {
@@ -95,27 +84,21 @@ class SignUpWithEmailScreen extends React.Component {
               textContentType="password"
             />
           </View>
-          <Button
-            light
-            raised
+          <TouchableOpacity
             disabled={this.state.fetching}
-            style={authStyles.cta}
-            color="#ffcf2b"
-            theme={{ ...Theme, roundness: 10 }}
+            underlayColor={color('#ffcf2b').darken(0.2)}
+            style={[authStyles.cta, authStyles.primaryCta]}
             onPress={this._signUp}>
             <Text style={[authStyles.ctaCopy, authStyles.primaryCtaCopy]}>Create Account</Text>
-          </Button>
+          </TouchableOpacity>
         </View>
         <View style={authStyles.footer}>
-          <Button
-            raised
-            dark
-            color="#ffffff00"
+          <TouchableOpacity
             style={authStyles.cta}
-            theme={{ ...Theme, roundness: 10 }}
+            underlayColor="#00000010"
             onPress={() => this._openLink(urls.privacy)}>
             <Text style={authStyles.ctaCopy}>Privacy & Terms</Text>
-          </Button>
+          </TouchableOpacity>
         </View>
       </SharedGradient>
     );

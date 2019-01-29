@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-
 import { View, ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { Divider } from 'react-native-paper';
 import colors from '../constants/Colors';
 
 import * as _ from 'lodash';
@@ -24,9 +24,17 @@ class Selectable extends React.Component {
   }
 
   render() {
-    const { onSelectablePress, selectedValue, selectedColor, title, options } = this.props;
+    const {
+      onSelectablePress,
+      selectedValue,
+      selectedColor,
+      title,
+      options,
+      showDividers,
+    } = this.props;
     return (
-      <View style={styles.container} onLayout={this.onLayout}>
+      <View onLayout={this.onLayout}>
+        {showDividers && <Divider />}
         <Text style={styles.title}>{title}</Text>
         <ScrollView style={styles.selectable} horizontal showsHorizontalScrollIndicator={false}>
           {_.map(options, (option, index) => {
@@ -37,15 +45,14 @@ class Selectable extends React.Component {
             return (
               <TouchableOpacity
                 key={value}
-                style={[
-                  styles.selectableCell,
-                  index === 0 && styles.firstCell,
-                  selected && { backgroundColor: selectedColor },
-                ]}
+                style={[styles.tapTarget, index === 0 && { marginLeft: 20 }]}
                 onPress={e => {
                   onSelectablePress(value, this.state.height);
                 }}>
-                <Text style={[styles.pillText, selected && { color: 'white' }]}>{label}</Text>
+                <View
+                  style={[styles.selectableCell, selected && { backgroundColor: selectedColor }]}>
+                  <Text style={[styles.pillText, selected && { color: 'white' }]}>{label}</Text>
+                </View>
               </TouchableOpacity>
             );
           })}
@@ -56,29 +63,25 @@ class Selectable extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    paddingVertical: 10,
-  },
   selectable: {
     flexDirection: 'row',
+  },
+  tapTarget: {
+    marginRight: 10,
+    paddingVertical: 16,
   },
   selectableCell: {
     borderWidth: 1,
     backgroundColor: '#FAFAFA',
     borderRadius: 3,
     borderColor: 'rgba(0, 0, 0, 0.12)',
-    padding: 8,
-    marginRight: 10,
-    marginTop: 10,
-  },
-  firstCell: {
-    marginLeft: 20,
+    padding: 4,
   },
   pillText: {
     fontFamily: 'monaco',
   },
   title: {
-    marginVertical: 5,
+    marginTop: 10,
     paddingHorizontal: 20,
   },
 });
@@ -88,6 +91,7 @@ Selectable.propTypes = {
   selectedValue: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
   selectedColor: PropTypes.string,
   title: PropTypes.string.isRequired,
+  showDividers: PropTypes.bool,
   options: PropTypes.arrayOf(
     PropTypes.shape({
       label: PropTypes.string,
@@ -98,6 +102,7 @@ Selectable.propTypes = {
 
 Selectable.defaultProps = {
   selectedColor: colors.colorPrimary,
+  showDividers: false,
 };
 
 export default Selectable;

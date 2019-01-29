@@ -1,8 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
-import { Button } from 'react-native-paper';
-import Theme from '../constants/Theme';
+import { View, StyleSheet, Text, TouchableHighlight } from 'react-native';
+import color from 'color';
 
 class Banner extends React.Component {
   render() {
@@ -12,14 +11,12 @@ class Banner extends React.Component {
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.description}>{description}</Text>
         <View style={styles.footer}>
-          <Button
-            raised
+          <TouchableHighlight
+            underlayColor={color('#ffcf2b').darken(0.2)}
             style={styles.button}
-            onPress={ctaOnPress}
-            color="#ffcf2b"
-            theme={{ ...Theme, roundness: 12 }}>
+            onPress={ctaOnPress}>
             <Text style={styles.ctaCopy}>{cta}</Text>
-          </Button>
+          </TouchableHighlight>
         </View>
       </View>
     );
@@ -52,13 +49,16 @@ const styles = StyleSheet.create({
   ctaCopy: {
     fontFamily: 'product-medium',
     fontSize: 16,
-    height: 48,
     lineHeight: 30,
     letterSpacing: 0.5,
   },
   button: {
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#ffcf2b',
     alignItems: 'center',
-    flexDirection: 'column',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
   },
   footer: {
     padding: 10,
