@@ -5,12 +5,14 @@ const colorPrimary = '#4A90E2';
 const colorSecondary = '#1C4442';
 
 const blue = '#1565C0';
-const red = '#F44336';
-const lightGreen = '#4CAF50';
+const lightGreen = '#BAEA87';
 const indigo = '#1A237E';
-const lightBlue = '#29B6F6';
+const lightBlue = '#4991E3';
 const pink = '#D81B60';
-const orange = '#EF6C00';
+const purple = '#BF08E1';
+const orange = '#F5A71F';
+const red = '#D10115';
+const green = '#407502';
 
 export default {
   tintColor,
@@ -35,4 +37,6 @@ export const iconColors = {
   lightBlue,
   pink,
   orange,
+  purple,
+  green,
 };
