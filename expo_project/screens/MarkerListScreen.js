@@ -18,6 +18,7 @@ import { Card } from 'react-native-paper';
 import Banner from '../components/Banner';
 import PersonIcon from '../components/PersonIcon';
 import MarkerMenu from '../components/MarkerMenu';
+import BackArrow from '../components/BackArrow';
 
 class MarkerRow extends React.Component {
   constructor(props) {
@@ -130,16 +131,7 @@ class MarkerListScreen extends React.Component {
     const { params = {} } = navigation.state;
     return {
       headerTitle: 'Study List',
-      headerLeft: (
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={params.syncAndGoBack}
-          style={{
-            marginLeft: 10,
-          }}>
-          <Icon.Feather name="arrow-left" size="30" color="white" />
-        </TouchableOpacity>
-      ),
+      headerLeft: <BackArrow goBack={params.syncAndGoBack} />,
     };
   };
 

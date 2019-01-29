@@ -4,7 +4,7 @@ import { Alert, StyleSheet, View, ScrollView, Text, TouchableOpacity } from 'rea
 import Selectable from '../components/Selectable';
 import * as _ from 'lodash';
 import Theme from '../constants/Theme';
-import { Button, Card } from 'react-native-paper';
+import { Card } from 'react-native-paper';
 import { deleteDataPoint, getDataPointsforSurvey, saveDataPoint } from '../lib/commonsClient';
 import QUESTION_CONFIG from '../config/peopleMovingQuestions';
 import { getRandomIconColor } from '../utils/color';
@@ -19,8 +19,10 @@ class PeopleMovingCountSummary extends React.Component {
     const grouped = _.groupBy(markers, questionKey);
     return (
       <View style={styles.summaryContainer}>
-        <View>
-          <Text style={styles.title}>{markers.length}</Text>
+        <View style={styles.summaryCallout}>
+          <Text style={styles.title} fontVariant="tabular-nums" numberOfLines={1}>
+            {markers.length}
+          </Text>
           <Text style={styles.label}>People</Text>
         </View>
         <View style={styles.grid}>
@@ -176,46 +178,50 @@ class PeopleMovingCountScreen extends React.Component {
   };
 
   deleteLastMarker = () => {
-    const { surveyId, token } = this.state;
-    const markersCopy = [...this.state.markers];
+    if (this.state.markers.length) {
+      const { surveyId, token } = this.state;
+      const markersCopy = [...this.state.markers];
 
-    const markerToRemove = _.last(markersCopy);
-    const { dataPointId } = markerToRemove;
-    if (dataPointId && surveyId !== 'DEMO') {
-      const lastMarker = markersCopy.pop();
-      this.setState({ markers: markersCopy });
-      deleteDataPoint(token, surveyId, dataPointId)
-        .then(() => {
-          // this callback is called regardless of whether a marker is deleted or not :/
-          const newMarkers = _.reject(this.state.markers, {
-            dataPointId,
+      const markerToRemove = _.last(markersCopy);
+      const { dataPointId } = markerToRemove;
+      if (dataPointId && surveyId !== 'DEMO') {
+        const lastMarker = markersCopy.pop();
+        this.setState({ markers: markersCopy });
+        deleteDataPoint(token, surveyId, dataPointId)
+          .then(() => {
+            // this callback is called regardless of whether a marker is deleted or not :/
+            const newMarkers = _.reject(this.state.markers, {
+              dataPointId,
+            });
+            const newActiveMarkerId = newMarkers.length
+              ? newMarkers[newMarkers.length - 1].dataPointId
+              : null;
+            this.setState({
+              markers: newMarkers,
+              activeMarkerId: newActiveMarkerId,
+            });
+          })
+          .catch(function(error) {
+            Alert.alert(
+              'Error',
+              'Something went wrong removing datapoint. Please try again later.',
+              [{ text: 'OK' }],
+            );
           });
-          const newActiveMarkerId = newMarkers.length
-            ? newMarkers[newMarkers.length - 1].dataPointId
-            : null;
-          this.setState({
-            markers: newMarkers,
-            activeMarkerId: newActiveMarkerId,
-          });
-        })
-        .catch(function(error) {
-          Alert.alert('Error', 'Something went wrong removing datapoint. Please try again later.', [
-            { text: 'OK' },
-          ]);
+      } else {
+        const lastMarker = markersCopy.pop();
+        this.setState({ markers: markersCopy });
+        const newMarkers = _.reject(this.state.markers, {
+          dataPointId,
         });
-    } else {
-      const lastMarker = markersCopy.pop();
-      this.setState({ markers: markersCopy });
-      const newMarkers = _.reject(this.state.markers, {
-        dataPointId,
-      });
-      const newActiveMarkerId = newMarkers.length
-        ? newMarkers[newMarkers.length - 1].dataPointId
-        : null;
-      this.setState({
-        markers: newMarkers,
-        activeMarkerId: newActiveMarkerId,
-      });
+        const newActiveMarkerId = newMarkers.length
+          ? newMarkers[newMarkers.length - 1].dataPointId
+          : null;
+        this.setState({
+          markers: newMarkers,
+          activeMarkerId: newActiveMarkerId,
+        });
+      }
     }
   };
 
@@ -250,28 +256,23 @@ class PeopleMovingCountScreen extends React.Component {
               </View>
             </ScrollView>
             <View style={styles.buttonWrapper}>
-              <Button
-                style={styles.footerButton}
-                raised
-                uppercase={false}
+              <TouchableOpacity
+                style={[
+                  styles.footerButton,
+                  { borderWidth: StyleSheet.hairlineWidth, borderColor: '#bbb' },
+                ]}
                 onPress={() => {
                   this.deleteLastMarker();
-                }}
-                theme={{ ...Theme, roundness: 20 }}>
+                }}>
                 <Text>Undo</Text>
-              </Button>
-              <Button
-                style={styles.footerButton}
-                dark
-                raised
-                primary
-                uppercase={false}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.footerButton, { backgroundColor: Theme.colors.primary }]}
                 onPress={() => {
                   this.addMarker();
-                }}
-                theme={{ ...Theme, roundness: 20 }}>
-                <Text>Add</Text>
-              </Button>
+                }}>
+                <Text style={{ color: 'white' }}>Add</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </Card>
@@ -284,7 +285,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: 20,
+    padding: 10,
   },
   card: {
     backgroundColor: '#fff',
@@ -303,9 +304,16 @@ const styles = StyleSheet.create({
   },
   footerButton: {
     flex: 1,
+    marginHorizontal: 5,
+    fontFamily: 'product-bold',
+    borderRadius: 20,
+    paddingVertical: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   summaryContainer: {
     flexShrink: 0,
+    paddingHorizontal: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
@@ -317,8 +325,15 @@ const styles = StyleSheet.create({
     fontFamily: 'product-medium',
   },
   labelNumber: { color: Theme.colors.primary },
+  summaryCallout: {
+    flexShrink: 0,
+    flexGrow: 1,
+    marginRight: 10,
+  },
   grid: {
-    flexBasis: 150,
+    flexShrink: 1,
+    flexGrow: 0,
+    flexBasis: 140,
     marginVertical: 10,
   },
   gridRow: {

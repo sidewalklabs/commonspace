@@ -1,13 +1,12 @@
 import React from 'react';
-import { Alert, AsyncStorage, Image, Text, View } from 'react-native';
+import { Alert, AsyncStorage, Image, TouchableHighlight, Text, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
-import { Button } from 'react-native-paper';
 import SharedGradient from '../components/SharedGradient';
-import Theme from '../constants/Theme';
 import { WebBrowser } from 'expo';
 import authStyles from '../stylesheets/auth';
 import urls from '../config/urls';
 import { logInUserWithGoogleAccessToken } from '../lib/commonsClient';
+import color from 'color';
 
 class AuthScreen extends React.Component {
   static navigationOptions = {
@@ -55,45 +54,33 @@ class AuthScreen extends React.Component {
             If you are a volunteer or existing organizer, log in with your google account and start
             your study.
           </Text>
-          <Button
-            light
-            raised
-            style={[authStyles.cta, { marginBottom: 20 }]}
-            color="#ffcf2b"
-            theme={{ ...Theme, roundness: 10 }}
+          <TouchableHighlight
+            style={[authStyles.cta, authStyles.primaryCta]}
+            underlayColor={color('#ffcf2b').darken(0.2)}
             onPress={this._signIn}
             icon={require('../assets/images/logo-google.png')}>
             <Text style={[authStyles.ctaCopy, authStyles.primaryCtaCopy]}>Connect with Google</Text>
-          </Button>
-          <Button
-            dark
-            raised
-            color="#00000010"
-            style={authStyles.cta}
-            theme={{ ...Theme, roundness: 10 }}
+          </TouchableHighlight>
+          <TouchableHighlight
+            underlayColor="#00000020"
+            style={[authStyles.cta, { backgroundColor: '#00000010' }]}
             onPress={() => this.props.navigation.navigate('LogInWithEmailScreen')}>
             <Text style={[authStyles.ctaCopy, authStyles.primaryCtaCopy]}>Login with Email</Text>
-          </Button>
+          </TouchableHighlight>
         </View>
         <View style={authStyles.footer}>
-          <Button
-            raised
-            dark
-            color="#ffffff00"
+          <TouchableHighlight
+            underlayColor="#00000010"
             style={authStyles.cta}
-            theme={{ ...Theme, roundness: 10 }}
             onPress={() => this.props.navigation.navigate('DemoStack')}>
             <Text style={authStyles.ctaCopy}>Try a Demo</Text>
-          </Button>
-          <Button
-            raised
-            dark
-            color="#ffffff00"
+          </TouchableHighlight>
+          <TouchableHighlight
+            underlayColor="#00000010"
             style={authStyles.cta}
-            theme={{ ...Theme, roundness: 10 }}
             onPress={() => this._openLink(urls.privacy)}>
             <Text style={authStyles.ctaCopy}>Privacy & Terms</Text>
-          </Button>
+          </TouchableHighlight>
         </View>
       </SharedGradient>
     );

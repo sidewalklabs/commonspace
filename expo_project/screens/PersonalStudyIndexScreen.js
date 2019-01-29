@@ -1,4 +1,3 @@
-import { Icon } from 'expo';
 import React from 'react';
 import {
   Alert,
@@ -12,6 +11,7 @@ import { withNavigation } from 'react-navigation';
 import { getStudies } from '../lib/commonsClient';
 import Banner from '../components/Banner';
 import StudyFeed from '../components/StudyFeed';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 class PersonalStudyIndexScreen extends React.Component {
   state = {
@@ -29,23 +29,24 @@ class PersonalStudyIndexScreen extends React.Component {
         style={{
           paddingHorizontal: 12,
         }}>
-        <Icon.MaterialCommunityIcons name="menu" color="white" size={24} />
+        <MaterialCommunityIcons name="menu" color="white" size={24} />
       </TouchableOpacity>
     ),
   });
 
   async componentDidMount() {
-    const token = await AsyncStorage.getItem('token');
-
-    if (token) {
-      let studies = await getStudies(token).catch(e => {
-        console.log('error', e);
-        Alert.alert('Error', 'Unable to load your studies. Only demo studies will be available.', [
-          { text: 'OK' },
-        ]);
-      });
-      this.setState({ token, studies: studies || [], loading: false });
-    } else {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (token) {
+        let studies = await getStudies(token);
+        this.setState({ token, studies: studies || [], loading: false });
+      } else {
+        this.setState({ loading: false });
+      }
+    } catch (e) {
+      Alert.alert('Error', 'Unable to load your studies. Only demo studies will be available.', [
+        { text: 'OK' },
+      ]);
       this.setState({ loading: false });
     }
   }
@@ -65,8 +66,11 @@ class PersonalStudyIndexScreen extends React.Component {
               ctaOnPress={() => this.props.navigation.navigate('DemoStack')}
             />
           )}
-        {!loading &&
-          studies.length && <StudyFeed token={token} studies={studies} title="Your studies" />}
+        {!loading && studies.length ? (
+          <StudyFeed token={token} studies={studies} title="Your studies" />
+        ) : (
+          undefined
+        )}
       </View>
     );
   }

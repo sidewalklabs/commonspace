@@ -34,6 +34,9 @@ export default class App extends React.Component {
   _loadResourcesAsync = async () => {
     return Font.loadAsync({
       ...Icon.Ionicons.font,
+      ...Icon.MaterialIcons.font,
+      ...Icon.MaterialCommunityIcons.font,
+      ...Icon.Feather.font,
       monaco: require('./assets/fonts/monaco.ttf'),
       product: require('./assets/fonts/GoogleSans-Regular.ttf'),
       'product-regular': require('./assets/fonts/GoogleSans-Regular.ttf'),

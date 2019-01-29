@@ -73,9 +73,14 @@ const AuthStack = createStackNavigator(
       ...navigationOptions,
       headerStyle: {
         ...navigationOptions.headerStyle,
+        elevation: 0, // remove shadow on android
         backgroundColor: 'transparent',
+        position: 'absolute',
+        zIndex: 100,
+        top: 0,
+        left: 0,
+        right: 0,
       },
-      headerTransparent: true,
     },
   },
 );
