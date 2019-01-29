@@ -135,11 +135,11 @@ class PeopleMovingCountScreen extends React.Component {
   };
 
   toggleValue = (questionKey, value) => {
-    const selectedAttributes = { ...this.state.selectedAttributes };
+    let selectedAttributes = { ...this.state.selectedAttributes };
     if (selectedAttributes[questionKey] !== value) {
       selectedAttributes[questionKey] = value;
     } else {
-      _.reject(selectedAttributes, questionKey);
+      delete selectedAttributes[questionKey];
     }
     this.setState({ selectedAttributes });
   };
