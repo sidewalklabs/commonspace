@@ -1,21 +1,15 @@
 import React from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import {
+  Modal, StyleSheet, Text, TouchableOpacity,
+} from 'react-native';
 import { Card } from 'react-native-paper';
 import PropTypes from 'prop-types';
 
 class MarkerMenu extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      text: props.initialValue,
-    };
-  }
-
   render() {
     const { topLocation } = this.props;
     return (
-      <Modal animationType="fade" visible={true} transparent={true}>
+      <Modal animationType="fade" visible transparent>
         <TouchableOpacity activeOpacity={1} style={styles.container} onPress={this.props.onClose}>
           <Card
             style={[
@@ -25,14 +19,16 @@ class MarkerMenu extends React.Component {
                 top: Math.max(topLocation, 0),
                 right: 0,
               },
-            ]}>
+            ]}
+          >
             {this.props.onDeletePress && (
               <TouchableOpacity
                 style={styles.button}
                 onPress={() => {
                   this.props.onDeletePress();
                   this.props.onClose();
-                }}>
+                }}
+              >
                 <Text>Delete</Text>
               </TouchableOpacity>
             )}
@@ -42,7 +38,8 @@ class MarkerMenu extends React.Component {
                 onPress={() => {
                   this.props.onDuplicatePress();
                   this.props.onClose();
-                }}>
+                }}
+              >
                 <Text>Duplicate</Text>
               </TouchableOpacity>
             )}
@@ -80,6 +77,9 @@ MarkerMenu.propTypes = {
 };
 
 MarkerMenu.defaultProps = {
+  onDeletePress: undefined,
+  onDuplicatePress: undefined,
+  topLocation: 0,
   onClose: () => null,
 };
 

@@ -1,5 +1,7 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import {
+  StyleSheet, View, Text, TouchableOpacity,
+} from 'react-native';
 import * as _ from 'lodash';
 import Theme from '../constants/Theme';
 
@@ -16,11 +18,7 @@ class Tab extends React.Component {
 }
 
 class SegmentedControl extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
-  setActive = label => {
+  setActive = (label) => {
     if (this.props.activeTab !== label) {
       this.props.onTabSelect(label);
     }

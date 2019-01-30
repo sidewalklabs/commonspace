@@ -1,7 +1,6 @@
 import { Icon } from 'expo';
 import PropTypes from 'prop-types';
 import React from 'react';
-
 import { Platform, View, StyleSheet } from 'react-native';
 
 class PersonIcon extends React.Component {
@@ -18,7 +17,8 @@ class PersonIcon extends React.Component {
             width: size,
             borderRadius: size / 2,
           },
-        ]}>
+        ]}
+      >
         <Icon.Ionicons name="md-person" size={size * 0.5} color="white" />
       </View>
     );
@@ -52,8 +52,9 @@ PersonIcon.propTypes = {
   shadow: PropTypes.bool,
 };
 
-PropTypes.defaultProps = {
+PersonIcon.defaultProps = {
   backgroundColor: 'white',
+  shadow: false,
 };
 
 export default PersonIcon;

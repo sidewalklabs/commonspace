@@ -11,10 +11,9 @@ import {
   TouchableOpacity,
   UIManager,
 } from 'react-native';
-import Selectable from '../components/Selectable';
 import * as _ from 'lodash';
-import Theme from '../constants/Theme';
 import { Card } from 'react-native-paper';
+import Selectable from '../components/Selectable';
 import Banner from '../components/Banner';
 import PersonIcon from '../components/PersonIcon';
 import MarkerMenu from '../components/MarkerMenu';
@@ -44,14 +43,18 @@ class MarkerRow extends React.Component {
     }
   }
 
-  setCollapsibleContentHeight = event => {
+  setCollapsibleContentHeight = (event) => {
     const collapsibleContentHeight = event.nativeEvent.layout.height;
     this.setState({ collapsibleContentHeight, collapsibleCurrentHeight: 0 });
   };
 
   render() {
-    const { marker, expanded, onToggle, questions, onMenuButtonPress } = this.props;
-    const { color, title, dateLabel, dataPointId } = marker;
+    const {
+      marker, expanded, onToggle, questions, onMenuButtonPress, onUpdate,
+    } = this.props;
+    const {
+      color, title, dateLabel, dataPointId,
+    } = marker;
     return (
       <Card
         key={expanded}
@@ -66,11 +69,13 @@ class MarkerRow extends React.Component {
             borderBottomColor: expanded ? 'transparent' : '#bbb',
             borderBottomWidth: StyleSheet.hairlineWidth,
           },
-        ]}>
+        ]}
+      >
         <TouchableOpacity
           style={{ flex: 1 }}
           activeOpacity={1}
-          onPress={() => onToggle(marker.dataPointId)}>
+          onPress={() => onToggle(marker.dataPointId)}
+        >
           <View
             style={{
               flex: 0,
@@ -78,7 +83,8 @@ class MarkerRow extends React.Component {
               justifyContent: 'space-between',
               alignItems: 'center',
               padding: 10,
-            }}>
+            }}
+          >
             <PersonIcon backgroundColor={color} size={40} />
             <View style={{ flex: 1, marginHorizontal: 10 }}>
               <Text style={[styles.label]}>{title}</Text>
@@ -86,10 +92,11 @@ class MarkerRow extends React.Component {
             </View>
             <TouchableOpacity
               activeOpacity={1}
-              onPress={e => {
+              onPress={(e) => {
                 const { pageY } = e.nativeEvent;
                 onMenuButtonPress(marker.dataPointId, pageY + 5);
-              }}>
+              }}
+            >
               <Icon.MaterialCommunityIcons name="dots-vertical" color="#787878" size={24} />
             </TouchableOpacity>
           </View>
@@ -103,8 +110,9 @@ class MarkerRow extends React.Component {
               ]}
               onLayout={
                 !this.state.collapsibleContentHeight ? this.setCollapsibleContentHeight : undefined
-              }>
-              {_.map(questions, question => {
+              }
+            >
+              {_.map(questions, (question) => {
                 const { questionKey, questionLabel, options } = question;
                 return (
                   <Selectable
@@ -140,7 +148,6 @@ class MarkerListScreen extends React.Component {
     super(props);
     this.state = {
       markers: [],
-      delayListRender: true,
       expandedMarkerId: null,
       markerMenuMarkerId: null,
       markerMenuTopLocation: null,
@@ -161,7 +168,7 @@ class MarkerListScreen extends React.Component {
     this.props.navigation.goBack();
   };
 
-  onToggle = dataPointId => {
+  onToggle = (dataPointId) => {
     const expandedMarkerId = this.state.expandedMarkerId === dataPointId ? null : dataPointId;
     this.setState({ expandedMarkerId });
   };
@@ -180,7 +187,7 @@ class MarkerListScreen extends React.Component {
       });
 
       if (surveyId !== 'DEMO') {
-        saveDataPoint(token, surveyId, marker).catch(error => {
+        saveDataPoint(token, surveyId, marker).catch((error) => {
           Alert.alert(
             'Error',
             'Something went wrong while updating marker. Please try again later.',
@@ -196,13 +203,13 @@ class MarkerListScreen extends React.Component {
     }
   };
 
-  onDelete = dataPointId => {
+  onDelete = (dataPointId) => {
     const { token, surveyId } = this.props.navigation.state.params;
     const markers = _.reject(this.state.markers, { dataPointId });
     this.setState({ markers });
 
     if (surveyId !== 'DEMO') {
-      deleteDataPoint(token, surveyId, dataPointId).catch(function(error) {
+      deleteDataPoint(token, surveyId, dataPointId).catch((error) => {
         Alert.alert('Error', 'Something went wrong removing datapoint. Please try again later.', [
           { text: 'OK' },
         ]);
@@ -273,66 +280,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  content: {
-    display: 'flex',
-    flex: 1,
-    padding: 20,
-  },
-  card: {
-    backgroundColor: '#fff',
-    flex: 1,
-    display: 'flex',
-  },
-  cardContent: {
-    flex: 1,
-    backgroundColor: `${Theme.colors.primary}10`,
-  },
-  buttonWrapper: {
-    margin: 10,
-    display: 'flex',
-    flex: 0,
-    flexDirection: 'row',
-  },
-  footerButton: {
-    flex: 1,
-  },
-  tabs: {
-    flex: 0,
-    flexDirection: 'row',
-  },
-  tab: {
-    padding: 20,
-    flex: 1,
-    borderBottomColor: '#bbb',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  activeTab: {
-    borderBottomColor: Theme.colors.primary,
-    borderBottomWidth: 2,
-  },
-  summaryContainer: {
-    flexShrink: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  title: {
-    fontSize: 80,
-    color: Theme.colors.primary,
-  },
   label: {
     fontFamily: 'product-medium',
-  },
-  labelNumber: { color: Theme.colors.primary },
-  grid: {
-    flexBasis: 150,
-    marginVertical: 10,
-  },
-  gridRow: {
-    marginVertical: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
   },
 });
 

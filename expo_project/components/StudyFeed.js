@@ -1,6 +1,8 @@
 import { WebBrowser } from 'expo';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableHighlight, View, Image } from 'react-native';
+import {
+  ScrollView, StyleSheet, Text, TouchableHighlight, View, Image,
+} from 'react-native';
 import { withNavigation } from 'react-navigation';
 import { Card, CardContent, Divider } from 'react-native-paper';
 import * as _ from 'lodash';
@@ -19,21 +21,22 @@ function typeToRouteName(type) {
 }
 
 class StudyCard extends React.Component {
-  _openLink = async uri => {
+  _openLink = async (uri) => {
     if (uri) {
-      return await WebBrowser.openBrowserAsync(uri);
+      return WebBrowser.openBrowserAsync(uri);
     }
+    return false;
   };
 
   getIndicatorLabel = () => {
     const { type, isDemo } = this.props.study;
     if (isDemo) {
       return 'Demo';
-    } else if (type === 'stationary') {
-      return 'Activity Map';
-    } else {
-      return 'Moving Count';
     }
+    if (type === 'stationary') {
+      return 'Activity Map';
+    }
+    return 'Moving Count';
   };
 
   render() {
@@ -57,7 +60,12 @@ class StudyCard extends React.Component {
           <View style={{ flexDirection: 'row', marginTop: 4 }}>
             <Image
               source={require('../assets/images/icon-info-circle.png')}
-              style={{ width: 20, height: 20, marginRight: 8, opacity: 0.5 }}
+              style={{
+                width: 20,
+                height: 20,
+                marginRight: 8,
+                opacity: 0.5,
+              }}
             />
             <Text style={styles.studySubtitle} onPress={() => this._openLink(authorUrl)}>
               {studyAuthor}
@@ -65,16 +73,14 @@ class StudyCard extends React.Component {
           </View>
           {description && <Text style={styles.studyDescription}>{description}</Text>}
         </CardContent>
-        {surveys.map(survey => {
+        {surveys.map((survey) => {
           const {
             survey_id: surveyId,
             survey_title: surveyTitle = 'Unnamed Survey',
             survey_location: zoneFeatureGeoJson,
           } = survey;
           const coordinates = !zoneFeatureGeoJson ? [] : zoneFeatureGeoJson.coordinates[0];
-          const zoneCoordinates = _.map(coordinates, c => {
-            return { longitude: c[0], latitude: c[1] };
-          });
+          const zoneCoordinates = _.map(coordinates, c => ({ longitude: c[0], latitude: c[1] }));
           let inProgressNow = false;
           if (survey.start_date && survey.end_date) {
             const today = moment();
@@ -94,23 +100,24 @@ class StudyCard extends React.Component {
                   <TouchableHighlight
                     underlayColor={`${Theme.colors.primary}15`}
                     style={[styles.surveyButton, inProgressNow && styles.activeSurveyButton]}
-                    onPress={() =>
-                      this.props.navigation.navigate(typeToRouteName(studyType), {
-                        studyFields,
-                        surveyId,
-                        studyName,
-                        studyAuthor,
-                        studyType,
-                        surveyTitle,
-                        zoneCoordinates,
-                        token,
-                      })
-                    }>
+                    onPress={() => this.props.navigation.navigate(typeToRouteName(studyType), {
+                      studyFields,
+                      surveyId,
+                      studyName,
+                      studyAuthor,
+                      studyType,
+                      surveyTitle,
+                      zoneCoordinates,
+                      token,
+                    })
+                    }
+                  >
                     <Text
                       style={[
                         styles.surveyButtonText,
                         inProgressNow && styles.activeSurveyButtonText,
-                      ]}>
+                      ]}
+                    >
                       Start
                     </Text>
                   </TouchableHighlight>

@@ -48,6 +48,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffcf2b',
     marginBottom: 20,
   },
+  ctaCopyWrapper: {
+    alignSelf: 'stretch',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  ctaImage: { height: 20, width: 20, marginRight: 10 },
   ctaCopy: {
     fontFamily: 'product-medium',
     textAlign: 'center',
@@ -56,9 +63,11 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     margin: 0,
     padding: 0,
+    color: 'white',
     opacity: 0.8,
   },
   primaryCtaCopy: {
+    color: 'black',
     opacity: 1,
   },
   footer: {

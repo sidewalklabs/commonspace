@@ -1,10 +1,11 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { View, ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import {
+  View, ScrollView, StyleSheet, Text, TouchableOpacity,
+} from 'react-native';
 import { Divider } from 'react-native-paper';
-import colors from '../constants/Colors';
-
 import * as _ from 'lodash';
+import colors from '../constants/Colors';
 
 class Selectable extends React.Component {
   constructor(props) {
@@ -16,9 +17,11 @@ class Selectable extends React.Component {
     this.onLayout = this.onLayout.bind(this);
   }
 
-  // TODO (Ananta): Make this more React-y
-  // Currently Selectable passes back its height when pressed, since the parent wants to scroll the amount
-  // But that's a weird API for a child that should function without knowledge of its parents' desires
+  // TODO: Make this more React-y
+  // Currently Selectable passes back its height when pressed,
+  // since the parent wants to scroll the amount.
+  // But that's a weird API for a child that should function
+  // without knowledge of its parents' desires
   onLayout(event) {
     this.setState({ height: event.nativeEvent.layout.height });
   }
@@ -39,18 +42,20 @@ class Selectable extends React.Component {
         <ScrollView style={styles.selectable} horizontal showsHorizontalScrollIndicator={false}>
           {_.map(options, (option, index) => {
             const { value, label } = option;
-            let selected = Array.isArray(selectedValue)
+            const selected = Array.isArray(selectedValue)
               ? _.includes(selectedValue, value)
               : value === selectedValue;
             return (
               <TouchableOpacity
                 key={value}
                 style={[styles.tapTarget, index === 0 && { marginLeft: 20 }]}
-                onPress={e => {
+                onPress={(e) => {
                   onSelectablePress(value, this.state.height);
-                }}>
+                }}
+              >
                 <View
-                  style={[styles.selectableCell, selected && { backgroundColor: selectedColor }]}>
+                  style={[styles.selectableCell, selected && { backgroundColor: selectedColor }]}
+                >
                   <Text style={[styles.pillText, selected && { color: 'white' }]}>{label}</Text>
                 </View>
               </TouchableOpacity>
@@ -103,6 +108,7 @@ Selectable.propTypes = {
 Selectable.defaultProps = {
   selectedColor: colors.colorPrimary,
   showDividers: false,
+  selectedValue: undefined,
 };
 
 export default Selectable;
