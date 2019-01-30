@@ -1,4 +1,4 @@
-import urls from '../config/urls';
+import urls from './urls';
 
 export const peopleMovingDemoStudy = {
   title: 'People Moving Count',

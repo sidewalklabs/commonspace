@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import Selectable from '../components/Selectable';
 import * as _ from 'lodash';
+import Selectable from './Selectable';
 import QUESTION_CONFIG from '../config/questions';
 
 class Survey extends React.Component {
@@ -34,16 +34,17 @@ class Survey extends React.Component {
     );
     return (
       <View>
-        {_.map(questions, question => {
-          const { questionKey, questionLabel, questionType, options } = question;
+        {_.map(questions, (question) => {
+          const {
+            questionKey, questionLabel, questionType, options,
+          } = question;
           const selectedValue = activeMarker[questionKey];
           return (
             <Selectable
               key={questionKey}
-              onSelectablePress={(value, selectableHeight) =>
-                questionType === 'multiselect'
-                  ? this.onMultiselectPress(questionKey, value, selectedValue)
-                  : this.onSelectPress(questionKey, value, selectedValue, selectableHeight)
+              onSelectablePress={(value, selectableHeight) => (questionType === 'multiselect'
+                ? this.onMultiselectPress(questionKey, value, selectedValue)
+                : this.onSelectPress(questionKey, value, selectedValue, selectableHeight))
               }
               selectedValue={selectedValue}
               selectedColor={activeMarker.color}
@@ -81,6 +82,7 @@ const styles = StyleSheet.create({
 });
 
 Survey.propTypes = {
+  // eslint-disable-next-line react/forbid-prop-types
   activeMarker: PropTypes.any.isRequired,
   onSelect: PropTypes.func.isRequired,
 };

@@ -9,11 +9,11 @@ import {
   View,
 } from 'react-native';
 import { withNavigation } from 'react-navigation';
+import color from 'color';
 import SharedGradient from '../components/SharedGradient';
 import OnboardingSlides from '../config/onboarding';
 import Layout from '../constants/Layout';
 import authStyles from '../stylesheets/auth';
-import color from 'color';
 
 const CAROUSEL_ITEM_WIDTH = Layout.window.width;
 
@@ -22,13 +22,11 @@ class IndicatorDots extends React.Component {
     const { quantity, activeIndex } = this.props;
     return (
       <View style={styles.indicatorDotsContainer}>
-        {Array.from(Array(quantity)).map((x, i) => {
-          return (
-            <TouchableOpacity key={i} activeOpacity={1} onPress={() => this.props.onPress(i)}>
-              <View style={[styles.indicatorDot, i === activeIndex && styles.indicatorDotActive]} />
-            </TouchableOpacity>
-          );
-        })}
+        {Array.from(Array(quantity)).map((x, i) => (
+          <TouchableOpacity key={i} activeOpacity={1} onPress={() => this.props.onPress(i)}>
+            <View style={[styles.indicatorDot, i === activeIndex && styles.indicatorDotActive]} />
+          </TouchableOpacity>
+        ))}
       </View>
     );
   }
@@ -47,21 +45,17 @@ class OnboardingScreen extends React.Component {
     };
   }
 
-  indexToScrollOffset = (index, width) => {
-    return index * width;
-  };
+  indexToScrollOffset = (index, width) => index * width;
 
-  scrollOffsetToIndex = (offset, width) => {
-    // For some reason, android width is ~0.000000001 off, so compare the truncated version
-    return Math.trunc(offset) / Math.trunc(width);
-  };
+  // For some reason, android width is ~0.000000001 off, so compare the truncated version
+  scrollOffsetToIndex = (offset, width) => Math.trunc(offset) / Math.trunc(width);
 
-  onIndicatorDotPress = index => {
+  onIndicatorDotPress = (index) => {
     const offset = this.indexToScrollOffset(index, CAROUSEL_ITEM_WIDTH);
     this.carousel.scrollTo({ x: offset, animated: true });
   };
 
-  handleScroll = event => {
+  handleScroll = (event) => {
     const scrollOffset = event.nativeEvent.contentOffset.x;
     const indicatorIndex = this.scrollOffsetToIndex(scrollOffset, CAROUSEL_ITEM_WIDTH);
 
@@ -83,7 +77,8 @@ class OnboardingScreen extends React.Component {
           onScroll={this.handleScroll}
           decelerationRate="fast"
           overScrollMode="never"
-          scrollEventThrottle={16}>
+          scrollEventThrottle={16}
+        >
           {OnboardingSlides.map((slide, i) => (
             <View style={styles.carouselItem} key={i}>
               <Image source={slide.imageSource} />
@@ -96,9 +91,11 @@ class OnboardingScreen extends React.Component {
           <TouchableHighlight
             underlayColor={color('#ffcf2b').darken(0.2)}
             style={[authStyles.cta, authStyles.primaryCta]}
-            onPress={() => this.props.navigation.navigate('AuthScreen')}>
+            onPress={() => this.props.navigation.navigate('AuthScreen')}
+          >
             <Text
-              style={[authStyles.ctaCopy, { fontFamily: 'product-bold', paddingHorizontal: 20 }]}>
+              style={[authStyles.ctaCopy, authStyles.primaryCtaCopy, { paddingHorizontal: 20 }]}
+            >
               GET STARTED
             </Text>
           </TouchableHighlight>

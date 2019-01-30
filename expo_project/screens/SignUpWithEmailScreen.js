@@ -1,13 +1,15 @@
 import React from 'react';
-import { AsyncStorage, Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  AsyncStorage, Alert, Image, Text, TextInput, TouchableOpacity, View,
+} from 'react-native';
 import { withNavigation } from 'react-navigation';
+import { WebBrowser } from 'expo';
+import color from 'color';
 import BackArrow from '../components/BackArrow';
 import SharedGradient from '../components/SharedGradient';
-import { WebBrowser } from 'expo';
 import { signUpUser } from '../lib/commonsClient';
 import authStyles from '../stylesheets/auth';
 import urls from '../config/urls';
-import color from 'color';
 
 class SignUpWithEmailScreen extends React.Component {
   static navigationOptions = ({ navigation }) => ({
@@ -41,16 +43,14 @@ class SignUpWithEmailScreen extends React.Component {
     this.setState({ fetching: false });
   };
 
-  _openLink = async uri => {
-    return await WebBrowser.openBrowserAsync(uri);
-  };
+  _openLink = async uri => WebBrowser.openBrowserAsync(uri);
 
   render() {
     return (
       <SharedGradient style={authStyles.container}>
         <Image source={require('../assets/images/CSIcon_36_white.png')} style={authStyles.logo} />
         <View style={authStyles.content}>
-          <Text style={authStyles.title}>{`Create \nnew account`}</Text>
+          <Text style={authStyles.title}>{'Create \nnew account'}</Text>
           <View style={authStyles.formContainer}>
             <TextInput
               style={{ height: 40 }}
@@ -69,7 +69,7 @@ class SignUpWithEmailScreen extends React.Component {
               value={this.state.password}
               autoCapitalize="none"
               autoCorrect={false}
-              clearTextOnFocus={true}
+              clearTextOnFocus
               textContentType="password"
             />
             <TextInput
@@ -80,7 +80,7 @@ class SignUpWithEmailScreen extends React.Component {
               value={this.state.confirmPassword}
               autoCapitalize="none"
               autoCorrect={false}
-              clearTextOnFocus={true}
+              clearTextOnFocus
               textContentType="password"
             />
           </View>
@@ -88,7 +88,8 @@ class SignUpWithEmailScreen extends React.Component {
             disabled={this.state.fetching}
             underlayColor={color('#ffcf2b').darken(0.2)}
             style={[authStyles.cta, authStyles.primaryCta]}
-            onPress={this._signUp}>
+            onPress={this._signUp}
+          >
             <Text style={[authStyles.ctaCopy, authStyles.primaryCtaCopy]}>Create Account</Text>
           </TouchableOpacity>
         </View>
@@ -96,7 +97,8 @@ class SignUpWithEmailScreen extends React.Component {
           <TouchableOpacity
             style={authStyles.cta}
             underlayColor="#00000010"
-            onPress={() => this._openLink(urls.privacy)}>
+            onPress={() => this._openLink(urls.privacy)}
+          >
             <Text style={authStyles.ctaCopy}>Privacy & Terms</Text>
           </TouchableOpacity>
         </View>

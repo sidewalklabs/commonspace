@@ -9,23 +9,25 @@
     "preset": "jest-expo"
   },
   "dependencies": {
-    "@expo/samples": "2.1.1",
     "camelcase-keys": "^5.0.0",
     "color": "^3.1.0",
     "expo": "^28.0.0",
-    "firebase": "^5.4.1-0",
     "lodash": "^4.17.11",
     "moment": "^2.22.2",
     "prop-types": "^15.6.2",
     "react": "16.3.1",
     "react-native": "https://github.com/expo/react-native/archive/sdk-28.0.0.tar.gz",
-    "react-native-circular-progress": "^1.0.1",
     "react-native-paper": "^1.12.0",
-    "react-native-svg": "^6.5.2",
     "react-navigation": "2.3.1",
     "uuid": "^3.3.2"
   },
   "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.12.1",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-jsx-a11y": "^6.2.0",
+    "eslint-plugin-react": "^7.12.4",
     "expo-cli": "^2.4.3",
     "jest-expo": "^28.0.0"
   }

@@ -1,8 +1,7 @@
 import { Dimensions } from 'react-native';
 import { Header } from 'react-navigation';
 
-const width = Dimensions.get('window').width;
-const height = Dimensions.get('window').height;
+const { width, height } = Dimensions.get('window');
 
 export default {
   window: {

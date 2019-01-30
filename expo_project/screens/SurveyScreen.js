@@ -15,11 +15,11 @@ import { Divider, Paragraph } from 'react-native-paper';
 import { withNavigation } from 'react-navigation';
 import * as _ from 'lodash';
 import moment from 'moment';
+import * as uuid from 'uuid';
 import MapWithMarkers from '../components/MapWithMarkers';
 import PersonIcon from '../components/PersonIcon';
 import Survey from '../components/Survey';
 import Layout from '../constants/Layout';
-import * as uuid from 'uuid';
 import Theme from '../constants/Theme';
 import NoteModal from '../components/NoteModal';
 import MarkerMenu from '../components/MarkerMenu';
@@ -31,7 +31,9 @@ import { getRandomIconColor } from '../utils/color';
 // TODO (Ananta): shouold be dynamically set
 const MIN_DRAWER_TRANSLATE_Y = 0;
 const MID_DRAWER_TRANSLATE_Y = Layout.drawer.height - 300;
-const MAX_DRAWER_TRANSLATE_Y = Layout.drawer.height - 100; // mostly collapsed, with just the header peaking out
+
+// mostly collapsed, with just the header peaking out
+const MAX_DRAWER_TRANSLATE_Y = Layout.drawer.height - 100;
 const INITIAL_DRAWER_TRANSLATE_Y = MAX_DRAWER_TRANSLATE_Y;
 
 class Indicator extends React.Component {
@@ -72,13 +74,15 @@ class SurveyScreen extends React.Component {
             paddingVertical: 5,
             borderRadius: 20,
             marginLeft: 10,
-          }}>
+          }}
+        >
           <Text
             style={{
               fontSize: 14,
               color: Theme.colors.primary,
               fontFamily: 'product-medium',
-            }}>
+            }}
+          >
             Exit
           </Text>
         </TouchableOpacity>
@@ -89,7 +93,8 @@ class SurveyScreen extends React.Component {
           onPress={() => params.navigateToMarkerList()}
           style={{
             marginRight: 10,
-          }}>
+          }}
+        >
           <Icon.MaterialIcons name="people" size={30} color="white" />
         </TouchableOpacity>
       ),
@@ -111,7 +116,7 @@ class SurveyScreen extends React.Component {
       pan: new Animated.Value(INITIAL_DRAWER_TRANSLATE_Y),
     };
     this._drawerY = INITIAL_DRAWER_TRANSLATE_Y;
-    this.state.pan.addListener(value => {
+    this.state.pan.addListener((value) => {
       this._drawerY = value.value;
     });
 
@@ -127,34 +132,14 @@ class SurveyScreen extends React.Component {
     this.syncMarkersWithListView = this.syncMarkersWithListView.bind(this);
   }
 
-  componentDidMount() {
-    const surveyId = this.props.navigation.getParam('surveyId');
-
-    this.props.navigation.setParams({
-      navigateToMarkerList: this.navigateToMarkerList,
-    });
-
-    getDataPointsforSurvey(this.state.token, surveyId).then(dataPoints => {
-      const markers = dataPoints.map((d, i) => {
-        const title = `Person ${i}`;
-        const color = getRandomIconColor();
-        return {
-          ...d,
-          color,
-          title,
-        };
-      });
-      this.setState({ markers });
-    });
-  }
-
   componentWillMount() {
     this._panResponder = PanResponder.create({
-      onStartShouldSetPanResponder: (evt, gestureState) => false,
-      onStartShouldSetPanResponderCapture: (evt, gestureState) => false,
+      onStartShouldSetPanResponder: () => false,
+      onStartShouldSetPanResponderCapture: () => false,
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
-        // This method captures gestures, (which means the scrollview will not scroll)
-        // For drags that should not block other gesture responses, use onMoveShouldSetPanResponder instead
+        // This method captures gestures, (which means the scrollview will not scroll).
+        // For drags that should not block other gesture responses,
+        // use onMoveShouldSetPanResponder instead
         const verticalDistance = Math.abs(gestureState.dy);
         const horizontalDistance = Math.abs(gestureState.dx);
         const isVerticalPan = verticalDistance > horizontalDistance;
@@ -165,19 +150,20 @@ class SurveyScreen extends React.Component {
             // Respond to upward drags so long as there is room to expand the drawer
             const hasSpaceToPanUp = this._drawerY > MIN_DRAWER_TRANSLATE_Y;
             return hasSpaceToPanUp;
-          } else {
-            // Respond to downward drags if they are a long distance / high velocity or the scrollview is at the top
-            const hasSpaceToPanDown = this._drawerY <= MAX_DRAWER_TRANSLATE_Y;
-            const isScrolledToTop = !this.state.formScrollPosition;
-            const isHeavyScroll = Math.abs(gestureState.dy) > 80 || Math.abs(gestureState.vy) > 1.2;
-            return hasSpaceToPanDown && (isScrolledToTop || isHeavyScroll);
           }
+          // Respond to downward drags if they are a long distance / high velocity
+          // or if the scrollview is at the top
+          const hasSpaceToPanDown = this._drawerY <= MAX_DRAWER_TRANSLATE_Y;
+          const isScrolledToTop = !this.state.formScrollPosition;
+          const isHeavyScroll = Math.abs(gestureState.dy) > 80 || Math.abs(gestureState.vy) > 1.2;
+          return hasSpaceToPanDown && (isScrolledToTop || isHeavyScroll);
         }
         return false;
       },
       // set store current value as offset, and set value to 0,
-      // since onPanResponderMove converts delta offset into value and starts from 0 on every new gesture
-      onPanResponderGrant: (evt, gestureState) => {
+      // since onPanResponderMove converts delta offset into value
+      // and starts from 0 on every new gesture
+      onPanResponderGrant: () => {
         this.state.pan.setOffset(this.state.pan._value);
         this.state.pan.setValue(0);
       },
@@ -208,31 +194,30 @@ class SurveyScreen extends React.Component {
     });
   }
 
+  componentDidMount() {
+    const surveyId = this.props.navigation.getParam('surveyId');
+
+    this.props.navigation.setParams({
+      navigateToMarkerList: this.navigateToMarkerList,
+    });
+
+    getDataPointsforSurvey(this.state.token, surveyId).then((dataPoints) => {
+      const markers = dataPoints.map((d, i) => {
+        const title = `Person ${i}`;
+        const color = getRandomIconColor();
+        return {
+          ...d,
+          color,
+          title,
+        };
+      });
+      this.setState({ markers });
+    });
+  }
+
   getToggleDirection() {
     const direction = this._drawerY === MIN_DRAWER_TRANSLATE_Y ? 'down' : 'up';
     return direction;
-  }
-
-  toggleDrawer() {
-    const y =
-      this.getToggleDirection() === 'down' ? MAX_DRAWER_TRANSLATE_Y : MIN_DRAWER_TRANSLATE_Y;
-    this.resetDrawer(y);
-  }
-
-  resetDrawer(y = MID_DRAWER_TRANSLATE_Y) {
-    if (this._drawerY !== y && this.state.markers.length) {
-      Animated.timing(this.state.pan, {
-        toValue: y,
-        duration: 200,
-        useNativeDriver: true,
-      }).start(() => {
-        // hack to trigger a re-render
-        this.setState(this.state);
-      });
-    }
-    if (this.state.formScrollPosition) {
-      this.scrollView.scrollTo({ y: 0, animated: false });
-    }
   }
 
   setFormResponse(dataPointId, key, value, heightToScroll) {
@@ -249,7 +234,7 @@ class SurveyScreen extends React.Component {
       });
 
       if (surveyId !== 'DEMO') {
-        saveDataPoint(token, surveyId, marker).catch(error => {
+        saveDataPoint(token, surveyId, marker).catch(() => {
           Alert.alert(
             'Error',
             'Something went wrong while updating marker. Please try again later.',
@@ -301,6 +286,27 @@ class SurveyScreen extends React.Component {
     }
   }
 
+  resetDrawer(y = MID_DRAWER_TRANSLATE_Y) {
+    if (this._drawerY !== y && this.state.markers.length) {
+      Animated.timing(this.state.pan, {
+        toValue: y,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(() => {
+        // hack to trigger a re-render
+        this.setState(this.state);
+      });
+    }
+    if (this.state.formScrollPosition) {
+      this.scrollView.scrollTo({ y: 0, animated: false });
+    }
+  }
+
+  toggleDrawer() {
+    const y = this.getToggleDirection() === 'down' ? MAX_DRAWER_TRANSLATE_Y : MIN_DRAWER_TRANSLATE_Y;
+    this.resetDrawer(y);
+  }
+
   deleteMarker(dataPointId) {
     const surveyId = this.props.navigation.getParam('surveyId');
 
@@ -317,7 +323,7 @@ class SurveyScreen extends React.Component {
     });
 
     if (surveyId !== 'DEMO') {
-      deleteDataPoint(this.state.token, surveyId, dataPointId).catch(function(error) {
+      deleteDataPoint(this.state.token, surveyId, dataPointId).catch(() => {
         Alert.alert('Error', 'Something went wrong removing datapoint. Please try again later.', [
           { text: 'OK' },
         ]);
@@ -340,7 +346,7 @@ class SurveyScreen extends React.Component {
     if (markerToCopy) {
       const date = moment();
       const dateLabel = date.format('HH:mm');
-      const title = 'Person ' + (markersCopy.length + 1);
+      const title = `Person ${markersCopy.length + 1}`;
       const dataPointId = uuid.v4();
       const color = getRandomIconColor([markerToCopy.color]);
       const { activeMarkerId: oldActiveMarkerId } = this.state;
@@ -358,7 +364,7 @@ class SurveyScreen extends React.Component {
       this.setState({ markers: markersCopy, activeMarkerId: dataPointId }, this.resetDrawer);
 
       if (surveyId !== 'DEMO') {
-        saveDataPoint(this.state.token, surveyId, duplicateMarker).catch(error => {
+        saveDataPoint(this.state.token, surveyId, duplicateMarker).catch((error) => {
           Alert.alert(
             'Error',
             'Something went wrong while duplicating marker. Please try again later.',
@@ -389,7 +395,7 @@ class SurveyScreen extends React.Component {
     // todo creation date vs latest update date? how do we handle the numbering later w/o creation?
     const date = moment();
     const dateLabel = date.format('HH:mm');
-    const title = 'Person ' + (markers.length + 1);
+    const title = `Person ${markers.length + 1}`;
     const dataPointId = uuid.v4();
 
     const marker = {
@@ -403,7 +409,7 @@ class SurveyScreen extends React.Component {
 
     this.setState({ markers: [...markers, marker], activeMarkerId: dataPointId }, this.resetDrawer);
     if (surveyId !== 'DEMO') {
-      saveDataPoint(this.state.token, surveyId, marker).catch(error => {
+      saveDataPoint(this.state.token, surveyId, marker).catch((error) => {
         Alert.alert(
           'Error',
           'Something went wrong while creating a marker. Please try again later.',
@@ -477,11 +483,13 @@ class SurveyScreen extends React.Component {
               ],
             },
           ]}
-          {...this._panResponder.panHandlers}>
+          {...this._panResponder.panHandlers}
+        >
           <TouchableOpacity
             style={[styles.drawerHeader]}
             activeOpacity={1}
-            onPress={this.toggleDrawer}>
+            onPress={this.toggleDrawer}
+          >
             <Indicator onPress={this.toggleDrawer} />
             {activeMarker && (
               <View style={styles.headerContent}>
@@ -495,12 +503,13 @@ class SurveyScreen extends React.Component {
                 <TouchableOpacity
                   style={styles.markerMenuButton}
                   activeOpacity={1}
-                  onPress={e => {
+                  onPress={(e) => {
                     const { pageY } = e.nativeEvent;
                     this.setState({
                       markerMenuTopLocation: pageY - 120,
                     });
-                  }}>
+                  }}
+                >
                   <Icon.MaterialCommunityIcons name="dots-vertical" color="#787878" size={24} />
                 </TouchableOpacity>
               </View>
@@ -511,14 +520,15 @@ class SurveyScreen extends React.Component {
             <ScrollView
               style={styles.formContainer}
               ref={ref => (this.scrollView = ref)}
-              onScroll={e => {
+              onScroll={(e) => {
                 this.setState({
                   formScrollPosition: e.nativeEvent.contentOffset.y,
                 });
               }}
               scrollEventThrottle={0}
               showsHorizontalScrollIndicator={false}
-              showsVerticalScrollIndicator={false}>
+              showsVerticalScrollIndicator={false}
+            >
               <Survey
                 fields={studyFields}
                 activeMarker={activeMarker}
@@ -527,17 +537,18 @@ class SurveyScreen extends React.Component {
               <Divider />
               <View style={styles.drawerFooter}>
                 <TouchableOpacity
-                  onPress={() =>
-                    this.setState({
-                      noteModalVisible: true,
-                    })
+                  onPress={() => this.setState({
+                    noteModalVisible: true,
+                  })
                   }
-                  style={styles.greyButton}>
+                  style={styles.greyButton}
+                >
                   <Text>{noteButtonLabel}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => this.resetDrawer(MAX_DRAWER_TRANSLATE_Y)}
-                  style={styles.greyButton}>
+                  style={styles.greyButton}
+                >
                   <Text>Back to Map</Text>
                 </TouchableOpacity>
               </View>
@@ -562,8 +573,8 @@ class SurveyScreen extends React.Component {
         {this.state.noteModalVisible && (
           <NoteModal
             initialValue={note}
-            onClose={note => {
-              this.setFormResponse(activeMarkerId, 'note', note, 0);
+            onClose={(updatedNote) => {
+              this.setFormResponse(activeMarkerId, 'note', updatedNote, 0);
               this.setState({ noteModalVisible: false });
             }}
           />

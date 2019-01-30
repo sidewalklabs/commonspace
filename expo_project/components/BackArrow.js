@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Icon } from 'expo';
 
 class BackArrow extends React.Component {
   render() {
@@ -13,8 +13,9 @@ class BackArrow extends React.Component {
         }}
         style={{
           marginLeft: 10,
-        }}>
-        <Feather name="arrow-left" size={30} color="white" />
+        }}
+      >
+        <Icon.Feather name="arrow-left" size={30} color="white" />
       </TouchableOpacity>
     );
   }

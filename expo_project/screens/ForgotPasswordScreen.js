@@ -1,13 +1,15 @@
 import React from 'react';
-import { Alert, Image, Text, TextInput, TouchableHighlight, View } from 'react-native';
+import {
+  Alert, Image, Text, TextInput, TouchableHighlight, View,
+} from 'react-native';
 import { withNavigation } from 'react-navigation';
+import { WebBrowser } from 'expo';
+import color from 'color';
 import BackArrow from '../components/BackArrow';
 import SharedGradient from '../components/SharedGradient';
-import { WebBrowser } from 'expo';
 import { sendPasswordResetEmail } from '../lib/commonsClient';
 import authStyles from '../stylesheets/auth';
 import urls from '../config/urls';
-import color from 'color';
 
 class ForgotPasswordScreen extends React.Component {
   static navigationOptions = ({ navigation }) => ({
@@ -38,16 +40,14 @@ class ForgotPasswordScreen extends React.Component {
     this.setState({ fetching: false });
   };
 
-  _openLink = async uri => {
-    return await WebBrowser.openBrowserAsync(uri);
-  };
+  _openLink = async uri => WebBrowser.openBrowserAsync(uri);
 
   render() {
     return (
       <SharedGradient style={authStyles.container}>
         <Image source={require('../assets/images/CSIcon_36_white.png')} style={authStyles.logo} />
         <View style={authStyles.content}>
-          <Text style={authStyles.title}>{`Reset\nPassword`}</Text>
+          <Text style={authStyles.title}>{'Reset\nPassword'}</Text>
           <View style={authStyles.formContainer}>
             <TextInput
               style={{ height: 40 }}
@@ -63,7 +63,8 @@ class ForgotPasswordScreen extends React.Component {
             disabled={this.state.fetching}
             style={[authStyles.cta, authStyles.primaryCta]}
             underlayColor={color('#ffcf2b').darken(0.2)}
-            onPress={this._resetPassword}>
+            onPress={this._resetPassword}
+          >
             <Text style={[authStyles.ctaCopy, authStyles.primaryCtaCopy]}>Reset Password</Text>
           </TouchableHighlight>
         </View>
@@ -71,7 +72,8 @@ class ForgotPasswordScreen extends React.Component {
           <TouchableHighlight
             underlayColor="#00000010"
             style={authStyles.cta}
-            onPress={() => this._openLink(urls.privacy)}>
+            onPress={() => this._openLink(urls.privacy)}
+          >
             <Text style={authStyles.ctaCopy}>Privacy & Terms</Text>
           </TouchableHighlight>
         </View>

@@ -9,10 +9,8 @@ import {
   TouchableHighlight,
   View,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { Divider } from 'react-native-paper';
-import { WebBrowser } from 'expo';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon, WebBrowser } from 'expo';
 import { SafeAreaView } from 'react-navigation';
 import Theme from '../constants/Theme';
 import urls from '../config/urls';
@@ -23,19 +21,17 @@ class DrawerNavigatorScreen extends React.Component {
     loading: true,
   };
 
+  async componentDidMount() {
+    const email = await AsyncStorage.getItem('email');
+    this.setState({ email, loading: false });
+  }
+
   _signOut = async () => {
     await AsyncStorage.clear();
     this.props.navigation.navigate('Auth');
   };
 
-  _openUrl = async url => {
-    return await WebBrowser.openBrowserAsync(url);
-  };
-
-  async componentDidMount() {
-    const email = await AsyncStorage.getItem('email');
-    this.setState({ email, loading: false });
-  }
+  _openUrl = async url => WebBrowser.openBrowserAsync(url);
 
   render() {
     const { loading, email } = this.state;
@@ -62,9 +58,10 @@ class DrawerNavigatorScreen extends React.Component {
                   <TouchableHighlight
                     underlayColor={`${Theme.colors.primary}15`}
                     style={[styles.button, activeItemKey === 'AppStack' && styles.activeButton]}
-                    onPress={() => navigation.navigate('AppStack')}>
+                    onPress={() => navigation.navigate('AppStack')}
+                  >
                     <View style={styles.buttonRow}>
-                      <Ionicons
+                      <Icon.Ionicons
                         style={[
                           styles.buttonIcon,
                           activeItemKey === 'AppStack' && styles.activeButtonIcon,
@@ -77,7 +74,8 @@ class DrawerNavigatorScreen extends React.Component {
                         style={[
                           styles.buttonText,
                           activeItemKey === 'AppStack' && styles.activeButtonText,
-                        ]}>
+                        ]}
+                      >
                         Studies
                       </Text>
                     </View>
@@ -86,9 +84,10 @@ class DrawerNavigatorScreen extends React.Component {
                 <TouchableHighlight
                   underlayColor={`${Theme.colors.primary}15`}
                   style={[styles.button, activeItemKey === 'DemoStack' && styles.activeButton]}
-                  onPress={() => navigation.navigate('DemoStack')}>
+                  onPress={() => navigation.navigate('DemoStack')}
+                >
                   <View style={styles.buttonRow}>
-                    <Ionicons
+                    <Icon.Ionicons
                       style={[
                         styles.buttonIcon,
                         activeItemKey === 'DemoStack' && styles.activeButtonIcon,
@@ -101,7 +100,8 @@ class DrawerNavigatorScreen extends React.Component {
                       style={[
                         styles.buttonText,
                         activeItemKey === 'DemoStack' && styles.activeButtonText,
-                      ]}>
+                      ]}
+                    >
                       Demo Studies
                     </Text>
                   </View>
@@ -109,9 +109,10 @@ class DrawerNavigatorScreen extends React.Component {
                 <TouchableHighlight
                   underlayColor={`${Theme.colors.primary}15`}
                   style={styles.button}
-                  onPress={() => this._openUrl(urls.homepage)}>
+                  onPress={() => this._openUrl(urls.homepage)}
+                >
                   <View style={styles.buttonRow}>
-                    <Ionicons
+                    <Icon.Ionicons
                       style={styles.buttonIcon}
                       name="md-help-circle"
                       size={24}
@@ -124,7 +125,8 @@ class DrawerNavigatorScreen extends React.Component {
                 <TouchableHighlight
                   underlayColor={`${Theme.colors.primary}15`}
                   style={styles.button}
-                  onPress={() => this._openUrl(urls.privacy)}>
+                  onPress={() => this._openUrl(urls.privacy)}
+                >
                   <View style={styles.buttonRow}>
                     <Text style={styles.buttonText}>Privacy Policy</Text>
                   </View>
@@ -132,7 +134,8 @@ class DrawerNavigatorScreen extends React.Component {
                 <TouchableHighlight
                   underlayColor={`${Theme.colors.primary}15`}
                   style={styles.button}
-                  onPress={() => this._openUrl(urls.terms)}>
+                  onPress={() => this._openUrl(urls.terms)}
+                >
                   <View style={styles.buttonRow}>
                     <Text style={styles.buttonText}>Terms of Service</Text>
                   </View>
@@ -145,13 +148,15 @@ class DrawerNavigatorScreen extends React.Component {
                     <Text
                       numberOfLines={1}
                       style={{ fontSize: 12, color: 'rgba(0, 0, 0, 0.5)' }}
-                      ellipsizeMode="tail">
+                      ellipsizeMode="tail"
+                    >
                       Logged in as
                     </Text>
                     <Text
                       numberOfLines={1}
                       style={{ fontSize: 12, color: 'rgba(0, 0, 0, 0.8)' }}
-                      ellipsizeMode="tail">
+                      ellipsizeMode="tail"
+                    >
                       {email}
                     </Text>
                   </View>
@@ -162,7 +167,8 @@ class DrawerNavigatorScreen extends React.Component {
                     primary
                     style={styles.signOutButton}
                     onPress={this._signOut}
-                    theme={{ ...Theme, roundness: 20 }}>
+                    theme={{ ...Theme, roundness: 20 }}
+                  >
                     <Text style={styles.signOutButtonText}>{email ? 'Sign Out' : 'Exit Demo'}</Text>
                   </TouchableHighlight>
                 </View>
@@ -262,9 +268,5 @@ const styles = StyleSheet.create({
     height: 0.5,
   },
 });
-
-DrawerNavigatorScreen.propTypes = {
-  navigation: PropTypes.object,
-};
 
 export default DrawerNavigatorScreen;

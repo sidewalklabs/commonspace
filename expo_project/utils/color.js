@@ -1,6 +1,7 @@
-import { iconColors } from '../constants/Colors';
 import * as _ from 'lodash';
+import { iconColors } from '../constants/Colors';
 
+/* eslint-disable import/prefer-default-export */
 export function getRandomIconColor(blacklistedColors = []) {
   // enforce next color is not current color
   const iconColorOptions = _.filter(
@@ -9,3 +10,4 @@ export function getRandomIconColor(blacklistedColors = []) {
   );
   return _.sample(iconColorOptions);
 }
+/* eslint-enable import/prefer-default-export */

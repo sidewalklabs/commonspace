@@ -2,9 +2,8 @@ import { MapView } from 'expo';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { Platform, StyleSheet, TouchableOpacity } from 'react-native';
-import { AnimatedCircularProgress } from 'react-native-circular-progress';
-import PersonIcon from '../components/PersonIcon';
-import * as _ from 'lodash';
+import { AnimatedCircularProgress } from './ReactNativeCircularProgress';
+import PersonIcon from './PersonIcon';
 
 import { getRandomIconColor } from '../utils/color';
 
@@ -25,8 +24,9 @@ class MapWithMarkers extends React.Component {
   };
 
   startProgressAnimation = (locationX, locationY) => {
+    const blacklistedColors = [this.state.markerColor];
     this.setState({
-      markerColor: getRandomIconColor([this.state.markerColor]),
+      markerColor: getRandomIconColor(blacklistedColors),
       circularProgressLocation: {
         top: locationY - CIRCULAR_PROGRESS_SIZE / 2,
         left: locationX - CIRCULAR_PROGRESS_SIZE / 2,
@@ -35,10 +35,11 @@ class MapWithMarkers extends React.Component {
   };
 
   stopProgressAnimation = () => {
-    this.state.circularProgressLocation &&
+    if (this.state.circularProgressLocation) {
       this.setState({
         circularProgressLocation: null,
       });
+    }
   };
 
   fitToCoordinates = () => {
@@ -51,10 +52,11 @@ class MapWithMarkers extends React.Component {
   };
 
   render() {
-    /* 
+    /*
       Note: we're taking advantage of the fact that AnimatedCircularProgress animates on mount
-      by mounting on pressIn and unmounting on pressOut. 
-      Unmounting so often might give us a noticeable performance hit, so if that happens, we can instead manage fill in state.
+      by mounting on pressIn and unmounting on pressOut.
+      Unmounting so often might give us a noticeable performance hit,
+      so if that happens, we can instead manage fill in state.
     */
     const {
       markers,
@@ -70,15 +72,16 @@ class MapWithMarkers extends React.Component {
     return (
       <TouchableOpacity
         activeOpacity={1}
-        onPressIn={e => {
+        onPressIn={(e) => {
           this.startProgressAnimation(e.nativeEvent.locationX, e.nativeEvent.locationY);
         }}
-        onPressOut={e => {
+        onPressOut={() => {
           this.stopProgressAnimation();
         }}
-        style={styles.container}>
+        style={styles.container}
+      >
         <MapView
-          ref={ref => {
+          ref={(ref) => {
             this.map = ref;
           }}
           mapPadding={mapPadding}
@@ -93,7 +96,8 @@ class MapWithMarkers extends React.Component {
           zoomEnabled
           onRegionChange={this.stopProgressAnimation}
           pitchEnabled={false}
-          mapType="satellite">
+          mapType="satellite"
+        >
           <MapView.Polyline coordinates={zoneLatLngs} strokeColor="#D77C61" strokeWidth={6} />
           {markers.map((marker, index) => {
             const selected = marker.dataPointId === activeMarkerId;
@@ -110,7 +114,8 @@ class MapWithMarkers extends React.Component {
                 identifier={marker.dataPointId}
                 stopPropagation
                 onPress={() => onMarkerPress(marker.dataPointId)}
-                anchor={{ x: 0.5, y: 0.5 }}>
+                anchor={{ x: 0.5, y: 0.5 }}
+              >
                 <PersonIcon backgroundColor={marker.color} size={selected ? 24 : 16} />
               </MapView.Marker>
             );
@@ -193,11 +198,15 @@ MapWithMarkers.propTypes = {
       latitude: PropTypes.number,
       longitude: PropTypes.number,
     }),
-  ),
+  ).isRequired,
   activeMarkerId: PropTypes.string,
   onMarkerPress: PropTypes.func.isRequired,
   onMapPress: PropTypes.func.isRequired,
   onMapLongPress: PropTypes.func.isRequired,
+};
+
+MapWithMarkers.defaultProps = {
+  activeMarkerId: '',
 };
 
 export default MapWithMarkers;
