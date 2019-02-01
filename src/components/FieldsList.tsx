@@ -44,6 +44,7 @@ const FieldsList = withStyles(styles)(observer((props: FieldsListProps & WithSty
             const newFields = [...currentStudy.fields, possibleField];
             newFields.sort((a, b) => AVAILABLE_FIELDS.indexOf(a) - AVAILABLE_FIELDS.indexOf(b));
             return (< Chip
+                key={possibleField}
                 label={possibleField}
                 onClick={() => {
                     currentStudy.fields = newFields;
@@ -53,6 +54,7 @@ const FieldsList = withStyles(styles)(observer((props: FieldsListProps & WithSty
         } else {
             return (< Chip
                 label={possibleField}
+                key={possibleField}
                 onDelete={() => {
                     currentStudy.fields.splice(index, 1)
                     currentStudy.fields = [...currentStudy.fields];

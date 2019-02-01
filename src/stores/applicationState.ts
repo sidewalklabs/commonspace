@@ -295,7 +295,17 @@ async function calculateMapCenter(map: FeatureCollection): Promise<LongitudeLati
 }
 
 const mapCentersComputation = computed(async () => {
-    const { studies} = applicationState;
+    const { currentStudy, studies } = applicationState;
+    let currentStudyCenter = null;
+    if ( currentStudy && currentStudy.map.features.length > 0) {
+        const { studyId } = currentStudy
+        const { longitude, latitude } = await calculateMapCenter(currentStudy.map)
+        currentStudyCenter = {}
+        currentStudyCenter[studyId] = {
+            longitude,
+            latitude
+        }
+    }
     const studyIdToCenter: {[key: string]: LongitudeLatitude}[] = await Promise.all(Object.keys(studies).map(async studyId => {
         const study = studies[studyId];
         let res: {[key: string]: LongitudeLatitude} = {};
@@ -306,7 +316,10 @@ const mapCentersComputation = computed(async () => {
         }
         return res;
     }));
-    const result: {[key: string]: LongitudeLatitude}= Object.assign({}, ...studyIdToCenter);
+
+    const result: {[key: string]: LongitudeLatitude} = currentStudyCenter ?
+            Object.assign({}, ...studyIdToCenter, currentStudyCenter) :
+            Object.assign({}, ...studyIdToCenter);
     return result;
 });
 
@@ -334,9 +347,7 @@ export function getMapCenterForStudy(studyId: string) {
 }
 
 autorun(() => {
-    if (applicationState.currentStudy) {
-        console.log(toJS(applicationState.currentStudy.map))
-    }
+    console.log(toJS(applicationState.mapCenters))
 });
 
 export default applicationState;
