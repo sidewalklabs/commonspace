@@ -27,7 +27,8 @@ interface MainProps {
 const styles = theme => ({
     root: {
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        alignItems: 'center'
     },
     toolbar: {
         color: 'inherit'
