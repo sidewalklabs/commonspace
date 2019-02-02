@@ -9,7 +9,7 @@ spec:
   selector:
     app: swl-commons
   ports:
-    - name: "3000"
+    - name: node
       port: 3000
       targetPort: 3000
   type: NodePort
