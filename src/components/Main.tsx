@@ -36,15 +36,37 @@ interface MainProps {
 const styles = theme => ({
     root: {
         width: '100%',
-        height: '100%'
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        backgroundColor: 'transparent'
     },
     toolbar: {
-        color: 'inherit'
+        color: 'inherit',
+        backgroundColor: 'white'
     },
     appBar: {
         position: 'relative',
         display: 'flex',
         marginTop: 'auto'
+    },
+    mainBody: {
+        width: '80%',
+        minWidth: '300px',
+        display: 'flex',
+        alignItems: 'center',
+        flexDirection: 'column'
+    },
+    row: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        marginTop: '25px',
+        marginBottom: '15px',
+        width: '100%'
+    },
+    studiesList: {
+        width: '100%'
     },
     title: {
         marginLeft: theme.spacing.unit * 2,
@@ -91,7 +113,7 @@ const Main = observer(
                     color="default"
                 >
                     <Toolbar className={classes.toolbar}>
-                        <Avatar alt="Commons Icon" src="/assests/images/CircleIcon.png" className={classes.avatar} />
+                        <Avatar alt="Commons Icon" src="/assets/images/CircleIcon.png" className={classes.avatar} />
                         <Typography
                             component="h1"
                             variant="title"
@@ -99,7 +121,7 @@ const Main = observer(
                             noWrap
                             className={classes.title}
                         >
-                            Commons
+                            CommonSpace
                         </Typography>
                         <IconButton
                             color="inherit"
@@ -121,20 +143,22 @@ const Main = observer(
                         </Menu>
                     </Toolbar>
                 </AppBar>
-                <div>
-                    <Typography
-                        component="h1"
-                        variant="title"
-                        color="inherit"
-                        noWrap
-                        className={classes.title}
-                    >
-                        All Studies
-                    </Typography>
-                    <Button color="primary" variant="contained" onClick={prepareNewStudy}>
-                        New study
-                    </Button>
-                    <Paper>
+                <div className={classes.mainBody}>
+                    <div className={classes.row}>
+                        <Typography
+                            component="h1"
+                            variant="title"
+                            color="inherit"
+                            noWrap
+                            className={classes.title}
+                        >
+                            All Studies
+                        </Typography>
+                        <Button color="primary" variant="contained" onClick={prepareNewStudy}>
+                            New study
+                        </Button>
+                    </div>
+                    <Paper className={classes.studiesList}>
                         <List>
                             <StudiesList studies={studies} />
                         </List>
