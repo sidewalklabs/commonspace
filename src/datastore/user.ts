@@ -93,19 +93,16 @@ export async function createUser(pool: pg.Pool, user: User): Promise<void> {
     } catch (error) {
         if (error.code === UNIQUE_VIOLATION) {
             // unverified emails are created using oauth, and don't have a password associated with them
-            // a verified email will have a password
+            // a verified email will have a password, these are implicit conventions by design
             const query = `SELECT password
                            FROM users
                            WHERE email = $1`
             const values = [email];
             const { rows } = await pool.query(query, values);
-            const { password } = rows[0];
-            if (password === '') {
-                const query = `UPDATE user
-                               SET password = $1
-                               where email = $2`
-                const values = [password, email]
-                await pool.query(query, values);
+            const { password: currentPassword } = rows[0];
+            if (currentPassword === '' || currentPassword === null) {
+                await changeUserPassword(pool, email, password);
+                return;
             }
         }
         throw new Error(`User for email ${user.email} already exists`)
