@@ -31,6 +31,7 @@ export async function signUpUser() {
     const { name, password, passwordConfirmation, email} = signUpState;
     if (password !== passwordConfirmation) {
         signUpState.passwordConfirmationErrorMessage = 'Passwords must match';
+        return;
     }
     const data = {
         password,
