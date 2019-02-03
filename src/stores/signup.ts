@@ -4,6 +4,38 @@ import snakecaseKeys from 'snakecase-keys';
 import { navigate } from './router';
 import uiState, { setSnackBar } from './ui';
 
+
+const MAX_PASSWORD_LENGTH = 1000
+const MIN_PASSWORD_LENGTH = 7
+const SPECIAL_CHARACTERS = ['!', '@', '#', '$', '%', '^', '&', '*', '?']
+export class SignupFormValidationError extends Error {}
+
+export function checkPasswordInput(password: string): string {
+    if (password.length < MIN_PASSWORD_LENGTH) {
+        throw new SignupFormValidationError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters long`);
+    }
+    if (password.length > MAX_PASSWORD_LENGTH) {
+        throw new SignupFormValidationError(`Password must be less than ${MAX_PASSWORD_LENGTH} characters long`);
+    }
+    const specialCharacterPresent = SPECIAL_CHARACTERS.reduce((acc, curr) => {
+        if (acc) {
+            return acc;
+        }
+        return password.indexOf(curr) !== -1;
+    }, false);
+    if (!specialCharacterPresent) {
+        throw new SignupFormValidationError(`Password must contain one special character from: ${JSON.stringify(SPECIAL_CHARACTERS)}`);
+    }
+    return password;
+}
+
+export function checkEmailInput(email: string): string {
+    if (email.indexOf('@') === -1) {
+        throw new SignupFormValidationError('Invalid syntax for email');
+    }
+    return email;
+}
+
 export async function logInUserGoogleOAuth(response) {
     const { profileObj, accessToken } = response;
 
@@ -31,6 +63,16 @@ export async function signUpUser() {
     const { name, password, passwordConfirmation, email} = signUpState;
     if (password !== passwordConfirmation) {
         signUpState.passwordConfirmationErrorMessage = 'Passwords must match';
+        setSnackBar('error', 'Passwords must match');
+        return;
+    }
+    try {
+        checkEmailInput(email);
+        checkPasswordInput(password);
+    } catch (error) {
+        if (error instanceof SignupFormValidationError) {
+            setSnackBar('error', error.message);
+        }
         return;
     }
     const data = {

@@ -26,7 +26,7 @@ export async function logInUser() {
         navigate('/studies');
     } else {
         console.error(response.statusText);
-        setSnackBar('error', `Unable to Log In: ${response.statusText}`);
+        setSnackBar('error', `Unable to log in, are email and password correct?`);
     }
 }
 
