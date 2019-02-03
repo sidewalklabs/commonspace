@@ -82,6 +82,7 @@ export async function emailForResetToken(pool: Pool, token: string): Promise<str
 export async function resetPassword(pool: Pool, password:string, token: string): Promise<void> {
     const email = await emailForResetToken(DbPool, token);
     if (email) {
+        checkPasswordRequirements(password);
         await changeUserPassword(DbPool, email, password);
         await removePasswordResetToken(pool, token);
     }
@@ -123,7 +124,7 @@ export function sendSignupVerificationEmail(host: string, email: string) {
 
 export class PasswordValidationError extends Error {}
 
-function checkPasswordRequirements(password: string): string {
+export function checkPasswordRequirements(password: string): string {
     if (password.length < MIN_PASSWORD_LENGTH) {
         throw new PasswordValidationError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters long`);
     }

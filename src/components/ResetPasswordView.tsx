@@ -9,6 +9,7 @@ import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { navigate } from '../stores/router';
 import { setSnackBar } from '../stores/ui';
+import { checkPasswordInput, SignupFormValidationError } from '../stores/signup';
 
 
 interface ResetPasswordProps {
@@ -25,7 +26,8 @@ const fetchParams: RequestInit = {
 
 const state = observable({
     password: '',
-    verifyPassword: ''
+    verifyPassword: '',
+    matchingPasswordErrorMessage: ''
 })
 
 const styles = theme => ({
@@ -58,7 +60,20 @@ const styles = theme => ({
 })
 
 async function ResetPasswordRequest(token: string) {
-    const { password } = state;
+    const { password, verifyPassword } = state;
+    if (password !== verifyPassword) {
+        setSnackBar('error', 'Passwords must match');
+        state.matchingPasswordErrorMessage = true;
+        return;
+    }
+    try {
+        checkPasswordInput(password);
+    } catch (error) {
+        if (error instanceof SignupFormValidationError) {
+            setSnackBar('error', error.message);
+        }
+        return;
+    }
     const body = { password }
     const response = await fetch(`/auth/reset_password?token=${token}`, {
         ...fetchParams,
@@ -93,6 +108,7 @@ const ResetPassword = observer((props: ResetPasswordProps & WithStyles) => {
                 label="Verify Password"
                 type="password"
                 onChange={e => state.verifyPassword = e.target.value}
+                error={state.matchingPasswordErrorMessage ? true : false}
                 className={classes.textField} />
             <Button classes={{
                 root: classes.button,
