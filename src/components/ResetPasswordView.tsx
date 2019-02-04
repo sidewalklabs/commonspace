@@ -4,6 +4,7 @@ import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button'
 import Paper from '@material-ui/core/Paper'
 import TextField from '@material-ui/core/TextField'
+import Typography from '@material-ui/core/Typography'
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { navigate } from '../stores/router';
@@ -41,10 +42,19 @@ const styles = theme => ({
         padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit * 3}px`
     },
     textField: {
-        marginLeft: theme.spacing.unit,
-        marginRight: theme.spacing.unit,
-        width: '100%'
-    }
+        margin: theme.spacing.unit,
+        width: '100%',
+        maxWidth: '400px',
+    },
+    button: {
+        margin: theme.spacing.unit * 3,
+        width: '100%',
+        maxWidth: '400px',
+        boxShadow: "none",
+    },
+    buttonLabel: {
+        textTransform: 'none',
+    },
 })
 
 async function ResetPasswordRequest(token: string) {
@@ -71,6 +81,7 @@ const ResetPassword = observer((props: ResetPasswordProps & WithStyles) => {
     const { classes, token } = props;
     return (
         <Paper className={classes.root}>
+            <Typography variant="title" gutterBottom>Reset Password</Typography>
             <TextField
                 id="password"
                 label="New Password"
@@ -83,7 +94,10 @@ const ResetPassword = observer((props: ResetPasswordProps & WithStyles) => {
                 type="password"
                 onChange={e => state.verifyPassword = e.target.value}
                 className={classes.textField} />
-            <Button className={classes.button} variant="contained" color="primary" onClick={async () => await ResetPasswordRequest(token)}>
+            <Button classes={{
+                root: classes.button,
+                label: classes.buttonLabel
+            }} variant="extendedFab" onClick={async () => await ResetPasswordRequest(token)}>
                 Reset
             </Button>
         </Paper>

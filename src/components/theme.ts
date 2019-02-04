@@ -6,9 +6,11 @@ const theme = createMuiTheme({
             main: '#0271cd'
         },
         secondary: {
-            main: '#1C4442'
+            main: '#FFFFFF'
         }
     }
 });
+
+console.log(theme)
 
 export default theme;

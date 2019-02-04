@@ -6,6 +6,7 @@ import { observer } from 'mobx-react';
 import parse from 'url-parse';
 
 import ErrorDisplay from './ErrorDisplay';
+import AuthLandingView from './AuthLandingView';
 import LoginView from './LoginView';
 import MainView from './Main';
 import ResetView from './ResetView';
@@ -81,6 +82,7 @@ const MainWrapper = observer(
         const { classes, router, uiState } = props;
         const { uri } = router;
         const { snackBar } = uiState;
+        const AuthLanding = addRoute('/welcome', AuthLandingView);
         const SignUp = addRoute('/signup', SignUpView);
         const Login = addRoute('/login', LoginView);
         const Reset = addRoute('/reset', ResetView);
@@ -100,6 +102,7 @@ const MainWrapper = observer(
         return (
             <div className={classes.root}>
                 <CssBaseline />
+                <AuthLanding />
                 <Login />
                 <SignUp />
                 <Reset />
