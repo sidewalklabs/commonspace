@@ -38,7 +38,7 @@ export function snakecasePayload(x) {
                 return v; 
             }
         })
-    } else if (typeof x === 'object') {
+    } else if (typeof x === 'object' && x !== null) {
         const kvs = Object.keys(x).map(k => { return {key: k, value: x[k]} })
         const ys = kvs.map(({key, value}) => {
             const keySnakeCase = key.replace( /([A-Z])/g, "_$1").toLowerCase();

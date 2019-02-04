@@ -14,11 +14,11 @@ const validDataPointProperties = new Set([
     'location',
     'creation_date',
     'last_updated',
-    'note'
+    'notes'
 ]);
 
 
-const allStudyFieldsArray: StudyField[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'note'];
+const allStudyFieldsArray: StudyField[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'notes'];
 const allStudyFields: Set<StudyField> = new Set(allStudyFieldsArray);
 const allStudyFieldsStrings: Set<string> = allStudyFields;
 

@@ -12,7 +12,7 @@ import applicationState from '../stores/applicationState';
 import { StudyField } from '../datastore/utils';
 import { StudyType } from '../datastore/study';
 
-const AVAILABLE_FIELDS: StudyField[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'note']
+const AVAILABLE_FIELDS: StudyField[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object']
 
 const styles = theme => ({
     root: {

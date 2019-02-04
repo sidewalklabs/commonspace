@@ -1,6 +1,6 @@
-export type StudyField = 'gender' | 'age' | 'mode' | 'posture' | 'activities' | 'groups' | 'object' | 'location' | 'note';
+export type StudyField = 'gender' | 'age' | 'mode' | 'posture' | 'activities' | 'groups' | 'object' | 'location' | 'notes';
 
-export const ALL_STUDY_FIELDS: StudyField[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'note']
+export const ALL_STUDY_FIELDS: StudyField[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'notes'];
 
 export function studyIdToTablename(studyId: string) {
     return 'data_collection.study_'.concat(studyId.replace(/-/g, ''));

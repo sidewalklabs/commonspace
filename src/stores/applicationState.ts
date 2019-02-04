@@ -27,6 +27,9 @@ interface LongitudeLatitude {
 
 export interface Study {
     studyId: string;
+    author: string;
+    authorUrl: string;
+    description: string;
     protocolVersion: string;
     surveys: {[key: string]: any};
     surveyors: string[];
@@ -164,6 +167,9 @@ function handleErrors(f: (...x: any[]) => Promise<Response>): (...y: any[]) => P
 
 export async function saveNewStudy(studyInput: Study) {
     const study: Study = toJS(studyInput)
+    if (study.fields.indexOf('notes') === -1) {
+        study.fields = [...study.fields, 'notes']
+    }
     study.surveys = Object.values(toJS(studyInput.surveys)).map(survey => {
         const { method = 'analog', representation = 'absolute' } = survey;
         return {
@@ -220,6 +226,9 @@ export function studyEmptySkeleton(): Study {
     return {
         studyId: uuid.v4(),
         title: '',
+        author: '',
+        authorUrl: '',
+        description: '',
         location: '',
         protocolVersion: '1.0',
         surveys: {},

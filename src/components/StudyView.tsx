@@ -121,11 +121,11 @@ const StudyView = observer((props: any & WithStyles) => {
             value: '1.0',
             label: 'latest'
         }
-    ]
+    ];
 
     const { study, classes, studyIsNew } = props;
     if (study) {
-        const { title, location, surveys, studyId, fields, surveyors, protocolVersion, type, map } = study as Study;
+        const { title, author, authorUrl, description, location, surveys, studyId, fields, surveyors, protocolVersion, type, map } = study as Study;
         const { latitude, longitude } = getMapCenterForStudy(studyId);
         const features = map && map.features ? map.features : [];
         const StudyTypeField = props => studyIsNew ?
@@ -168,7 +168,24 @@ const StudyView = observer((props: any & WithStyles) => {
                     onChange={e => study.title = e.target.value}
                     margin="normal"
                 />
-
+                <TextField
+                    className={classes.textField}
+                    label="Description"
+                    value={description}
+                    onChange={e => applicationState.currentStudy.description = e.target.value}
+                />
+                <TextField
+                    className={classes.textField}
+                    label="Author"
+                    value={author}
+                    onChange={e => applicationState.currentStudy.author = e.target.value}
+                />
+                <TextField
+                    className={classes.textField}
+                    label="Author Url"
+                    value={authorUrl}
+                    onChange={e => applicationState.currentStudy.authorUrl = e.target.value}
+                />
                 <StudyTypeField />
                 <TextField
                     className={classes.textField}
