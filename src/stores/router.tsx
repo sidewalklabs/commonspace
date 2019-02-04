@@ -23,7 +23,9 @@ export function addRoute(route: string | BooleanFunction, WrappedComponent: type
 }
 
 export function navigate(route: string) {
-    history.pushState({}, '', route);
+    // TODO: if we use pushState, we need to listen for and handle pops
+    // history.pushState({}, '', route);
+    window.location.pathname = route
     router.uri = sanitizedPathname();
 }
 
@@ -38,12 +40,19 @@ function sanitizedPathname() {
     return route.replace(TRAILING_SLASH, '');
 }
 
-if (window.location.pathname === '/' || (document.cookie.indexOf('commonspacepsuedo=') === -1 && (window.location.pathname !== '/signup' && window.location.pathname !== '/login'))) {
-    window.location.pathname = '/signup';
+const loggedOutPaths = ['/signup', '/login', '/welcome', '/reset', '/reset_password']
+if (
+    window.location.pathname === '/' ||
+    (
+        document.cookie.indexOf('commonspacepsuedo=') === -1 &&
+        !loggedOutPaths.includes(window.location.pathname)
+    )
+) {
+    window.location.pathname = '/welcome';
 }
 
 const router: Router = observable({
-    uri: window.location.pathname === '/' ? '/signup' : sanitizedPathname()
+    uri: window.location.pathname === '/' ? '/welcome' : sanitizedPathname()
 });
 
 autorun(async () => {

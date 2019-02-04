@@ -1,4 +1,5 @@
 import React from 'react';
+import Avatar from '@material-ui/core/Avatar';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button'
 import Paper from '@material-ui/core/Paper'
@@ -7,16 +8,10 @@ import Typography from '@material-ui/core/Typography'
 
 import { observer } from 'mobx-react';
 
-import { addRoute, navigate } from '../stores/router';
-import uiState from '../stores/ui'
+import { navigate } from '../stores/router';
 import logInState, { logInUser } from '../stores/login'
 
 const styles = theme => ({
-    hyperlinkText: {
-        margin: theme.spacing.unit,
-        alignContent: 'flex-end',
-        width: 150
-    },
     root: {
         width: '700px',
         display: 'flex',
@@ -29,18 +24,22 @@ const styles = theme => ({
         alignContent: 'center',
         padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit * 3}px`
     },
-    button: {
-        justifyContent: 'flex-end',
-        alignContent: 'flex-end'
+    avatar: {
+        marginBottom: theme.spacing.unit * 2,
     },
     logInButton: {
-        marinTop: '300px',
-        width: '100%'
+        margin: theme.spacing.unit * 3,
+        width: '100%',
+        maxWidth: '400px',
+        boxShadow: "none",
+    },
+    buttonLabel: {
+        textTransform: 'none',
     },
     textField: {
-        marginLeft: theme.spacing.unit,
-        marginRight: theme.spacing.unit,
-        width: '100%'
+        margin: theme.spacing.unit,
+        width: '100%',
+        maxWidth: '400px',
     }
 });
 
@@ -49,6 +48,8 @@ const LogInView = withStyles(styles)(observer((props: WithStyles) => {
     const { classes } = props;
     return (
         <Paper className={classes.root}>
+            <Avatar alt="Commons Icon" src="/assets/images/CircleIcon.png" className={classes.avatar} />
+            <Typography variant="title" gutterBottom>Login to CommonSpace</Typography>
             <TextField
                 id="login-email"
                 label="Email"
@@ -62,14 +63,17 @@ const LogInView = withStyles(styles)(observer((props: WithStyles) => {
                 onChange={e => logInState.password = e.target.value}
                 error={logInState.passwordErrorMessage ? true : false}
                 className={classes.textField} />
-            <Button className={classes.logInButton} variant="contained" color="primary" onClick={logInUser}>
+            <Button classes={{
+                root: classes.logInButton,
+                label: classes.buttonLabel
+            }} variant="extendedFab" onClick={logInUser}>
                 Log In
             </Button>
-            <Button color="secondary" className={classes.button} onClick={() => navigate("/reset")}>
+            <Button onClick={() => navigate("/reset")}>
                 Forgot Password
             </Button>
-            <Button color="secondary" className={classes.button} onClick={() => navigate("/signup")}>
-                Need An Account? Sign Up Here
+            <Button onClick={() => navigate("/signup")}>
+                Sign Up
             </Button>
         </Paper >
     )

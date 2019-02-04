@@ -1,8 +1,11 @@
 import React from 'react';
+import Avatar from '@material-ui/core/Avatar';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button'
 import Paper from '@material-ui/core/Paper'
 import TextField from '@material-ui/core/TextField'
+import Typography from '@material-ui/core/Typography'
+
 import { observer } from 'mobx-react';
 import resetState, { resetPasswordRequest } from '../stores/reset'
 
@@ -21,18 +24,21 @@ const styles = theme => ({
         alignContent: 'center',
         padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit * 3}px`
     },
-    button: {
-        justifyContent: 'flex-end',
-        alignContent: 'flex-end'
+    avatar: {
+        marginBottom: theme.spacing.unit * 2,
     },
     logInButton: {
-        marinTop: '300px',
-        width: '100%'
+        width: '400px',
+        margin: theme.spacing.unit * 2,
+        boxShadow: "none",
+    },
+    buttonLabel: {
+        textTransform: 'none',
     },
     textField: {
-        marginLeft: theme.spacing.unit,
-        marginRight: theme.spacing.unit,
-        width: '100%'
+        margin: theme.spacing.unit,
+        width: '100%',
+        maxWidth: '400px',
     }
 });
 
@@ -45,15 +51,21 @@ const ResetView = observer((props: ResetProps & WithStyles) => {
     const { classes, email } = props;
     return (
         <Paper className={classes.root}>
+            <Avatar alt="Commons Icon" src="/assets/images/CircleIcon.png" className={classes.avatar} />
+            <Typography variant="title" gutterBottom>Reset Password</Typography>
+            <Typography variant="body1">Enter your account email to receive instructions on how to reset your password</Typography>
             <TextField
                 id="login-email"
                 label="Email"
                 onChange={e => resetState.email = e.target.value}
                 className={classes.textField} />
-            <Button className={classes.logInButton} variant="contained" color="primary" onClick={async () => await resetPasswordRequest()}>
+            <Button classes={{
+                root: classes.logInButton,
+                label: classes.buttonLabel
+            }} variant="extendedFab" onClick={async () => await resetPasswordRequest()}>
                 Send
             </Button>
-            <Button color="secondary" className={classes.button} onClick={() => navigate("/login")}>
+            <Button onClick={() => navigate("/welcome")}>
                 Back to Log In
             </Button>
         </Paper >

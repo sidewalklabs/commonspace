@@ -1,15 +1,15 @@
 import React from 'react';
+import Avatar from '@material-ui/core/Avatar';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button'
 import Paper from '@material-ui/core/Paper'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
-import { GoogleLogin } from 'react-google-login';
 
 import { observer } from 'mobx-react';
 
-import signUpState, { signUpUser, logInUserGoogleOAuth } from '../stores/signup'
-import { addRoute, navigate } from '../stores/router'
+import signUpState, { signUpUser } from '../stores/signup'
+import { navigate } from '../stores/router'
 import { setSnackBar } from '../stores/ui';
 
 const styles = theme => ({
@@ -30,17 +30,22 @@ const styles = theme => ({
         alignContent: 'center',
         padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit * 3}px`
     },
-    button: {
-        justifyContent: 'flex-end',
-        alignContent: 'flex-end'
+    avatar: {
+        marginBottom: theme.spacing.unit * 2,
     },
     signUpButton: {
-        width: '100%'
+        margin: theme.spacing.unit * 3,
+        width: '100%',
+        maxWidth: '400px',
+        boxShadow: "none",
+    },
+    buttonLabel: {
+        textTransform: 'none',
     },
     textField: {
-        marginLeft: theme.spacing.unit,
-        marginRight: theme.spacing.unit,
-        width: '100%'
+        margin: theme.spacing.unit,
+        width: '100%',
+        maxWidth: '400px',
     }
 });
 
@@ -54,23 +59,15 @@ const SignUpView = withStyles(styles)(observer((props: WithStyles) => {
     const { classes } = props;
     return (
         <Paper className={classes.root}>
-            <GoogleLogin
-                clientId={process.env.GOOGLE_AUTH_CLIENT_ID}
-                buttonText="Login With Google"
-                onSuccess={logInUserGoogleOAuth}
-                onFailure={responseGoogleFailure}
-            />
-            OR
+            <Avatar alt="Commons Icon" src="/assets/images/CircleIcon.png" className={classes.avatar} />
+            <Typography variant="title" gutterBottom>Sign up for CommonSpace</Typography>
+            <Typography variant="body1">CommonSpace Admin is in beta, and sign up will fail if you have not been approved.</Typography>
+            <Typography variant="body1">Contact product-support@sidewalklabs.com if you are interested in administering studies.</Typography>
             <TextField
                 id="signUp-email"
                 label="Email"
                 onChange={e => signUpState.email = e.target.value}
                 error={signUpState.emailErrorMessage ? true : false}
-                className={classes.textField} />
-            <TextField
-                id="signUp-name"
-                label="Name"
-                onChange={e => signUpState.name = e.target.value}
                 className={classes.textField} />
             <TextField
                 id="signUp-password"
@@ -86,10 +83,13 @@ const SignUpView = withStyles(styles)(observer((props: WithStyles) => {
                 onChange={e => signUpState.passwordConfirmation = e.target.value}
                 error={signUpState.passwordConfirmationErrorMessage ? true : false}
                 className={classes.textField} />
-            <Button className={classes.signUpButton} variant="contained" color="primary" onClick={signUpUser}>
+            <Button classes={{
+                root: classes.signUpButton,
+                label: classes.buttonLabel
+            }} variant="extendedFab" onClick={signUpUser}>
                 Sign Up
             </Button>
-            <Button color="secondary" className={classes.button} onClick={() => navigate('/login')}>
+            <Button onClick={() => navigate('/welcome')}>
                 Already Signed Up? Login Here
             </Button>
         </Paper >
