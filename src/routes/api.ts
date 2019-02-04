@@ -51,6 +51,8 @@ export interface DataPoint {
 export interface Study {
     study_id: string;
     title: string;
+    author?: string;
+    author_url?: string;
     protocol_version: string;
     surveyors: string[];
     type: StudyType;
@@ -58,6 +60,7 @@ export interface Study {
     surveys?: Survey[];
     fields: StudyField[];
     location: string;
+    description?: string;
 }
 
 export interface Survey {
@@ -84,7 +87,7 @@ const STUDY_FIELDS: StudyField[] = [
   "groups",
   "object",
   "location",
-  "note"
+  "notes"
 ];
 
 
@@ -132,23 +135,29 @@ router.post(
         protocol_version: protocolVersion,
         study_id: studyId,
         title,
+        author,
+        author_url: authorUrl,
         location,
         type,
         surveyors,
         surveys = [],
         map,
-        fields
+        fields,
+        description
     } = req.body as Study;
     try {
       await createStudy(DbPool, {
           studyId,
           title,
+          author,
+          authorUrl,
           protocolVersion,
           userId,
           type,
           map,
           location,
-          fields
+          fields,
+          description
       });
     } catch (error) {
       const { code, detail } = error;
@@ -375,10 +384,7 @@ router.put(
           surveys.map(s =>
                   updateSurvey(
                       DbPool,
-                      camelcaseKeys({ studyId, ...s, userEmail: s.surveyor_email })
-                  )
-                     )
-      );
+                      camelcaseKeys({ studyId, ...s, userEmail: s.surveyor_email }))));
       res.sendStatus(200);
   })
 );

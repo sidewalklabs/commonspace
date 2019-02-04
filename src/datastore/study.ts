@@ -11,6 +11,8 @@ export type StudyType = 'stationary' | 'movement';
 export interface Study {
     studyId: string;
     title?: string;
+    author?: string;
+    authorUrl?: string;
     project?: string;
     projectPhase?: string;
     startDate?: Date;
@@ -22,7 +24,7 @@ export interface Study {
     map?: FeatureCollection;
     protocolVersion: string;
     fields: StudyField[];
-    notes?: string;
+    description?: string;
     location: string;
 }
 
@@ -49,8 +51,8 @@ function gehlFieldAsPgColumn(field: StudyField) {
             return 'object data_collection.object';
         case 'location':
             return 'location geometry';
-        case 'note':
-            return 'note text';
+        case 'notes':
+            return 'notes text';
         default:
             throw new Error(`Unrecognized field for activity study: ${field}`);
     }
@@ -85,6 +87,9 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                     SELECT
                         stu.study_id,
                         stu.title,
+                        stu.author,
+                        stu.author_url,
+                        stu.description,
                         stu.protocol_version,
                         stu.map,
                         stu.study_type,
@@ -100,12 +105,15 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
     const values = [userId];
     try {
         const { rows } = await pool.query(query, values);
-        const studiesForUser = rows.map(({study_id, title, location, protocol_version, study_type: type, fields, emails, map}) => {
+        const studiesForUser = rows.map(({study_id, title, author, author_url: authorUrl, location, protocol_version, study_type: type, fields, emails, map, description}) => {
             const surveyors = emails && emails.length > 0 ? emails : [];
             return {
                 study_id,
                 fields,
                 title,
+                author,
+                authorUrl,
+                description,
                 protocol_version,
                 map,
                 location,
@@ -121,7 +129,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
 }
   
 export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: string) {
-   const query = `SELECT stu.study_id, stu.title as study_title, stu.location, stu.protocol_version, stu.study_type, stu.fields, stu.map, svy.survey_id, svy.title as survey_title, svy.start_date, svy.end_date, ST_AsGeoJSON(loc.geometry)::json as survey_location
+   const query = `SELECT stu.study_id, stu.title as study_title, stu.author, stu.author_url, stu.description, stu.location, stu.protocol_version, stu.study_type, stu.fields, stu.map, svy.survey_id, svy.title as survey_title, svy.start_date, svy.end_date, ST_AsGeoJSON(loc.geometry)::json as survey_location
                  FROM data_collection.survey as svy
                  JOIN data_collection.study as stu
                  ON svy.study_id = stu.study_id
@@ -132,7 +140,7 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
     try {
         const {rows}  = await pool.query(query, values);
         const studiesAndSurveys = rows.reduce((acc, curr) => {
-            const { study_id, study_title, location, protocol_version, fields, study_type: type, map, survey_id, start_date, survey_title, end_date, survey_location = {coordinates: [], type: 'Polygon'}, location_id } = curr;
+            const { study_id, study_title, author, author_url: authorUrl, description, location, protocol_version, fields, study_type: type, map, survey_id, start_date, survey_title, end_date, survey_location = {coordinates: [], type: 'Polygon'}, location_id } = curr;
             const survey = {
                 survey_id,
                 survey_title,
@@ -146,6 +154,9 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
             } else {
                 acc[curr.study_id] = {
                     study_id,
+                    author,
+                    authorUrl,
+                    description,
                     type,
                     map,
                     fields,
@@ -206,10 +217,10 @@ export async function createStudy(pool: pg.Pool, study: Study) {
     // to allow someone to update the fields of a study whenever they'd like
     const newStudyDataTableQuery = createNewTableFromStudyFields(ALL_STUDY_FIELDS, studyTablename);
     const fields = javascriptArrayToPostgresArray(study.fields);
-    const { studyId, title, userId, protocolVersion, type, location, map={} } = study;
-    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, protocol_version, study_type, fields, tablename, map, location)
-                                   VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
-    const newStudyMetadataValues = [studyId, title, userId, protocolVersion, type, fields, studyTablename, JSON.stringify(map), location];
+    const { studyId, title, author, authorUrl, userId, protocolVersion, type, location, map={}, description='' } = study;
+    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, author, author_url, user_id, protocol_version, study_type, fields, tablename, map, location, description)
+                                   VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
+    const newStudyMetadataValues = [studyId, title, author, authorUrl, userId, protocolVersion, type, fields, studyTablename, JSON.stringify(map), location, description];
     let studyResult, newStudyDataTable;
     try {
         studyResult = await pool.query(newStudyMetadataQuery, newStudyMetadataValues);
@@ -227,15 +238,15 @@ export async function createStudy(pool: pg.Pool, study: Study) {
 }
 
 export async function updateStudy(pool: pg.Pool, study: Study) {
-    const { studyId, userId, title, protocolVersion, type, fields, location, map } = study;
+    const { studyId, userId, title, author, authorUrl, description, protocolVersion, type, fields, location, map } = study;
     const studyTablename = studyIdToTablename(studyId)
-    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, protocol_version, study_type, fields, tablename, map, location)
-VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
+    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, author, author_url, description, protocol_version, study_type, fields, tablename, map, location)
+VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
     const query = `${newStudyMetadataQuery}
                    ON CONFLICT (study_id)
-                   DO UPDATE SET (title, protocol_version, fields, map, location)
-                       = ($10, $11, $12, $13, $14)`
-    const values = [studyId, title, userId, protocolVersion, type, fields, studyTablename, JSON.stringify(map), location, title, protocolVersion, fields, JSON.stringify(map), location]
+                   DO UPDATE SET (title, author, author_url, description, protocol_version, fields, map, location)
+                       = ($13, $14, $15, $16, $17, $18, $19, $20)`
+    const values = [studyId, title, userId, author, authorUrl, description, protocolVersion, type, fields, studyTablename, JSON.stringify(map), location, title, author, authorUrl, description, protocolVersion, fields, JSON.stringify(map), location];
     try {
         await pool.query(query, values);
     } catch (error) {

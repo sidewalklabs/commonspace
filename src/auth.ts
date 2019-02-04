@@ -110,7 +110,7 @@ export async function sendEmailResetLink(email: string) {
 }
 
 export function sendSignupVerificationEmail(host: string, email: string) {
-    const rand =Math.floor((Math.random() * 100) + 39);
+    const rand = Math.floor((Math.random() * 100) + 39);
     const link = encodeURI(`${process.env.SERVER_HOSTNAME}/verify?id=${rand}&email=${email}`);
     const mailOptions: nodemailer.SendMailOptions = {
         from: `Gehl Data Collector <thorncliffeparkpubliclifepilot@gmail.com>`,

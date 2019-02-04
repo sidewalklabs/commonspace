@@ -79,23 +79,14 @@ export async function createNewSurveyForStudy(pool: pg.Pool, survey) {
 }
 
 export function updateSurvey(pool: pg.Pool, survey: Survey) {
-    const { title, locationId, startDate, endDate, userEmail } = survey;
-   const query = `WITH t (title, location_id, start_date, end_date, user_email) as (
-                      VALUES (
-                             $1::text,
-                             $2::UUID,
-                             $3::timestamp with time zone,
-                             $4::timestamp with time zone,
-                             $5::TEXT
-                      )
-                  )
-                  UPDATE data_collection.survey
-                  SET title = t.title,
-                      location_id = t.location_id,
-                      start_date = t.start_date,
-                      end_date = t.end_date,
-                      user_email = t.user_email`
-    const values = [title, locationId, startDate, endDate, userEmail] ;
+    const { title, locationId, startDate, endDate, userEmail, surveyId } = survey;
+    const query = `UPDATE data_collection.survey as sur
+                   SET title = $1,
+                      location_id = $2,
+                      start_date = $3,
+                      end_date = $4
+                   WHERE sur.survey_id = $5`
+    const values = [title, locationId, startDate, endDate, surveyId] ;
     try {
         return pool.query(query, values);
     } catch (error) {

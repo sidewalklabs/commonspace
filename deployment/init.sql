@@ -15,13 +15,26 @@ CREATE TABLE IF NOT EXISTS users
     name TEXT
 );
 
+CREATE UNIQUE INDEX users_lower_email_unique_idx ON users (lower(email));
+
 CREATE TABLE IF NOT EXISTS password_reset
 (
     email TEXT UNIQUE REFERENCES users(email) ON DELETE CASCADE,
-    token TEXT PRIMARY KEY
+    token TEXT PRIMARY KEY,
+    expiration TIMESTAMP WITH TIME ZONE
 );
 
-CREATE UNIQUE INDEX users_lower_email_unique_idx ON users (lower(email));
+CREATE TABLE IF NOT EXISTS account_verification
+(
+    email TEXT UNIQUE REFERENCES users(email) ON DELETE CASCADE,
+    token TEXT PRIMARY KEY,
+    expiration TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE IF NOT EXISTS admin_whitelist
+(
+    email TEXT PRIMARY KEY
+);
 
 CREATE SCHEMA IF NOT EXISTS data_collection;
 ALTER ROLE data_collector SET search_path TO data_collection,"$user",public;
@@ -46,6 +59,8 @@ CREATE TABLE IF NOT EXISTS study
 (
     study_id UUID PRIMARY KEY,
     title TEXT,
+    author TEXT,
+    author_url TEXT,
     project TEXT,
     project_phase TEXT,
     state_date TIMESTAMP WITH TIME ZONE,
@@ -58,7 +73,7 @@ CREATE TABLE IF NOT EXISTS study
     tablename VARCHAR(63),
     location TEXT,
     map JSON,
-    notes TEXT
+    description TEXT
 );
 
 CREATE TYPE gender AS ENUM ('male', 'female', 'unknown');
