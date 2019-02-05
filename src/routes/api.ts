@@ -61,6 +61,8 @@ export interface Study {
     fields: StudyField[];
     location: string;
     description?: string;
+    created_at: any;
+    last_updated;
 }
 
 export interface Survey {
@@ -145,8 +147,9 @@ router.post(
         fields,
         description
     } = req.body as Study;
+   let created_at, last_updated;
     try {
-      await createStudy(DbPool, {
+        const newStudyRes = await createStudy(DbPool, {
           studyId,
           title,
           author,
@@ -159,6 +162,8 @@ router.post(
           fields,
           description
       });
+      last_updated = newStudyRes.last_updated;
+      created_at = newStudyRes.created_at;
     } catch (error) {
       const { code, detail } = error;
       if (code === UNIQUE_VIOLATION) {
@@ -203,7 +208,8 @@ router.post(
         return;
       }
     }
-    res.send(req.body);
+    const study = req.body as Study;
+    res.send({...study, created_at, last_updated});
   })
 );
 
