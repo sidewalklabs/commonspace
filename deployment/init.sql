@@ -73,7 +73,9 @@ CREATE TABLE IF NOT EXISTS study
     tablename VARCHAR(63),
     location TEXT,
     map JSON,
-    description TEXT
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE default now(),
+    last_updated TIMESTAMP WITH TIME ZONE default now()
 );
 
 CREATE TYPE gender AS ENUM ('male', 'female', 'unknown');

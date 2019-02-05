@@ -47,29 +47,32 @@ const sebastian2: User = {
 }
 
 const thorncliffeParkStudy: Study = {
-    title: 'Thornecliffe Park',
+    title: 'Thorncliffe Park',
     type: 'stationary',
     studyId: uuid.v4(),
     protocolVersion: '1.0',
-    fields: ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'note'],
-    userId: sebastian.userId
+    fields: ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location'],
+    userId: sebastian.userId,
+    location: 'Thorncliffe Park'
 }
 const simpleStudy: Study = {
-    title: 'Thornecliffe Park',
+    title: 'Thorncliffe Park',
     type: 'stationary',
     studyId: uuid.v4(),
     protocolVersion: '1.0',
     fields: ['gender', 'location'],
-    userId: sebastian.userId
+    userId: sebastian.userId,
+    location: 'Thorncliffe Park'
 }
 
 const simpleStudyInvalidUserId: Study = {
-    title: 'Thornecliffe Park and Sabina Ali Study',
-    type: 'activity',
+    title: 'Thorncliffe Park and Sabina Ali Study',
+    type: 'stationary',
     studyId: uuid.v4(),
     protocolVersion: '1.0',
     fields: ['gender', 'location'],
-    userId: uuid.v4()
+    userId: uuid.v4(),
+    location: 'Thorncliffe Park'
 }
 
 const locatoinPolygon: Polygon = {
@@ -132,7 +135,7 @@ const surveyNearGarbage: Survey = {
 
 async function seedDatabase() {
     await createUser(pool, sebastian);
-    const [studyPgResult, newTablePgResult] = await createStudy(pool, thorncliffeParkStudy );
+    await createStudy(pool, thorncliffeParkStudy );
 }
 
 // test('save new user', async () => {

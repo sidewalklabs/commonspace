@@ -1,4 +1,5 @@
 import React, { Fragment } from 'react';
+import moment from 'moment';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
@@ -37,7 +38,9 @@ export interface StudiesListProps {
 export default withStyles(styles)(observer((props: StudiesListProps & WithStyles) => {
     const { studies, classes } = props;
     const studiesAsRows = Object.values(studies).map((study, index) => {
-        const { studyId, title } = study;
+        const { studyId, title, lastUpdated, createdAt } = study;
+        const createdAtDate = moment(createdAt).format('MMM D, YYYY');
+        const lastUpdatedDate = moment(lastUpdated).format('MMM D, YYYY')
         return (
             <ExpansionPanel key={studyId} onChange={(event, expanded) => { expanded && transitionToViewStudy(study) }}>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
@@ -45,8 +48,8 @@ export default withStyles(styles)(observer((props: StudiesListProps & WithStyles
                         <TableBody>
                             <TableRow>
                                 <TableCell className={classes.borderLessCell}>{title}</TableCell>
-                                <TableCell className={classes.borderLessCell}>Random Date</TableCell>
-                                <TableCell className={classes.borderLessCell}>Other Random Date</TableCell>
+                                <TableCell className={classes.borderLessCell}>{createdAtDate}</TableCell>
+                                <TableCell className={classes.borderLessCell}>{lastUpdatedDate}</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>

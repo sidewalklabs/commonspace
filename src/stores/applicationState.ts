@@ -38,6 +38,8 @@ export interface Study {
     fields: StudyField[];
     map: FeatureCollection;
     location: string;
+    createdAt?: number; // these two don't exist until the study has been saved to the backend
+    lastUpdated?: number;
 }
 
 export interface ApplicationState {
@@ -106,7 +108,8 @@ async function postToApi(route: string, data: any) {
         if (response.status !== 200) {
             throw Error(`${response.status} ${response.statusText}`);
         }
-        return response;
+        const data = await response.json();
+        return camelcaseKeys(data);
     } catch (err) {
         console.error(`[route ${route}] [data ${body}] ${err}`)
         throw err;
@@ -180,8 +183,8 @@ export async function saveNewStudy(studyInput: Study) {
     });
     const route = `/api/studies`;
     try {
-        await postToApi(route, study);
-        applicationState.studies[study.studyId] = study;
+        const createdStudy = await postToApi(route, study) as Study;
+        applicationState.studies[study.studyId] = createdStudy;
         setSnackBar('success', 'Saved Study!')
     } catch (error) {
         setSnackBar('error', 'Failed to save study');
