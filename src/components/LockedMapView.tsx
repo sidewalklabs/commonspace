@@ -38,7 +38,7 @@ const styles = theme => ({
         display: 'flex',
         position: 'relative',
         width: '100%',
-        height: '400px',
+        flex: 1,
         marginTop: theme.spacing.unit * 3,
         overflow: 'auto'
     },

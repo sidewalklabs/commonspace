@@ -1,6 +1,4 @@
 import React, { Fragment } from 'react';
-import { toJS } from 'mobx';
-import Button from '@material-ui/core/Button';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
@@ -10,112 +8,67 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import TextField from '@material-ui/core/TextField';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
+import StudyView from './StudyView';
 
 import { observer } from 'mobx-react';
 
-import { deleteStudy, selectNewStudy, Study, getMapCenterForStudy } from '../stores/applicationState';
-import LockedMapView from './LockedMapView';
+import { selectNewStudy, Study } from '../stores/applicationState';
 import uiState from '../stores/ui';
 
 const styles = theme => ({
     icon: {
         margin: theme.spacing.unit * 2,
+    },
+    borderLessCell: {
+        border: "none"
     }
 });
 
 async function transitionToViewStudy(study) {
     uiState.currentStudyIsNew = false;
     await selectNewStudy(study);
-    uiState.visibleModal = 'study';
-}
-
-async function removeStudy(studyId: string) {
-    await deleteStudy(studyId);
 }
 
 export interface StudiesListProps {
     studies: { [key: string]: Study };
 }
 
-const ExpandedStudy = withStyles(styles)(observer((props: WithStyles & { study: Study }) => {
-    const { classes, study } = props;
-    const { title, fields, surveyors, location, surveys = {}, map } = study;
-    const { studyId } = study;
-    const { latitude, longitude } = getMapCenterForStudy(studyId);
-    return (
-        <Fragment>
-            <TextField
-                label="Title"
-                className={classes.textField}
-                value={title}
-                margin="normal"
-            />
-            <TextField
-                className={classes.textField}
-                label="Study Fields"
-                value={`${fields.length} Fields`}
-                margin="normal"
-            />
-            <TextField
-                className={classes.textField}
-                label="Surveyors"
-                value={`${surveyors.length} Surveyors`}
-                margin="normal"
-            >
-            </TextField>
-            <TextField
-                className={classes.textField}
-                label="Surveys"
-                value={`${Object.keys(toJS(surveys)).length} Surveys`}
-                margin="normal"
-            >
-            </TextField>
-            <TextField
-                className={classes.textField}
-                label="Location"
-                value={location}
-                margin="normal"
-            >
-            </TextField>
-            <LockedMapView lat={latitude} lng={longitude} featureCollection={map} />
-            <Button variant="contained" color="secondary" onClick={async () => await removeStudy(studyId)}>
-                Delete
-            </Button>
-            <Button variant="contained" color="primary" onClick={async () => await transitionToViewStudy(study)}>
-                Edit
-            </Button>
-        </Fragment >
-    )
-
-}));
-
 export default withStyles(styles)(observer((props: StudiesListProps & WithStyles) => {
-    const { classes, studies } = props;
+    const { studies, classes } = props;
     const studiesAsRows = Object.values(studies).map((study, index) => {
         const { studyId, title } = study;
         return (
-            <ExpansionPanel key={studyId}>
+            <ExpansionPanel key={studyId} onChange={(event, expanded) => { expanded && transitionToViewStudy(study) }}>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                     <Table>
                         <TableBody>
                             <TableRow>
-                                <TableCell onClick={async () => await transitionToViewStudy(study)}>{title}</TableCell>
-                                <TableCell>Oct 20, 2018</TableCell>
-                                <TableCell>Nov 20, 2018</TableCell>
+                                <TableCell className={classes.borderLessCell}>{title}</TableCell>
+                                <TableCell className={classes.borderLessCell}>Random Date</TableCell>
+                                <TableCell className={classes.borderLessCell}>Other Random Date</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
-                    <ExpandedStudy study={study} />
+                    <StudyView study={study} studyIsNew={false} />
                 </ExpansionPanelDetails>
             </ExpansionPanel>
         );
     });
     return (
         <Fragment>
+            <Table>
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Study</TableCell>
+                        <TableCell>Created</TableCell>
+                        <TableCell>Updated</TableCell>
+                        <TableCell />
+                    </TableRow>
+                </TableHead>
+            </Table>
             {studiesAsRows}
         </Fragment>
     )

@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
@@ -7,10 +7,9 @@ import EditIcon from '@material-ui/icons/Edit';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
+import Typography from '@material-ui/core/Typography';
 
-import SurveyorsView from './SurveyorsView';
 import LockedMapView from './LockedMapView';
-import SurveyView from './SurveyView';
 
 import uiState from '../stores/ui';
 import applicationState, { saveNewStudy, updateStudy, Study, getMapCenterForStudy } from '../stores/applicationState';
@@ -22,15 +21,37 @@ const styles = theme => ({
     container: {
         display: 'flex',
         flexDirection: 'column',
-        flexWrap: 'wrap'
+        flex: 1,
+    },
+    header: {
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        padding: theme.spacing.unit * 2,
+        marginBottom: theme.spacing.unit * 2,
+    },
+    footer: {
+        borderTop: `1px solid ${theme.palette.divider}`,
+        display: "flex",
+        marginTop: theme.spacing.unit * 2,
+        paddingLeft: theme.spacing.unit * 2,
+        paddingRight: theme.spacing.unit * 2,
+        paddingTop: theme.spacing.unit * 2,
+        justifyContent: "flex-end"
+    },
+    columns: {
+        display: 'flex',
+    },
+    column: {
+        flex: "1 1 0",
+        display: 'flex',
+        flexDirection: 'column',
+        marginLeft: theme.spacing.unit * 2,
+        marginRight: theme.spacing.unit * 2,
     },
     textField: {
         marginLeft: theme.spacing.unit,
         marginRight: theme.spacing.unit,
-        width: 200
     },
     rightCornerButton: {
-        margin: theme.spacing.unit,
         alignContent: 'flex-end',
         width: 150
     },
@@ -125,7 +146,7 @@ const StudyView = observer((props: any & WithStyles) => {
 
     const { study, classes, studyIsNew } = props;
     if (study) {
-        const { title, author, authorUrl, description, location, surveys, studyId, fields, surveyors, protocolVersion, type, map } = study as Study;
+        const { title, author, authorUrl, description, location, surveys = {}, studyId, fields, surveyors, protocolVersion, type, map } = study as Study;
         const { latitude, longitude } = getMapCenterForStudy(studyId);
         const features = map && map.features ? map.features : [];
         const StudyTypeField = props => studyIsNew ?
@@ -160,74 +181,80 @@ const StudyView = observer((props: any & WithStyles) => {
             />)
 
         return (
-            <Fragment>
-                <TextField
-                    label="Title"
-                    className={classes.textField}
-                    value={title}
-                    onChange={e => study.title = e.target.value}
-                    margin="normal"
-                />
-                <TextField
-                    className={classes.textField}
-                    label="Description"
-                    value={description}
-                    onChange={e => applicationState.currentStudy.description = e.target.value}
-                />
-                <TextField
-                    className={classes.textField}
-                    label="Author"
-                    value={author}
-                    onChange={e => applicationState.currentStudy.author = e.target.value}
-                />
-                <TextField
-                    className={classes.textField}
-                    label="Author Url"
-                    value={authorUrl}
-                    onChange={e => applicationState.currentStudy.authorUrl = e.target.value}
-                />
-                <StudyTypeField />
-                <TextField
-                    className={classes.textField}
-                    label="Study Fields"
-                    value={`${fields.length} Fields`}
-                    InputProps={{
-                        startAdornment: (
-                            <InputAdornment position="end" onClick={() => uiState.visibleModal = "studyFields"}>
-                                <EditIcon />
-                            </InputAdornment>
-                        ),
-                    }}
-                />
-                <TextField
-                    className={classes.textField}
-                    label="Surveyors"
-                    value={`${surveyors.length} Surveyors`}
-                    InputProps={{
-                        startAdornment: (
-                            <InputAdornment position="end" onClick={() => uiState.visibleModal = "surveyors"}>
-                                <EditIcon />
-                            </InputAdornment>
-                        ),
-                    }}
-                >
-
-                </TextField>
-                <TextField
-                    className={classes.textField}
-                    label="Surveys"
-                    value={`${Object.keys(toJS(surveys)).length} Surveys`}
-                    InputProps={{
-                        startAdornment: (
-                            <InputAdornment position="end" onClick={() => uiState.visibleModal = "surveys"}>
-                                <EditIcon />
-                            </InputAdornment>
-                        ),
-                    }}
-                >
-                </TextField>
-                <LocationTextField location={location} editable={studyIsNew} />
-                {/* <TextField
+            <div className={classes.container}>
+                {studyIsNew && <div className={classes.header}>
+                    <Typography variant="title">New Study</Typography>
+                </div>}
+                <div className={classes.columns}>
+                    <div className={classes.column}>
+                        <TextField
+                            label="Title"
+                            className={classes.textField}
+                            value={title}
+                            onChange={e => study.title = e.target.value}
+                            margin="normal"
+                        />
+                        <TextField
+                            className={classes.textField}
+                            label="Description"
+                            value={description}
+                            onChange={e => applicationState.currentStudy.description = e.target.value}
+                        />
+                        <TextField
+                            className={classes.textField}
+                            label="Author"
+                            value={author}
+                            onChange={e => applicationState.currentStudy.author = e.target.value}
+                        />
+                        <TextField
+                            className={classes.textField}
+                            label="Author Url"
+                            value={authorUrl}
+                            onChange={e => applicationState.currentStudy.authorUrl = e.target.value}
+                        />
+                        <StudyTypeField />
+                        <TextField
+                            className={classes.textField}
+                            label="Study Fields"
+                            value={`${fields.length} Fields`}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="end" onClick={() => uiState.visibleModal = "studyFields"}>
+                                        <EditIcon />
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+                        <TextField
+                            className={classes.textField}
+                            label="Surveyors"
+                            value={`${surveyors.length} Surveyors`}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="end" onClick={() => uiState.visibleModal = "surveyors"}>
+                                        <EditIcon />
+                                    </InputAdornment>
+                                ),
+                            }}
+                        >
+                        </TextField>
+                        <TextField
+                            className={classes.textField}
+                            label="Surveys"
+                            value={`${Object.keys(toJS(surveys)).length} Surveys`}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="end" onClick={() => uiState.visibleModal = "surveys"}>
+                                        <EditIcon />
+                                    </InputAdornment>
+                                ),
+                            }}
+                        >
+                        </TextField>
+                    </div>
+                    <div className={classes.column}>
+                        <LocationTextField location={location} editable={studyIsNew} />
+                        {/* <TextField
                     select
                     label="Gehl Protocol Version"
                     className={classes.textField}
@@ -248,9 +275,13 @@ const StudyView = observer((props: any & WithStyles) => {
                     </MenuItem>)
                     })}
                     </TextField> */}
-                <LockedMapView isEditable lat={latitude} lng={longitude} featureCollection={map} />
-                <CreateOrUpdateButton study={study} studyIsNew={studyIsNew} />
-            </Fragment>
+                        <LockedMapView isEditable lat={latitude} lng={longitude} featureCollection={map} />
+                    </div>
+                </div>
+                <div className={classes.footer}>
+                    <CreateOrUpdateButton study={study} studyIsNew={studyIsNew} />
+                </div>
+            </div>
         );
     }
     return null;

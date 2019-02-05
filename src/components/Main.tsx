@@ -5,7 +5,6 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import AppBar from '@material-ui/core/AppBar';
 import Avatar from '@material-ui/core/Avatar';
 import Toolbar from '@material-ui/core/Toolbar';
-import List from '@material-ui/core/List';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
@@ -69,7 +68,7 @@ const styles = theme => ({
         width: '100%'
     },
     title: {
-        marginLeft: theme.spacing.unit * 2,
+        marginLeft: theme.spacing.unit,
         flexGrow: 1
     }
 });
@@ -82,8 +81,15 @@ function prepareNewStudy() {
 }
 
 function handleLogOut() {
+    // TODO: make sure this really logs you out
     mainState.anchorElement = null;
-    navigate('/login');
+    navigate('/welcome');
+}
+
+function handleResetPassword() {
+    // TODO: make sure this really logs you out
+    mainState.anchorElement = null;
+    navigate('/reset');
 }
 
 interface MainState {
@@ -137,8 +143,7 @@ const Main = observer(
                             open={Boolean(anchorElement)}
                             onClose={() => mainState.anchorElement = null}
                         >
-                            <MenuItem onClick={() => mainState.anchorElement = null}>Profile</MenuItem>
-                            <MenuItem onClick={() => mainState.anchorElement = null}>My account</MenuItem>
+                            <MenuItem onClick={handleResetPassword}>Reset Password</MenuItem>
                             <MenuItem onClick={handleLogOut}>Logout</MenuItem>
                         </Menu>
                     </Toolbar>
@@ -159,9 +164,7 @@ const Main = observer(
                         </Button>
                     </div>
                     <Paper className={classes.studiesList}>
-                        <List>
-                            <StudiesList studies={studies} />
-                        </List>
+                        <StudiesList studies={studies} />
                     </Paper>
                     <WrapInModal modalName={'study'} visibleModal={visibleModal}>
                         <StudyView study={currentStudy} studyIsNew={uiState.currentStudyIsNew} />
