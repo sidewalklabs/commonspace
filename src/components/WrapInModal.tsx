@@ -21,7 +21,7 @@ const styles = theme => ({
 
 // @ts-ignore
 const WrapInModal = withStyles(styles)(observer(props => {
-    const { classes, children, modalName, visibleModal, onClose = () => uiState.visibleModal = null } = props;
+    const { classes, children, modalName, visibleModal, onClose = () => uiState.modalStack.pop() } = props;
     return (
         <Modal
             open={visibleModal === modalName}

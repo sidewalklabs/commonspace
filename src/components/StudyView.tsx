@@ -63,13 +63,23 @@ const styles = theme => ({
 
 async function update(study) {
     await updateStudy(study);
-    uiState.visibleModal = null;
+
+    // if this is rendered in a modal, close on success
+    const visibleModal = uiState.modalStack.slice(-1)[0]
+    if (visibleModal === 'study') {
+        uiState.modalStack.pop()
+    }
 }
 
 async function create(study) {
     await saveNewStudy(study);
     uiState.currentStudyIsNew = false;
-    uiState.visibleModal = null;
+
+    // if this is rendered in a modal, close on success
+    const visibleModal = uiState.modalStack.slice(-1)[0]
+    if (visibleModal === 'study') {
+        uiState.modalStack.pop()
+    }
 }
 
 interface CreateOrUpdateButtonProps {
@@ -89,7 +99,7 @@ const CreateOrUpdateButton = withStyles(styles)((props: CreateOrUpdateButtonProp
         );
     } else {
         return (
-            <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={async () => await updateStudy(study)}>
+            <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={async () => await update(study)}>
                 Update
             </Button>
         );
@@ -219,7 +229,7 @@ const StudyView = observer((props: any & WithStyles) => {
                             value={`${fields.length} Fields`}
                             InputProps={{
                                 startAdornment: (
-                                    <InputAdornment position="end" onClick={() => uiState.visibleModal = "studyFields"}>
+                                    <InputAdornment position="end" onClick={() => uiState.modalStack.push("studyFields")}>
                                         <EditIcon />
                                     </InputAdornment>
                                 ),
@@ -231,12 +241,13 @@ const StudyView = observer((props: any & WithStyles) => {
                             value={`${surveyors.length} Surveyors`}
                             InputProps={{
                                 startAdornment: (
-                                    <InputAdornment position="end" onClick={() => uiState.visibleModal = "surveyors"}>
+                                    <InputAdornment position="end" onClick={() => uiState.modalStack.push("surveyors")}>
                                         <EditIcon />
                                     </InputAdornment>
                                 ),
                             }}
                         >
+
                         </TextField>
                         <TextField
                             className={classes.textField}
@@ -244,7 +255,7 @@ const StudyView = observer((props: any & WithStyles) => {
                             value={`${Object.keys(toJS(surveys)).length} Surveys`}
                             InputProps={{
                                 startAdornment: (
-                                    <InputAdornment position="end" onClick={() => uiState.visibleModal = "surveys"}>
+                                    <InputAdornment position="end" onClick={() => uiState.modalStack.push("surveys")}>
                                         <EditIcon />
                                     </InputAdornment>
                                 ),

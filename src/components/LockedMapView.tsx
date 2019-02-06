@@ -82,7 +82,7 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
                 <GeoJSON data={geojson} key={geojsonHash} />
             </Map>
             {isEditable ?
-                <EditIcon className={classes.edit} onClick={() => uiState.visibleModal = 'map'} />
+                <EditIcon className={classes.edit} onClick={() => uiState.modalStack.push('map')} />
                 : null}
         </Paper >
     );
