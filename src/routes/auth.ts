@@ -14,6 +14,7 @@ import {
 } from '../auth';
 import DbPool from '../database';
 import { User } from '../datastore/user';
+import { checkUserIsWhitelistApproved } from '../datastore/whitelist';
 
 const router = express.Router();
 
@@ -107,14 +108,14 @@ router.post('/login', (req, res, next) => {
 router.post(
     '/request_reset_password',
     return500OnError(async (req: Request, res: Response) => {
-        const { body } = req;
-        if (!body.email) {
+        const { email } = req.body;
+        if (!email) {
             const errorMessage = 'Missing email field';
             res.statusMessage = errorMessage;
             res.status(400).send({ error_message: errorMessage });
         }
-        const { email } = body;
         const token = await createRandomStringForTokenUse();
+        // TODO: only if the user exists in the database already
         await saveTokenForPasswordReset(DbPool, email, token);
         await sendEmailResetLink(email, token);
         res.status(200).send();
@@ -156,6 +157,25 @@ router.get(
             return;
         }
         res.status(400);
+    })
+);
+
+router.post(
+    '/check_whitelist',
+    return500OnError(async (req: Request, res: Response) => {
+        const { body } = req;
+        if (!body.email) {
+            const errorMessage = 'Missing email field';
+            res.statusMessage = errorMessage;
+            res.status(400).send({ error_message: errorMessage });
+            return;
+        }
+        if (!(await checkUserIsWhitelistApproved(DbPool, body.email))) {
+            const errorMessage = 'Not Whitelist Approved';
+            res.statusMessage = errorMessage;
+            res.status(401).send({ error_message: errorMessage });
+        }
+        res.status(200).send();
     })
 );
 

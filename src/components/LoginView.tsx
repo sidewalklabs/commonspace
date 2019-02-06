@@ -81,6 +81,7 @@ const responseGoogleFailure = response => {
 const LoginView = withStyles(styles)(
     observer((props: WithStyles) => {
         const { classes } = props;
+        const serverName: string = process.env.SERVER_HOSTNAME ? process.env.SERVER_HOSTNAME : '';
         return (
             <Paper className={classes.root}>
                 <div className={classes.content}>
@@ -98,7 +99,7 @@ const LoginView = withStyles(styles)(
                     {/* { Take out Google Login until our android and ios apps can support it } */}
                     {/* <GoogleLogin
                         clientId={process.env.GOOGLE_AUTH_CLIENT_ID}
-                        onSuccess={logInUserGoogleOAuth}
+                        onSuccess={async response => logInUserGoogleOAuth(serverName, response)}
                         onFailure={responseGoogleFailure}
                         render={renderProps => (
                             <Fab

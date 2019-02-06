@@ -193,7 +193,7 @@ export async function getStudiesForAdmin(token?: string) {
     return camelcaseKeys(studiesFromApi);
 }
 
-async function signupJwt(hostname: string, user: User) {
+export async function signupJwt(hostname: string, user: User) {
     const uri = `${hostname}/auth/signup`;
     const requestBody = JSON.stringify(user);
     const fetchParams = {
@@ -206,6 +206,7 @@ async function signupJwt(hostname: string, user: User) {
     };
 
     const response = await fetch(uri, fetchParams);
+    if (response.status === 401) throw new UnauthorizedError(`Not Authorized: ${response.url}`);
     const responseBody = await response.json();
     return responseBody;
 }
@@ -224,9 +225,7 @@ export async function loginJwt(hostname: string, user: User) {
     };
     try {
         const response = await fetch(uri, fetchParams);
-        if (response.status === 401) {
-            throw new Error(`not able to login user: ${JSON.stringify(user)}`);
-        }
+        if (response.status === 401) throw new UnauthorizedError(`Not Authorized: ${response.url}`);
         const responseBody = await response.json();
         return responseBody as { token: string };
     } catch (error) {
