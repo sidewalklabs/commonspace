@@ -12,6 +12,7 @@ export async function logInUser() {
         email
     };
     try {
+        await postRest(`/auth/check_whitelist`, { email });
         await postRest(`/auth/login`, { password, email });
         authState.isAuth = true;
         navigate('/studies');

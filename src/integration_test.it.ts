@@ -20,6 +20,7 @@ import {
     clearLocationsFromApi,
     getStudiesForAdmin,
     loginJwt,
+    signupJwt,
     User,
     UnauthorizedError,
     ResourceNotFoundError
@@ -85,23 +86,6 @@ async function clearUserFromApp(maps: FeatureCollection[], token: string) {
     }
 }
 
-async function signupJwt(user: User) {
-    const uri = `${API_SERVER}/auth/signup`;
-    const requestBody = JSON.stringify(user);
-    const fetchParams = {
-        method: 'Post',
-        headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-            Accept: 'application/bearer.token+json'
-        },
-        body: requestBody
-    };
-
-    const response = await fetch(uri, fetchParams);
-    const responseBody = await response.json();
-    return responseBody;
-}
-
 beforeAll(async () => {
     const { token: adminToDeleteToken } = await loginJwt(API_SERVER, adminUser);
     if (adminToDeleteToken) {
@@ -126,7 +110,7 @@ describe('create/delete/modify studies', async () => {
     });
 
     test('signup a new user', async () => {
-        const { token } = await signupJwt(adminUser);
+        const { token } = await signupJwt(API_SERVER, adminUser);
         expect(token).toBeTruthy();
         adminToken = token;
     });

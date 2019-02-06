@@ -4,7 +4,7 @@ import snakecaseKeys from 'snakecase-keys';
 import authState from './auth';
 import { navigate } from './router';
 import uiState, { setSnackBar } from './ui';
-import { postRest } from '../client';
+import { postRest, UnauthorizedError } from '../client';
 
 const MAX_PASSWORD_LENGTH = 1000;
 const MIN_PASSWORD_LENGTH = 7;
@@ -45,8 +45,23 @@ export function checkEmailInput(email: string): string {
     return email;
 }
 
-export async function logInUserGoogleOAuth(response) {
+export async function logInUserGoogleOAuth(hostname, response) {
     const { profileObj, accessToken } = response;
+    // console.log('test: ', JSON.stringify(profileObj));
+    // console.log('snorlax: ', JSON.stringify(response));
+
+    // console.log('pikachu: ', JSON.stringify(profileObj));
+    // console.log('charizard: ', JSON.stringify(response));
+    try {
+        await postRest(hostname + '/check_whitelist', { email: 'releastheseabass@gmail.com' });
+    } catch (error) {
+        if (error instanceof UnauthorizedError) {
+            console.error('not whitelisted');
+            console.error(error);
+        }
+        throw error;
+        return;
+    }
 
     const { status, statusText } = await fetch(
         'https://commons-staging.sidewalklabs.com/auth/google/token',
@@ -89,6 +104,7 @@ export async function signUpUser() {
         return;
     }
     try {
+        await postRest(`/auth/check_whitelist`, { email });
         await postRest(`/auth/signup`, { password, email });
         authState.isAuth = true;
         navigate('/studies');

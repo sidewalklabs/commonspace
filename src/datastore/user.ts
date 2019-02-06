@@ -92,6 +92,7 @@ export async function createUser(pool: pg.Pool, user: User): Promise<void> {
         await pool.query(query, values);
     } catch (error) {
         if (error.code === UNIQUE_VIOLATION) {
+            // todo if email exists, and the password is empty, we can overwrite with a new password
             throw new Error(`User for email ${user.email} already exists`);
         }
         console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
