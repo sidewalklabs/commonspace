@@ -78,42 +78,42 @@ const simpleStudyInvalidUserId: Study = {
 const locatoinPolygon: Polygon = {
     "type": "Polygon",
     "coordinates": [[
-              [
-                -79.34435606002809,
-                43.70395407191628
-              ],
-              [
-                -79.34425145387651,
-                43.70387845004543
-              ],
-              [
-                -79.34404492378236,
-                43.70362637645357
-              ],
-              [
-                -79.3438357114792,
-                43.70356820547418
-              ],
-              [
-                -79.34322685003282,
-                43.703548815135164
-              ],
-              [
-                -79.34306591749193,
-                43.70346931467964
-              ],
-              [
-                -79.3434950709343,
-                43.70313967751972
-              ],
-              [
-                -79.34463769197465,
-                43.70377955976265
-              ]
+        [
+            -79.34435606002809,
+            43.70395407191628
+        ],
+        [
+            -79.34425145387651,
+            43.70387845004543
+        ],
+        [
+            -79.34404492378236,
+            43.70362637645357
+        ],
+        [
+            -79.3438357114792,
+            43.70356820547418
+        ],
+        [
+            -79.34322685003282,
+            43.703548815135164
+        ],
+        [
+            -79.34306591749193,
+            43.70346931467964
+        ],
+        [
+            -79.3434950709343,
+            43.70313967751972
+        ],
+        [
+            -79.34463769197465,
+            43.70377955976265
+        ]
     ]]
 }
 
-const location  = {
+const location = {
     "locationId": "07ab155a-2b38-44a7-ad73-b6711b3d46b9",
     "country": "canada",
     "city": "Toronto",
@@ -135,7 +135,7 @@ const surveyNearGarbage: Survey = {
 
 async function seedDatabase() {
     await createUser(pool, sebastian);
-    await createStudy(pool, thorncliffeParkStudy );
+    await createStudy(pool, thorncliffeParkStudy);
 }
 
 // test('save new user', async () => {
@@ -154,23 +154,23 @@ test('saving user with an OAuth account, should return the same value whether us
     expect(user1.userId).toEqual(user2.userId);
 });
 
-test('save new study', async () => {
-    const [studyPgResult, newTablePgResult] = await createStudy(pool, simpleStudy);
+// test('save new study', async () => {
+//     const [studyPgResult, newTablePgResult] = await createStudy(pool, simpleStudy);
 
-    let { rowCount, command } = studyPgResult;
-    expect(rowCount).toBe(1);
-    expect(command).toBe('INSERT');
-    expect(newTablePgResult.command).toBe('CREATE');
-});
+//     let { rowCount, command } = studyPgResult;
+//     expect(rowCount).toBe(1);
+//     expect(command).toBe('INSERT');
+//     expect(newTablePgResult.command).toBe('CREATE');
+// });
 
-test('save new study with all possible fields', async () => {
-    const [studyPgResult, newTablePgResult] = await createStudy(pool, thorncliffeParkStudy, );
+// test('save new study with all possible fields', async () => {
+//     const [studyPgResult, newTablePgResult] = await createStudy(pool, thorncliffeParkStudy, );
 
-    let { rowCount, command } = studyPgResult;
-    expect(rowCount).toBe(1);
-    expect(command).toBe('INSERT');
-    expect(newTablePgResult.command).toBe('CREATE');
-});
+//     let { rowCount, command } = studyPgResult;
+//     expect(rowCount).toBe(1);
+//     expect(command).toBe('INSERT');
+//     expect(newTablePgResult.command).toBe('CREATE');
+// });
 
 test('save location', async () => {
     const { rowCount, command } = await createLocation(pool, location);
@@ -206,9 +206,9 @@ test('save new survey', async () => {
     expect(command).toBe('INSERT');
 });
 
-test('verify a user has access to a survey', async() => {
+test('verify a user has access to a survey', async () => {
     const { userId } = sebastian;
-    const {  surveyId } = surveyNearGarbage;
+    const { surveyId } = surveyNearGarbage;
     const shouldBeTrue = await checkUserIdIsSurveyor(pool, userId, surveyId);
     expect(shouldBeTrue).toEqual(true);
 });
@@ -247,23 +247,23 @@ test('can save another data point', async () => {
 
 
 test('add a data point using only the survey id', async () => {
-    const dataPoint =  {
-        "data_point_id":"ecc12073-51ae-42fa-b63f-459d95ee4d68",
-        "gender":"male",
-        "age":null,
-        "mode":null,
-        "posture":null,
-        "activities":null,
-        "groups":null,
-        "object":null,
-        "note":null,
+    const dataPoint = {
+        "data_point_id": "ecc12073-51ae-42fa-b63f-459d95ee4d68",
+        "gender": "male",
+        "age": null,
+        "mode": null,
+        "posture": null,
+        "activities": null,
+        "groups": null,
+        "object": null,
+        "note": null,
         "location": {
             "coordinates": [-74.001327, 40.752675],
             "type": "Point"
         },
-        "color":"#F44336",
-        "title":"Person 0",
-        "survey_id":"ff41212b-98fd-48c6-a84c-1eb927a3a5fc"
+        "color": "#F44336",
+        "title": "Person 0",
+        "survey_id": "ff41212b-98fd-48c6-a84c-1eb927a3a5fc"
     };
     const { rowCount, command } = await addDataPointToSurveyNoStudyId(pool, surveyNearGarbage.surveyId, dataPoint);
     expect(rowCount).toBe(1);
@@ -359,11 +359,11 @@ test('delete a data point', async () => {
     expect(commandDelete).toBe('DELETE');
 });
 
-test('delete a study after throwing information for it into the database', async() => {
+test('delete a study after throwing information for it into the database', async () => {
     expect(async () => await deleteStudy(pool, thorncliffeParkStudy.studyId)).not.toThrowError();
 })
 
-test ('fetch the datapoints that are currently in the database', async() => {
+test('fetch the datapoints that are currently in the database', async () => {
     expect(async () => await retrieveDataPointsForSurvey(pool, thorncliffeParkStudy.studyId)).not.toThrowError();
 });
 

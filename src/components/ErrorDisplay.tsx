@@ -1,8 +1,5 @@
 import React, { Fragment } from 'react';
-
-import { get, set, toJS } from 'mobx';
 import { observer } from 'mobx-react';
-
 import classNames from 'classnames';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
@@ -13,10 +10,6 @@ import Snackbar from '@material-ui/core/Snackbar';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
 import IconButton from '@material-ui/core/IconButton';
 import green from '@material-ui/core/colors/green';
-import amber from '@material-ui/core/colors/amber';
-
-import Typography from '@material-ui/core/Typography';
-
 import uiState, { SnackBar } from '../stores/ui';
 
 const styles = theme => ({
@@ -29,12 +22,8 @@ const styles = theme => ({
     info: {
         backgroundColor: theme.palette.primary.dark,
     },
-    warning: {
-        backgroundColor: amber[700],
-    },
     icon: {
         fontSize: 20,
-        marginRight: theme.spacing.unit * 2
     },
     iconVariant: {
         opacity: 0.9,
@@ -49,7 +38,6 @@ const styles = theme => ({
 interface ErrorDisplayProps {
     snackBar: SnackBar;
 }
-
 
 const variantIcon = {
     success: CheckCircleIcon,
@@ -90,10 +78,14 @@ function MySnackbarContent(props) {
 // @ts-ignore
 const MySnackbarContentWrapper = withStyles(styles)(MySnackbarContent);
 
-
 const ErrorDisplay = observer((props: ErrorDisplayProps & WithStyles) => {
     const { classes, snackBar } = props;
     const { snackBarType, snackBarText } = snackBar;
+    const onClose = () => {
+        uiState.snackBar.snackBarText = '';
+        uiState.snackBar.snackBarType = null;
+    }
+
     return (
         <Fragment>
             <Snackbar
@@ -103,14 +95,12 @@ const ErrorDisplay = observer((props: ErrorDisplayProps & WithStyles) => {
                 }}
                 open={snackBarType === 'success'}
                 autoHideDuration={6000}
-                onClose={() => {
-                    uiState.snackBar.snackBarText = '';
-                    uiState.snackBar.snackBarType = null;
-                }}>
+                onClose={onClose}>
                 <MySnackbarContentWrapper
                     variant='success'
                     className={classes.margin}
                     message={snackBarText}
+                    onClose={onClose}
                 />
             </Snackbar>
             <Snackbar
@@ -120,14 +110,12 @@ const ErrorDisplay = observer((props: ErrorDisplayProps & WithStyles) => {
                 }}
                 open={snackBarType === 'error'}
                 autoHideDuration={6000}
-                onClose={() => {
-                    uiState.snackBar.snackBarText = '';
-                    uiState.snackBar.snackBarType = null;
-                }}>
+                onClose={onClose}>
                 <MySnackbarContentWrapper
                     variant='error'
                     className={classes.margin}
                     message={snackBarText}
+                    onClose={onClose}
                 />
             </Snackbar>
         </Fragment>

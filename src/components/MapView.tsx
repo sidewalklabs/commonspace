@@ -5,7 +5,7 @@ import uuid from 'uuid';
 
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { Map, Marker, Popup, TileLayer, FeatureGroup, Feature, GeoJSON, withLeaflet } from 'react-leaflet'
+import { Map, TileLayer, FeatureGroup, Feature, GeoJSON, withLeaflet } from 'react-leaflet'
 import { EditControl } from 'react-leaflet-draw'
 import { ReactLeafletSearch } from 'react-leaflet-search'
 
@@ -13,10 +13,6 @@ import applicationState, { updateFeatureName, Study } from '../stores/applicatio
 import { FeatureCollection } from 'geojson';
 import { stringHash } from '../utils';
 
-import searchboxCss from 'leaflet_search_css';
-
-
-const INITIAL_ZOOM_LEVEL = 17;
 const { TILE_SERVER_URL } = process.env;
 //    'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png';
 const MAP_ATTRIBUTION = process.env.MAP_ATTRIBUTION ? process.env.MAP_ATTRIBUTION : '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors';

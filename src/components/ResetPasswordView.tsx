@@ -27,7 +27,7 @@ const fetchParams: RequestInit = {
 const state = observable({
     password: '',
     verifyPassword: '',
-    matchingPasswordErrorMessage: ''
+    matchingPasswordErrorMessage: false
 })
 
 const styles = theme => ({

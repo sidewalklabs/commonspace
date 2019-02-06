@@ -77,7 +77,7 @@ function prepareNewStudy() {
     const newStudy = studyEmptySkeleton();
     uiState.currentStudyIsNew = true;
     applicationState.currentStudy = newStudy;
-    uiState.visibleModal = 'study';
+    uiState.modalStack.push('study');
 }
 
 function handleLogOut() {
@@ -105,11 +105,12 @@ const Main = observer(
         const { applicationState, classes } = props;
         const { anchorElement } = mainState;
         const { studies, token } = applicationState;
-        const { snackBar, visibleModal } = uiState;
+        const { snackBar, modalStack } = uiState;
         const currentStudy = applicationState.currentStudy ? applicationState.currentStudy : studyEmptySkeleton();
         let { fields, studyId, surveyors, map, type } = currentStudy;
         const allowedMapShapes = type === 'stationary' ? 'polygon' : 'line';
         const { latitude, longitude } = getMapCenterForStudy(studyId);
+        const visibleModal = modalStack.slice(-1)[0]
 
         return (
             <div className={classes.root}>
@@ -163,22 +164,22 @@ const Main = observer(
                             New study
                         </Button>
                     </div>
-                    <Paper className={classes.studiesList}>
+                    <div className={classes.studiesList}>
                         <StudiesList studies={studies} />
-                    </Paper>
+                    </div>
                     <WrapInModal modalName={'study'} visibleModal={visibleModal}>
                         <StudyView study={currentStudy} studyIsNew={uiState.currentStudyIsNew} />
                     </WrapInModal>
-                    <WrapInModal onClose={() => uiState.visibleModal = 'study'} modalName={'surveyors'} visibleModal={visibleModal}>
+                    <WrapInModal modalName={'surveyors'} visibleModal={visibleModal}>
                         <SurveyorsView studyId={currentStudy.studyId} surveyors={currentStudy.surveyors} />
                     </WrapInModal>
-                    <WrapInModal onClose={() => uiState.visibleModal = 'study'} modalName={'surveys'} visibleModal={visibleModal}>
+                    <WrapInModal modalName={'surveys'} visibleModal={visibleModal}>
                         <SurveyView surveys={Object.values(currentStudy.surveys)} features={currentStudy.map.features} />
                     </WrapInModal>
-                    <WrapInModal onClose={() => uiState.visibleModal = 'study'} modalName={'studyFields'} visibleModal={visibleModal}>
+                    <WrapInModal modalName={'studyFields'} visibleModal={visibleModal}>
                         <FieldsList studyType={type} fields={fields} />
                     </WrapInModal>
-                    <WrapInModal onClose={() => uiState.visibleModal = 'study'} modalName={'map'} visibleModal={visibleModal}>
+                    <WrapInModal modalName={'map'} visibleModal={visibleModal}>
                         <MapView study={currentStudy} allowedShapes={allowedMapShapes} lat={latitude} lng={longitude} featureCollection={map} />
                     </WrapInModal>
                 </div>
