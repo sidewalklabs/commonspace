@@ -7,9 +7,9 @@ import uuid from 'uuid';
 
 import { groupArrayOfObjectsBy } from '../utils';
 import { StudyField } from '../datastore/utils';
-import { surveysForStudy, StudyType } from '../datastore/study';
-import uiState, { setSnackBar } from './ui';
-import {  snakecasePayload } from '../utils';
+import { StudyType } from '../datastore/study';
+import { setSnackBar } from './ui';
+import { snakecasePayload } from '../utils';
 
 
 const DEFAULT_LATITUDE = 40.730819
@@ -31,7 +31,7 @@ export interface Study {
     authorUrl: string;
     description: string;
     protocolVersion: string;
-    surveys: {[key: string]: any};
+    surveys: { [key: string]: any };
     surveyors: string[];
     title: string;
     type: StudyType;
@@ -45,8 +45,8 @@ export interface Study {
 export interface ApplicationState {
     token: null | string;
     currentStudy: null | Study;
-    studies: {[key: string]: Study};
-    mapCenters: {[key: string]: LongitudeLatitude};
+    studies: { [key: string]: Study };
+    mapCenters: { [key: string]: LongitudeLatitude };
 }
 
 const fetchParams: RequestInit = {
@@ -133,7 +133,7 @@ async function fetchSurveysForStudy(studyId: string) {
     return study;
 }
 
-export async function getStudies(): Promise<{[studyId: string]: Study}> {
+export async function getStudies(): Promise<{ [studyId: string]: Study }> {
     try {
         const studiesReq = await getFromApi('/api/studies?type=admin');
         const studies = camelcaseKeys(await studiesReq.json());
@@ -145,7 +145,7 @@ export async function getStudies(): Promise<{[studyId: string]: Study}> {
 }
 
 export async function updateStudy(studyInput) {
-    const  { studyId } = studyInput;
+    const { studyId } = studyInput;
     const surveys = Object.values(toJS(studyInput.surveys))
     const study = toJS(applicationState.currentStudy);
     study.surveys = surveys;
@@ -204,9 +204,9 @@ export async function selectNewStudy(study: any) {
 
 export function updateFeatureName(study: Study, locationId: string, name: string) {
     const { features } = study.map;
-    const index = features.findIndex(({properties}) => {
+    const index = features.findIndex(({ properties }) => {
         if (!properties) return false;
-        const {name, locationId: currentId} = properties;
+        const { name, locationId: currentId } = properties;
         return currentId === locationId
     });
     if (index === -1) {
@@ -215,13 +215,13 @@ export function updateFeatureName(study: Study, locationId: string, name: string
 
     let newFeatures;
     const newFeature = features[index]
-    newFeature.properties = {name, locationId}
+    newFeature.properties = { name, locationId }
     if (index === 0) {
         newFeatures = [newFeature, ...features.slice(1)]
     } else if (index === features.length) {
         newFeatures = [...features.slice(0, index), newFeature]
     } else {
-        newFeatures = [...features.slice(0, index), {name, locationId}, ...features.slice(index+1)]
+        newFeatures = [...features.slice(0, index), { name, locationId }, ...features.slice(index + 1)]
     }
 }
 
@@ -287,18 +287,6 @@ async function calculateMapCenter(map: FeatureCollection): Promise<LongitudeLati
         const { geometry } = center(map);
         longitude = geometry.coordinates[0];
         latitude = geometry.coordinates[1];
-    } else if (navigator.geolocation) {
-        const position = await new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(position => {
-                resolve(position);
-            }, err => {
-                reject(err)
-            })
-        })
-        // @ts-ignore
-        longitude = position.coords.longitude
-        // @ts-ignore
-        latitude = position.coords.latitude
     } else {
         longitude = DEFAULT_LONGITUDE;
         latitude = DEFAULT_LATITUDE;
@@ -309,7 +297,7 @@ async function calculateMapCenter(map: FeatureCollection): Promise<LongitudeLati
 const mapCentersComputation = computed(async () => {
     const { currentStudy, studies } = applicationState;
     let currentStudyCenter = null;
-    if ( currentStudy && currentStudy.map.features.length > 0) {
+    if (currentStudy && currentStudy.map.features.length > 0) {
         const { studyId } = currentStudy
         const { longitude, latitude } = await calculateMapCenter(currentStudy.map)
         currentStudyCenter = {}
@@ -318,9 +306,9 @@ const mapCentersComputation = computed(async () => {
             latitude
         }
     }
-    const studyIdToCenter: {[key: string]: LongitudeLatitude}[] = await Promise.all(Object.keys(studies).map(async studyId => {
+    const studyIdToCenter: { [key: string]: LongitudeLatitude }[] = await Promise.all(Object.keys(studies).map(async studyId => {
         const study = studies[studyId];
-        let res: {[key: string]: LongitudeLatitude} = {};
+        let res: { [key: string]: LongitudeLatitude } = {};
         if (study.map) {
             res[studyId] = await calculateMapCenter(study.map)
         } else {
@@ -329,9 +317,9 @@ const mapCentersComputation = computed(async () => {
         return res;
     }));
 
-    const result: {[key: string]: LongitudeLatitude} = currentStudyCenter ?
-            Object.assign({}, ...studyIdToCenter, currentStudyCenter) :
-            Object.assign({}, ...studyIdToCenter);
+    const result: { [key: string]: LongitudeLatitude } = currentStudyCenter ?
+        Object.assign({}, ...studyIdToCenter, currentStudyCenter) :
+        Object.assign({}, ...studyIdToCenter);
     return result;
 });
 
