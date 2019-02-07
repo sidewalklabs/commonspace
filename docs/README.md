@@ -35,5 +35,19 @@ CommonSpace was co-developed and field-tested with three partner organizations: 
 In September 2018, under the supervision of Park People, TPWC conducted the first public life study using CommonSpace. Their research questions focused on the effect of programming in the park and on the impact of adding more tables and chairs near the cafe. More information about this study is available from Park People here: https://parkpeople.ca/archives/10207
 
 ## Links
+### CommonSpace announcements
+* **Sidewalk Labs:** CommonSpace: A NEW DIGITAL TOOL FOR PUBLIC LIFE STUDIES (https://medium.com/sidewalk-toronto/commonspace-a-new-digital-tool-for-public-life-studies-74deeb353a40)
+* **Park People:** What we learned from testing a new public life study tool (https://parkpeople.ca/archives/10207)
+* **Park People:** Working to make studying public life easier: a pilot project in R.V. Burgess Park (https://parkpeople.ca/archives/9809)
+
+### General information on public life studies
+* **Gehl Institute:** https://gehlinstitute.org/public-life-tools/
+* **Public Life Data Protocol:** https://gehlinstitute.org/tool/public-life-data-protocol/
+* **SF Planning:** https://sf-planning.org/public-space-and-public-life-studies
+* **Seattle DOT:** https://www.seattle.gov/transportation/projects-and-programs/programs/urban-design-program/public-life-study
+* **Gehl Architects:** https://gehlpeople.com/announcement/public-space-public-life-qa-with-louise-vogel-kielgast/
+
+### Contact
+We prefer to communicate about CommonSpace here on our Github page. However, you can also reach the Sidewalk Labs team behind CommonSpace by emailing us at commonspace@sidewalklabs.com
 
 ## FAQs
