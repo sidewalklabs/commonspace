@@ -23,10 +23,12 @@ import {
   giveUserStudyAccess,
   returnStudiesForAdmin,
   returnStudiesUserIsAssignedTo,
-  surveysForStudy,
+  allSurveysForStudy,
     StudyType,
     updateStudy,
     deleteStudiesForUserId,
+    userIdIsAdminOfStudy,
+    usersSurveysForStudy,
     returnStudyMetadata
 } from "../datastore/study";
 import { createNewSurveyForStudy, updateSurvey } from "../datastore/survey";
@@ -79,7 +81,7 @@ export interface Survey {
   surveyor_email: string;
   representation: string;
   microclimate?: string;
-  temperature_celcius?: string;
+  temperature_celsius?: string;
   method: string;
   notes?: string;
 }
@@ -113,32 +115,32 @@ router.delete('/user', return500OnError(async (req: Request, res: Response) => {
 }));
 
 router.get(
-  "/studies",
-  return500OnError(async (req: Request, res: Response) => {
-    const { type = "all" } = req.query;
-    const { user_id: userId } = req.user;
-    let responseBody: Study[];
-    if (type === "admin") {
-      responseBody = await returnStudiesForAdmin(DbPool, userId);
-    } else if (type === "surveyor") {
-      responseBody = await returnStudiesUserIsAssignedTo(
-        DbPool,
-        userId
-      ) as Study[];
-    } else if (type === 'all') {
-      const adminStudies = await returnStudiesForAdmin(DbPool, userId);
-      const suveyorStudies = await returnStudiesUserIsAssignedTo(
-        DbPool,
-        userId
-      ) as Study[];
+    "/studies",
+    return500OnError(async (req: Request, res: Response): Promise< Study[] > => {
+        const { type = "all" } = req.query;
+        const { user_id: userId } = req.user;
+        let responseBody: Study[];
+        if (type === "admin") {
+            responseBody = await returnStudiesForAdmin(DbPool, userId);
+        } else if (type === "surveyor") {
+            responseBody = await returnStudiesUserIsAssignedTo(
+                DbPool,
+                userId
+            ) as Study[];
+        } else if (type === 'all') {
+            const adminStudies = await returnStudiesForAdmin(DbPool, userId);
+            const suveyorStudies = await returnStudiesUserIsAssignedTo(
+                DbPool,
+                userId
+            ) as Study[];
       // @ts-ignore
-      responseBody = adminStudies.concat(suveyorStudies);
-    } else {
-        res.status(400).send();
-        return;
-    }
-    res.send(responseBody);
-  })
+            responseBody = adminStudies.concat(suveyorStudies);
+        } else {
+            res.status(400).send();
+            return;
+        }
+        res.send(responseBody);
+    })
 );
 
 router.post(
@@ -379,15 +381,9 @@ router.delete(
   })
 );
 
-router.get(
-  "/studies/:studyId/surveys",
-  return500OnError(async (req, res) => {
-    // TODO only return studies where the user is verfied
-    const { user_id: userId } = req.user;
-    const { studyId } = req.params;
-    const pgRes = await surveysForStudy(DbPool, studyId);
-    const surveys: Survey[] = pgRes.rows.map(
-      ({
+function convertDatabaseSurveyToRestSurvey(survey): Survey {
+    const {
+        user_id,
         survey_id,
         title,
         time_start,
@@ -398,25 +394,36 @@ router.get(
         microclimate,
         temperature_celsius,
         method,
+                notes
+    } = survey;
+    return {
+        survey_id,
+        title,
+        location_id,
+        start_date: time_start,
+        end_date: time_stop,
+        surveyor_email: email,
+        representation,
+        microclimate,
+        temperature_celsius,
+        method,
         notes
-      }) => {
-        return {
-          survey_id,
-          title,
-          location_id,
-          start_date: time_start,
-          end_date: time_stop,
-          surveyor_email: email,
-          representation,
-          microclimate,
-          temperature_celsius,
-          method,
-          notes
-        };
-      }
-    );
-    res.send(surveys);
-  })
+    }
+
+}
+
+router.get(
+    "/studies/:studyId/surveys",
+    return500OnError(async (req, res)  => {
+        const { user_id: userId } = req.user;
+        const { studyId } = req.params;
+        const surveysforStudies = await userIdIsAdminOfStudy(DbPool, studyId, userId) ?
+            await allSurveysForStudy(DbPool, studyId) :
+            await usersSurveysForStudy(DbPool, studyId, userId);
+        let surveys: Survey[] = surveysforStudies.map(convertDatabaseSurveyToRestSurvey)
+        surveys = surveys.filter(s => s !== null)
+        res.send(surveys);
+    })
 );
 
 router.put(
