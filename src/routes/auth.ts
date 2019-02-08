@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import passport from 'passport';
 import { return500OnError } from './utils';
-import { emailForResetToken, resetPassword, sendEmailResetLink} from '../auth';
+import { emailForResetToken, resetPassword, sendEmailResetLink, addToBlackList, tokenIsBlacklisted} from '../auth';
 import DbPool from '../database'
 import { User } from '../datastore/user';
 
@@ -40,6 +40,14 @@ function respondWithAuthentication(req: Request, res: Response, user: User) {
     } else {
         return respondWithCookie(res, user);
     }
+}
+
+export async function checkAgainstTokenBlacklist(req: Request, res: Response, next) {
+    if (await tokenIsBlacklisted(DbPool, req)) {
+        res.status(401).send();
+        return;
+    }
+    next();
 }
 
 router.post('/signup', (req, res, next) => {
@@ -110,6 +118,15 @@ router.post('/reset_password', return500OnError(async (req: Request, res: Respon
     res.status(200).send();
     return
 }))
+
+const BEARER_REGEX = /^bearer (.*)?/
+router.post('/logout',
+            passport.authenticate("jwt", { session: false }),
+            return500OnError(async (req: Request, res: Response) => {
+                const { user_id: userId } = req.user;
+                await addToBlackList(DbPool, userId, req);
+                res.status(200).send();
+            }))
 
 // router.get('/verify', return500OnError(function(req,res){
 //     const { id, email } = req.query;

@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { Request } from 'express';
 import * as jwt from 'jsonwebtoken';
 import * as passport from 'passport';
 import * as passportGoogle from 'passport-google-oauth20';
@@ -191,6 +192,43 @@ const jwtStrategy = new JwtStrategy(jwtOptions, async (jwt_payload, next) => {
         next(new Error(`No User: ${JSON.stringify(jwt_payload)}`), null);
     }
 })
+
+export async function addToBlackList(pool: Pool, userId: string, req: Request): Promise<void> {
+    const token = jwtFromRequest(req);
+    const query = `INSERT INTO public.token_blacklist (user_id, token)
+                   VALUES ($1, $2)`;
+    const values = [userId, token]
+    try {
+        await pool.query(query, values);
+    } catch (error) {
+        console.error(`[sql ${query}] [values ${JSON.stringify(values)}] ${error}`);
+        throw error;
+    }
+}
+
+export async function tokenIsBlacklisted(pool: Pool, req: Request): Promise<boolean> {
+    const token = jwtFromRequest(req);
+    const date = await tokenBlacklistDate(pool, token);
+    return date !== null;
+}
+
+export async function tokenBlacklistDate(pool: Pool, token: string): Promise< string | null > {
+    const query = `SELECT blacklisted_at
+                   FROM public.token_blacklist
+                   WHERE token = $1`
+    const values = [token]
+    try {
+        const { rows, rowCount } = await pool.query(query, values);
+        if (rowCount === 1) {
+            const { blacklisted_at } = rows[0];
+            return blacklisted_at;
+        }
+        return null;
+    } catch (error) {
+        console.error(`[sql ${query}] [values ${JSON.stringify(values)}] ${error}`);
+        throw error;
+    }
+}
 
 const init = (mode: string) => {
     return (passport: any) => {

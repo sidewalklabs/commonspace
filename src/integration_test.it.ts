@@ -241,6 +241,31 @@ export async function deleteRest(route: string, token?: string): Promise<void> {
     }
 }
 
+export async function postRestNoBody(route: string, data: any, token?:string): Promise<void> {
+    const body = JSON.stringify(snakecasePayload(data));
+    try {
+        const params = {
+            ...fetchParams,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json; charset=utf-8"
+            },
+            body
+        }
+        if (token) {
+            params.headers['Authorization'] = `bearer ${token}`;
+        }
+        const response = await fetch(API_SERVER + route, params)
+        if (response.status !== 200) {
+            throw Error(`${response.status} ${response.statusText}`);
+        }
+        return;
+    } catch (err) {
+        console.error(`[route ${route}] [data ${body}] ${err}`)
+        throw err;
+    }
+}
+
 export async function postRest(route: string, data: any, token?: string) {
     const body = JSON.stringify(snakecasePayload(data));
     try {
@@ -442,6 +467,17 @@ async function checkNumberOfSurveysOnStudyForToken(studyId: string, expected: nu
 }
 
 async function runTest(adminUser) {
+
+    // we expect an authoization error if we don't yet have an authentication token
+    try {
+        await getRest('/api/studies?type=surveyor');
+        throw new Error('api returning response without client sending an authentication token');
+    } catch (error) {
+        if (!(error instanceof UnauthorizedError)) {
+            throw error;
+        }
+    }
+
     const loginResponse = await loginJwt(adminUser);
     if (loginResponse) {
         await clearUserFromApp(SeaBassFishCountStudy.map, loginResponse.token);
@@ -484,12 +520,21 @@ async function runTest(adminUser) {
     if (newStudy.study_id !== SeaBassFishCountStudy.study_id) {
         throw new Error(`Recently saved study not what was expected, recieved: ${JSON.stringify(newStudy)}`)
     }
+    await postRestNoBody('/auth/logout', {}, surveyorToken);
+
+    try {
+        await getRest('/api/studies?type=surveyor', surveyorToken);
+        throw new Error('api returning response after logout');
+    } catch (error) {
+        if (!(error instanceof UnauthorizedError)) {
+            throw error;
+        }
+    }
 }
 
-
 runTest(adminUser)
-    .then(() => console.log('done'))
+    .then(() => console.log('success'))
     .catch( error => {
-        console.error(error.message)
-        process.exit(-1)
+        console.error(error.message);
+        process.exit(-1);
     })
