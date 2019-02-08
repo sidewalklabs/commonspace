@@ -36,6 +36,13 @@ CREATE TABLE IF NOT EXISTS admin_whitelist
     email TEXT PRIMARY KEY
 );
 
+CREATE TABLE IF NOT EXISTS token_blacklist
+(
+    token TEXT PRIMARY KEY,
+    user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
+    blacklisted_at TIMESTAMP WITH TIME ZONE default now()
+);
+
 CREATE SCHEMA IF NOT EXISTS data_collection;
 ALTER ROLE data_collector SET search_path TO data_collection,"$user",public;
 -- ALTER ROLE <your_login_role> SET search_path TO data_collection,"$user",public;

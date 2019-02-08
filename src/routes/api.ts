@@ -37,6 +37,7 @@ import { createLocation } from "../datastore/location";
 import DbPool from "../database";
 import { Feature, FeatureCollection, Point } from "geojson";
 import { snakecasePayload } from "../utils";
+import { checkAgainstTokenBlacklist } from "./auth";
 
 const NOMINATIM_BASE_URL =
   "https://nominatim.openstreetmap.org/reverse?format=json";
@@ -105,6 +106,8 @@ const router = express.Router();
 router.use(cookieParser());
 
 router.use(passport.authenticate("jwt", { session: false }));
+
+router.use(checkAgainstTokenBlacklist);
 
 router.delete('/user', return500OnError(async (req: Request, res: Response) => {
     const { user_id: userId } = req.user;
@@ -283,14 +286,11 @@ async function saveGeoJsonFeatureAsLocation(x: Feature | FeatureCollection) {
     const latCenterApprox = lats / geometry.coordinates[0].length;
     const url =
       NOMINATIM_BASE_URL + `&lat=${latCenterApprox}&lon=${lngCenterApprox}`;
-    const response = await fetch(url);
-    const body = await response.json();
-    const {
-      county = "",
-      city = "",
-      country = "",
-      county: subdivision = ""
-    } = body;
+    //const response = await fetch(url);
+    //const body = await response.json();
+      const city = ''
+      const country = ''
+      const subdivision = ''
     return createLocation(DbPool, {
       locationId,
       namePrimary,
