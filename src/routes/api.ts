@@ -249,7 +249,7 @@ router.get(
             description,
             surveyors
         }
-        res.status(200).send({study});
+        res.status(200).send(study);
     })
 )
 
