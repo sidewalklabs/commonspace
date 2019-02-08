@@ -330,6 +330,34 @@ async function clearUserFromApp(map: FeatureCollection, token: string) {
     }
 }
 
+class UnauthorizedError extends Error {}
+
+async function getRest<T>(route: string, token?: string): Promise<T> {
+    const uri =  API_SERVER + route;
+    const params = {
+        ...fetchParams,
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      }
+    }
+    if (token) {
+        params.headers['Authorization'] = `bearer ${token}`;
+    }
+    const response = await fetch(
+        uri,
+        params,
+    );
+    if (response.status === 401) {
+        throw new UnauthorizedError(`Not Authorized: ${route}`)
+    }
+    if (response.status !== 200) {
+        throw new Error(`Status: ${response.status}, could not fetch get ${uri}`);
+    }
+    const body = await response.json();
+    return camelcaseKeys(body) as T;
+}
+
 async function getStudiesForSurveyor(token?: string)  {
     const params = {
         ...fetchParams,
@@ -441,6 +469,11 @@ async function runTest(user) {
     const studiesForAdmin = await getStudiesForAdmin(token);
     if (studiesForAdmin.length !== SeaBassFishCountStudy.surveys.length) {
         throw new Error(`Incorrect number of studies returned for admin ${user.email}, received ${studiesForAdmin.length}, expected ${SeaBassFishCountStudy.surveys.length}`)
+    }
+
+    const newStudy = await getRest<Study>(`/api/studies/${SeaBassFishCountStudy.study_id}`, token);
+    if (newStudy.study_id !== SeaBassFishCountStudy.study_id) {
+        throw new Error('Could not fetch the recently saved study!');
     }
 }
 
