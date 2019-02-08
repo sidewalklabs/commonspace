@@ -26,7 +26,8 @@ import {
   surveysForStudy,
     StudyType,
     updateStudy,
-    deleteStudiesForUserId
+    deleteStudiesForUserId,
+    returnStudyMetadata
 } from "../datastore/study";
 import { createNewSurveyForStudy, updateSurvey } from "../datastore/survey";
 import { userIsAdminOfStudy, deleteUser } from "../datastore/user";
@@ -64,8 +65,8 @@ export interface Study {
     fields: StudyField[];
     location: string;
     description?: string;
-    created_at: any;
-    last_updated;
+    created_at?: any;
+    last_updated?: any;
 }
 
 export interface Survey {
@@ -225,13 +226,40 @@ router.post(
   })
 );
 
+router.get(
+    "/studies/:studyId",
+    return500OnError(async (req: Request, res: Response) => {
+        const { user_id: userId } = req.user;
+        const { studyId } = req.params;
+        if (!userIsAdminOfStudy(DbPool, studyId, userId)) {
+            res.status(401).send();
+        }
+        const studyMetadata = await returnStudyMetadata(DbPool, studyId);
+        const { studyId: study_id, authorUrl: author_url, protocolVersion: protocol_version, title, author, type, fields, location, map, description, surveyors } = studyMetadata;
+        const study: Study = {
+            study_id,
+            author_url,
+            protocol_version,
+            title,
+            author,
+            type,
+            fields,
+            location,
+            map,
+            description,
+            surveyors
+        }
+        res.status(200).send({study});
+    })
+)
+
 router.delete(
     "/studies/:studyId",
     return500OnError(async (req: Request, res: Response) => {
         const { user_id: userId } = req.user;
         const { studyId } = req.params;
         if (!userIsAdminOfStudy(DbPool, studyId, userId)) {
-            res.status(409).send();
+            res.status(401).send();
         }
         await deleteStudy(DbPool, studyId);
         res.status(200).send();

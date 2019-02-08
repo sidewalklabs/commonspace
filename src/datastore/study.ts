@@ -69,6 +69,57 @@ function createNewTableFromStudyFields(fields: StudyField[], tablename: string) 
                     )`;
 }
 
+export async function returnStudyMetadata(pool: pg.Pool, studyId: string): Promise<Study & {surveyors: string[]}> {
+    const query = `WITH
+                        study_and_surveyors (study_id, emails)
+                            AS (
+                                SELECT
+                                    s.study_id, array_agg(u.email)
+                                FROM
+                                    data_collection.surveyors AS s
+                                    JOIN public.users AS u
+                                    ON u.user_id = s.user_id
+                                GROUP BY
+                                    study_id
+                            )
+                  SELECT
+                       stu.title,
+                       stu.author, 
+                       stu.author_url, 
+                       stu.protocol_version, 
+                       stu.study_type, 
+                       stu.fields,
+                       stu.location,
+                       stu.map,
+                       stu.description,
+                       sas.emails
+                   FROM data_collection.study stu
+                   LEFT JOIN study_and_surveyors sas
+                   ON stu.study_id = sas.study_id
+                   WHERE stu.study_id = $1;`
+    const values = [studyId]
+    try {
+        const {rows, rowCount} = await pool.query(query, values);
+        if (rowCount !== 1) {
+            throw new Error(`Study not found for id: ${studyId}`)
+        }
+        const {
+            author_url: authorUrl, protocol_version: protocolVersion, study_type: type, emails: surveyors
+        } = rows[0];
+        const study = rows[0] as Study;
+        return {
+            ...study,
+            authorUrl,
+            protocolVersion,
+            type,
+            surveyors
+        }
+    } catch (error) {
+        console.error(`[sql ${query}][values ${JSON.stringify(values)}] ${error}`)
+        throw error;
+    }
+}
+
 export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
     // TODO union with studies that do not have a surveyors yet
     const query = `WITH
