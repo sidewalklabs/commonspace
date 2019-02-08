@@ -3,6 +3,7 @@ import { Feature, FeatureCollection } from 'geojson';
 import path from 'path';
 import fetch from "node-fetch";
 
+import { Study, Survey } from './routes/api'
 import { snakecasePayload } from './utils'
 import * as dotenv from 'dotenv';
 import { deleteLocation } from './datastore/location';
@@ -15,11 +16,16 @@ interface User {
     password: string;
 }
 
-const { INTEGRATION_TEST_SERVER: API_SERVER, INTEGRATION_TEST_PASSWORD, INTEGRATION_TEST_USER } = process.env;
+const { INTEGRATION_TEST_SERVER: API_SERVER = '', INTEGRATION_TEST_ADMIN_PASSWORD, INTEGRATION_TEST_ADMIN_USER, INTEGRATION_TEST_SURVEYOR_PASSWORD, INTEGRATION_TEST_SURVEYOR_USER } = process.env;
 
-const user = {
-    email: INTEGRATION_TEST_USER,
-    password: INTEGRATION_TEST_PASSWORD
+const adminUser = {
+    email: INTEGRATION_TEST_ADMIN_USER,
+    password: INTEGRATION_TEST_ADMIN_PASSWORD
+}
+
+const surveyorUser = {
+    email: INTEGRATION_TEST_SURVEYOR_USER,
+    password: INTEGRATION_TEST_SURVEYOR_PASSWORD
 }
 
 const SeaBassFishCountConfig = {
@@ -354,30 +360,7 @@ async function getRest<T>(route: string, token?: string): Promise<T> {
         throw new Error(`Status: ${response.status}, could not fetch get ${uri}`);
     }
     const body = await response.json();
-    return camelcaseKeys(body) as T;
-}
-
-async function getStudiesForSurveyor(token?: string)  {
-    const params = {
-        ...fetchParams,
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-      }
-    }
-    if (token) {
-        params.headers['Authorization'] = `bearer ${token}`;
-    }
-    
-    const response = await fetch(
-        API_SERVER + '/api/studies?type=surveyor',
-        params,
-    );
-    if (response.status !== 200) {
-        throw new Error('Could not fetch get studies');
-    }
-    const body = await response.json();
-    return camelcaseKeys(body);
+    return body as T;
 }
 
 async function getStudiesForAdmin(token?: string) {
@@ -450,33 +433,61 @@ async function signupJwt(user: User) {
     return responseBody;
 }
 
-async function runTest(user) {
-    const loginResponse = await loginJwt(user);
+async function checkNumberOfSurveysOnStudyForToken(studyId: string, expected: number, token: string) {
+    const surveys = await getRest<Survey[]>(`/api/studies/${studyId}/surveys`, token);
+    if (surveys.length !== expected) {
+        const nSurveys = surveys.length;
+        throw new Error('Incorrect number of surveys, expected ${expected}, received ${nSurveys}');
+    }
+}
+
+async function runTest(adminUser) {
+    const loginResponse = await loginJwt(adminUser);
     if (loginResponse) {
         await clearUserFromApp(SeaBassFishCountStudy.map, loginResponse.token);
     }
-    const {token } = await signupJwt(user);
-    const study = await postRest('/api/studies', SeaBassFishCountStudy, token);
-    const studiesForSurveyor = await getStudiesForSurveyor(token);
+    const { token: surveyorToken } = await loginJwt(surveyorUser);
+    const { token: adminToken } = await signupJwt(adminUser);
+    const study = await postRest('/api/studies', SeaBassFishCountStudy, adminToken);
+    const studiesForSurveyor = await getRest('/api/studies?type=surveyor', adminToken) as Study[];
     if (studiesForSurveyor.length !== 1) {
         throw new Error('Incorrect number of studies returned')
     }
     if (studiesForSurveyor[0].surveys.length !== 1) {
         const { title } = studiesForSurveyor[0];
-        throw new Error(`Incorrect number of surveys returned for study: ${title} and user: ${user.email}`)
+        throw new Error(`Incorrect number of surveys returned for study: ${title} and user: ${adminUser.email}`)
     }
-    const studiesForAdmin = await getStudiesForAdmin(token);
+    const studiesForAdmin = await getRest('/api/studies?type=admin', adminToken) as Study[];
     if (studiesForAdmin.length !== SeaBassFishCountStudy.surveys.length) {
-        throw new Error(`Incorrect number of studies returned for admin ${user.email}, received ${studiesForAdmin.length}, expected ${SeaBassFishCountStudy.surveys.length}`)
+        throw new Error(`Incorrect number of studies returned for admin ${adminUser.email}, received ${studiesForAdmin.length}, expected ${SeaBassFishCountStudy.surveys.length}`)
     }
 
-    const newStudy = await getRest<{studyId: string}>(`/api/studies/${SeaBassFishCountStudy.study_id}`, token);
-    if (newStudy.studyId !== SeaBassFishCountStudy.study_id) {
+    // we want to make sure that the user only sees their own surveys when they ask for a study's surveys
+    try {
+        checkNumberOfSurveysOnStudyForToken(SeaBassFishCountStudy.study_id, 1, surveyorToken);
+    } catch (error) {
+        throw new Error(`[study-title ${SeaBassFishCountStudy.title}][user ${JSON.stringify(surveyorUser)}] ${error}`)
+    }
+
+
+    try {
+        checkNumberOfSurveysOnStudyForToken(SeaBassFishCountStudy.study_id, SeaBassFishCountStudy.surveys.length, adminToken);
+    } catch (error) {
+        throw new Error(`[study-title ${SeaBassFishCountStudy.title}][user ${JSON.stringify(surveyorUser)}] ${error}`)
+    }
+
+    // however if they're the admin they should see all of the surveys on the study
+
+    const surveysForStudyAssignedToAdmin= await getRest(`/api/studies/${SeaBassFishCountStudy.study_id}/surveys`, surveyorToken) as Survey[];
+
+    const newStudy = await getRest<Study>(`/api/studies/${SeaBassFishCountStudy.study_id}`, adminToken);
+    if (newStudy.study_id !== SeaBassFishCountStudy.study_id) {
         throw new Error(`Recently saved study not what was expected, recieved: ${JSON.stringify(newStudy)}`)
     }
 }
 
-runTest(user)
+
+runTest(adminUser)
     .then(() => console.log('done'))
     .catch( error => {
         console.error(error.message)

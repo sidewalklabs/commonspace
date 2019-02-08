@@ -84,10 +84,10 @@ export async function returnStudyMetadata(pool: pg.Pool, studyId: string): Promi
                             )
                   SELECT
                        stu.title,
-                       stu.author, 
-                       stu.author_url, 
-                       stu.protocol_version, 
-                       stu.study_type, 
+                       stu.author,
+                       stu.author_url,
+                       stu.protocol_version,
+                       stu.study_type,
                        stu.fields,
                        stu.location,
                        stu.map,
@@ -115,6 +115,20 @@ export async function returnStudyMetadata(pool: pg.Pool, studyId: string): Promi
             studyId,
             surveyors
         }
+    } catch (error) {
+        console.error(`[sql ${query}][values ${JSON.stringify(values)}] ${error}`)
+        throw error;
+    }
+}
+
+export async function userIdIsAdminOfStudy(pool: pg.Pool, studyId: string, userId: string):Promise<boolean> {
+    const query = `SELECT user_id
+           from data_collection.study
+           where study_id = $1 and user_id = $2`
+    const values = [studyId, userId]
+    try {
+        const { rowCount } = await pool.query(query, values);
+        return rowCount === 1;
     } catch (error) {
         console.error(`[sql ${query}][values ${JSON.stringify(values)}] ${error}`)
         throw error;
@@ -248,17 +262,34 @@ export async function deleteUserFromSurveyors(pool: pg.Pool, userId: string): Pr
     }
 }
 
-export function surveysForStudy(pool: pg.Pool, studyId: string) {
-    const query = `SELECT
-                       s.start_date, s.end_date, u.email, s.survey_id, s.title, s.representation, s.microclimate, s.temperature_c, s.method, s.user_id, s.notes
-                   FROM
-                       data_collection.survey AS s
-                       JOIN public.users AS u ON s.user_id = u.user_id
-                   WHERE
-                       s.study_id = $1`;
+
+export async function usersSurveysForStudy(pool: pg.Pool, studyId: string, userId: string) {
+    const query = `SELECT s.start_date, s.end_date, s.user_id,  u.email, s.survey_id, s.title, s.representation, s.microclimate, s.temperature_c, s.method, s.user_id, s.notes
+                   FROM data_collection.survey AS s
+                   JOIN public.users AS u
+                   ON s.user_id = u.user_id
+                   WHERE s.study_id = $1 and s.user_id = $2`;
+    const values = [studyId, userId];
+    try {
+        const { rows } = await pool.query(query, values);
+        return rows;
+    } catch (error) {
+        console.error(`[sql ${query}][values ${JSON.stringify(values)}] ${error}`)
+        throw error;
+    }
+}
+
+
+export async function allSurveysForStudy(pool: pg.Pool, studyId: string) {
+    const query = `SELECT s.start_date, s.end_date, s.user_id,  u.email, s.survey_id, s.title, s.representation, s.microclimate, s.temperature_c, s.method, s.user_id, s.notes
+                   FROM data_collection.survey AS s
+                   JOIN public.users AS u
+                   ON s.user_id = u.user_id
+                   WHERE s.study_id = $1`;
     const values = [studyId];
     try {
-        return pool.query(query, values);
+        const { rows } = await pool.query(query, values);
+        return rows;
     } catch (error) {
         console.error(`[sql ${query}][values ${JSON.stringify(values)}] ${error}`)
         throw error;
