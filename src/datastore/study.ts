@@ -112,6 +112,7 @@ export async function returnStudyMetadata(pool: pg.Pool, studyId: string): Promi
             authorUrl,
             protocolVersion,
             type,
+            studyId,
             surveyors
         }
     } catch (error) {

@@ -3,7 +3,6 @@ import { Feature, FeatureCollection } from 'geojson';
 import path from 'path';
 import fetch from "node-fetch";
 
-import { Study } from './routes/api'
 import { snakecasePayload } from './utils'
 import * as dotenv from 'dotenv';
 import { deleteLocation } from './datastore/location';
@@ -457,7 +456,7 @@ async function runTest(user) {
         await clearUserFromApp(SeaBassFishCountStudy.map, loginResponse.token);
     }
     const {token } = await signupJwt(user);
-    const study = await postRest('/api/studies', SeaBassFishCountStudy, token) as Study;
+    const study = await postRest('/api/studies', SeaBassFishCountStudy, token);
     const studiesForSurveyor = await getStudiesForSurveyor(token);
     if (studiesForSurveyor.length !== 1) {
         throw new Error('Incorrect number of studies returned')
@@ -471,9 +470,9 @@ async function runTest(user) {
         throw new Error(`Incorrect number of studies returned for admin ${user.email}, received ${studiesForAdmin.length}, expected ${SeaBassFishCountStudy.surveys.length}`)
     }
 
-    const newStudy = await getRest<Study>(`/api/studies/${SeaBassFishCountStudy.study_id}`, token);
-    if (newStudy.study_id !== SeaBassFishCountStudy.study_id) {
-        throw new Error('Could not fetch the recently saved study!');
+    const newStudy = await getRest<{studyId: string}>(`/api/studies/${SeaBassFishCountStudy.study_id}`, token);
+    if (newStudy.studyId !== SeaBassFishCountStudy.study_id) {
+        throw new Error(`Recently saved study not what was expected, recieved: ${JSON.stringify(newStudy)}`)
     }
 }
 

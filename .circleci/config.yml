@@ -142,12 +142,6 @@ workflows:
       - deploy-staging:
           requires:
             - build-containers
-          filters:
-            branches:
-              only: master
       - run-integration-test:
            requires:
              - deploy-staging
-           filters:
-             branches:
-               only: master
