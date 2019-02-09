@@ -106,6 +106,8 @@ jobs:
                         }
                       }
                   }' -f deployment/commons.yml > /tmp/k8s/commons.yml
+                cp deployment/commons_nginx_service.yml /tmp/k8s/
+                cp deployment/commons_server_service.yml /tmp/k8s/
 
           - persist_to_workspace:
               root: /tmp/
