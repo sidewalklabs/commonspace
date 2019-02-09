@@ -13,7 +13,6 @@ jobs:
          command: |
              packer validate deployment/commons_nginx.json
              packer validate deployment/commons_server.json
-             packer validate deployment/commons_integration_test.json
 
   build-admin-server-image:
     docker:
@@ -66,32 +65,6 @@ jobs:
             command: |
                 packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-nginx -var GOOGLE_AUTH_CLIENT_ID="${GOOGLE_AUTH_CLIENT_ID}" -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" -var TILE_SERVER_URL=https://{s}.tile.osm.org/{z}/{x}/{y}.png -var NODE_ENV=production deployment/commons_nginx.json
 
-
-  build-integration-image:
-    docker:
-      - image: californianseabass/gcloud-packer-docker:v0.0.1
-
-    steps:
-        - run:
-           name: setup docker
-           command: echo y | gcloud auth configure-docker
-
-        - run: &setup_gcloud
-           name: authenticate gcloud service account
-           command: |
-                echo "${GCP_SERVICE_ACCOUNT_KEY}" > ${HOME}/gcp-key.json
-                gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
-                gcloud --quiet config set project nyc-tlc-1225
-
-        - checkout
-
-        - setup_remote_docker
-
-        - run:
-            name: build and push integration test container to GC Registry
-            command: |
-                packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-integration -var SERVER_HOSTNAME=https://commons-staging.sidewalklabs.com -var GOOGLE_AUTH_CLIENT_ID="${GOOGLE_AUTH_CLIENT_ID}" -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" -var TILE_SERVER_URL=https://{s}.tile.osm.org/{z}/{x}/{y}.png -var NODE_ENV=production deployment/commons_integration_test.json
-
   patch-k8s:
       docker:                                
         - image: californianseabass/gcloud-packer-docker:v0.0.1
@@ -133,23 +106,6 @@ jobs:
                         }
                       }
                   }' -f deployment/commons.yml > /tmp/k8s/commons.yml
-                kubectl patch --local -o yaml -p \ '
-                  {
-                    "spec": {
-                       "template": {
-                            "spec": {
-                              "containers": [
-                                    {
-                                        "name": "commons-integration",
-                                        "image": "us.gcr.io/nyc-tlc-1225/commons-integration:'$(git rev-parse --short=8 HEAD)'"
-                                    }
-                                ]
-                            }
-                        }
-                      }
-                  }' -f deployment/commons_integration_test.yml > /tmp/k8s/commons_integration_test.yml
-                cp deployment/commons_nginx_service.yml /tmp/k8s/
-                cp deployment/commons_server_service.yml /tmp/k8s/
 
           - persist_to_workspace:
               root: /tmp/
@@ -200,9 +156,6 @@ workflows:
       - build-nginx-image:
           requires:
             - validate
-      - build-integration-image:
-          requires:
-            - validate
       - patch-k8s:
           requires:
             - validate
@@ -210,8 +163,13 @@ workflows:
           requires:
             - build-admin-server-image
             - build-nginx-image
-            - build-integration-image
             - patch-k8s
+          filters:
+            branches:
+              only: master
       - run-integration-test:
-           requires:
+          requires:
              - deploy-staging
+          filters:
+            branches:
+              only: master
