@@ -9,7 +9,7 @@ import { groupArrayOfObjectsBy } from '../utils';
 import { StudyField } from '../datastore/utils';
 import { StudyType } from '../datastore/study';
 import { setSnackBar } from './ui';
-import { postToApi, snakecasePayload } from '../utils';
+import { getFromApi, postToApi, snakecasePayload } from '../utils';
 
 
 const DEFAULT_LATITUDE = 40.730819
@@ -55,22 +55,6 @@ const fetchParams: RequestInit = {
     credentials: "same-origin", // include, same-origin, *omit
     redirect: 'follow',
     referrer: 'no-referrer'
-}
-
-async function getFromApi(route: string) {
-    try {
-        const response = await fetch(route, {
-            ...fetchParams,
-            method: 'GET'
-        })
-        if (response.status !== 200) {
-            throw Error(`${response.status} ${response.statusText}`);
-        }
-        return response;
-    } catch (err) {
-        console.error(`[route ${route}] ${err}`)
-        throw err;
-    }
 }
 
 async function putToApi(route: string, data: any) {

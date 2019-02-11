@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import passport from 'passport';
 import { return500OnError } from './utils';
-import { emailForResetToken, resetPassword, sendEmailResetLink, addToBlackList, tokenIsBlacklisted} from '../auth';
+import { resetPassword, sendEmailResetLink, addToBlackList, createRandomStringForTokenUse, emailForResetToken, saveTokenForPasswordReset, tokenIsBlacklisted, validateEmail} from '../auth';
 import DbPool from '../database'
 import { User } from '../datastore/user';
 
@@ -103,7 +103,10 @@ router.post('/request_reset_password', return500OnError(async (req: Request, res
         res.statusMessage = 'Missing email field'
         res.status(400).send();
     }
-    await sendEmailResetLink(body.email);
+    const { email } = body;
+    const token = await createRandomStringForTokenUse();
+    await saveTokenForPasswordReset(DbPool, email, token);
+    await sendEmailResetLink(email, token);
     res.status(200).send();
 }));
 
@@ -128,18 +131,14 @@ router.post('/logout',
                 res.status(200).send();
             }))
 
-// router.get('/verify', return500OnError(function(req,res){
-//     const { id, email } = req.query;
-//     try {
-//         const linkId = removeEmail(DbPool, email, id);
-//         console.log("email is verified");
-//         res.end(`<h1>Email ${email} has been Successfully verified`);
-//         console.log("Domain is matched. Information is from Authentic email");
-//     } catch (error) {
-//         console.log("email is not verified");
-//         res.end("<h1>Bad Request</h1>");
-//     }
-// }))
+router.get('/verify', return500OnError(async function(req,res){
+    const { token, email } = req.query;
+    if (await validateEmail(DbPool, email, token)) {
+        res.redirect('/studies')
+        return;
+    }
+    res.status(400);
+}))
 
 if (process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'production') {
     router.get('/google', passport.authenticate('google', { scope : ['profile', 'email'] }));

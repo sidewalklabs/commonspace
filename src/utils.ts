@@ -91,3 +91,19 @@ export async function postToApi(route: string, data: any, token?: string) {
         throw err;
     }
 }
+
+export async function getFromApi(route: string) {
+    try {
+        const response = await fetch(route, {
+            ...fetchParams,
+            method: 'GET'
+        })
+        if (response.status !== 200) {
+            throw Error(`${response.status} ${response.statusText}`);
+        }
+        return response;
+    } catch (err) {
+        console.error(`[route ${route}] ${err}`)
+        throw err;
+    }
+}
