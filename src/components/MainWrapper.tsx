@@ -15,7 +15,8 @@ import SignUpView from './SignUpView';
 
 import applicationState, { ApplicationState } from '../stores/applicationState';
 import { UiState } from '../stores/ui';
-import { Router, addRoute } from '../stores/router';
+import { Router, addSideEffectRoute, assignComponentToRoute, navigate } from '../stores/router';
+import { getFromApi } from '../utils'
 
 const drawerWidth = 240;
 
@@ -82,11 +83,11 @@ const MainWrapper = observer(
         const { classes, router, uiState } = props;
         const { uri } = router;
         const { snackBar } = uiState;
-        const AuthLanding = addRoute('/welcome', AuthLandingView);
-        const SignUp = addRoute('/signup', SignUpView);
-        const Login = addRoute('/login', LoginView);
-        const Reset = addRoute('/reset', ResetView);
-        const ResetPassword = addRoute(
+        const AuthLanding = assignComponentToRoute('/welcome', AuthLandingView);
+        const SignUp = assignComponentToRoute('/signup', SignUpView);
+        const Login = assignComponentToRoute('/login', LoginView);
+        const Reset = assignComponentToRoute('/reset', ResetView);
+        const ResetPassword = assignComponentToRoute(
             () => {
                 const { pathname } = parse(uri);
                 return pathname === '/reset_password'
@@ -98,7 +99,20 @@ const MainWrapper = observer(
                 return <ResetPasswordView token={token} />
             }
         );
-        const Main = addRoute(() => BASE_URL_MATCH.exec(uri)[0] === '/studies', () => <MainView applicationState={applicationState} />)
+
+        addSideEffectRoute<void>(() => {
+            const { pathname } = parse(uri);
+            return pathname === '/verify'
+        }, async () => {
+            const { query } = parse(uri);
+            // @ts-ignore
+            const { token, email } = queryParamsParse(query);
+            const response = await getFromApi('/auth' + uri);
+            if (response.redirected) {
+                navigate(new URL(response.url).pathname)
+            }
+        })
+        const Main = assignComponentToRoute('/studies', () => <MainView applicationState={applicationState} />)
         return (
             <div className={classes.root}>
                 <CssBaseline />

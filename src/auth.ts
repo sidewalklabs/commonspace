@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import { randomBytes } from 'crypto';
 import { Request } from 'express';
 import * as jwt from 'jsonwebtoken';
 import * as passport from 'passport';
@@ -35,7 +35,28 @@ const SMTP_TRANSPORT = nodemailer.createTransport({
     }
 });
 
-async function saveTokenForPasswordReset(pool: Pool, email: string, token: string): Promise<void> {
+export async function createRandomStringForTokenUse(nBytes: number = N_RAND_BYTES) {
+    const buffer = await randomBytes(nBytes);
+    return buffer.toString('hex');
+}
+
+async function saveTokenForEmailVerification(pool: Pool, email: string, token: string): Promise<void> {
+    const query = `INSERT INTO account_verification (email, token)
+                   VALUES ($1, $2)
+                   ON CONFLICT (email)
+                   DO
+                     UPDATE
+                     SET token = $3`
+    const values = [email, token, token];
+    try {
+        await pool.query(query, values);
+    } catch (error) {
+        console.error(`[query ${query}][values ${values}] ${error}`);
+        throw error;
+    }
+}
+
+export async function saveTokenForPasswordReset(pool: Pool, email: string, token: string): Promise<void> {
     const query = `INSERT INTO password_reset (email, token)
                    VALUES ($1, $2)
                    ON CONFLICT (email)
@@ -80,6 +101,23 @@ export async function emailForResetToken(pool: Pool, token: string): Promise<str
     }
 }
 
+export async function validateEmail(pool: Pool, email: string, token: string): Promise<boolean> {
+    const query = `UPDATE account_verification
+                   SET verified = TRUE
+                   WHERE email = $1 and token = $2`;
+    const values = [email, token];
+    try {
+        const { rowCount } = await pool.query(query, values);
+        if (rowCount === 1) {
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error(`[query ${query}][values ${values}] ${error}`);
+        throw error;
+    }
+}
+
 export async function resetPassword(pool: Pool, password:string, token: string): Promise<void> {
     const email = await emailForResetToken(DbPool, token);
     if (email) {
@@ -90,9 +128,7 @@ export async function resetPassword(pool: Pool, password:string, token: string):
     return;
 }
 
-export async function sendEmailResetLink(email: string) {
-    const buffer = await crypto.randomBytes(N_RAND_BYTES);
-    const token = buffer.toString('hex');
+export async function sendEmailResetLink(email: string, token: string) {
     const link = `${process.env.SERVER_HOSTNAME}/reset_password?token=${token}`
     const html = `Hello ${email},<br> Please Click on the link to reset your email.<br><a href="${link}">Click Here To Reset</a>`
     const mailOptions: nodemailer.SendMailOptions = {
@@ -103,16 +139,14 @@ export async function sendEmailResetLink(email: string) {
     };
     try {
         await SMTP_TRANSPORT.sendMail(mailOptions);
-        await saveTokenForPasswordReset(DbPool, email, token)
     } catch (error) {
         console.error(`[mailOptions ${JSON.stringify(mailOptions)}] [mailUrl ${link}] ${error}`)
         throw error;
     }
 }
 
-export function sendSignupVerificationEmail(host: string, email: string) {
-    const rand = Math.floor((Math.random() * 100) + 39);
-    const link = encodeURI(`${process.env.SERVER_HOSTNAME}/verify?id=${rand}&email=${email}`);
+export function sendSignupVerificationEmail(host: string, email: string, token: string) {
+    const link = encodeURI(`${process.env.SERVER_HOSTNAME}/verify?token=${token}&email=${email}`);
     const mailOptions: nodemailer.SendMailOptions = {
         from: `Gehl Data Collector <thorncliffeparkpubliclifepilot@gmail.com>`,
         to: email,
@@ -149,7 +183,9 @@ const signupStrategy = new LocalStrategy({passReqToCallback: true, usernameField
         const userId = uuid.v4();
         const user = {email, password: checkPasswordRequirements(password), userId, name: '' };
         await createUser(DbPool, user);
-        // await sendSignupVerificationEmail(req.get('host'), user.email);
+        const token = await createRandomStringForTokenUse();
+        await saveTokenForEmailVerification(DbPool, email, token);
+        await sendSignupVerificationEmail(req.get('host'), user.email, token)
         req.user = user;
         return done(null, {user_id: userId, email})
     } catch (err) {

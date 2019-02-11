@@ -28,7 +28,8 @@ CREATE TABLE IF NOT EXISTS account_verification
 (
     email TEXT UNIQUE REFERENCES users(email) ON DELETE CASCADE,
     token TEXT PRIMARY KEY,
-    expiration TIMESTAMP WITH TIME ZONE
+    expiration TIMESTAMP WITH TIME ZONE,
+    verified BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS admin_whitelist

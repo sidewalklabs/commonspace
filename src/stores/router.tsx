@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import pathToRegexp from 'path-to-regexp';
 import { observable, autorun, toJS, get, set } from 'mobx';
 
 import { init } from './applicationState';
@@ -7,11 +8,11 @@ type BooleanFunction = (...args: any[]) => boolean;
 type ElementFunction = (...props: any[]) => JSX.Element
 
 //tylermcginnis.com/react-elements-vs-react-components/
-export function addRoute(route: string | BooleanFunction, WrappedComponent: typeof Component | ElementFunction): typeof Component {
+export function assignComponentToRoute(route: string | BooleanFunction, WrappedComponent: typeof Component | ElementFunction): typeof Component {
     return class Routed extends Component {
         render() {
             const { props } = this;
-            if (typeof route === 'string' && router.uri === route) {
+            if (typeof route === 'string' && pathToRegexp(route).exec(router.uri)) {
                 return <WrappedComponent {...props} />
             } else if (typeof route === 'function' && route(router.uri)) {
                 return <WrappedComponent {...props} />
@@ -22,10 +23,23 @@ export function addRoute(route: string | BooleanFunction, WrappedComponent: type
     }
 }
 
+export function addSideEffectRoute<T>(route: string | BooleanFunction, f: (...args: any[]) => T): T {
+    // @ts-ignore
+    if (typeof route === 'string' && pathToRegexp(route).exec(router.uri)) {
+        return f();
+    } else if (typeof route === 'function' && route(router.uri)) {
+        return f();
+    } else {
+        return null;
+    }
+}
+
+window.addEventListener('popstate', function(event) {
+    router.uri = sanitizedPathname()
+}, false)
+
 export function navigate(route: string) {
-    // TODO: if we use pushState, we need to listen for and handle pops
-    // history.pushState({}, '', route);
-    window.location.pathname = route
+    history.pushState({}, '', route);
     router.uri = sanitizedPathname();
 }
 
@@ -40,7 +54,7 @@ function sanitizedPathname() {
     return route.replace(TRAILING_SLASH, '');
 }
 
-const loggedOutPaths = ['/signup', '/login', '/welcome', '/reset', '/reset_password']
+const loggedOutPaths = ['/signup', '/login', '/welcome', '/reset', '/reset_password', '/verify']
 if (
     window.location.pathname === '/' ||
     (

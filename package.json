@@ -71,6 +71,7 @@
     "passport-google-oauth20": "^1.0.0",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
+    "path-to-regexp": "^3.0.0",
     "pg": "^7.5.0",
     "pg-error-constants": "^1.0.0",
     "pg-native": "^3.0.0",
