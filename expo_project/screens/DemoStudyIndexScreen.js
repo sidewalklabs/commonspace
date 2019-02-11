@@ -18,8 +18,7 @@ class DemoStudyIndexScreen extends React.Component {
         }}
         style={{
           paddingHorizontal: 12,
-        }}
-      >
+        }}>
         <Icon.MaterialCommunityIcons name="menu" color="white" size={24} />
       </TouchableOpacity>
     ),

@@ -1,7 +1,5 @@
 import React from 'react';
-import {
-  Alert, AsyncStorage, Image, TouchableHighlight, Text, View,
-} from 'react-native';
+import { Alert, AsyncStorage, Image, TouchableHighlight, Text, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import { WebBrowser } from 'expo';
 import color from 'color';
@@ -49,14 +47,12 @@ class AuthScreen extends React.Component {
         <View style={authStyles.content}>
           <Text style={authStyles.title}>{'Get started with\nCommonSpace'}</Text>
           <Text style={authStyles.paragraph}>
-            If you are a volunteer or existing organizer, log in with your google account and start
-            your study.
+            If you are a volunteer or existing organizer, log in to start your study.
           </Text>
           <TouchableHighlight
             style={[authStyles.cta, authStyles.primaryCta]}
             underlayColor={color('#ffcf2b').darken(0.2)}
-            onPress={this._signIn}
-          >
+            onPress={this._signIn}>
             <View style={authStyles.ctaCopyWrapper}>
               <Image
                 style={authStyles.ctaImage}
@@ -70,8 +66,7 @@ class AuthScreen extends React.Component {
           <TouchableHighlight
             underlayColor="#00000020"
             style={[authStyles.cta, { backgroundColor: '#00000010' }]}
-            onPress={() => this.props.navigation.navigate('LogInWithEmailScreen')}
-          >
+            onPress={() => this.props.navigation.navigate('LogInWithEmailScreen')}>
             <Text style={[authStyles.ctaCopy, { opacity: 1 }]}>Login with Email</Text>
           </TouchableHighlight>
         </View>
@@ -79,15 +74,13 @@ class AuthScreen extends React.Component {
           <TouchableHighlight
             underlayColor="#00000010"
             style={authStyles.cta}
-            onPress={() => this.props.navigation.navigate('DemoStack')}
-          >
+            onPress={() => this.props.navigation.navigate('DemoStack')}>
             <Text style={authStyles.ctaCopy}>Try a Demo</Text>
           </TouchableHighlight>
           <TouchableHighlight
             underlayColor="#00000010"
             style={authStyles.cta}
-            onPress={() => this._openLink(urls.privacy)}
-          >
+            onPress={() => this._openLink(urls.privacy)}>
             <Text style={authStyles.ctaCopy}>Privacy & Terms</Text>
           </TouchableHighlight>
         </View>

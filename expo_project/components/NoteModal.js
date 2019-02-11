@@ -1,7 +1,5 @@
 import React from 'react';
-import {
-  Modal, StyleSheet, Text, View,
-} from 'react-native';
+import { Modal, StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import PropTypes from 'prop-types';
 import Layout from '../constants/Layout';
@@ -22,15 +20,13 @@ class NoteModal extends React.Component {
           <Button
             onPress={() => {
               this.props.onClose(this.props.initialValue);
-            }}
-          >
+            }}>
             <Text>Cancel</Text>
           </Button>
           <Button
             onPress={() => {
               this.props.onClose(this.state.text);
-            }}
-          >
+            }}>
             <Text>Done</Text>
           </Button>
         </View>
@@ -54,8 +50,7 @@ class NoteModal extends React.Component {
                 dark
                 onPress={() => {
                   this.props.onClose(this.state.text);
-                }}
-              >
+                }}>
                 <Text>Done</Text>
               </Button>
             </View>

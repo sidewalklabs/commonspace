@@ -14,18 +14,19 @@ export default class App extends React.Component {
     Text.defaultProps.style = { fontFamily: 'product' };
   }
 
-  loadResourcesAsync = async () => Font.loadAsync({
-    ...Icon.Ionicons.font,
-    ...Icon.MaterialIcons.font,
-    ...Icon.MaterialCommunityIcons.font,
-    ...Icon.Feather.font,
-    monaco: require('./assets/fonts/monaco.ttf'),
-    product: require('./assets/fonts/GoogleSans-Regular.ttf'),
-    'product-regular': require('./assets/fonts/GoogleSans-Regular.ttf'),
-    'product-medium': require('./assets/fonts/GoogleSans-Medium.ttf'),
-    'product-bold': require('./assets/fonts/GoogleSans-Bold.ttf'),
-    'product-italic': require('./assets/fonts/GoogleSans-Italic.ttf'),
-  });
+  loadResourcesAsync = async () =>
+    Font.loadAsync({
+      ...Icon.Ionicons.font,
+      ...Icon.MaterialIcons.font,
+      ...Icon.MaterialCommunityIcons.font,
+      ...Icon.Feather.font,
+      monaco: require('./assets/fonts/monaco.ttf'),
+      product: require('./assets/fonts/GoogleSans-Regular.ttf'),
+      'product-regular': require('./assets/fonts/GoogleSans-Regular.ttf'),
+      'product-medium': require('./assets/fonts/GoogleSans-Medium.ttf'),
+      'product-bold': require('./assets/fonts/GoogleSans-Bold.ttf'),
+      'product-italic': require('./assets/fonts/GoogleSans-Italic.ttf'),
+    });
 
   handleFinishLoading = async () => {
     this.setState({ isLoadingComplete: true });

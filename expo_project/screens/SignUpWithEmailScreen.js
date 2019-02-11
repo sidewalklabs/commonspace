@@ -1,7 +1,5 @@
 import React from 'react';
-import {
-  AsyncStorage, Alert, Image, Text, TextInput, TouchableOpacity, View,
-} from 'react-native';
+import { AsyncStorage, Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import { WebBrowser } from 'expo';
 import color from 'color';
@@ -88,8 +86,7 @@ class SignUpWithEmailScreen extends React.Component {
             disabled={this.state.fetching}
             underlayColor={color('#ffcf2b').darken(0.2)}
             style={[authStyles.cta, authStyles.primaryCta]}
-            onPress={this._signUp}
-          >
+            onPress={this._signUp}>
             <Text style={[authStyles.ctaCopy, authStyles.primaryCtaCopy]}>Create Account</Text>
           </TouchableOpacity>
         </View>
@@ -97,8 +94,7 @@ class SignUpWithEmailScreen extends React.Component {
           <TouchableOpacity
             style={authStyles.cta}
             underlayColor="#00000010"
-            onPress={() => this._openLink(urls.privacy)}
-          >
+            onPress={() => this._openLink(urls.privacy)}>
             <Text style={authStyles.ctaCopy}>Privacy & Terms</Text>
           </TouchableOpacity>
         </View>

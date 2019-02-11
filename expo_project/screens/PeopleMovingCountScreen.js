@@ -1,8 +1,6 @@
 import { Icon } from 'expo';
 import React from 'react';
-import {
-  Alert, StyleSheet, View, ScrollView, Text, TouchableOpacity,
-} from 'react-native';
+import { Alert, StyleSheet, View, ScrollView, Text, TouchableOpacity } from 'react-native';
 import * as _ from 'lodash';
 import { Card } from 'react-native-paper';
 import moment from 'moment';
@@ -60,15 +58,13 @@ class PeopleMovingCountScreen extends React.Component {
             paddingVertical: 5,
             borderRadius: 20,
             marginLeft: 10,
-          }}
-        >
+          }}>
           <Text
             style={{
               fontSize: 14,
               color: Theme.colors.primary,
               fontFamily: 'product-medium',
-            }}
-          >
+            }}>
             Exit
           </Text>
         </TouchableOpacity>
@@ -79,8 +75,7 @@ class PeopleMovingCountScreen extends React.Component {
           onPress={() => params.navigateToMarkerList()}
           style={{
             marginRight: 10,
-          }}
-        >
+          }}>
           <Icon.MaterialIcons name="people" size={30} color="white" />
         </TouchableOpacity>
       ),
@@ -103,7 +98,7 @@ class PeopleMovingCountScreen extends React.Component {
       navigateToMarkerList: this.navigateToMarkerList,
     });
     const { surveyId, token } = this.state;
-    getDataPointsforSurvey(token, surveyId).then((dataPoints) => {
+    getDataPointsforSurvey(token, surveyId).then(dataPoints => {
       const markers = dataPoints.map((d, i) => {
         const title = `Person ${i}`;
         const color = getRandomIconColor();
@@ -117,7 +112,7 @@ class PeopleMovingCountScreen extends React.Component {
     });
   }
 
-  syncMarkersWithListView = (markers) => {
+  syncMarkersWithListView = markers => {
     this.setState({ markers });
   };
 
@@ -149,7 +144,6 @@ class PeopleMovingCountScreen extends React.Component {
     const { selectedAttributes, surveyId, token } = this.state;
     const markersCopy = [...this.state.markers];
     const date = moment();
-    const dateLabel = date.format('HH:mm');
     const dataPointId = uuid.v4();
     const previousColor = markersCopy.length ? markersCopy[markersCopy.length - 1].color : null;
     const color = getRandomIconColor([previousColor]);
@@ -159,7 +153,7 @@ class PeopleMovingCountScreen extends React.Component {
       dataPointId,
       color,
       title,
-      dateLabel,
+      creationDate: date.toISOString(),
       ...selectedAttributes,
     };
 
@@ -167,7 +161,7 @@ class PeopleMovingCountScreen extends React.Component {
     const oldMarkers = this.state.markers;
     this.setState({ markers: markersCopy });
     if (surveyId !== 'DEMO') {
-      saveDataPoint(token, surveyId, marker).catch((error) => {
+      saveDataPoint(token, surveyId, marker).catch(error => {
         Alert.alert(
           'Error',
           'Something went wrong while creating a marker. Please try again later.',
@@ -209,9 +203,7 @@ class PeopleMovingCountScreen extends React.Component {
   };
 
   render() {
-    const {
-      token, studyFields, surveyId, markers,
-    } = this.state;
+    const { token, studyFields, surveyId, markers } = this.state;
     const questions = _.filter(
       QUESTION_CONFIG,
       ({ questionKey }) => studyFields.indexOf(questionKey) !== -1,
@@ -224,7 +216,7 @@ class PeopleMovingCountScreen extends React.Component {
           <View style={styles.cardContent}>
             <ScrollView>
               <View onStartShouldSetResponder={() => true}>
-                {_.map(questions, (question) => {
+                {_.map(questions, question => {
                   const { questionKey, questionLabel, options } = question;
                   return (
                     <Selectable
@@ -248,16 +240,14 @@ class PeopleMovingCountScreen extends React.Component {
                 ]}
                 onPress={() => {
                   this.deleteLastMarker();
-                }}
-              >
+                }}>
                 <Text>Undo</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.footerButton, { backgroundColor: Theme.colors.primary }]}
                 onPress={() => {
                   this.addMarker();
-                }}
-              >
+                }}>
                 <Text style={{ color: 'white' }}>Add</Text>
               </TouchableOpacity>
             </View>

@@ -72,16 +72,15 @@ class MapWithMarkers extends React.Component {
     return (
       <TouchableOpacity
         activeOpacity={1}
-        onPressIn={(e) => {
+        onPressIn={e => {
           this.startProgressAnimation(e.nativeEvent.locationX, e.nativeEvent.locationY);
         }}
         onPressOut={() => {
           this.stopProgressAnimation();
         }}
-        style={styles.container}
-      >
+        style={styles.container}>
         <MapView
-          ref={(ref) => {
+          ref={ref => {
             this.map = ref;
           }}
           mapPadding={mapPadding}
@@ -96,8 +95,7 @@ class MapWithMarkers extends React.Component {
           zoomEnabled
           onRegionChange={this.stopProgressAnimation}
           pitchEnabled={false}
-          mapType="satellite"
-        >
+          mapType="satellite">
           <MapView.Polyline coordinates={zoneLatLngs} strokeColor="#D77C61" strokeWidth={6} />
           {markers.map((marker, index) => {
             const selected = marker.dataPointId === activeMarkerId;
@@ -114,8 +112,7 @@ class MapWithMarkers extends React.Component {
                 identifier={marker.dataPointId}
                 stopPropagation
                 onPress={() => onMarkerPress(marker.dataPointId)}
-                anchor={{ x: 0.5, y: 0.5 }}
-              >
+                anchor={{ x: 0.5, y: 0.5 }}>
                 <PersonIcon backgroundColor={marker.color} size={selected ? 24 : 16} />
               </MapView.Marker>
             );
@@ -189,7 +186,6 @@ MapWithMarkers.propTypes = {
       location: PropTypes.any,
       color: PropTypes.string,
       title: PropTypes.string,
-      dateLabel: PropTypes.string,
       dataPointId: PropTypes.string,
     }),
   ).isRequired,

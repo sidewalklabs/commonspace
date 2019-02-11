@@ -1,8 +1,6 @@
 import { WebBrowser } from 'expo';
 import React from 'react';
-import {
-  ScrollView, StyleSheet, Text, TouchableHighlight, View, Image,
-} from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableHighlight, View, Image } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import { Card, CardContent, Divider } from 'react-native-paper';
 import * as _ from 'lodash';
@@ -21,7 +19,7 @@ function typeToRouteName(type) {
 }
 
 class StudyCard extends React.Component {
-  _openLink = async (uri) => {
+  _openLink = async uri => {
     if (uri) {
       return WebBrowser.openBrowserAsync(uri);
     }
@@ -45,13 +43,14 @@ class StudyCard extends React.Component {
       description,
       title: studyName,
       type: studyType,
-      authorName,
+      author,
       authorUrl,
       surveys,
       fields: studyFields,
     } = study;
+    const sortedSurveys = _.sortBy(surveys, 'startDate');
     // TODO: move these to backend
-    const studyAuthor = authorName || 'Unknown author';
+    const studyAuthor = author || 'Unknown author';
     return (
       <Card elevation={2} style={styles.card}>
         <CardContent style={styles.studyHeader}>
@@ -73,19 +72,19 @@ class StudyCard extends React.Component {
           </View>
           {description && <Text style={styles.studyDescription}>{description}</Text>}
         </CardContent>
-        {surveys.map((survey) => {
+        {sortedSurveys.map(survey => {
           const {
-            survey_id: surveyId,
-            survey_title: surveyTitle = 'Unnamed Survey',
-            survey_location: zoneFeatureGeoJson,
+            surveyId,
+            surveyTitle = 'Unnamed Survey',
+            surveyLocation: zoneFeatureGeoJson,
           } = survey;
           const coordinates = !zoneFeatureGeoJson ? [] : zoneFeatureGeoJson.coordinates[0];
           const zoneCoordinates = _.map(coordinates, c => ({ longitude: c[0], latitude: c[1] }));
           let inProgressNow = false;
-          if (survey.start_date && survey.end_date) {
+          if (survey.startDate && survey.endDate) {
             const today = moment();
-            const startDate = moment(survey.start_date);
-            const endDate = moment(survey.end_date);
+            const startDate = moment(survey.startDate);
+            const endDate = moment(survey.endDate);
             inProgressNow = today.isBetween(startDate, endDate);
           }
           return (
@@ -100,24 +99,23 @@ class StudyCard extends React.Component {
                   <TouchableHighlight
                     underlayColor={`${Theme.colors.primary}15`}
                     style={[styles.surveyButton, inProgressNow && styles.activeSurveyButton]}
-                    onPress={() => this.props.navigation.navigate(typeToRouteName(studyType), {
-                      studyFields,
-                      surveyId,
-                      studyName,
-                      studyAuthor,
-                      studyType,
-                      surveyTitle,
-                      zoneCoordinates,
-                      token,
-                    })
-                    }
-                  >
+                    onPress={() =>
+                      this.props.navigation.navigate(typeToRouteName(studyType), {
+                        studyFields,
+                        surveyId,
+                        studyName,
+                        studyAuthor,
+                        studyType,
+                        surveyTitle,
+                        zoneCoordinates,
+                        token,
+                      })
+                    }>
                     <Text
                       style={[
                         styles.surveyButtonText,
                         inProgressNow && styles.activeSurveyButtonText,
-                      ]}
-                    >
+                      ]}>
                       Start
                     </Text>
                   </TouchableHighlight>

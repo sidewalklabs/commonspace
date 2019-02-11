@@ -1,7 +1,5 @@
 import React from 'react';
-import {
-  Alert, Image, Text, TextInput, TouchableHighlight, View,
-} from 'react-native';
+import { Alert, Image, Text, TextInput, TouchableHighlight, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import { WebBrowser } from 'expo';
 import color from 'color';
@@ -63,8 +61,7 @@ class ForgotPasswordScreen extends React.Component {
             disabled={this.state.fetching}
             style={[authStyles.cta, authStyles.primaryCta]}
             underlayColor={color('#ffcf2b').darken(0.2)}
-            onPress={this._resetPassword}
-          >
+            onPress={this._resetPassword}>
             <Text style={[authStyles.ctaCopy, authStyles.primaryCtaCopy]}>Reset Password</Text>
           </TouchableHighlight>
         </View>
@@ -72,8 +69,7 @@ class ForgotPasswordScreen extends React.Component {
           <TouchableHighlight
             underlayColor="#00000010"
             style={authStyles.cta}
-            onPress={() => this._openLink(urls.privacy)}
-          >
+            onPress={() => this._openLink(urls.privacy)}>
             <Text style={authStyles.ctaCopy}>Privacy & Terms</Text>
           </TouchableHighlight>
         </View>

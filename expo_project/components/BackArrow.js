@@ -13,8 +13,7 @@ class BackArrow extends React.Component {
         }}
         style={{
           marginLeft: 10,
-        }}
-      >
+        }}>
         <Icon.Feather name="arrow-left" size={30} color="white" />
       </TouchableOpacity>
     );

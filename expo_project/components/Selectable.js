@@ -1,8 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {
-  View, ScrollView, StyleSheet, Text, TouchableOpacity,
-} from 'react-native';
+import { View, ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { Divider } from 'react-native-paper';
 import * as _ from 'lodash';
 import colors from '../constants/Colors';
@@ -49,13 +47,11 @@ class Selectable extends React.Component {
               <TouchableOpacity
                 key={value}
                 style={[styles.tapTarget, index === 0 && { marginLeft: 20 }]}
-                onPress={(e) => {
+                onPress={e => {
                   onSelectablePress(value, this.state.height);
-                }}
-              >
+                }}>
                 <View
-                  style={[styles.selectableCell, selected && { backgroundColor: selectedColor }]}
-                >
+                  style={[styles.selectableCell, selected && { backgroundColor: selectedColor }]}>
                   <Text style={[styles.pillText, selected && { color: 'white' }]}>{label}</Text>
                 </View>
               </TouchableOpacity>
