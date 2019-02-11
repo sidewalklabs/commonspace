@@ -1,15 +1,11 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {
-  View, StyleSheet, Text, TouchableHighlight,
-} from 'react-native';
+import { View, StyleSheet, Text, TouchableHighlight } from 'react-native';
 import color from 'color';
 
 class Banner extends React.Component {
   render() {
-    const {
-      title, description, cta, ctaOnPress,
-    } = this.props;
+    const { title, description, cta, ctaOnPress } = this.props;
     return (
       <View style={styles.container}>
         <Text style={styles.title}>{title}</Text>
@@ -18,8 +14,7 @@ class Banner extends React.Component {
           <TouchableHighlight
             underlayColor={color('#ffcf2b').darken(0.2)}
             style={styles.button}
-            onPress={ctaOnPress}
-          >
+            onPress={ctaOnPress}>
             <Text style={styles.ctaCopy}>{cta}</Text>
           </TouchableHighlight>
         </View>

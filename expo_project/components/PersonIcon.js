@@ -17,8 +17,7 @@ class PersonIcon extends React.Component {
             width: size,
             borderRadius: size / 2,
           },
-        ]}
-      >
+        ]}>
         <Icon.Ionicons name="md-person" size={size * 0.5} color="white" />
       </View>
     );

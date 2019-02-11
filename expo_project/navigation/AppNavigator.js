@@ -17,6 +17,7 @@ import MarkerListScreen from '../screens/MarkerListScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import PeopleMovingCountScreen from '../screens/PeopleMovingCountScreen';
 import PersonalStudyIndexScreen from '../screens/PersonalStudyIndexScreen';
+import PreAuthScreen from '../screens/PreAuthScreen';
 
 const studyScreens = {
   SurveyScreen,
@@ -61,8 +62,9 @@ const DemoStack = createStackNavigator(
 
 const AuthStack = createStackNavigator(
   {
-    AuthScreen,
     OnboardingScreen,
+    PreAuthScreen,
+    AuthScreen,
     LogInWithEmailScreen,
     SignUpWithEmailScreen,
     ForgotPasswordScreen,

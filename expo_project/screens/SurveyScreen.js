@@ -74,15 +74,13 @@ class SurveyScreen extends React.Component {
             paddingVertical: 5,
             borderRadius: 20,
             marginLeft: 10,
-          }}
-        >
+          }}>
           <Text
             style={{
               fontSize: 14,
               color: Theme.colors.primary,
               fontFamily: 'product-medium',
-            }}
-          >
+            }}>
             Exit
           </Text>
         </TouchableOpacity>
@@ -93,8 +91,7 @@ class SurveyScreen extends React.Component {
           onPress={() => params.navigateToMarkerList()}
           style={{
             marginRight: 10,
-          }}
-        >
+          }}>
           <Icon.MaterialIcons name="people" size={30} color="white" />
         </TouchableOpacity>
       ),
@@ -116,7 +113,7 @@ class SurveyScreen extends React.Component {
       pan: new Animated.Value(INITIAL_DRAWER_TRANSLATE_Y),
     };
     this._drawerY = INITIAL_DRAWER_TRANSLATE_Y;
-    this.state.pan.addListener((value) => {
+    this.state.pan.addListener(value => {
       this._drawerY = value.value;
     });
 
@@ -201,10 +198,11 @@ class SurveyScreen extends React.Component {
       navigateToMarkerList: this.navigateToMarkerList,
     });
 
-    getDataPointsforSurvey(this.state.token, surveyId).then((dataPoints) => {
+    getDataPointsforSurvey(this.state.token, surveyId).then(dataPoints => {
       const markers = dataPoints.map((d, i) => {
         const title = `Person ${i}`;
         const color = getRandomIconColor();
+        console.log(d);
         return {
           ...d,
           color,
@@ -303,7 +301,8 @@ class SurveyScreen extends React.Component {
   }
 
   toggleDrawer() {
-    const y = this.getToggleDirection() === 'down' ? MAX_DRAWER_TRANSLATE_Y : MIN_DRAWER_TRANSLATE_Y;
+    const y =
+      this.getToggleDirection() === 'down' ? MAX_DRAWER_TRANSLATE_Y : MIN_DRAWER_TRANSLATE_Y;
     this.resetDrawer(y);
   }
 
@@ -345,7 +344,6 @@ class SurveyScreen extends React.Component {
 
     if (markerToCopy) {
       const date = moment();
-      const dateLabel = date.format('HH:mm');
       const title = `Person ${markersCopy.length + 1}`;
       const dataPointId = uuid.v4();
       const color = getRandomIconColor([markerToCopy.color]);
@@ -356,15 +354,14 @@ class SurveyScreen extends React.Component {
         dataPointId,
         color,
         title,
-        dateLabel,
-        date: date.format(),
+        creationDate: date.toISOString(),
       };
 
       markersCopy.push(duplicateMarker);
       this.setState({ markers: markersCopy, activeMarkerId: dataPointId }, this.resetDrawer);
 
       if (surveyId !== 'DEMO') {
-        saveDataPoint(this.state.token, surveyId, duplicateMarker).catch((error) => {
+        saveDataPoint(this.state.token, surveyId, duplicateMarker).catch(error => {
           Alert.alert(
             'Error',
             'Something went wrong while duplicating marker. Please try again later.',
@@ -394,7 +391,6 @@ class SurveyScreen extends React.Component {
     const { markers, activeMarkerId: oldActiveMarkerId } = this.state;
     // todo creation date vs latest update date? how do we handle the numbering later w/o creation?
     const date = moment();
-    const dateLabel = date.format('HH:mm');
     const title = `Person ${markers.length + 1}`;
     const dataPointId = uuid.v4();
 
@@ -403,13 +399,12 @@ class SurveyScreen extends React.Component {
       location,
       color,
       title,
-      dateLabel,
-      date: date.toISOString(),
+      creationDate: date.toISOString(),
     };
 
     this.setState({ markers: [...markers, marker], activeMarkerId: dataPointId }, this.resetDrawer);
     if (surveyId !== 'DEMO') {
-      saveDataPoint(this.state.token, surveyId, marker).catch((error) => {
+      saveDataPoint(this.state.token, surveyId, marker).catch(error => {
         Alert.alert(
           'Error',
           'Something went wrong while creating a marker. Please try again later.',
@@ -449,6 +444,7 @@ class SurveyScreen extends React.Component {
     const activeMarker = _.find(markers, { dataPointId: activeMarkerId });
     const note = _.get(activeMarker, 'note', '');
     const noteButtonLabel = note ? 'Edit note' : 'Add note';
+    const dateLabel = activeMarker && moment(activeMarker.creationDate).format('HH:mm');
 
     // Adjust map viewport when the drawer slides up, to keep new marker in view
     const mapObscuredHeight = Layout.drawer.height - this._drawerY;
@@ -483,13 +479,11 @@ class SurveyScreen extends React.Component {
               ],
             },
           ]}
-          {...this._panResponder.panHandlers}
-        >
+          {...this._panResponder.panHandlers}>
           <TouchableOpacity
             style={[styles.drawerHeader]}
             activeOpacity={1}
-            onPress={this.toggleDrawer}
-          >
+            onPress={this.toggleDrawer}>
             <Indicator onPress={this.toggleDrawer} />
             {activeMarker && (
               <View style={styles.headerContent}>
@@ -498,18 +492,17 @@ class SurveyScreen extends React.Component {
                 </View>
                 <View style={styles.titleContainer}>
                   <Text style={styles.title}>{activeMarker.title}</Text>
-                  <Text>{activeMarker.dateLabel}</Text>
+                  <Text>{dateLabel}</Text>
                 </View>
                 <TouchableOpacity
                   style={styles.markerMenuButton}
                   activeOpacity={1}
-                  onPress={(e) => {
+                  onPress={e => {
                     const { pageY } = e.nativeEvent;
                     this.setState({
                       markerMenuTopLocation: pageY - 120,
                     });
-                  }}
-                >
+                  }}>
                   <Icon.MaterialCommunityIcons name="dots-vertical" color="#787878" size={24} />
                 </TouchableOpacity>
               </View>
@@ -520,15 +513,14 @@ class SurveyScreen extends React.Component {
             <ScrollView
               style={styles.formContainer}
               ref={ref => (this.scrollView = ref)}
-              onScroll={(e) => {
+              onScroll={e => {
                 this.setState({
                   formScrollPosition: e.nativeEvent.contentOffset.y,
                 });
               }}
               scrollEventThrottle={0}
               showsHorizontalScrollIndicator={false}
-              showsVerticalScrollIndicator={false}
-            >
+              showsVerticalScrollIndicator={false}>
               <Survey
                 fields={studyFields}
                 activeMarker={activeMarker}
@@ -537,18 +529,17 @@ class SurveyScreen extends React.Component {
               <Divider />
               <View style={styles.drawerFooter}>
                 <TouchableOpacity
-                  onPress={() => this.setState({
-                    noteModalVisible: true,
-                  })
+                  onPress={() =>
+                    this.setState({
+                      noteModalVisible: true,
+                    })
                   }
-                  style={styles.greyButton}
-                >
+                  style={styles.greyButton}>
                   <Text>{noteButtonLabel}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => this.resetDrawer(MAX_DRAWER_TRANSLATE_Y)}
-                  style={styles.greyButton}
-                >
+                  style={styles.greyButton}>
                   <Text>Back to Map</Text>
                 </TouchableOpacity>
               </View>
@@ -573,7 +564,7 @@ class SurveyScreen extends React.Component {
         {this.state.noteModalVisible && (
           <NoteModal
             initialValue={note}
-            onClose={(updatedNote) => {
+            onClose={updatedNote => {
               this.setFormResponse(activeMarkerId, 'note', updatedNote, 0);
               this.setState({ noteModalVisible: false });
             }}

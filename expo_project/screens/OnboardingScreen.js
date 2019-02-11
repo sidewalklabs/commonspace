@@ -50,12 +50,12 @@ class OnboardingScreen extends React.Component {
   // For some reason, android width is ~0.000000001 off, so compare the truncated version
   scrollOffsetToIndex = (offset, width) => Math.trunc(offset) / Math.trunc(width);
 
-  onIndicatorDotPress = (index) => {
+  onIndicatorDotPress = index => {
     const offset = this.indexToScrollOffset(index, CAROUSEL_ITEM_WIDTH);
     this.carousel.scrollTo({ x: offset, animated: true });
   };
 
-  handleScroll = (event) => {
+  handleScroll = event => {
     const scrollOffset = event.nativeEvent.contentOffset.x;
     const indicatorIndex = this.scrollOffsetToIndex(scrollOffset, CAROUSEL_ITEM_WIDTH);
 
@@ -77,8 +77,7 @@ class OnboardingScreen extends React.Component {
           onScroll={this.handleScroll}
           decelerationRate="fast"
           overScrollMode="never"
-          scrollEventThrottle={16}
-        >
+          scrollEventThrottle={16}>
           {OnboardingSlides.map((slide, i) => (
             <View style={styles.carouselItem} key={i}>
               <Image source={slide.imageSource} />
@@ -91,11 +90,9 @@ class OnboardingScreen extends React.Component {
           <TouchableHighlight
             underlayColor={color('#ffcf2b').darken(0.2)}
             style={[authStyles.cta, authStyles.primaryCta]}
-            onPress={() => this.props.navigation.navigate('AuthScreen')}
-          >
+            onPress={() => this.props.navigation.navigate('PreAuthScreen')}>
             <Text
-              style={[authStyles.ctaCopy, authStyles.primaryCtaCopy, { paddingHorizontal: 20 }]}
-            >
+              style={[authStyles.ctaCopy, authStyles.primaryCtaCopy, { paddingHorizontal: 20 }]}>
               GET STARTED
             </Text>
           </TouchableHighlight>

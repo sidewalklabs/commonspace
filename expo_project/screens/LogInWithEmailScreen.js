@@ -78,23 +78,21 @@ class LogInWithEmailScreen extends React.Component {
             disabled={this.state.fetching}
             underlayColor={color('#ffcf2b').darken(0.2)}
             style={[authStyles.cta, authStyles.primaryCta]}
-            onPress={this._login}
-          >
+            onPress={this._login}>
             <Text style={[authStyles.ctaCopy, authStyles.primaryCtaCopy]}>Login</Text>
           </TouchableHighlight>
           <TouchableHighlight
             underlayColor="#00000010"
             style={authStyles.cta}
-            onPress={() => this.props.navigation.navigate('SignUpWithEmailScreen')}
-          >
+            onPress={() => this.props.navigation.navigate('SignUpWithEmailScreen')}>
             <Text style={authStyles.ctaCopy}>Create new account</Text>
           </TouchableHighlight>
           <TouchableHighlight
             underlayColor="#00000010"
             style={authStyles.cta}
-            onPress={() => this.props.navigation.navigate('ForgotPasswordScreen', { email: this.state.email })
-            }
-          >
+            onPress={() =>
+              this.props.navigation.navigate('ForgotPasswordScreen', { email: this.state.email })
+            }>
             <Text style={authStyles.ctaCopy}>Forgot password?</Text>
           </TouchableHighlight>
         </View>
@@ -102,8 +100,7 @@ class LogInWithEmailScreen extends React.Component {
           <TouchableHighlight
             underlayColor="#00000010"
             style={authStyles.cta}
-            onPress={() => this._openLink(urls.privacy)}
-          >
+            onPress={() => this._openLink(urls.privacy)}>
             <Text style={authStyles.ctaCopy}>Privacy & Terms</Text>
           </TouchableHighlight>
         </View>

@@ -23,8 +23,7 @@ class PersonalStudyIndexScreen extends React.Component {
         }}
         style={{
           paddingHorizontal: 12,
-        }}
-      >
+        }}>
         <Icon.MaterialCommunityIcons name="menu" color="white" size={24} />
       </TouchableOpacity>
     ),
@@ -57,8 +56,8 @@ class PersonalStudyIndexScreen extends React.Component {
     return (
       <View style={styles.container}>
         {loading && <ActivityIndicator />}
-        {!loading
-          && !studies.length && (
+        {!loading &&
+          !studies.length && (
             <Banner
               title="No Studies Found"
               description="There are no studies assigned to you. If this is an error, reach out to your study coordinator."
@@ -66,7 +65,7 @@ class PersonalStudyIndexScreen extends React.Component {
               style={styles.banner}
               ctaOnPress={() => this.props.navigation.navigate('DemoStack')}
             />
-        )}
+          )}
         {!loading && studies.length ? (
           <StudyFeed token={token} studies={studies} title="Your studies" />
         ) : (
