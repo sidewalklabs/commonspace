@@ -13,16 +13,16 @@ export const peopleMovingDemoStudy = {
   surveys: [
     {
       locationId: '2',
-      survey_location: { type: 'polygon', coordinates: [] },
+      surveyLocation: { type: 'polygon', coordinates: [] },
       method: 'analog',
       representation: 'absolute',
-      survey_id: 'DEMO',
-      survey_title: 'Demo',
+      surveyId: 'DEMO',
+      surveyTitle: 'Demo',
       type: 'peopleMovingCount',
       userId: '123412341234',
       zone: 'Zone 12',
-      start_date: '2020-01-12T04:59:58.683Z',
-      end_date: '2021-01-12T04:59:58.683Z',
+      startDate: '2020-01-12T04:59:58.683Z',
+      endDate: '2021-01-12T04:59:58.683Z',
     },
   ],
 };
@@ -39,7 +39,7 @@ export const stationaryActivityDemoStudy = {
   surveys: [
     {
       locationId: '0',
-      survey_location: {
+      surveyLocation: {
         coordinates: [
           [
             [-73.988167, 40.743407],
@@ -56,13 +56,13 @@ export const stationaryActivityDemoStudy = {
       },
       method: 'analog',
       representation: 'absolute',
-      survey_id: 'DEMO',
-      survey_title: 'Demo',
+      surveyId: 'DEMO',
+      surveyTitle: 'Demo',
       type: 'peopleMovingCount',
       userId: '123412341234',
       zone: 'Zone 12',
-      start_date: '2020-01-12T04:59:58.683Z',
-      end_date: '2021-01-12T04:59:58.683Z',
+      startDate: '2020-01-12T04:59:58.683Z',
+      endDate: '2021-01-12T04:59:58.683Z',
     },
   ],
 };
