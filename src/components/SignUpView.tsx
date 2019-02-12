@@ -20,19 +20,21 @@ const styles = theme => ({
     },
     root: {
         width: 'auto',
-        marginTop: theme.spacing.unit * 3,
-        marginLeft: theme.spacing.unit * 3,
-        marginRight: theme.spacing.unit * 3,
+        margin: 0,
+        height: '100%',
         [theme.breakpoints.up(700 + theme.spacing.unit * 3 * 2)]: {
             width: 700,
             marginLeft: 'auto',
             marginRight: 'auto',
+            marginTop: theme.spacing.unit * 3,
+            height: 'auto',
         },
         display: 'flex',
         flex: '0 1 auto',
         alignItems: 'center',
         flexDirection: 'column',
         alignContent: 'center',
+        justifyContent: 'center',
         padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit * 3}px`
     },
     avatar: {
@@ -65,9 +67,9 @@ const SignUpView = withStyles(styles)(observer((props: WithStyles) => {
     return (
         <Paper className={classes.root}>
             <Avatar alt="Commons Icon" src="/assets/images/CircleIcon.png" className={classes.avatar} />
-            <Typography variant="title" gutterBottom>Sign up for CommonSpace</Typography>
-            <Typography variant="body1">CommonSpace Admin is in beta, and sign up will fail if you have not been approved.</Typography>
-            <Typography variant="body1">Contact product-support@sidewalklabs.com if you are interested in administering studies.</Typography>
+            <Typography variant="title" align='center' gutterBottom>Sign up for CommonSpace</Typography>
+            <Typography variant="body1" align='center' gutterBottom>CommonSpace Admin is in beta, and sign up will fail if you have not been approved.</Typography>
+            <Typography variant="body1" align='center' gutterBottom>Contact product-support@sidewalklabs.com if you are interested in administering studies.</Typography>
             <TextField
                 id="signUp-email"
                 label="Email"

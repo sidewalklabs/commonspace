@@ -30,6 +30,8 @@ interface MainProps {
 const styles = theme => ({
     root: {
         width: '100%',
+        height: '100%',
+        overflow: 'auto',
     },
 });
 
@@ -60,9 +62,9 @@ const MainWrapper = observer(
         const { classes, router, uiState, applicationState } = props;
         const { uri } = router;
         const { snackBar } = uiState;
-        const AuthLanding = assignComponentToRoute('/login', LoginView);
+        const Login = assignComponentToRoute('/login', LoginView);
         const SignUp = assignComponentToRoute('/signup', SignUpView);
-        const Login = assignComponentToRoute('/loginWithEmail', LoginWithEmailView);
+        const LoginWithEmail = assignComponentToRoute('/loginWithEmail', LoginWithEmailView);
         const Reset = assignComponentToRoute('/reset', ResetView);
         const ResetPassword = assignComponentToRoute(
             () => {
@@ -132,8 +134,8 @@ const MainWrapper = observer(
         return (
             <div className={classes.root}>
                 <CssBaseline />
-                <AuthLanding />
                 <Login />
+                <LoginWithEmail />
                 <SignUp />
                 <Reset />
                 <Main />

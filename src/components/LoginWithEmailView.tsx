@@ -14,19 +14,21 @@ import logInState, { logInUser } from '../stores/login'
 const styles = theme => ({
     root: {
         width: 'auto',
-        marginTop: theme.spacing.unit * 3,
-        marginLeft: theme.spacing.unit * 3,
-        marginRight: theme.spacing.unit * 3,
+        margin: 0,
+        height: '100%',
         [theme.breakpoints.up(700 + theme.spacing.unit * 3 * 2)]: {
             width: 700,
             marginLeft: 'auto',
             marginRight: 'auto',
+            marginTop: theme.spacing.unit * 3,
+            height: 'auto',
         },
         display: 'flex',
         flex: '0 1 auto',
         alignItems: 'center',
         flexDirection: 'column',
         alignContent: 'center',
+        justifyContent: 'center',
         padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit * 3}px`
     },
     avatar: {
@@ -54,7 +56,7 @@ const LoginWithEmailView = withStyles(styles)(observer((props: WithStyles) => {
     return (
         <Paper className={classes.root}>
             <Avatar alt="Commons Icon" src="/assets/images/CircleIcon.png" className={classes.avatar} />
-            <Typography variant="title" gutterBottom>Login to CommonSpace</Typography>
+            <Typography variant="title" align='center' gutterBottom>Login to CommonSpace</Typography>
             <TextField
                 id="login-email"
                 label="Email"

@@ -15,16 +15,16 @@ import { setSnackBar } from '../stores/ui';
 const styles = theme => ({
   root: {
     width: 'auto',
-    marginTop: theme.spacing.unit * 3,
-    marginLeft: theme.spacing.unit * 3,
-    marginRight: theme.spacing.unit * 3,
+    margin: 0,
+    height: '100%',
     [theme.breakpoints.up(700 + theme.spacing.unit * 3 * 2)]: {
       width: 700,
+      marginTop: theme.spacing.unit * 3,
       marginLeft: 'auto',
       marginRight: 'auto',
+      height: 'auto',
     },
     display: 'flex',
-    margin: theme.spacing.unit * 3,
     flex: '0 1 auto',
     alignItems: 'center',
     flexDirection: 'column',
@@ -32,17 +32,20 @@ const styles = theme => ({
   },
   content: {
     padding: theme.spacing.unit * 3,
-    flex: '0 1 auto',
+    flex: '1',
     display: "flex",
     alignItems: 'center',
     flexDirection: 'column',
+    alignContent: 'center',
+    justifyContent: 'center',
   },
   avatar: {
     marginBottom: theme.spacing.unit * 2,
   },
   button: {
-    width: '400px',
-    margin: theme.spacing.unit * 2,
+    margin: theme.spacing.unit * 3,
+    width: '100%',
+    maxWidth: '400px',
     boxShadow: "none",
   },
   buttonLabel: {
@@ -50,8 +53,9 @@ const styles = theme => ({
   },
   oulinedButton: {
     border: `1px solid ${theme.palette.divider}`,
-    width: '400px',
-    margin: theme.spacing.unit * 2,
+    margin: theme.spacing.unit * 3,
+    width: '100%',
+    maxWidth: '400px',
     boxShadow: "none",
   },
   footer: {
@@ -80,8 +84,8 @@ const LoginView = withStyles(styles)(observer((props: WithStyles) => {
     <Paper className={classes.root}>
       <div className={classes.content}>
         <Avatar alt="Commons Icon" src="/assets/images/CircleIcon.png" className={classes.avatar} />
-        <Typography variant="title" gutterBottom>Welcome to CommonSpace</Typography>
-        <Typography variant="body1">Study the places you love</Typography>
+        <Typography variant="title" align='center' gutterBottom>Welcome to CommonSpace</Typography>
+        <Typography variant="body1" align='center'>Study the places you love</Typography>
         <GoogleLogin
           clientId={process.env.GOOGLE_AUTH_CLIENT_ID}
           onSuccess={logInUserGoogleOAuth}
@@ -95,17 +99,17 @@ const LoginView = withStyles(styles)(observer((props: WithStyles) => {
           </Button>
           )}
         />
-        <Typography variant="caption">OR</Typography>
+        <Typography variant="caption" align='center'>OR</Typography>
         <Button variant="extendedFab" color='secondary' onClick={() => navigate("/loginWithEmail")} classes={{
           root: classes.oulinedButton,
           label: classes.buttonLabel
         }}>
           Continue with Email
       </Button>
-        <Typography variant="caption" gutterBottom>By continuing, you agree to CommonSpace <a href='/terms'>terms</a> and <a href='/privacy'>privacy</a></Typography>
+        <Typography variant="caption" align='center' gutterBottom>By continuing, you agree to CommonSpace <a href='/terms'>terms</a> and <a href='/privacy'>privacy</a></Typography>
       </div>
       <div className={classes.footer}>
-        <Typography variant="caption" classes={{ root: classes.footerCopy }} gutterBottom>
+        <Typography variant="caption" align='center' classes={{ root: classes.footerCopy }} gutterBottom>
           CommonSpace is an app for running Public Life Studies
         </Typography>
         <Button variant="extendedFab" color='secondary' href='/about' classes={{

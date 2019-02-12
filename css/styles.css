@@ -1,3 +1,11 @@
+html, body {
+    height: 100%;
+}
+
+#app {
+    height: 100%;
+}
+
 .sr-only {
     display: none;
 }

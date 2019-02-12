@@ -30,6 +30,7 @@ const styles = theme => ({
         marginRight: theme.spacing.unit,
     },
     message: {
+        flex: 1,
         display: 'flex',
         alignItems: 'center',
     }
@@ -46,25 +47,28 @@ const variantIcon = {
 };
 
 function MySnackbarContent(props) {
-    const { classes, className, message, onClose, variant, ...other } = props;
+    const { classes, message, onClose, variant, ...other } = props;
     const Icon = variantIcon[variant];
 
     return (
         <SnackbarContent
-            className={classNames(classes[variant], className)}
+            classes={{
+                root: classes[variant],
+                message: classes.message,
+                action: classes.close
+            }}
             aria-describedby="client-snackbar"
             message={
-                <span id="client-snackbar" className={classes.message}>
+                <>
                     <Icon className={classNames(classes.icon, classes.iconVariant)} />
                     {message}
-                </span>
+                </>
             }
             action={[
                 <IconButton
                     key="close"
                     aria-label="Close"
                     color="inherit"
-                    className={classes.close}
                     onClick={onClose}
                 >
                     <CloseIcon className={classes.icon} />
@@ -98,7 +102,6 @@ const ErrorDisplay = observer((props: ErrorDisplayProps & WithStyles) => {
                 onClose={onClose}>
                 <MySnackbarContentWrapper
                     variant='success'
-                    className={classes.margin}
                     message={snackBarText}
                     onClose={onClose}
                 />
@@ -113,7 +116,6 @@ const ErrorDisplay = observer((props: ErrorDisplayProps & WithStyles) => {
                 onClose={onClose}>
                 <MySnackbarContentWrapper
                     variant='error'
-                    className={classes.margin}
                     message={snackBarText}
                     onClose={onClose}
                 />
