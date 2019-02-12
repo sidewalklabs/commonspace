@@ -7,9 +7,9 @@ import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 
 import { observer } from 'mobx-react';
-import resetState, { resetPasswordRequest } from '../stores/reset'
 
-import { navigate } from '../stores/router'
+import { navigate } from '../stores/router';
+import logInState, { logInUser } from '../stores/login'
 
 const styles = theme => ({
     root: {
@@ -33,8 +33,9 @@ const styles = theme => ({
         marginBottom: theme.spacing.unit * 2,
     },
     logInButton: {
-        width: '400px',
-        margin: theme.spacing.unit * 2,
+        margin: theme.spacing.unit * 3,
+        width: '100%',
+        maxWidth: '400px',
         boxShadow: "none",
     },
     buttonLabel: {
@@ -47,35 +48,40 @@ const styles = theme => ({
     }
 });
 
-
-interface ResetProps {
-    email: string;
-}
-
-const ResetView = observer((props: ResetProps & WithStyles) => {
-    const { classes, email } = props;
+// @ts-ignore
+const LoginWithEmailView = withStyles(styles)(observer((props: WithStyles) => {
+    const { classes } = props;
     return (
         <Paper className={classes.root}>
             <Avatar alt="Commons Icon" src="/assets/images/CircleIcon.png" className={classes.avatar} />
-            <Typography variant="title" gutterBottom>Reset Password</Typography>
-            <Typography variant="body1">Enter your account email to receive instructions on how to reset your password</Typography>
+            <Typography variant="title" gutterBottom>Login to CommonSpace</Typography>
             <TextField
                 id="login-email"
                 label="Email"
-                onChange={e => resetState.email = e.target.value}
+                onChange={e => logInState.email = e.target.value}
+                error={logInState.emailErrorMessage ? true : false}
+                className={classes.textField} />
+            <TextField
+                id="login-password"
+                label="Password"
+                type="password"
+                onChange={e => logInState.password = e.target.value}
+                error={logInState.passwordErrorMessage ? true : false}
                 className={classes.textField} />
             <Button classes={{
                 root: classes.logInButton,
                 label: classes.buttonLabel
-            }} variant="extendedFab" onClick={async () => await resetPasswordRequest()}>
-                Send
+            }} variant="extendedFab" onClick={logInUser}>
+                Log In
             </Button>
-            <Button onClick={() => navigate("/login")}>
-                Back to Log In
+            <Button onClick={() => navigate("/reset")}>
+                Forgot Password
+            </Button>
+            <Button onClick={() => navigate("/signup")}>
+                Sign Up
             </Button>
         </Paper >
     )
-})
+}));
 
-// @ts-ignore
-export default withStyles(styles)(ResetView);
+export default LoginWithEmailView;

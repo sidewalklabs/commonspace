@@ -1,17 +1,10 @@
-import React, { Fragment } from 'react';
-import classNames from 'classnames';
+import React from 'react';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import AppBar from '@material-ui/core/AppBar';
-import Avatar from '@material-ui/core/Avatar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Paper from '@material-ui/core/Paper';
+
 import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
+import AppBar from '../components/AppBar';
 
 import { observer } from 'mobx-react';
 
@@ -23,10 +16,8 @@ import SurveyView from './SurveyView';
 import SurveyorsView from './SurveyorsView';
 import WrapInModal from './WrapInModal';
 import uiState from '../stores/ui';
-import applicationState, { setCurrentStudyEmptySkeleton, getMapCenterForStudy, ApplicationState, studyEmptySkeleton } from '../stores/applicationState';
+import applicationState, { getMapCenterForStudy, ApplicationState, studyEmptySkeleton } from '../stores/applicationState';
 import { observable } from 'mobx';
-import { navigate } from '../stores/router';
-import { getFromApi, postToApi } from '../utils';
 
 interface MainProps {
     applicationState: ApplicationState;
@@ -41,15 +32,6 @@ const styles = theme => ({
         flexDirection: 'column',
         alignItems: 'center',
         backgroundColor: 'transparent'
-    },
-    toolbar: {
-        color: 'inherit',
-        backgroundColor: 'white'
-    },
-    appBar: {
-        position: 'relative',
-        display: 'flex',
-        marginTop: 'auto'
     },
     mainBody: {
         width: '80%',
@@ -81,18 +63,6 @@ function prepareNewStudy() {
     uiState.modalStack.push('study');
 }
 
-async function handleLogOut() {
-    await postToApi('/auth/logout', {}) as {};
-    mainState.anchorElement = null;
-    navigate('/welcome');
-}
-
-function handleResetPassword() {
-    // TODO: make sure this really logs you out
-    mainState.anchorElement = null;
-    navigate('/reset');
-}
-
 interface MainState {
     anchorElement: HTMLElement | null;
 }
@@ -104,7 +74,6 @@ const mainState: MainState = observable({
 const Main = observer(
     (props: MainProps & WithStyles) => {
         const { applicationState, classes } = props;
-        const { anchorElement } = mainState;
         const { studies, token } = applicationState;
         const { snackBar, modalStack } = uiState;
         const currentStudy = applicationState.currentStudy ? applicationState.currentStudy : studyEmptySkeleton();
@@ -116,40 +85,7 @@ const Main = observer(
         return (
             <div className={classes.root}>
                 <CssBaseline />
-                <AppBar
-                    className={classes.appBar}
-                    color="default"
-                >
-                    <Toolbar className={classes.toolbar}>
-                        <Avatar alt="Commons Icon" src="/assets/images/CircleIcon.png" className={classes.avatar} />
-                        <Typography
-                            component="h1"
-                            variant="title"
-                            color="inherit"
-                            noWrap
-                            className={classes.title}
-                        >
-                            CommonSpace
-                        </Typography>
-                        <IconButton
-                            color="inherit"
-                            aria-label="Open Menu"
-                            onClick={e => mainState.anchorElement = e.currentTarget}
-                            className={classes.menuIcon}
-                        >
-                            <MoreVertIcon />
-                        </IconButton>
-                        <Menu
-                            id="simple-menu"
-                            anchorEl={anchorElement}
-                            open={Boolean(anchorElement)}
-                            onClose={() => mainState.anchorElement = null}
-                        >
-                            <MenuItem onClick={handleResetPassword}>Reset Password</MenuItem>
-                            <MenuItem onClick={handleLogOut}>Logout</MenuItem>
-                        </Menu>
-                    </Toolbar>
-                </AppBar>
+                <AppBar />
                 <div className={classes.mainBody}>
                     <div className={classes.row}>
                         <Typography

@@ -1,24 +1,25 @@
 import React from 'react';
-import classNames from 'classnames';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { observer } from 'mobx-react';
 import parse from 'url-parse';
 
 import ErrorDisplay from './ErrorDisplay';
-import AuthLandingView from './AuthLandingView';
+
+import AboutView from './AboutView';
 import LoginView from './LoginView';
+import LoginWithEmailView from './LoginWithEmailView';
 import MainView from './Main';
+import PrivacyView from './PrivacyView';
 import ResetView from './ResetView';
 import ResetPasswordView from './ResetPasswordView';
 import SignUpView from './SignUpView';
+import TermsView from './TermsView';
 
-import applicationState, { ApplicationState } from '../stores/applicationState';
+import { ApplicationState } from '../stores/applicationState';
 import { UiState } from '../stores/ui';
 import { Router, addSideEffectRoute, assignComponentToRoute, navigate } from '../stores/router';
 import { getFromApi } from '../utils'
-
-const drawerWidth = 240;
 
 interface MainProps {
     router: Router;
@@ -28,38 +29,8 @@ interface MainProps {
 
 const styles = theme => ({
     root: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center'
+        width: '100%',
     },
-    toolbar: {
-        color: 'inherit'
-    },
-    toolbarIcon: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-        padding: '0 8px',
-        ...theme.mixins.toolbar
-    },
-    appBar: {
-        position: 'relative',
-        display: 'flex',
-        marginTop: 'auto'
-    },
-    icon: {
-        marginRight: theme.spacing.unit * 2,
-    },
-    title: {
-        marginLeft: theme.spacing.unit * 2,
-        flexGrow: 1
-    },
-    content: {
-        flexGrow: 1,
-        padding: theme.spacing.unit * 3,
-        height: '100vh',
-        overflow: 'auto'
-    }
 });
 
 function queryParamsParse(queryString: string) {
@@ -68,7 +39,13 @@ function queryParamsParse(queryString: string) {
     return asArr.reduce((acc, s) => {
         const [key, value] = s.split('=');
         const next = {}
-        next[key] = value;
+        let nextValue = value
+
+        if (value === 'true' || value === 'false') {
+            nextValue = JSON.parse(String(value))
+        }
+
+        next[key] = nextValue;
         return {
             ...acc,
             ...next
@@ -80,12 +57,12 @@ const BASE_URL_MATCH = /^\/([^\/]*).*$/;
 
 const MainWrapper = observer(
     (props: MainProps & WithStyles) => {
-        const { classes, router, uiState } = props;
+        const { classes, router, uiState, applicationState } = props;
         const { uri } = router;
         const { snackBar } = uiState;
-        const AuthLanding = assignComponentToRoute('/welcome', AuthLandingView);
+        const AuthLanding = assignComponentToRoute('/login', LoginView);
         const SignUp = assignComponentToRoute('/signup', SignUpView);
-        const Login = assignComponentToRoute('/login', LoginView);
+        const Login = assignComponentToRoute('/loginWithEmail', LoginWithEmailView);
         const Reset = assignComponentToRoute('/reset', ResetView);
         const ResetPassword = assignComponentToRoute(
             () => {
@@ -97,6 +74,45 @@ const MainWrapper = observer(
                 // @ts-ignore
                 const { token } = queryParamsParse(query);
                 return <ResetPasswordView token={token} />
+            }
+        );
+
+        const Privacy = assignComponentToRoute(
+            () => {
+                const { pathname } = parse(uri);
+                return pathname === '/privacy'
+            },
+            () => {
+                const { query } = parse(uri);
+                // @ts-ignore
+                const { webview } = queryParamsParse(query);
+                return <PrivacyView webview={webview} />
+            }
+        );
+
+        const Terms = assignComponentToRoute(
+            () => {
+                const { pathname } = parse(uri);
+                return pathname === '/terms'
+            },
+            () => {
+                const { query } = parse(uri);
+                // @ts-ignore
+                const { webview } = queryParamsParse(query);
+                return <TermsView webview={webview} />
+            }
+        );
+
+        const About = assignComponentToRoute(
+            () => {
+                const { pathname } = parse(uri);
+                return pathname === '/about'
+            },
+            () => {
+                const { query } = parse(uri);
+                // @ts-ignore
+                const { webview } = queryParamsParse(query);
+                return <AboutView webview={webview} />
             }
         );
 
@@ -121,6 +137,9 @@ const MainWrapper = observer(
                 <SignUp />
                 <Reset />
                 <Main />
+                <About />
+                <Privacy />
+                <Terms />
                 <ResetPassword />
                 <ErrorDisplay snackBar={snackBar} />
             </div>

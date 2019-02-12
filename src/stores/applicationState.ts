@@ -97,7 +97,7 @@ async function fetchSurveysForStudy(studyId: string) {
     return study;
 }
 
-export async function getStudies(): Promise<{[studyId: string]: Study}> {
+export async function getStudies(): Promise<{ [studyId: string]: Study }> {
     try {
         const studiesReq = await getFromApi('/api/studies?type=admin');
         const studies = camelcaseKeys(await studiesReq.json());

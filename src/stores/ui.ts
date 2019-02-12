@@ -1,8 +1,4 @@
-import { autorun, observable, computed, toJS } from 'mobx';
-
-
-const DEFAULT_LATITUDE = 40.730819
-const DEFAULT_LONGITUDE = -73.997461
+import { observable } from 'mobx';
 
 interface AvailableLocation {
     locationId: string;
