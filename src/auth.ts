@@ -238,8 +238,8 @@ export async function addToBlackList(pool: Pool, userId: string, req: Request): 
     try {
         await pool.query(query, values);
     } catch (error) {
-        // by sallowing this error, we the method idempotent
-        if (error === UNIQUE_VIOLATION && error.constraint === 'token_blacklist_pkey') {
+        // by swallowing this error, we the method idempotent
+        if (error.code === UNIQUE_VIOLATION && error.constraint === 'token_blacklist_pkey') {
             return;
         }
         console.error(`[sql ${query}] [values ${JSON.stringify(values)}] ${error}`);
