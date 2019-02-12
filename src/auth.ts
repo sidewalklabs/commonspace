@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import * as passport from 'passport';
 import * as passportGoogle from 'passport-google-oauth20';
@@ -206,7 +206,7 @@ const loginStrategy = new LocalStrategy({passReqToCallback: true, usernameField:
 
 const extractAuthBearer = ExtractJwt.fromAuthHeaderAsBearerToken();
 
-function jwtFromRequest(req) {
+function jwtFromRequest(req: Request) {
     if (req.cookies && req.cookies.commonspacejwt) {
         return req.cookies.commonspacejwt;
     } else {
@@ -240,6 +240,14 @@ export async function addToBlackList(pool: Pool, userId: string, req: Request): 
         console.error(`[sql ${query}] [values ${JSON.stringify(values)}] ${error}`);
         throw error;
     }
+}
+
+export async function checkAgainstTokenBlacklist(req: Request, res: Response, next) {
+    if (await tokenIsBlacklisted(DbPool, req)) {
+        res.status(401).send();
+        return;
+    }
+    next();
 }
 
 export async function tokenIsBlacklisted(pool: Pool, req: Request): Promise<boolean> {

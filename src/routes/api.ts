@@ -37,7 +37,7 @@ import { createLocation } from "../datastore/location";
 import DbPool from "../database";
 import { Feature, FeatureCollection, Point } from "geojson";
 import { snakecasePayload } from "../utils";
-import { checkAgainstTokenBlacklist } from "./auth";
+import { checkAgainstTokenBlacklist } from "../auth";
 
 const NOMINATIM_BASE_URL =
   "https://nominatim.openstreetmap.org/reverse?format=json";
@@ -98,8 +98,6 @@ const STUDY_FIELDS: StudyField[] = [
   "location",
   "notes"
 ];
-
-
 
 const router = express.Router();
 
