@@ -5,11 +5,12 @@ import moment from 'moment';
 import { center } from '@turf/turf';
 import uuid from 'uuid';
 
-import { groupArrayOfObjectsBy } from '../utils';
+import { groupArrayOfObjectsBy, snakecasePayload } from '../utils';
 import { StudyField } from '../datastore/utils';
 import { StudyType } from '../datastore/study';
 import { setSnackBar } from './ui';
-import { getFromApi, postToApi, snakecasePayload } from '../utils';
+import { getFromApi, postToApi, putToApi } from './utils';
+import { logoutIfUnAuthorized } from './auth';
 
 
 const DEFAULT_LATITUDE = 40.730819
@@ -43,7 +44,6 @@ export interface Study {
 }
 
 export interface ApplicationState {
-    token: null | string;
     currentStudy: null | Study;
     studies: { [key: string]: Study };
     mapCenters: { [key: string]: LongitudeLatitude };
@@ -57,29 +57,6 @@ const fetchParams: RequestInit = {
     referrer: 'no-referrer'
 }
 
-async function putToApi(route: string, data: any) {
-    const body = JSON.stringify(snakecasePayload(data))
-    try {
-        const response = await fetch(route, {
-            ...fetchParams,
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json; charset=utf-8"
-            },
-            body
-        })
-        if (response.status !== 200) {
-            throw Error(`${response.status} ${response.statusText}`);
-        }
-        return response;
-    } catch (err) {
-        console.error(`[route ${route}] [data ${body}] ${err}`)
-        throw err;
-    }
-}
-
-
-
 function deleteFromApi(route: string) {
     return fetch(route, {
         ...fetchParams,
@@ -90,17 +67,15 @@ function deleteFromApi(route: string) {
 async function fetchSurveysForStudy(studyId: string) {
     const study = applicationState.studies[studyId];
     if (!study.surveys) {
-        const surveysReq = await getFromApi(`/api/studies/${studyId}/surveys`);
-        const surveysAsArr = camelcaseKeys(await surveysReq.json());
-        study.surveys = groupArrayOfObjectsBy(surveysAsArr, 'surveyId');
+        const surveys= camelcaseKeys(await getFromApi(`/api/studies/${studyId}/surveys`))
+        study.surveys = groupArrayOfObjectsBy(surveys, 'surveyId');
     }
     return study;
 }
 
 export async function getStudies(): Promise<{ [studyId: string]: Study }> {
     try {
-        const studiesReq = await getFromApi('/api/studies?type=admin');
-        const studies = camelcaseKeys(await studiesReq.json());
+        const studies = camelcaseKeys(await getFromApi('/api/studies?type=admin'))
         return groupArrayOfObjectsBy(studies, 'studyId');
     } catch (error) {
         setSnackBar('error', `Could not load studies: ${error}`);
@@ -132,7 +107,7 @@ function handleErrors(f: (...x: any[]) => Promise<Response>): (...y: any[]) => P
     }
 }
 
-export async function saveNewStudy(studyInput: Study, token?: string) {
+export async function saveNewStudy(studyInput: Study) {
     const study: Study = toJS(studyInput)
     if (study.fields.indexOf('notes') === -1) {
         study.fields = [...study.fields, 'notes']
@@ -147,7 +122,7 @@ export async function saveNewStudy(studyInput: Study, token?: string) {
     });
     const route = `/api/studies`;
     try {
-        const createdStudy = await postToApi(route, study, token) as Study;
+        const createdStudy = await postToApi(route, study) as Study;
         applicationState.studies[study.studyId] = createdStudy;
         setSnackBar('success', 'Saved Study!')
     } catch (error) {
@@ -240,7 +215,6 @@ export async function init() {
 let applicationState: ApplicationState = observable({
     currentStudy: null,
     studies: {},
-    token: null,
     mapCenters: {}
 });
 

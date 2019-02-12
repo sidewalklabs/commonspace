@@ -247,14 +247,6 @@ export async function addToBlackList(pool: Pool, userId: string, req: Request): 
     }
 }
 
-export async function checkAgainstTokenBlacklist(req: Request, res: Response, next) {
-    if (await tokenIsBlacklisted(DbPool, req)) {
-        res.status(401).send();
-        return;
-    }
-    next();
-}
-
 export async function tokenIsBlacklisted(pool: Pool, req: Request): Promise<boolean> {
     const token = jwtFromRequest(req);
     const date = await tokenBlacklistDate(pool, token);

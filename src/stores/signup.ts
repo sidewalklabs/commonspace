@@ -1,6 +1,7 @@
 import { observable } from 'mobx';
 import snakecaseKeys from 'snakecase-keys';
 
+import authState from './auth';
 import { navigate } from './router';
 import uiState, { setSnackBar } from './ui';
 
@@ -52,6 +53,7 @@ export async function logInUserGoogleOAuth(response) {
     });
 
     if (status === 200) {
+        authState.isAuth = true;
         navigate('/studies');
     } else {
         console.error(statusText);
@@ -94,6 +96,7 @@ export async function signUpUser() {
         body: JSON.stringify(snakecaseKeys(data)), // body data type must match "Content-Type" header
     })
     if (status === 200) {
+        authState.isAuth = true;
         navigate('/studies');
     } else {
         console.error(statusText);
