@@ -5,7 +5,3 @@ html, body {
 #app {
     height: 100%;
 }
-
-.sr-only {
-    display: none;
-}
