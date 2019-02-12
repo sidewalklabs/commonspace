@@ -1,6 +1,7 @@
 import { randomBytes } from 'crypto';
 import { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
+import { UNIQUE_VIOLATION } from 'pg-error-constants';
 import * as passport from 'passport';
 import * as passportGoogle from 'passport-google-oauth20';
 import * as passportJWT from 'passport-jwt'
@@ -237,6 +238,10 @@ export async function addToBlackList(pool: Pool, userId: string, req: Request): 
     try {
         await pool.query(query, values);
     } catch (error) {
+        // by sallowing this error, we the method idempotent
+        if (error === UNIQUE_VIOLATION && error.constraint === 'token_blacklist_pkey') {
+            return;
+        }
         console.error(`[sql ${query}] [values ${JSON.stringify(values)}] ${error}`);
         throw error;
     }
