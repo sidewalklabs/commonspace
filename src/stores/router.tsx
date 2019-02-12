@@ -1,7 +1,6 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
+import { observable, autorun } from 'mobx';
 import pathToRegexp from 'path-to-regexp';
-import { observable, autorun, toJS, get, set } from 'mobx';
-
 import { init } from './applicationState';
 
 type BooleanFunction = (...args: any[]) => boolean;
@@ -34,7 +33,7 @@ export function addSideEffectRoute<T>(route: string | BooleanFunction, f: (...ar
     }
 }
 
-window.addEventListener('popstate', function(event) {
+window.addEventListener('popstate', function (event) {
     router.uri = sanitizedPathname()
 }, false)
 
@@ -50,27 +49,28 @@ export interface Router {
 const TRAILING_SLASH = /\/$/
 // nginx will sometimes add a trailing slash to a url
 function sanitizedPathname() {
+    const loggedOutPaths = ['/signup', '/login', '/loginWithEmail', '/reset', '/reset_password', '/privacy', '/terms', '/about', '/verify']
+    const isLoggedOut = document.cookie.indexOf('commonspacepsuedo=') === -1
+    if (
+        isLoggedOut && !loggedOutPaths.includes(window.location.pathname)
+    ) {
+        return '/login';
+    } else if (window.location.pathname === '/' && !isLoggedOut) {
+        return '/studies';
+    } else {
+        const route = window.location.pathname + window.location.search
+        const sanitizedRoute = route.replace(TRAILING_SLASH, '');
+        return sanitizedRoute
+    }
     const route = window.location.pathname + window.location.search
     return route.replace(TRAILING_SLASH, '');
 }
 
-const loggedOutPaths = ['/signup', '/login', '/welcome', '/reset', '/reset_password', '/verify']
-if (
-    window.location.pathname === '/' ||
-    (
-        document.cookie.indexOf('commonspacepsuedo=') === -1 &&
-        !loggedOutPaths.includes(window.location.pathname)
-    )
-) {
-    window.location.pathname = '/welcome';
-}
-
 const router: Router = observable({
-    uri: window.location.pathname === '/' ? '/welcome' : sanitizedPathname()
+    uri: sanitizedPathname()
 });
 
 autorun(async () => {
-    console.log(router.uri);
     if (router.uri === '/studies') {
         await init();
     }

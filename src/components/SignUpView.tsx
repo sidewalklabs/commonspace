@@ -19,11 +19,16 @@ const styles = theme => ({
         width: 150
     },
     root: {
-        width: '700px',
-        display: 'flex',
+        width: 'auto',
         marginTop: theme.spacing.unit * 3,
         marginLeft: theme.spacing.unit * 3,
         marginRight: theme.spacing.unit * 3,
+        [theme.breakpoints.up(700 + theme.spacing.unit * 3 * 2)]: {
+            width: 700,
+            marginLeft: 'auto',
+            marginRight: 'auto',
+        },
+        display: 'flex',
         flex: '0 1 auto',
         alignItems: 'center',
         flexDirection: 'column',
@@ -89,7 +94,7 @@ const SignUpView = withStyles(styles)(observer((props: WithStyles) => {
             }} variant="extendedFab" onClick={signUpUser}>
                 Sign Up
             </Button>
-            <Button onClick={() => navigate('/welcome')}>
+            <Button onClick={() => navigate('/login')}>
                 Already Signed Up? Login Here
             </Button>
         </Paper >
