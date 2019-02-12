@@ -3,7 +3,7 @@ import express, { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import passport from 'passport';
 import { return500OnError } from './utils';
-import { resetPassword, sendEmailResetLink, addToBlackList, createRandomStringForTokenUse, emailForResetToken, saveTokenForPasswordReset, tokenIsBlacklisted, validateEmail} from '../auth';
+import { resetPassword, sendEmailResetLink, addToBlackList, createRandomStringForTokenUse, emailForResetToken, saveTokenForPasswordReset, validateEmail} from '../auth';
 import DbPool from '../database'
 import { User } from '../datastore/user';
 
@@ -27,7 +27,6 @@ function addCookieToResponse(res, payload, name: string, secure: boolean) {
 
 function respondWithCookie(res: Response, user: User) {
     res = addCookieToResponse(res, user, 'commonspacejwt', process.env.NODE_ENV !== 'development');
-    res = addCookieToResponse(res, {stuff: 'nothing'}, 'commonspacepsuedo', false);
     res.status(200).send();
     return;
 }
@@ -122,6 +121,7 @@ router.post('/logout',
             return500OnError(async (req: Request, res: Response) => {
                 const { user_id: userId } = req.user;
                 await addToBlackList(DbPool, userId, req);
+                res.clearCookie('commonspacejwt');
                 res.status(200).send();
             }))
 

@@ -37,7 +37,7 @@ import { createLocation } from "../datastore/location";
 import DbPool from "../database";
 import { Feature, FeatureCollection, Point } from "geojson";
 import { snakecasePayload } from "../utils";
-import { checkAgainstTokenBlacklist } from "../auth";
+import { tokenIsBlacklisted } from '../auth';
 
 const NOMINATIM_BASE_URL =
   "https://nominatim.openstreetmap.org/reverse?format=json";
@@ -87,6 +87,24 @@ export interface Survey {
   notes?: string;
 }
 
+class UnauthorizedError extends Error { }
+
+export function return401OnUnauthorizedError(f: (req: Request, res: Response, next) => any) {
+    return async (req: Request, res: Response, next) => {
+        try {
+            const result = await f(req, res, next);
+            return result;
+        } catch (error) {
+            if ( error instanceof UnauthorizedError) {
+                res.clearCookie('commonspacejwt');
+                res.status(401).send();
+                return;
+            }
+            throw error;
+        }
+    }
+}
+
 const STUDY_FIELDS: StudyField[] = [
   "gender",
   "age",
@@ -98,6 +116,14 @@ const STUDY_FIELDS: StudyField[] = [
   "location",
   "notes"
 ];
+
+async function checkAgainstTokenBlacklist(req: Request, res: Response, next) {
+    if (await tokenIsBlacklisted(DbPool, req)) {
+        res.clearCookie('commonspacejwt');
+        res.status(401).send();
+    }
+    next();
+}
 
 const router = express.Router();
 
@@ -231,11 +257,12 @@ router.post(
 
 router.get(
     "/studies/:studyId",
-    return500OnError(async (req: Request, res: Response) => {
+    return500OnError(return401OnUnauthorizedError(async (req: Request, res: Response) => {
         const { user_id: userId } = req.user;
         const { studyId } = req.params;
         if (!userIsAdminOfStudy(DbPool, studyId, userId)) {
-            res.status(401).send();
+            throw new UnauthorizedError();
+            return;
         }
         const studyMetadata = await returnStudyMetadata(DbPool, studyId);
         const { studyId: study_id, authorUrl: author_url, protocolVersion: protocol_version, title, author, type, fields, location, map, description, surveyors } = studyMetadata;
@@ -253,20 +280,21 @@ router.get(
             surveyors
         }
         res.status(200).send(study);
-    })
+    }))
 )
 
 router.delete(
     "/studies/:studyId",
-    return500OnError(async (req: Request, res: Response) => {
+    return500OnError(return401OnUnauthorizedError(async (req: Request, res: Response) => {
         const { user_id: userId } = req.user;
         const { studyId } = req.params;
         if (!userIsAdminOfStudy(DbPool, studyId, userId)) {
-            res.status(401).send();
+            throw new UnauthorizedError();
+            return;
         }
         await deleteStudy(DbPool, studyId);
         res.status(200).send();
-    })
+    }))
 );
 
 async function saveGeoJsonFeatureAsLocation(x: Feature | FeatureCollection) {
@@ -309,8 +337,8 @@ async function saveDataPoint(req: Request, res: Response) {
     surveyId
   );
   if (!userCanAccessSurvey) {
-    res.status(401).send();
-    return;
+      throw new UnauthorizedError();
+      return;
   }
   const dataPointFromBody = req.body as DataPoint;
   if (
@@ -330,7 +358,7 @@ async function saveDataPoint(req: Request, res: Response) {
 
 router.get(
   "/surveys/:surveyId/datapoints",
-  return500OnError(async (req: Request, res: Response) => {
+    return500OnError(return401OnUnauthorizedError(async (req: Request, res: Response) => {
     const { user_id: userId } = req.user;
     const { surveyId } = req.params;
     const userCanAccessSurvey = await checkUserIdIsSurveyor(
@@ -340,34 +368,33 @@ router.get(
     );
     if (!userCanAccessSurvey) {
       res.statusMessage = 'not allowed to access survey';
-      res.status(401).send();
-      return;
+      throw new UnauthorizedError();
     }
     const databaseDataPoints = await retrieveDataPointsForSurvey(
       DbPool,
       surveyId
     );
     res.send(databaseDataPoints);
-  })
+    }))
 );
 
 router.post(
   "/surveys/:surveyId/datapoints/:dataPointId",
-  return500OnError((req: Request, res: Response) => {
-    const datapoint = req.body as DataPoint;
-    req.body.creation_date = datapoint.date;
-    req.body.last_updated = datapoint.date;
-    return saveDataPoint(req, res);
-  })
+    return500OnError(return401OnUnauthorizedError((req: Request, res: Response) => {
+        const datapoint = req.body as DataPoint;
+        req.body.creation_date = datapoint.date;
+        req.body.last_updated = datapoint.date;
+        return saveDataPoint(req, res);
+    }))
 );
 
 router.put(
   "/surveys/:surveyId/datapoints/:dataPointId",
-  return500OnError((req: Request, res: Response) => {
+  return500OnError(return401OnUnauthorizedError((req: Request, res: Response) => {
     const datapoint = req.body as DataPoint;
     req.body.last_updated = datapoint.date;
     return saveDataPoint(req, res);
-  })
+  }))
 );
 
 router.delete(
@@ -467,5 +494,6 @@ router.delete(
         res.status(200).end();
     })
 )
+
 
 export default router;

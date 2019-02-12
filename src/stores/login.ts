@@ -1,5 +1,6 @@
 import { observable } from 'mobx';
 
+import authState from './auth'
 import {navigate} from './router';
 import uiState, { setSnackBar } from './ui';
 
@@ -23,6 +24,7 @@ export async function logInUser() {
         body: JSON.stringify(data), // body data type must match "Content-Type" header
     })
     if (response.status === 200) {
+        authState.isAuth = true;
         navigate('/studies');
     } else {
         console.error(response.statusText);
@@ -36,7 +38,6 @@ export interface LogInState {
     emailErrorMessage: string;
     passwordErrorMessage: string;
 }
-
 
 const loginInState: LogInState = observable({
     email: '',

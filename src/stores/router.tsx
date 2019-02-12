@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { observable, autorun } from 'mobx';
 import pathToRegexp from 'path-to-regexp';
 import { init } from './applicationState';
+import authState from './auth';
 
 type BooleanFunction = (...args: any[]) => boolean;
 type ElementFunction = (...props: any[]) => JSX.Element
@@ -33,7 +34,7 @@ export function addSideEffectRoute<T>(route: string | BooleanFunction, f: (...ar
     }
 }
 
-window.addEventListener('popstate', function (event) {
+window.addEventListener('popstate', function(event) {
     router.uri = sanitizedPathname()
 }, false)
 
@@ -49,24 +50,19 @@ export interface Router {
 const TRAILING_SLASH = /\/$/
 // nginx will sometimes add a trailing slash to a url
 function sanitizedPathname() {
-    const loggedOutPaths = ['/signup', '/login', '/loginWithEmail', '/reset', '/reset_password', '/privacy', '/terms', '/about', '/verify']
-    const isLoggedOut = document.cookie.indexOf('commonspacepsuedo=') === -1
-    if (
-        isLoggedOut && !loggedOutPaths.includes(window.location.pathname)
-    ) {
-        return '/login';
-    } else if (window.location.pathname === '/' && !isLoggedOut) {
-        return '/studies';
-    } else {
-        const route = window.location.pathname + window.location.search
-        const sanitizedRoute = route.replace(TRAILING_SLASH, '');
-        return sanitizedRoute
-    }
     const route = window.location.pathname + window.location.search
+    if (route === '/' && !authState.isAuth) {
+        window.location.pathname = '/login'
+        return;
+    } else if (route === '/' && authState.isAuth) {
+        window.location.pathname = '/studies'
+        return;
+    }
     return route.replace(TRAILING_SLASH, '');
 }
 
 const router: Router = observable({
+    isAuth: false,
     uri: sanitizedPathname()
 });
 
