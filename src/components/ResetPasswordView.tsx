@@ -1,5 +1,5 @@
 import React from 'react';
-
+import Avatar from '@material-ui/core/Avatar';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button'
 import Paper from '@material-ui/core/Paper'
@@ -33,19 +33,21 @@ const state = observable({
 const styles = theme => ({
     root: {
         width: 'auto',
-        marginTop: theme.spacing.unit * 3,
-        marginLeft: theme.spacing.unit * 3,
-        marginRight: theme.spacing.unit * 3,
+        margin: 0,
+        height: '100%',
         [theme.breakpoints.up(700 + theme.spacing.unit * 3 * 2)]: {
             width: 700,
             marginLeft: 'auto',
             marginRight: 'auto',
+            marginTop: theme.spacing.unit * 3,
+            height: 'auto',
         },
         display: 'flex',
         flex: '0 1 auto',
         alignItems: 'center',
         flexDirection: 'column',
         alignContent: 'center',
+        justifyContent: 'center',
         padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit * 3}px`
     },
     textField: {
@@ -62,6 +64,9 @@ const styles = theme => ({
     buttonLabel: {
         textTransform: 'none',
     },
+    avatar: {
+        marginBottom: theme.spacing.unit * 2,
+    }
 })
 
 async function ResetPasswordRequest(token: string) {
@@ -101,7 +106,8 @@ const ResetPassword = observer((props: ResetPasswordProps & WithStyles) => {
     const { classes, token } = props;
     return (
         <Paper className={classes.root}>
-            <Typography variant="title" gutterBottom>Reset Password</Typography>
+            <Avatar alt="Commons Icon" src="/assets/images/CircleIcon.png" className={classes.avatar} />
+            <Typography variant="title" align='center' gutterBottom>Reset Password</Typography>
             <TextField
                 id="password"
                 label="New Password"

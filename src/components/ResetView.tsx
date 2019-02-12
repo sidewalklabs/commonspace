@@ -14,27 +14,30 @@ import { navigate } from '../stores/router'
 const styles = theme => ({
     root: {
         width: 'auto',
-        marginTop: theme.spacing.unit * 3,
-        marginLeft: theme.spacing.unit * 3,
-        marginRight: theme.spacing.unit * 3,
+        margin: 0,
+        height: '100%',
         [theme.breakpoints.up(700 + theme.spacing.unit * 3 * 2)]: {
             width: 700,
             marginLeft: 'auto',
             marginRight: 'auto',
+            marginTop: theme.spacing.unit * 3,
+            height: 'auto',
         },
         display: 'flex',
         flex: '0 1 auto',
         alignItems: 'center',
         flexDirection: 'column',
         alignContent: 'center',
+        justifyContent: 'center',
         padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit * 3}px`
     },
     avatar: {
         marginBottom: theme.spacing.unit * 2,
     },
-    logInButton: {
-        width: '400px',
-        margin: theme.spacing.unit * 2,
+    button: {
+        margin: theme.spacing.unit * 3,
+        width: '100%',
+        maxWidth: '400px',
         boxShadow: "none",
     },
     buttonLabel: {
@@ -57,15 +60,15 @@ const ResetView = observer((props: ResetProps & WithStyles) => {
     return (
         <Paper className={classes.root}>
             <Avatar alt="Commons Icon" src="/assets/images/CircleIcon.png" className={classes.avatar} />
-            <Typography variant="title" gutterBottom>Reset Password</Typography>
-            <Typography variant="body1">Enter your account email to receive instructions on how to reset your password</Typography>
+            <Typography variant="title" align='center' gutterBottom>Reset Password</Typography>
+            <Typography variant="body1" align='center'>Enter your account email to receive instructions on how to reset your password</Typography>
             <TextField
                 id="login-email"
                 label="Email"
                 onChange={e => resetState.email = e.target.value}
                 className={classes.textField} />
             <Button classes={{
-                root: classes.logInButton,
+                root: classes.button,
                 label: classes.buttonLabel
             }} variant="extendedFab" onClick={async () => await resetPasswordRequest()}>
                 Send

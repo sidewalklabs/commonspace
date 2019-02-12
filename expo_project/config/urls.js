@@ -1,5 +1,7 @@
+const COMMONSPACE_URL = 'https://commons-staging.sidewalklabs.com';
+
 export default {
-  homepage: 'https://sidewalklabs.github.io/gehl-prototype/',
-  terms: 'http://www.sidewalktoronto.com/privacy',
-  privacy: 'http://www.sidewalktoronto.com/privacy',
+  homepage: `${COMMONSPACE_URL}/about?webview=true`,
+  terms: `${COMMONSPACE_URL}/terms?webview=true`,
+  privacy: `${COMMONSPACE_URL}/privacy?webview=true`,
 };
