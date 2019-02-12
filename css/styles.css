@@ -1,7 +1,1 @@
-html, body {
-    height: 100%;
-}
-
-#app {
-    height: 100%;
-}
+/* We need this folder since we move react-leaflet-search.css here */
