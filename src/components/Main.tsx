@@ -26,6 +26,7 @@ import uiState from '../stores/ui';
 import applicationState, { setCurrentStudyEmptySkeleton, getMapCenterForStudy, ApplicationState, studyEmptySkeleton } from '../stores/applicationState';
 import { observable } from 'mobx';
 import { navigate } from '../stores/router';
+import { getFromApi, postToApi } from '../utils';
 
 interface MainProps {
     applicationState: ApplicationState;
@@ -80,8 +81,8 @@ function prepareNewStudy() {
     uiState.modalStack.push('study');
 }
 
-function handleLogOut() {
-    // TODO: make sure this really logs you out
+async function handleLogOut() {
+    await postToApi('/auth/logout', {}) as {};
     mainState.anchorElement = null;
     navigate('/welcome');
 }

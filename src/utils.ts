@@ -85,6 +85,9 @@ export async function postToApi(route: string, data: any, token?: string) {
         if (response.status !== 200) {
             throw Error(`${response.status} ${response.statusText}`);
         }
+        if (response.headers.get('content-length')) {
+            return {};
+        }
         return response.json();
     } catch (err) {
         console.error(`[route ${route}] [data ${body}] ${err}`)

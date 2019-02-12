@@ -1,3 +1,4 @@
+import cookieParser from 'cookie-parser';
 import express, { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import passport from 'passport';
@@ -7,6 +8,8 @@ import DbPool from '../database'
 import { User } from '../datastore/user';
 
 const router = express.Router();
+
+router.use(cookieParser())
 
 function addCookieToResponse(res, payload, name: string, secure: boolean) {
     const expires = new Date(Date.now() + parseInt(process.env.JWT_EXPIRATION_MS))
@@ -40,14 +43,6 @@ function respondWithAuthentication(req: Request, res: Response, user: User) {
     } else {
         return respondWithCookie(res, user);
     }
-}
-
-export async function checkAgainstTokenBlacklist(req: Request, res: Response, next) {
-    if (await tokenIsBlacklisted(DbPool, req)) {
-        res.status(401).send();
-        return;
-    }
-    next();
 }
 
 router.post('/signup', (req, res, next) => {
@@ -122,7 +117,6 @@ router.post('/reset_password', return500OnError(async (req: Request, res: Respon
     return
 }))
 
-const BEARER_REGEX = /^bearer (.*)?/
 router.post('/logout',
             passport.authenticate("jwt", { session: false }),
             return500OnError(async (req: Request, res: Response) => {
