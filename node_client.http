@@ -1,6 +1,19 @@
-:host = http://localhost:3000
+:host = https://commons-staging.sidewalklabs.com
 :jwt = insert_your_jwt_here
+:email = ""
+:password = ""
 
+#
+:login = :host/auth/login
+POST :login
+Accept-Encoding: application/bearer.token+json
+Accept: application/bearer.token+json
+Content-Type: application/json
+
+{
+  "email": :email,
+  "password": :password
+}
 #
 :studies = :host/studies
 GET :studies
@@ -94,4 +107,10 @@ Accept-Encoding: application/json
 Content-Type: application/json
 Authorization: bearer :jwt
 
+#
+:delete_user = :host/api/user
+DELETE :delete_user
+
+Accept-Encoding: application/json
+Authorization: bearer :jwt
 #

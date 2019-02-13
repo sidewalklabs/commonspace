@@ -12,7 +12,7 @@ import GoogleTokenStrategy from './passport_strategies/GoogleTokenStrategy';
 import path from 'path';
 import * as uuid from 'uuid';
 
-import { authenticateOAuthUser, createUser, findUserWithPassword, findUserById, User, changeUserPassword } from './datastore/user';
+import { authenticateOAuthUser, createUser, findUserWithPassword, findUserById, User, changeUserPassword, userIsOAuthUser } from './datastore/user';
 import DbPool from './database';
 
 import dotenv from 'dotenv';
@@ -285,9 +285,16 @@ const init = (mode: string) => {
                 passReqToCallback: true
             }, async function(request, accessToken, refreshToken, profile, done) {
                 const email = profile.emails[0].value;
-                const user = await authenticateOAuthUser(DbPool, email);
-                request.user = { user_id: user.userId };
-                done(null, request.user);
+                try {
+                    if (userIsOAuthUser(DbPool, email)) {
+                        const user = await authenticateOAuthUser(DbPool, email);
+                        request.user = { user_id: user.userId };
+                        done(null, request.user);
+                    }
+                    done (new Error('not valid login'), null)
+                } catch (error) {
+                    done(error, null);
+                }
             });
             passport.use('google-oauth', googleOAuthStrategy);
             const googleTokenStrategy = new GoogleTokenStrategy({tokenFromRequest: 'header', passReqToCallback: true}, async (request, email, done) => {
