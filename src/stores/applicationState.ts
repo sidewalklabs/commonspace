@@ -10,7 +10,6 @@ import { StudyField } from '../datastore/utils';
 import { StudyType } from '../datastore/study';
 import { setSnackBar } from './ui';
 import { getFromApi, postToApi, putToApi } from './utils';
-import { logoutIfUnAuthorized } from './auth';
 
 
 const DEFAULT_LATITUDE = 40.730819

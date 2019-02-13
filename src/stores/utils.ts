@@ -1,5 +1,5 @@
 import { snakecasePayload } from '../utils'
-import authState, { logoutIfUnAuthorized } from "./auth";
+import authState from "./auth";
 import { navigate } from "./router";
 
 export class UnauthorizedError extends Error { }
