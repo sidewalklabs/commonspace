@@ -163,7 +163,9 @@ router.get(
       // @ts-ignore
             responseBody = adminStudies.concat(suveyorStudies);
         } else {
-            res.status(400).send();
+            const errorMessage = 'query param must be all|admin|surveyor'
+            res.statusMessage = errorMessage
+            res.status(400).send({errorMessage});
             return;
         }
         res.send(responseBody);
@@ -246,8 +248,10 @@ router.post(
       console.error(error);
 
       if (error.code === NOT_NULL_VIOLATION) {
-        res.status(400).send();
-        return;
+          const errorMessage = 'entity already exists'
+          res.statusMessage = errorMessage
+          res.status(400).send({errorMessage});
+          return;
       }
     }
     const study = req.body as Study;
@@ -345,7 +349,9 @@ async function saveDataPoint(req: Request, res: Response) {
     dataPointFromBody.data_point_id &&
     dataPointFromBody.data_point_id !== dataPointId
   ) {
-    res.status(400).send();
+      const errorMessage = 'data_point_id in url must match that in body'
+      res.statusMessage = errorMessage;
+      res.status(400).send({errorMessage});
   }
   const dataPoint = { ...dataPointFromBody, data_point_id: dataPointId };
 
