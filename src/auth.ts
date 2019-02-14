@@ -298,9 +298,13 @@ const init = (mode: string) => {
             });
             passport.use('google-oauth', googleOAuthStrategy);
             const googleTokenStrategy = new GoogleTokenStrategy({tokenFromRequest: 'header', passReqToCallback: true}, async (request, email, done) => {
-                const user = await authenticateOAuthUser(DbPool, email);
-                request.user = user;
-                done(null, user, request);
+                try {
+                    const user = await authenticateOAuthUser(DbPool, email);
+                    request.user = user;
+                    done(null, user, request);
+                } catch (error) {
+                    return done(error, null, request);
+                }
             })
             passport.use('google-token', googleTokenStrategy);
         }
