@@ -166,6 +166,12 @@ workflows:
             - build-admin-server-image
             - build-nginx-image
             - patch-k8s
+          filters:
+            branches:
+              only: master
       - run-integration-test:
           requires:
              - deploy-staging
+          filters:
+            branches:
+              only: master

@@ -47,13 +47,15 @@ function respondWithAuthentication(req: Request, res: Response, user: User) {
 router.post('/signup', (req, res, next) => {
     const body = req.body;
     if (!body.email) {
-        res.statusMessage = 'Missing email field'
-        res.status(400).send();
+        const errorMessage = 'Missing email field'
+        res.statusMessage = errorMessage;
+        res.status(400).send({errorMessage});
         return;
     }
     if (!body.password) {
-        res.statusMessage = 'Missing password field'
-        res.status(400).send();
+        const errorMessage = 'Missing password field'
+        res.statusMessage = errorMessage
+        res.status(400).send({errorMessage});
         return;
     }
     passport.authenticate('signup',
@@ -71,12 +73,14 @@ router.post('/signup', (req, res, next) => {
 router.post('/login', (req, res, next) => {
     const { body } = req;
     if (!body.email) {
-        res.statusMessage = 'Missing email field'
-        res.status(400).send();
+        const errorMessage = 'Missing email field';
+        res.statusMessage = errorMessage
+        res.status(400).send({errorMessage});
         return;
     } if (!body.password) {
-        res.statusMessage = 'Missing password field'
-        res.status(400).send();
+        const errorMessage = 'Missing password field';
+        res.statusMessage = errorMessage;
+        res.status(400).send({errorMessage});
         return;
     }
     passport.authenticate('login',
@@ -94,8 +98,9 @@ router.post('/login', (req, res, next) => {
 router.post('/request_reset_password', return500OnError(async (req: Request, res: Response) => {
     const { body } = req;
     if (!body.email) {
-        res.statusMessage = 'Missing email field'
-        res.status(400).send();
+        const errorMessage = 'Missing email field';
+        res.statusMessage = errorMessage;
+        res.status(400).send({errorMessage});
     }
     const { email } = body;
     const token = await createRandomStringForTokenUse();
