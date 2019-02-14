@@ -7,7 +7,7 @@ export const peopleMovingDemoStudy = {
   author: 'CommonSpace',
   authorUrl: urls.homepage,
   description:
-    'This is a sample study to show the functionality of the people moving count study type in CommonSpace. Demo studies will not save.',
+    'Count how many people walk or cycle by a place in a given amount of time, typically 10 minutes. Demo studies will not save.',
   fields: ['mode', 'gender', 'age', 'posture', 'activities'],
   isDemo: true,
   surveys: [
@@ -33,7 +33,7 @@ export const stationaryActivityDemoStudy = {
   author: 'CommonSpace',
   authorUrl: urls.homepage,
   description:
-    'This is a sample study to show the functionality of the stationary activity mapping study type in CommonSpace. Demo studies will not save.',
+    'Collect a snapshot of what activities people are doing in a place and where, typically once per hour. Demo studies will not save.',
   fields: ['gender', 'age', 'posture', 'activities', 'location'],
   isDemo: true,
   surveys: [
