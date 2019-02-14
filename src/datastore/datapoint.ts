@@ -60,32 +60,6 @@ function processDataPointToValue(key, value): any[] | any {
             return [longitude, latitude];
             //return `ST_GeomFromText('POINT(${longitude} ${latitude})', 4326)`;
         }
-    } else if (key === 'groups') {
-        switch (value) {
-            case 'single':
-                return 'group_1';
-            case 'pair':
-                return 'group_2';
-            case 'group':
-                return 'group_3-7';
-            case 'crowd':
-                return 'group_8+';
-            default:
-                throw new Error(`invalid value for groups: ${value}`)
-        }
-    } else if (key === 'age') {
-        switch (value) {
-            case 'child':
-                return '0-14';
-            case 'young':
-                return '15-24';
-            case 'adult':
-                return '25-64';
-            case 'elderly':
-                return '65+';
-            default:
-                throw new Error(`invalid value for age: ${value}`)
-        }
     } else if (key === 'activities') {
         const activities = value;
         const activitesAsArr = javascriptArrayToPostgresArray(wrapInArray(activities));
@@ -191,8 +165,12 @@ export async function addDataPointToSurveyWithStudyId(pool: pg.Pool, studyId: st
 
 export async function retrieveDataPointsForSurvey(pool, surveyId) {
     const tablename = await getTablenameForSurveyId(pool, surveyId);
+    
     const query = `SELECT data_point_id, gender, age, mode, posture, activities, groups, object, creation_date, last_updated, ST_AsGeoJSON(location)::json as loc, notes
-                   FROM ${tablename}`;
+               FROM ${tablename} 
+               WHERE survey_id = $1`;
+    const values = [surveyId];
+        
     try {
         const res = await pool.query(query);
         return res.rows.map(r => {
@@ -204,7 +182,7 @@ export async function retrieveDataPointsForSurvey(pool, surveyId) {
             };
         });;
     } catch (error) {
-        console.error(`[sql ${query}] ${error}`);
+        console.error(`[sql ${query}][values ${JSON.stringify(values)}] ${error}`)
         throw error;
     }
 }
