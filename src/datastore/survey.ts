@@ -1,4 +1,6 @@
 import * as pg from 'pg';
+import { IdAlreadyExists } from './utils';
+import { UNIQUE_VIOLATION } from 'pg-error-constants'
 
 export interface Survey {
     studyId: string;
@@ -60,7 +62,7 @@ function joinSurveyWithUserEmailCTE(survey: Survey) {
     return { query, values };
 }
 
-export async function createNewSurveyForStudy(pool: pg.Pool, survey) {
+export async function createNewSurveyForStudy(pool: pg.Pool, survey: Survey) {
     let { query, values } = joinSurveyWithUserEmailCTE(survey);
     if (survey.locationId ) {
         query = `INSERT INTO data_collection.survey (study_id, survey_id, title, start_date, end_date, representation, method, user_id, location_id)
@@ -73,7 +75,9 @@ export async function createNewSurveyForStudy(pool: pg.Pool, survey) {
         return pool.query(query, values);
     } catch (error) {
         console.error(`[sql ${query}] [values ${JSON.stringify(values)}] ${error}`)
-        console.error(`postgres error: ${error} for query: ${query}`);
+        if (error.code === UNIQUE_VIOLATION) {
+            throw new IdAlreadyExists(survey.surveyId)
+        }
         throw error;
     }
 }

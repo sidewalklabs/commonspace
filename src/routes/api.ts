@@ -14,7 +14,7 @@ import {
   deleteDataPoint,
   retrieveDataPointsForSurvey
 } from "../datastore/datapoint";
-import { StudyField } from "../datastore/utils";
+import { StudyField, IdAlreadyExists, IdDoesNotExist } from "../datastore/utils";
 import {
   checkUserIdIsSurveyor,
   createStudy,
@@ -87,8 +87,11 @@ export interface Survey {
   notes?: string;
 }
 
+// have the rest methods throw these errors
 class UnauthorizedError extends Error { }
 
+
+// these error handlers will return the appropriate http status code
 export function return401OnUnauthorizedError(f: (req: Request, res: Response, next) => any) {
     return async (req: Request, res: Response, next) => {
         try {
@@ -96,14 +99,34 @@ export function return401OnUnauthorizedError(f: (req: Request, res: Response, ne
             return result;
         } catch (error) {
             if ( error instanceof UnauthorizedError) {
+                const errorMessage = `${error}`;
+                res.statusMessage = errorMessage;
                 res.clearCookie('commonspacejwt');
-                res.status(401).send();
+                res.status(401).send({error_message: errorMessage});
                 return;
             }
             throw error;
         }
     }
 }
+
+export function return404OnIdDoesNotExist(f: (req: Request, res: Response, next) => any) {
+    return async (req: Request, res: Response, next) => {
+        try {
+            const result = await f(req, res, next);
+            return result;
+        } catch (error) {
+            if ( error instanceof IdDoesNotExist) {
+                const errorMessage = `${error}`;
+                res.statusMessage = errorMessage;
+                res.status(404).send({error_message: errorMessage});
+                return;
+            }
+            throw error;
+        }
+    }
+}
+
 
 const STUDY_FIELDS: StudyField[] = [
   "gender",
@@ -119,8 +142,11 @@ const STUDY_FIELDS: StudyField[] = [
 
 async function checkAgainstTokenBlacklist(req: Request, res: Response, next) {
     if (await tokenIsBlacklisted(DbPool, req)) {
+        const errorMessage = 'token invalid'
         res.clearCookie('commonspacejwt');
-        res.status(401).send();
+        res.statusMessage = errorMessage;
+        res.status(401).send({error_message: errorMessage});
+        return;
     }
     next();
 }
@@ -148,34 +174,30 @@ router.get(
         const { user_id: userId } = req.user;
         let responseBody: Study[];
         if (type === "admin") {
-            responseBody = await returnStudiesForAdmin(DbPool, userId);
+            responseBody = await returnStudiesForAdmin(DbPool, userId) as Study[];
         } else if (type === "surveyor") {
             responseBody = await returnStudiesUserIsAssignedTo(
                 DbPool,
                 userId
             ) as Study[];
         } else if (type === 'all') {
-            const adminStudies = await returnStudiesForAdmin(DbPool, userId);
+            const adminStudies = await returnStudiesForAdmin(DbPool, userId) as Study[];
             const suveyorStudies = await returnStudiesUserIsAssignedTo(
                 DbPool,
                 userId
             ) as Study[];
-      // @ts-ignore
             responseBody = adminStudies.concat(suveyorStudies);
         } else {
             const errorMessage = 'query param must be all|admin|surveyor'
             res.statusMessage = errorMessage
-            res.status(400).send({errorMessage});
+            res.status(400).send({error_message: errorMessage});
             return;
         }
         res.send(responseBody);
     })
 );
 
-router.post(
-  "/studies",
-  return500OnError(async (req: Request, res: Response) => {
-    const { user_id: userId } = req.user;
+async function saveStudyForUser(userId: string, inputStudy: Study) {
     const {
         protocol_version: protocolVersion,
         study_id: studyId,
@@ -189,33 +211,20 @@ router.post(
         map,
         fields,
         description
-    } = req.body as Study;
-   let created_at, last_updated;
-    try {
-        const newStudyRes = await createStudy(DbPool, {
-          studyId,
-          title,
-          author,
-          authorUrl,
-          protocolVersion,
-          userId,
-          type,
-          map,
-          location,
-          fields,
-          description
-      });
-      last_updated = newStudyRes.last_updated;
-      created_at = newStudyRes.created_at;
-    } catch (error) {
-      const { code, detail } = error;
-      if (code === UNIQUE_VIOLATION) {
-          res.statusMessage = "study_id already in use";
-          res.status(409).send();
-          return;
-      }
-      throw error;
-    }
+    } = inputStudy;
+    const { lastUpdated, createdAt } = await createStudy(DbPool, {
+        studyId,
+        title,
+        author,
+        authorUrl,
+        protocolVersion,
+        userId,
+        type,
+        map,
+        location,
+        fields,
+        description
+    });
     const newUserIds = await Promise.all(
       surveyors.map(async email => {
         const [_, newUserId] = await giveUserStudyAccess(
@@ -231,8 +240,7 @@ router.post(
         map.features.map(saveGeoJsonFeatureAsLocation)
       );
     }
-    try {
-      await Promise.all(
+    await Promise.all(
         surveys.map(async survey => {
           return createNewSurveyForStudy(
             DbPool,
@@ -243,25 +251,35 @@ router.post(
             })
           );
         })
-      );
-    } catch (error) {
-      console.error(error);
+    );
+    return {lastUpdated, createdAt}
+}
 
-      if (error.code === NOT_NULL_VIOLATION) {
-          const errorMessage = 'entity already exists'
-          res.statusMessage = errorMessage
-          res.status(400).send({errorMessage});
-          return;
+router.post(
+  "/studies",
+  return500OnError(async (req: Request, res: Response) => {
+      const { user_id: userId } = req.user;
+      try {
+          if (Array.isArray(req.body)) {
+              const datetimes: {createdAt, lastUpdated}[] = await Promise.all(req.body.map(s => saveStudyForUser(userId, s as Study)))
+              res.send(datetimes)
+          } else {
+              const { createdAt: created_at, lastUpdated: last_updated } = await saveStudyForUser(userId, req.body as Study);
+              res.send({...req.body, created_at, last_updated});
+          }
+      } catch (error) {
+          if (error instanceof IdAlreadyExists) {
+              res.statusMessage = error.message;
+              res.status(409).send({error_message: error.message});
+              return;
+          }
       }
-    }
-    const study = req.body as Study;
-    res.send({...study, created_at, last_updated});
   })
 );
 
 router.get(
     "/studies/:studyId",
-    return500OnError(return401OnUnauthorizedError(async (req: Request, res: Response) => {
+    return500OnError(return404OnIdDoesNotExist(return401OnUnauthorizedError(async (req: Request, res: Response) => {
         const { user_id: userId } = req.user;
         const { studyId } = req.params;
         if (!userIsAdminOfStudy(DbPool, studyId, userId)) {
@@ -284,7 +302,7 @@ router.get(
             surveyors
         }
         res.status(200).send(study);
-    }))
+    })))
 )
 
 router.delete(
@@ -351,7 +369,7 @@ async function saveDataPoint(req: Request, res: Response) {
   ) {
       const errorMessage = 'data_point_id in url must match that in body'
       res.statusMessage = errorMessage;
-      res.status(400).send({errorMessage});
+      res.status(400).send({error_message: errorMessage});
   }
   const dataPoint = { ...dataPointFromBody, data_point_id: dataPointId };
 

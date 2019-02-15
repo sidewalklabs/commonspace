@@ -23,3 +23,17 @@ export function javascriptArrayToPostgresArray(xs) {
     }).join(', ');
     return `{${arrayElements}}`;
 }
+
+export class IdAlreadyExists extends Error {
+    constructor(entityId) {
+        super(entityId)
+        this.message = `Id already exists: ${entityId}`
+    }
+}
+
+export class IdDoesNotExist extends Error {
+    constructor(entityId) {
+        super(entityId)
+        this.message = `Id does not exist: ${entityId}`
+    }
+}

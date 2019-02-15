@@ -1,9 +1,9 @@
 import * as pg from 'pg';
 import { FeatureCollection } from 'geojson';
-import { FOREIGN_KEY_VIOLATION } from 'pg-error-constants';
+import { FOREIGN_KEY_VIOLATION, UNIQUE_VIOLATION } from 'pg-error-constants';
 
 import { createUserFromEmail } from './user';
-import { ALL_STUDY_FIELDS, javascriptArrayToPostgresArray, studyIdToTablename, StudyField } from './utils';
+import { ALL_STUDY_FIELDS, javascriptArrayToPostgresArray, IdAlreadyExists, IdDoesNotExist, studyIdToTablename, StudyField } from './utils';
 
 export type StudyScale = 'district' | 'city' | 'cityCentre' | 'neighborhood' | 'blockScale' | 'singleSite';
 export type StudyType = 'stationary' | 'movement';
@@ -101,7 +101,7 @@ export async function returnStudyMetadata(pool: pg.Pool, studyId: string): Promi
     try {
         const {rows, rowCount} = await pool.query(query, values);
         if (rowCount !== 1) {
-            throw new Error(`Study not found for id: ${studyId}`)
+            throw new IdDoesNotExist(studyId);
         }
         const {
             author_url: authorUrl, protocol_version: protocolVersion, study_type: type, emails: surveyors
@@ -165,9 +165,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                         sas.emails
                     FROM
                         data_collection.study AS stu
-                        LEFT JOIN data_collection.survey sur
-                        ON stu.study_id = sur.study_id
-                        LEFT JOIN study_and_surveyors AS sas
+                        INNER JOIN study_and_surveyors AS sas
                         ON stu.study_id = sas.study_id
                     WHERE
                         stu.user_id=$1`;
@@ -192,7 +190,14 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                 last_updated
             }
         });
-        return studiesForUser;
+        const withSurveys = await Promise.all(studiesForUser.map(async s => {
+            const surveys = await allSurveysForStudy(pool, s.study_id);
+            return {
+                ...s,
+                surveys
+            };
+        }))
+        return withSurveys;
     } catch (error) {
         console.error(`error executing sql query: ${query}`)
         throw error;
@@ -354,7 +359,7 @@ export async function deleteStudiesForUserId(pool: pg.Pool, userId: string): Pro
     return rowCount;
 }
 
-export async function createStudy(pool: pg.Pool, study: Study): Promise<{created_at: number, last_updated: number}> {
+export async function createStudy(pool: pg.Pool, study: Study): Promise<{createdAt: number, lastUpdated: number}> {
     const studyTablename = studyIdToTablename(study.studyId);
     // as a time saver create the table with all possible fields, expect client to play by the
     // rules, and only update the fields it should, this makes it easy (no-migration requried) 
@@ -371,6 +376,9 @@ export async function createStudy(pool: pg.Pool, study: Study): Promise<{created
         studyResult = await pool.query(newStudyMetadataQuery, newStudyMetadataValues);
     } catch (error) {
         console.error(`[query ${newStudyMetadataQuery}][values ${JSON.stringify(newStudyMetadataValues)}] ${error}`);
+        if (error.code === UNIQUE_VIOLATION) {
+            throw new IdAlreadyExists(studyId)
+        }
         throw error;
     }
     try {
@@ -381,8 +389,8 @@ export async function createStudy(pool: pg.Pool, study: Study): Promise<{created
     }
 
     const { rows } = studyResult;
-    const { created_at, last_updated } = rows[0];
-    return { created_at, last_updated };
+    const { created_at: createdAt, last_updated: lastUpdated } = rows[0];
+    return { createdAt, lastUpdated };
 }
 
 export async function updateStudy(pool: pg.Pool, study: Study) {
@@ -396,9 +404,11 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, to_timestamp($13))`;
                        = ($14, $15, $16, $17, $18, $19, $20, $21, to_timestamp($22))`
     const values = [studyId, title, userId, author, authorUrl, description, protocolVersion, type, fields, studyTablename, JSON.stringify(map), location, Date.now()/1000, title, author, authorUrl, description, protocolVersion, fields, JSON.stringify(map), location, Date.now()/1000];
     try {
-        await pool.query(query, values);
+        const { rows } = await pool.query(query, values);
+        const {last_updated: lastUpdated, created_at: createdAt} = rows[0];
+        return {...study, lastUpdated, createdAt}
     } catch (error) {
-        console.error(`[sql ${query}] [values ${JSON.stringify(values)}] ${error}`);
+        console.error(`[sql ${query}] [values ${JSON.stringify(values)}] ${error}`)
         throw error;
     }
 }
