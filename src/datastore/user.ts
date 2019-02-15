@@ -3,6 +3,8 @@ import pg, { Pool } from 'pg';
 import * as uuid from 'uuid';
 import { UNIQUE_VIOLATION } from 'pg-error-constants';
 
+import { IdDoesNotExist } from './utils'
+
 export interface User {
     userId: string;
     email: string;
@@ -95,8 +97,6 @@ export async function createUser(pool: pg.Pool, user: User): Promise<void> {
         throw error;
     }
 }
-
-export class IdDoesNotExist extends Error { }
 
 export async function deleteUser(pool: pg.Pool, userId: string): Promise<void> {
     const query = `DELETE
