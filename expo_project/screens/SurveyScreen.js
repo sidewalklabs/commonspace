@@ -202,7 +202,7 @@ class SurveyScreen extends React.Component {
       const markers = dataPoints.map((d, i) => {
         const title = `Person ${i}`;
         const color = getRandomIconColor();
-        console.log(d);
+        console.log('datapoint', d);
         return {
           ...d,
           color,

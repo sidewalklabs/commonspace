@@ -56,7 +56,7 @@ function processDataPointToValue(key, value): any[] | any {
             //return `ST_GeomFromGeoJSON('${JSON.stringify(location)}')`;
             return JSON.stringify(location);
         } else {
-            const { longitude, latitude} = location
+            const { longitude, latitude } = location
             return [longitude, latitude];
             //return `ST_GeomFromText('POINT(${longitude} ${latitude})', 4326)`;
         }
@@ -83,12 +83,12 @@ function convertKeyToParamterBinding(index, key, value) {
             binding = `ST_GeomFromGeoJSON($${index})`
             return { index: index + 1, binding };
         } else {
-            binding = `ST_GeomFromText($${index}, $${index+1})`
+            binding = `ST_GeomFromText($${index}, $${index + 1})`
             return { index: index + 2, binding };
         }
     } else {
         const binding = `$${index}`
-        return {index: index + 1, binding };
+        return { index: index + 1, binding };
     }
 }
 
@@ -98,7 +98,7 @@ function deleteNonStudyFields(o: any) {
     return o;
 }
 
-function processDataPointToPreparedStatement(acc: {columns: string[], values: string[], parameterBindings: string[], index: number}, curr: {key: string, value: string}) {
+function processDataPointToPreparedStatement(acc: { columns: string[], values: string[], parameterBindings: string[], index: number }, curr: { key: string, value: string }) {
     const { key, value } = curr;
     const { columns, values, parameterBindings } = acc;
     columns.push(key);
@@ -137,7 +137,7 @@ function transformToPostgresInsert(surveyId: string, dataPoint) {
 
 export async function addDataPointToSurveyNoStudyId(pool: pg.Pool, surveyId: string, dataPoint: any) {
     const tablename = await getTablenameForSurveyId(pool, surveyId);
-    const dataPointWithSurveyId =  { ...dataPoint, survey_id: surveyId  };
+    const dataPointWithSurveyId = { ...dataPoint, survey_id: surveyId };
     let { query, values } = transformToPostgresInsert(surveyId, dataPointWithSurveyId)
     query = `INSERT INTO ${tablename}
                    ${query}`;
@@ -151,7 +151,7 @@ export async function addDataPointToSurveyNoStudyId(pool: pg.Pool, surveyId: str
 
 export async function addDataPointToSurveyWithStudyId(pool: pg.Pool, studyId: string, surveyId: string, dataPoint: any) {
     const tablename = await studyIdToTablename(studyId);
-    const dataPointWithSurveyId =  { ...dataPoint, survey_id: surveyId };
+    const dataPointWithSurveyId = { ...dataPoint, survey_id: surveyId };
     let { query, values } = transformToPostgresInsert(surveyId, dataPointWithSurveyId);
     query = `INSERT INTO ${tablename}
                    ${query}`;
@@ -165,14 +165,14 @@ export async function addDataPointToSurveyWithStudyId(pool: pg.Pool, studyId: st
 
 export async function retrieveDataPointsForSurvey(pool, surveyId) {
     const tablename = await getTablenameForSurveyId(pool, surveyId);
-    
+
     const query = `SELECT data_point_id, gender, age, mode, posture, activities, groups, object, creation_date, last_updated, ST_AsGeoJSON(location)::json as loc, notes
                FROM ${tablename} 
                WHERE survey_id = $1`;
     const values = [surveyId];
-        
+
     try {
-        const res = await pool.query(query);
+        const res = await pool.query(query, values);
         return res.rows.map(r => {
             const { loc: location } = r;
             delete r['loc'];
