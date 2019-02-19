@@ -1,123 +1,16 @@
+import "babel-polyfill"
 import camelcaseKeys from 'camelcase-keys';
 import { FeatureCollection } from 'geojson';
 import path from 'path';
-import fetch from "node-fetch";
+import fetch from "isomorphic-fetch";
 
 import { adminUser, surveyorUser, SeaBassFishCountStudy, MarchOnWashington } from './integration_test_data'
-import { Study, Survey } from './routes/api'
 import { snakecasePayload } from './utils'
 import dotenv from 'dotenv';
-import { deleteLocation } from './datastore/location';
-import { deleteStudiesForUserId } from './datastore/study';
+import { deleteRest, postRestNoBody, postRest, getRest, clearLocationsFromApi, getStudiesForAdmin, loginJwt, User, UnauthorizedError, ResourceNotFoundError } from './client'
 dotenv.config({ path: process.env.DOTENV_CONFIG_DIR ? path.join(process.env.DOTENV_CONFIG_DIR, '.env') : 'config/integration.env'});
 
 const { INTEGRATION_TEST_SERVER: API_SERVER  = '' } = process.env
-
-interface User {
-    email: string;
-    password: string;
-}
-
-
-const fetchParams: RequestInit = {
-    //mode: "sam", // no-cors, cors, *same-origin
-    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-    credentials: "same-origin", // include, same-origin, *omit
-    redirect: 'follow',
-    referrer: 'no-referrer'
-}
-
-class ResourceNotFoundError extends Error {}
-export async function deleteRest(route: string, token?: string): Promise<void> {
-    try {
-        const params = {
-            ...fetchParams,
-            method: "DELETE",
-            headers: {}
-        }
-        const uri = API_SERVER + route;
-        if (token) {
-            params.headers['Authorization'] = `bearer ${token}`;
-        }
-        const response = await fetch(uri, params)
-        if (response.status === 404) {
-            throw new ResourceNotFoundError(`Resource not found ${uri}`)
-        } else if (response.status !== 200) {
-            throw Error(`${response.status} ${response.statusText}`);
-        }
-        return;
-    } catch (err) {
-        console.error(`[route ${route}] ${err}`)
-        throw err;
-    }
-}
-
-export async function postRestNoBody(route: string, data: any, token?:string): Promise<void> {
-    const body = JSON.stringify(snakecasePayload(data));
-    try {
-        const params = {
-            ...fetchParams,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json; charset=utf-8"
-            },
-            body
-        }
-        if (token) {
-            params.headers['Authorization'] = `bearer ${token}`;
-        }
-        const response = await fetch(API_SERVER + route, params)
-        if (response.status !== 200) {
-            throw Error(`${response.status} ${response.statusText}`);
-        }
-        return;
-    } catch (err) {
-        console.error(`[route ${route}] [data ${body}] ${err}`)
-        throw err;
-    }
-}
-
-export async function postRest(route: string, data: any, token?: string) {
-    const body = JSON.stringify(snakecasePayload(data));
-    try {
-        const params = {
-            ...fetchParams,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json; charset=utf-8"
-            },
-            body
-        }
-        if (token) {
-            params.headers['Authorization'] = `bearer ${token}`;
-        }
-        const response = await fetch(API_SERVER + route, params)
-        if (response.status !== 200) {
-            throw Error(`${response.status} ${response.statusText}`);
-        }
-        return response.json();
-    } catch (err) {
-        console.error(`[route ${route}] [data ${body}] ${err}`)
-        throw err;
-    }
-}
-
-async function clearLocations(fc: FeatureCollection, token: string): Promise<void> {
-    try {
-        await Promise.all(fc.features.map(async ({properties}) => {
-            try {
-                await deleteRest(`/api/locations/${properties.location_id}`, token)
-            } catch (error) {
-                // it's okay if it doesn't exist yet
-                return
-            }
-        }))
-    } catch (error) {
-        if (!(error instanceof ResourceNotFoundError)) {
-            throw error;
-        }
-    }
-}
 
 // async function clearUserFromDatabase(email: string, map: FeatureCollection) {
 //     const host = process.env.DB_HOST;
@@ -159,93 +52,13 @@ async function clearLocations(fc: FeatureCollection, token: string): Promise<voi
 
 // test that all a user's data can be deleted, could be more explicit, but tests basic not failing
 async function clearUserFromApp(maps: FeatureCollection[], token: string) {
-    await Promise.all(maps.map( m => clearLocations(m, token)))
+    await Promise.all(maps.map( m => clearLocationsFromApi(API_SERVER, m, token)))
     try {
-        await deleteRest('/api/user', token)
+        await deleteRest(API_SERVER + '/api/user', token)
     } catch (error) {
         if (!(error instanceof ResourceNotFoundError)) {
             throw error;
         }
-    }
-}
-
-class UnauthorizedError extends Error {}
-class ResourceDoesNotExistError extends Error {}
-
-async function getRest<T>(route: string, token?: string): Promise<T> {
-    const uri =  API_SERVER + route;
-    const params = {
-        ...fetchParams,
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-      }
-    }
-    if (token) {
-        params.headers['Authorization'] = `bearer ${token}`;
-    }
-    const response = await fetch(
-        uri,
-        params,
-    );
-    if (response.status === 404) {
-        throw new ResourceDoesNotExistError(`Resource not found: ${route}`)
-    }
-    if (response.status === 401) {
-        throw new UnauthorizedError(`Not Authorized: ${route}`)
-    }
-    if (response.status !== 200) {
-        throw new Error(`Status: ${response.status}, could not fetch get ${uri}`);
-    }
-    const body = await response.json();
-    return body as T;
-}
-
-async function getStudiesForAdmin(token?: string) {
-    const params = {
-        ...fetchParams,
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-      }
-    }
-    if (token) {
-        params.headers['Authorization'] = `bearer ${token}`;
-    }
-    
-    const response = await fetch(
-        API_SERVER + '/api/studies?type=admin',
-        params,
-    );
-    if (response.status !== 200) {
-        throw new Error('Could not fetch get studies');
-    }
-    const body = await response.json();
-    return camelcaseKeys(body);
-}
-
-// warning this version of loginJwt swallows the error, assumes user doesn't exist
-async function loginJwt(user: User) {
-    const uri = API_SERVER + `/auth/login`;
-    const requestBody = JSON.stringify(user);
-    const fetchParams = {
-        method: 'Post',
-        headers: {
-            "Content-Type": "application/json; charset=utf-8",
-            Accept: 'application/bearer.token+json'
-        },
-        body: requestBody
-    }
-    try {
-        const response = await fetch(uri, fetchParams)
-        if (response.status === 401) {
-            throw new Error(`not able to login user: ${JSON.stringify(user)}`)
-        }
-        const responseBody = await response.json()
-        return responseBody as {token: string};
-    } catch (error) {
-        console.error(`[uri ${uri}][params ${JSON.stringify(fetchParams)}] ${error}`);
-        return;
     }
 }
 
@@ -274,106 +87,77 @@ async function signupJwt(user: User) {
     return responseBody;
 }
 
-async function checkNumberOfSurveysOnStudyForToken(studyId: string, expected: number, token: string) {
-    const surveys = await getRest<Survey[]>(`/api/studies/${studyId}/surveys`, token);
-    if (surveys.length !== expected) {
-        const nSurveys = surveys.length;
-        throw new Error('Incorrect number of surveys, expected ${expected}, received ${nSurveys}');
-    }
-}
-
-async function runTest(adminUser, surveyorUser) {
-    // we expect an authoization error if we don't yet have an authentication token
-    try {
-        await getRest('/api/studies?type=surveyor');
-        throw new Error('api returning response without client sending an authentication token');
-    } catch (error) {
-        if (!(error instanceof UnauthorizedError)) {
-            throw error;
-        }
-    }
-
-    const { token: adminToDeleteToken } = await loginJwt(adminUser);
+beforeAll(async () => {
+    const { token: adminToDeleteToken } = await loginJwt(API_SERVER, adminUser);
     if (adminToDeleteToken) {
-        await clearUserFromApp([SeaBassFishCountStudy.map, MarchOnWashington.map], adminToDeleteToken);
+        const maps = [SeaBassFishCountStudy.map, MarchOnWashington.map]
+        await clearUserFromApp(maps, adminToDeleteToken);
     }
-    const { token: surveyorToken } = await loginJwt(surveyorUser);
-    if (!surveyorToken) throw new Error('unable to login surveyor!, check username and password');
-    const { token: adminToken } = await signupJwt(adminUser);
-    if (!adminToken) throw new Error('unable to login admin!, check username and password');
+});
 
-    const study = await postRest('/api/studies', SeaBassFishCountStudy, adminToken);
+test('we expect an authoization error if we don\'t yet have an authentication token', async () => {
+    await expect(getRest(API_SERVER + '/api/studies?type=surveyor')).rejects.toThrow(UnauthorizedError)
+});
 
-    const studiesForSurveyor = await getRest('/api/studies?type=surveyor', adminToken) as Study[];
-    if (studiesForSurveyor.length !== 1) {
-        throw new Error('Incorrect number of studies returned')
-    }
-    if (studiesForSurveyor[0].surveys.length !== 1) {
-        const { title } = studiesForSurveyor[0];
-        throw new Error(`Incorrect number of surveys returned for study: ${title} and user: ${adminUser.email}`)
-    }
-    const studiesForAdmin = await getRest('/api/studies?type=admin', adminToken) as Study[];
-    if (studiesForAdmin[0].surveys.length !== SeaBassFishCountStudy.surveys.length) {
-        throw new Error(`Incorrect number of surveys on study ${SeaBassFishCountStudy.study_id} returned for admin ${adminUser.email}, received ${studiesForAdmin.length}, expected ${SeaBassFishCountStudy.surveys.length}`)
-    }
+describe('create/delete/modify studies', async () => {
+    let surveyorToken, adminToken;
 
-    // we want to make sure that the user only sees their own surveys when they ask for a study's surveys
-    try {
-        checkNumberOfSurveysOnStudyForToken(SeaBassFishCountStudy.study_id, 1, surveyorToken);
-    } catch (error) {
-        throw new Error(`[study-title ${SeaBassFishCountStudy.title}][user ${JSON.stringify(surveyorUser)}] ${error}`)
-    }
-
-
-    try {
-        checkNumberOfSurveysOnStudyForToken(SeaBassFishCountStudy.study_id, SeaBassFishCountStudy.surveys.length, adminToken);
-    } catch (error) {
-        throw new Error(`[study-title ${SeaBassFishCountStudy.title}][user ${JSON.stringify(surveyorUser)}] ${error}`)
-    }
-
-    // however if they're the admin they should see all of the surveys on the study
-    const surveysForStudyAssignedToAdmin = await getRest(`/api/studies/${SeaBassFishCountStudy.study_id}/surveys`, adminToken) as Survey[];
-
-    const newStudy = await getRest<Study>(`/api/studies/${SeaBassFishCountStudy.study_id}`, adminToken);
-    if (newStudy.study_id !== SeaBassFishCountStudy.study_id) {
-        throw new Error(`Recently saved study not what was expected, recieved: ${JSON.stringify(newStudy)}`)
-    }
-
-    // delete the study
-    await deleteRest('/api/studies/' + SeaBassFishCountStudy.study_id, adminToken);
-    await clearLocations(SeaBassFishCountStudy.map, adminToken)
-
-    try {
-        await getRest< Study > ('/api/studies/' + SeaBassFishCountStudy.study_id, adminToken);
-        throw new Error(`trying to delete study with id ${SeaBassFishCountStudy.study_id} should throw error after being successfully deleted`);
-    } catch (error) {
-        if (!(error instanceof ResourceDoesNotExistError)) {
-            throw new Error(`study for id: ${SeaBassFishCountStudy.study_id} should not exist after delete`)
-        }
-    }
-
-    const saveMultipleStudies = [SeaBassFishCountStudy, MarchOnWashington]
-    await postRest('/api/studies', saveMultipleStudies, adminToken);
-    const multipleStudies = await getRest< Study[] >('/api/studies?type=admin', adminToken);
-    if (multipleStudies.length !== saveMultipleStudies.length) {
-        throw new Error(`Expecting ${saveMultipleStudies.length} studies for the admin user at this point, received: ${multipleStudies.length}` )
-    }
-
-    // the user's token should no longer be valid after logging out
-    await postRestNoBody('/auth/logout', {}, surveyorToken);
-    try {
-        await getRest('/api/studies?type=surveyor', surveyorToken);
-        throw new Error('api returning response after logout');
-    } catch (error) {
-        if (!(error instanceof UnauthorizedError)) {
-            throw error;
-        }
-    }
-}
-
-runTest(adminUser, surveyorUser)
-    .then(() => console.log('success'))
-    .catch( error => {
-        console.error(error.message);
-        process.exit(-1);
+    test('login a previously existing user', async () => {
+        const { token } = await loginJwt(API_SERVER, surveyorUser);
+        expect(token).toBeTruthy();
+        surveyorToken = token;
     })
+
+    test ('signup a new user', async () => {
+        const { token } = await signupJwt(adminUser)
+        expect(token).toBeTruthy();
+        adminToken = token;
+    });
+
+    test('create a new study', async () => {
+        const study = await postRest(API_SERVER + '/api/studies', SeaBassFishCountStudy, adminToken);
+
+        const studiesForAdmin = await getRest(API_SERVER + '/api/studies?type=admin', adminToken) as any[];
+        expect(studiesForAdmin.length).toBe(1);
+    })
+
+    test('surveyor should have one study for the new fish count study', async () => {
+        const studiesForSurveyor = await getRest(API_SERVER + '/api/studies?type=surveyor', adminToken) as any[];
+        expect(studiesForSurveyor.length).toBe(1)
+    })
+
+    test('admin should see all the surveys saved on their new study', async () => {
+        const { study_id: studyId } = SeaBassFishCountStudy;
+        const expectedNumberOfSurveys = SeaBassFishCountStudy.surveys.length
+        const studiesForAdmin = await getRest(API_SERVER + '/api/studies?type=admin', adminToken) as any[];
+        expect(studiesForAdmin[0].surveys.length).toBe(expectedNumberOfSurveys);
+
+        const surveys = await getRest(API_SERVER + `/api/studies/${studyId}/surveys`, adminToken) as any[];
+        expect(surveys.length).toBe(expectedNumberOfSurveys);
+    })
+
+    test('a surveyor should only be able to see their own surveys', async () => {
+        const { study_id: studyId } = SeaBassFishCountStudy;
+        const surveys = await getRest(API_SERVER + `/api/studies/${studyId}/surveys`, surveyorToken) as any[];
+        expect(surveys.length).toBe(1);
+    })
+
+    test('the admin should be able to delete their study making it unavailable from the api', async() => {
+        await deleteRest(API_SERVER + '/api/studies/' + SeaBassFishCountStudy.study_id, adminToken);
+        await clearLocationsFromApi(API_SERVER, SeaBassFishCountStudy.map, adminToken)
+        await expect(getRest(API_SERVER + '/api/studies/' + SeaBassFishCountStudy.study_id, adminToken)).rejects.toThrow(ResourceNotFoundError)
+    })
+
+    test('save an array of studies to the studies endpoint', async () => {
+        const saveMultipleStudies = [SeaBassFishCountStudy, MarchOnWashington]
+        await postRest(API_SERVER + '/api/studies', saveMultipleStudies, adminToken);
+        const multipleStudies = await getRest(API_SERVER + '/api/studies?type=admin', adminToken) as any[];
+        expect(multipleStudies.length).toBe(saveMultipleStudies.length)
+    })
+
+    test('once a user logout out using a token, the token should result in a 401', async () => {
+        await postRestNoBody(API_SERVER + '/auth/logout', {}, surveyorToken);
+
+        await expect(getRest(API_SERVER + '/api/studies?type=surveyor', surveyorToken)).rejects.toThrow(UnauthorizedError)
+    })
+});

@@ -3,7 +3,7 @@ import pg, { Pool } from 'pg';
 import * as uuid from 'uuid';
 import { UNIQUE_VIOLATION } from 'pg-error-constants';
 
-import { IdDoesNotExist } from './utils'
+import { IdAlreadyExists, IdDoesNotExist } from './utils'
 
 export interface User {
     userId: string;
@@ -92,6 +92,10 @@ export async function createUser(pool: pg.Pool, user: User): Promise<void> {
     try {
         await pool.query(query, values);
     } catch (error) {
+        if (error.code === UNIQUE_VIOLATION) {
+            console.error(error);
+            throw new IdAlreadyExists(userId);
+        }
         throw new Error(`User for email ${user.email} already exists`)
         console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
         throw error;

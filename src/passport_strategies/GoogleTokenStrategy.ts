@@ -1,6 +1,6 @@
 import { Strategy } from 'passport-strategy';
 import express from 'express';
-import fetch from 'node-fetch';
+import fetch from 'isomorphic-fetch';
 
 
 interface GoogleTokenStrategyOptions {

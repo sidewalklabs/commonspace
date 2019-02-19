@@ -141,11 +141,7 @@ jobs:
 
       - run: yarn install
 
-      - run: yarn global add typescript ts-node
-
-      - run: yarn add typescript ts-node
-
-      - run: ts-node src/integration_test.it.ts
+      - run: yarn it
 
 workflows:
   version: 2
