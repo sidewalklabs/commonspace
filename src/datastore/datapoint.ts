@@ -1,5 +1,22 @@
-import * as pg from 'pg';
+import { Pool } from 'pg';
 import { javascriptArrayToPostgresArray, studyIdToTablename, StudyField } from './utils';
+import { IdNotFoundError } from './location';
+
+interface DataPoint {
+    surveyId: string;
+    dataPointId: string;
+    creationDate?: string;
+    lastUpdated?: string;
+    gender?: string;
+    age?: string;
+    mode?: string;
+    posture?: string;
+    activities?: string;
+    groups?: string;
+    object?: string;
+    location?: string;
+    notes?: string;
+}
 
 const validDataPointProperties = new Set([
     'survey_id',
@@ -30,7 +47,7 @@ function wrapInArray<T>(x: T | T[]) {
     }
 }
 
-export async function getTablenameForSurveyId(pool: pg.Pool, surveyId: string) {
+export async function getTablenameForSurveyId(pool: Pool, surveyId: string) {
     const query = `SELECT tablename
                    FROM  data_collection.survey_to_tablename
                    WHERE survey_id = $1`;
@@ -135,7 +152,7 @@ function transformToPostgresInsert(surveyId: string, dataPoint) {
     return { query, values };
 }
 
-export async function addDataPointToSurveyNoStudyId(pool: pg.Pool, surveyId: string, dataPoint: any) {
+export async function addDataPointToSurveyNoStudyId(pool: Pool, surveyId: string, dataPoint: any) {
     const tablename = await getTablenameForSurveyId(pool, surveyId);
     const dataPointWithSurveyId = { ...dataPoint, survey_id: surveyId };
     let { query, values } = transformToPostgresInsert(surveyId, dataPointWithSurveyId)
@@ -149,12 +166,12 @@ export async function addDataPointToSurveyNoStudyId(pool: pg.Pool, surveyId: str
     }
 }
 
-export async function addDataPointToSurveyWithStudyId(pool: pg.Pool, studyId: string, surveyId: string, dataPoint: any) {
+export async function addDataPointToSurveyWithStudyId(pool: Pool, studyId: string, surveyId: string, dataPoint: any) {
     const tablename = await studyIdToTablename(studyId);
     const dataPointWithSurveyId = { ...dataPoint, survey_id: surveyId };
     let { query, values } = transformToPostgresInsert(surveyId, dataPointWithSurveyId);
     query = `INSERT INTO ${tablename}
-                   ${query}`;
+             ${query}`;
     try {
         return pool.query(query, values);
     } catch (error) {
@@ -163,12 +180,48 @@ export async function addDataPointToSurveyWithStudyId(pool: pg.Pool, studyId: st
     }
 }
 
-export async function retrieveDataPointsForSurvey(pool, surveyId) {
+export async function getDataPointsForStudy(pool: Pool, userId: string, studyId: string): Promise< DataPoint[] > {
+    const fieldsQuery = `SELECT study_id, fields, tablename
+                         FROM data_collection.study
+                         WHERE study_id = $1 and user_id =$2`;
+    const fieldsValues = [studyId, userId];
+    try {
+        const { rows, rowCount } = await pool.query(fieldsQuery, fieldsValues);
+        if (rowCount !== 1) {
+            throw new IdNotFoundError(studyId);
+        }
+        const { fields, tablename } = rows[0];
+        const fieldsAsColumns = ['data_point_id', 'creation_date', 'last_updated'].concat(fields).join(', ');
+        const dataPointsQuery = `SELECT ${fieldsAsColumns}
+                                 FROM ${tablename}`;
+        const { rows: datapoints } = await pool.query(dataPointsQuery);
+        rows.map(r => {
+            const {
+                survey_id: surveyId,
+                data_point_id: dataPointId,
+                creation_date: creationDate,
+                last_updated: lastUpdated
+            } = r
+            return {
+                ...r,
+                surveyId,
+                dataPointId,
+                creationDate,
+                lastUpdated
+            }
+        });
+        return datapoints as DataPoint[];
+    } catch (error) {
+        console.error(`[fieldsQuery ${fieldsQuery}][fieldsValues ${JSON.stringify(fieldsValues)}] ${error}`)
+    }
+}
+
+export async function getDataPointsForSurvey(pool, surveyId) {
     const tablename = await getTablenameForSurveyId(pool, surveyId);
 
     const query = `SELECT data_point_id, gender, age, mode, posture, activities, groups, object, creation_date, last_updated, ST_AsGeoJSON(location)::json as loc, notes
-               FROM ${tablename} 
-               WHERE survey_id = $1`;
+                   FROM ${tablename}
+                   WHERE survey_id = $1`;
     const values = [surveyId];
 
     try {
@@ -187,7 +240,7 @@ export async function retrieveDataPointsForSurvey(pool, surveyId) {
     }
 }
 
-export async function deleteDataPoint(pool: pg.Pool, surveyId: string, dataPointId: any) {
+export async function deleteDataPoint(pool: Pool, surveyId: string, dataPointId: any) {
     const tablename = await getTablenameForSurveyId(pool, surveyId);
     const query = `DELETE FROM ${tablename}
                    WHERE data_point_id = $1`;

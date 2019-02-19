@@ -189,9 +189,9 @@ const signupStrategy = new LocalStrategy({passReqToCallback: true, usernameField
         await sendSignupVerificationEmail(req.get('host'), user.email, token)
         req.user = user;
         return done(null, {user_id: userId, email})
-    } catch (err) {
-        console.error(`[body ${JSON.stringify(req.body)}][params: ${JSON.stringify(req.params)}] ${err}`);
-        return done(err, null)
+    } catch (error) {
+        console.error(`[body ${JSON.stringify(req.body)}][params: ${JSON.stringify(req.params)}] ${error}`);
+        return done(error, null)
     }
 })
 

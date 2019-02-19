@@ -1,7 +1,6 @@
 import camelcaseKeys from "camelcase-keys";
 import cookieParser from 'cookie-parser';
 import express, { Request, Response } from "express";
-import fetch from "node-fetch";
 import passport from "passport";
 import { NOT_NULL_VIOLATION, UNIQUE_VIOLATION } from "pg-error-constants";
 import uuid from "uuid";
@@ -12,7 +11,8 @@ import { return500OnError } from './utils';
 import {
   addDataPointToSurveyNoStudyId,
   deleteDataPoint,
-  retrieveDataPointsForSurvey
+    getDataPointsForSurvey,
+    getDataPointsForStudy
 } from "../datastore/datapoint";
 import { StudyField, IdAlreadyExists, IdDoesNotExist } from "../datastore/utils";
 import {
@@ -44,6 +44,8 @@ const NOMINATIM_BASE_URL =
 
 export interface DataPoint {
   data_point_id: string; // UUID
+    created_at: string;
+    last_updated: string;
   gender?: string;
   age?: string;
   mode?: string;
@@ -70,6 +72,7 @@ export interface Study {
     description?: string;
     created_at?: any;
     last_updated?: any;
+    data_points?: DataPoint[];
 }
 
 export interface Survey {
@@ -319,6 +322,20 @@ router.delete(
     }))
 );
 
+router.get(
+    '/studies/:studyId/datapoints',
+    return500OnError(return401OnUnauthorizedError(async (req: Request, res: Response) => {
+        const { user_id: userId } = req.user;
+        const { studyId } = req.params;
+        if (!userIsAdminOfStudy(DbPool, studyId, userId)) {
+            throw new UnauthorizedError();
+            return;
+        }
+        const dataPoints = await getDataPointsForStudy(DbPool, userId, studyId);
+        res.status(200).send(dataPoints);
+    }))
+)
+
 async function saveGeoJsonFeatureAsLocation(x: Feature | FeatureCollection) {
   if (x.type === "Feature" && x.geometry.type === "Polygon") {
     const { geometry, properties } = x;
@@ -394,7 +411,7 @@ router.get(
       res.statusMessage = 'not allowed to access survey';
       throw new UnauthorizedError();
     }
-    const databaseDataPoints = await retrieveDataPointsForSurvey(
+    const databaseDataPoints = await getDataPointsForSurvey(
       DbPool,
       surveyId
     );
