@@ -5,17 +5,19 @@ import uuid from 'uuid';
 
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { Map, TileLayer, FeatureGroup, Feature, GeoJSON, withLeaflet } from 'react-leaflet'
-import { EditControl } from 'react-leaflet-draw'
-import { ReactLeafletSearch } from 'react-leaflet-search'
+import { Map, TileLayer, FeatureGroup, Feature, GeoJSON, withLeaflet } from 'react-leaflet';
+import { EditControl } from 'react-leaflet-draw';
+import { ReactLeafletSearch } from 'react-leaflet-search';
 
-import applicationState, { updateFeatureName, Study } from '../stores/applicationState'
+import applicationState, { updateFeatureName, Study } from '../stores/applicationState';
 import { FeatureCollection } from 'geojson';
 import { stringHash } from '../utils';
 
 const { TILE_SERVER_URL } = process.env;
 //    'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png';
-const MAP_ATTRIBUTION = process.env.MAP_ATTRIBUTION ? process.env.MAP_ATTRIBUTION : '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors';
+const MAP_ATTRIBUTION = process.env.MAP_ATTRIBUTION
+    ? process.env.MAP_ATTRIBUTION
+    : '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors';
 
 const styles = theme => ({
     container: {
@@ -53,8 +55,7 @@ interface MapViewProps {
     study: Study;
 }
 
-function onEdited() {
-}
+function onEdited() {}
 
 function createMarkerFromLeafletLayer(layer, name: string): Feature {
     const { _latlng } = layer;
@@ -69,24 +70,24 @@ function createMarkerFromLeafletLayer(layer, name: string): Feature {
             name,
             locationId: uuid.v4()
         }
-    }
+    };
 }
 
 function createPolygonFromLeafletLayer(layer, name: string): Feature {
     const { _latlngs } = layer;
     const lngLats = _latlngs[0].map(({ lat, lng }) => [lng, lat]);
-    const coordinates = [...lngLats, lngLats[0]]
+    const coordinates = [...lngLats, lngLats[0]];
     return {
         type: 'Feature',
         geometry: {
             type: 'Polygon',
-            coordinates: [coordinates],
+            coordinates: [coordinates]
         },
         properties: {
             name,
             locationId: uuid.v4()
         }
-    }
+    };
 }
 
 function createLineFromLeafletLayer(layer, name: string): Feature {
@@ -102,8 +103,7 @@ function createLineFromLeafletLayer(layer, name: string): Feature {
             name,
             locationId: uuid.v4()
         }
-
-    }
+    };
 }
 
 const WrappedLeaftletSearch = withLeaflet(ReactLeafletSearch);
@@ -112,26 +112,32 @@ function onCreated(e) {
     const { layer, layerType } = e;
     const features = applicationState.currentStudy.map.features;
     if (layerType === 'marker') {
-        const newMarker = createMarkerFromLeafletLayer(layer, 'marker_' + features.length.toString());
+        const newMarker = createMarkerFromLeafletLayer(
+            layer,
+            'marker_' + features.length.toString()
+        );
         applicationState.currentStudy.map.features = [...features, newMarker];
     }
 
     if (layerType === 'polygon') {
-        const newPolygon = createPolygonFromLeafletLayer(layer, 'zone_' + features.length.toString());
+        const newPolygon = createPolygonFromLeafletLayer(
+            layer,
+            'zone_' + features.length.toString()
+        );
         applicationState.currentStudy.map.features = [...features, newPolygon];
     }
 
     if (layerType === 'polyline') {
-        const newLine = createLineFromLeafletLayer(layer, 'line_' + features.length.toString())
+        const newLine = createLineFromLeafletLayer(layer, 'line_' + features.length.toString());
         applicationState.currentStudy.map.features = [...features, newLine];
     }
 }
-function onDeleted() { }
-function onMounted() { }
-function onEditStart() { }
-function onEditStop() { }
-function onDeleteStart() { }
-function onDeleteStop() { }
+function onDeleted() {}
+function onMounted() {}
+function onEditStart() {}
+function onEditStop() {}
+function onDeleteStart() {}
+function onDeleteStop() {}
 
 const MapView = observer((props: MapViewProps & WithStyles) => {
     const { study, allowedShapes, classes, lat, lng, featureCollection, editable } = props;
@@ -154,7 +160,7 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
             zIndexOffset: 1000
         },
         simpleShape: false
-    }
+    };
 
     if (allowedShapes === 'polygon') {
         // @ts-ignore
@@ -163,7 +169,7 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
         // @ts-ignore
         ControlMenuOptions.polygon = false;
     } else {
-        console.warn(`unrecognized map shape: ${allowedShapes}`)
+        console.warn(`unrecognized map shape: ${allowedShapes}`);
     }
 
     const geojson = toJS(featureCollection);
@@ -181,25 +187,28 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
                 inputBox.value = feature.properties.name;
                 inputBox.onchange = f => {
                     // @ts-ignore this event type is wrong
-                    updateFeatureName(study, locationId, f.target.value)
-                }
+                    updateFeatureName(study, locationId, f.target.value);
+                };
             });
         }
-    }
+    };
 
     return (
         <Paper className={classes.root}>
             <Map className={classes.map} center={[lat, lng]} zoom={17} zoomControl={false}>
-                <TileLayer
-                    attribution={MAP_ATTRIBUTION}
-                    url={TILE_SERVER_URL}
-                />
+                <TileLayer attribution={MAP_ATTRIBUTION} url={TILE_SERVER_URL} />
 
-                <GeoJSON data={geojson} key={geojsonHash} onEachFeature={(feature, layer) => layer.on({ click: () => onEachFeature(feature, layer) })} />
+                <GeoJSON
+                    data={geojson}
+                    key={geojsonHash}
+                    onEachFeature={(feature, layer) =>
+                        layer.on({ click: () => onEachFeature(feature, layer) })
+                    }
+                />
                 <WrappedLeaftletSearch position="topleft" />
                 <FeatureGroup>
                     <EditControl
-                        position='topright'
+                        position="topright"
                         onEdited={onEdited}
                         onCreated={onCreated}
                         onDeleted={onDeleted}
@@ -212,7 +221,7 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
                     />
                 </FeatureGroup>
             </Map>
-        </Paper >
+        </Paper>
     );
 });
 

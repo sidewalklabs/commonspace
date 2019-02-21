@@ -14,27 +14,27 @@ import uiState, { SnackBar } from '../stores/ui';
 
 const styles = theme => ({
     success: {
-        backgroundColor: green[600],
+        backgroundColor: green[600]
     },
     error: {
-        backgroundColor: theme.palette.error.dark,
+        backgroundColor: theme.palette.error.dark
     },
     info: {
-        backgroundColor: theme.palette.primary.dark,
+        backgroundColor: theme.palette.primary.dark
     },
     icon: {
-        fontSize: 20,
+        fontSize: 20
     },
     iconVariant: {
         opacity: 0.9,
-        marginRight: theme.spacing.unit,
+        marginRight: theme.spacing.unit
     },
     message: {
         flex: 1,
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'center'
     }
-})
+});
 
 interface ErrorDisplayProps {
     snackBar: SnackBar;
@@ -43,7 +43,7 @@ interface ErrorDisplayProps {
 const variantIcon = {
     success: CheckCircleIcon,
     error: ErrorIcon,
-    info: InfoIcon,
+    info: InfoIcon
 };
 
 function MySnackbarContent(props) {
@@ -65,14 +65,9 @@ function MySnackbarContent(props) {
                 </>
             }
             action={[
-                <IconButton
-                    key="close"
-                    aria-label="Close"
-                    color="inherit"
-                    onClick={onClose}
-                >
+                <IconButton key="close" aria-label="Close" color="inherit" onClick={onClose}>
                     <CloseIcon className={classes.icon} />
-                </IconButton>,
+                </IconButton>
             ]}
             {...other}
         />
@@ -88,20 +83,21 @@ const ErrorDisplay = observer((props: ErrorDisplayProps & WithStyles) => {
     const onClose = () => {
         uiState.snackBar.snackBarText = '';
         uiState.snackBar.snackBarType = null;
-    }
+    };
 
     return (
         <Fragment>
             <Snackbar
                 anchorOrigin={{
                     vertical: 'bottom',
-                    horizontal: 'left',
+                    horizontal: 'left'
                 }}
                 open={snackBarType === 'success'}
                 autoHideDuration={6000}
-                onClose={onClose}>
+                onClose={onClose}
+            >
                 <MySnackbarContentWrapper
-                    variant='success'
+                    variant="success"
                     message={snackBarText}
                     onClose={onClose}
                 />
@@ -109,19 +105,20 @@ const ErrorDisplay = observer((props: ErrorDisplayProps & WithStyles) => {
             <Snackbar
                 anchorOrigin={{
                     vertical: 'bottom',
-                    horizontal: 'left',
+                    horizontal: 'left'
                 }}
                 open={snackBarType === 'error'}
                 autoHideDuration={6000}
-                onClose={onClose}>
+                onClose={onClose}
+            >
                 <MySnackbarContentWrapper
-                    variant='error'
+                    variant="error"
                     message={snackBarText}
                     onClose={onClose}
                 />
             </Snackbar>
         </Fragment>
-    )
+    );
 });
 
 // @ts-ignore

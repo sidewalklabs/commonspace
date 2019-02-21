@@ -1,16 +1,15 @@
 import React from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button'
-import Paper from '@material-ui/core/Paper'
-import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
+import Button from '@material-ui/core/Button';
+import Paper from '@material-ui/core/Paper';
+import TextField from '@material-ui/core/TextField';
+import Typography from '@material-ui/core/Typography';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { navigate } from '../stores/router';
 import { setSnackBar } from '../stores/ui';
 import { checkPasswordInput, SignupFormValidationError } from '../stores/signup';
-
 
 interface ResetPasswordProps {
     token: string;
@@ -18,17 +17,17 @@ interface ResetPasswordProps {
 
 const fetchParams: RequestInit = {
     //mode: "sam", // no-cors, cors, *same-origin
-    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-    credentials: "same-origin", // include, same-origin, *omit
+    cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+    credentials: 'same-origin', // include, same-origin, *omit
     redirect: 'follow',
     referrer: 'no-referrer'
-}
+};
 
 const state = observable({
     password: '',
     verifyPassword: '',
     matchingPasswordErrorMessage: false
-})
+});
 
 const styles = theme => ({
     root: {
@@ -40,7 +39,7 @@ const styles = theme => ({
             marginLeft: 'auto',
             marginRight: 'auto',
             marginTop: theme.spacing.unit * 3,
-            height: 'auto',
+            height: 'auto'
         },
         display: 'flex',
         flex: '0 1 auto',
@@ -48,26 +47,27 @@ const styles = theme => ({
         flexDirection: 'column',
         alignContent: 'center',
         justifyContent: 'center',
-        padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit * 3}px`
+        padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit *
+            3}px`
     },
     textField: {
         margin: theme.spacing.unit,
         width: '100%',
-        maxWidth: '400px',
+        maxWidth: '400px'
     },
     button: {
         margin: theme.spacing.unit * 3,
         width: '100%',
         maxWidth: '400px',
-        boxShadow: "none",
+        boxShadow: 'none'
     },
     buttonLabel: {
-        textTransform: 'none',
+        textTransform: 'none'
     },
     avatar: {
-        marginBottom: theme.spacing.unit * 2,
+        marginBottom: theme.spacing.unit * 2
     }
-})
+});
 
 async function ResetPasswordRequest(token: string) {
     const { password, verifyPassword } = state;
@@ -84,12 +84,12 @@ async function ResetPasswordRequest(token: string) {
         }
         return;
     }
-    const body = { password }
+    const body = { password };
     const response = await fetch(`/auth/reset_password?token=${token}`, {
         ...fetchParams,
-        method: "POST",
+        method: 'POST',
         headers: {
-            "Content-Type": "application/json; charset=utf-8"
+            'Content-Type': 'application/json; charset=utf-8'
         },
         body: JSON.stringify(body)
     });
@@ -106,30 +106,42 @@ const ResetPassword = observer((props: ResetPasswordProps & WithStyles) => {
     const { classes, token } = props;
     return (
         <Paper className={classes.root}>
-            <Avatar alt="Commons Icon" src="/assets/images/CircleIcon.png" className={classes.avatar} />
-            <Typography variant="title" align='center' gutterBottom>Reset Password</Typography>
+            <Avatar
+                alt="Commons Icon"
+                src="/assets/images/CircleIcon.png"
+                className={classes.avatar}
+            />
+            <Typography variant="title" align="center" gutterBottom>
+                Reset Password
+            </Typography>
             <TextField
                 id="password"
                 label="New Password"
                 type="password"
-                onChange={e => state.password = e.target.value}
-                className={classes.textField} />
+                onChange={e => (state.password = e.target.value)}
+                className={classes.textField}
+            />
             <TextField
                 id="verify-password"
                 label="Verify Password"
                 type="password"
-                onChange={e => state.verifyPassword = e.target.value}
+                onChange={e => (state.verifyPassword = e.target.value)}
                 error={state.matchingPasswordErrorMessage ? true : false}
-                className={classes.textField} />
-            <Button classes={{
-                root: classes.button,
-                label: classes.buttonLabel
-            }} variant="extendedFab" onClick={async () => await ResetPasswordRequest(token)}>
+                className={classes.textField}
+            />
+            <Button
+                classes={{
+                    root: classes.button,
+                    label: classes.buttonLabel
+                }}
+                variant="extendedFab"
+                onClick={async () => await ResetPasswordRequest(token)}
+            >
                 Reset
             </Button>
         </Paper>
-    )
-})
+    );
+});
 
 // @ts-ignore
 export default withStyles(styles)(ResetPassword);

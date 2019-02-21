@@ -25,7 +25,7 @@ import { Feature } from 'geojson';
 const styles = theme => ({
     formControl: {
         margin: theme.spacing.unit,
-        minWidth: 80,
+        minWidth: 80
     },
     root: {
         width: '100%',
@@ -95,23 +95,25 @@ export interface DateTableCellProps {
     label?: string;
 }
 
-const DateTableCell = withStyles(styles)(observer((props: DateTableCellProps & WithStyles) => {
-    const { displayDate, onUpdate, classes, label } = props;
-    return (
-        <TableCell numeric className={classes.containter}>
-            <TextField
-                label={label}
-                type="date"
-                defaultValue={displayDate}
-                onChange={e => onUpdate(e)}
-                className={classes.textField}
-                InputLabelProps={{
-                    shrink: true
-                }}
-            />
-        </TableCell>
-    )
-}));
+const DateTableCell = withStyles(styles)(
+    observer((props: DateTableCellProps & WithStyles) => {
+        const { displayDate, onUpdate, classes, label } = props;
+        return (
+            <TableCell numeric className={classes.containter}>
+                <TextField
+                    label={label}
+                    type="date"
+                    defaultValue={displayDate}
+                    onChange={e => onUpdate(e)}
+                    className={classes.textField}
+                    InputLabelProps={{
+                        shrink: true
+                    }}
+                />
+            </TableCell>
+        );
+    })
+);
 
 interface SurveyRowProps {
     survey: {
@@ -125,105 +127,118 @@ interface SurveyRowProps {
     features: Feature[];
 }
 
-const SurveyObjectToTableRow = observer(({ classes, survey, features }: WithStyles & SurveyRowProps) => {
-    const { surveyId } = survey;
-    const startDate = moment(survey.startDate);
-    const startDateDisplayDate = startDate.format('YYYY-MM-DD');
-    const startTime = startDate.format('kk:mm');
-    const endDate = moment(survey.endDate);
-    const endDateDisplayDate = endDate.format('YYYY-MM-DD');
-    const endTime = endDate.format('kk:mm');
-    let locationName;
-    if (features.length > 0 && survey.locationId) {
-        const properties = toJS(features).map(({ properties }) => properties);
-        locationName = groupArrayOfObjectsBy(properties, 'locationId')[survey.locationId].name;
-    } else if (features.length > 0) {
-        locationName = features[0].properties.name;
-    } else {
-        locationName = '';
-    }
-    return (
-        <TableRow key={surveyId}>
-            <TableCell component="th" scope="row">
-                <TextField
-                    select
-                    className={classes.textField}
-                    value={survey.surveyorEmail ? survey.surveyorEmail : ''}
-                    onChange={e => applicationState.currentStudy.surveys[surveyId].surveyorEmail = e.target.value}
-                    margin="normal"
-                >
-                    {applicationState.currentStudy.surveyors.map(email => (
-                        <MenuItem key={email} value={email}>
-                            {email}
-                        </MenuItem>
-                    ))}
-                </TextField>
-            </TableCell>
-            <TableCell numeric>
-                <TextField
-                    label="Title"
-                    className={classes.textField}
-                    value={survey.title}
-                    onChange={e => applicationState.currentStudy.surveys[surveyId].title = e.target.value}
-                    margin="normal"
-                />
-            </TableCell>
-            <DateTableCell displayDate={startDateDisplayDate} onUpdate={e => {
-                changeStartDate(survey, e.target.value);
-                changeEndDate(survey, e.target.value);
-            }} />
-            <TableCell>
-                <TextField
-                    type="time"
-                    defaultValue={startTime}
-                    className={classes.textField}
-                    onChange={e => changeStartTime(survey, e.target.value)}
-                    InputLabelProps={{
-                        shrink: true
-                    }}
-                    inputProps={{
-                        step: 300 // 5 min
-                    }}
-                />
-            </TableCell>
-            <TableCell>
-                <TextField
-                    type="time"
-                    defaultValue={endTime}
-                    className={classes.textField}
-                    onChange={e => changeEndTime(survey, e.target.value)}
-                    InputLabelProps={{
-                        shrink: true
-                    }}
-                    inputProps={{
-                        step: 300 // 5 min
-                    }}
-                />
-            </TableCell>
-            <TableCell component="th" scope="row">
-                <TextField
-                    className={classes.textField}
-                    select
-                    value={locationName}
-                    onChange={e => applicationState.currentStudy.surveys[surveyId].locationId = e.target.value}
-                    margin="normal"
-                >
-                    {features.map(({ properties }) => {
-                        return (
-                            <MenuItem key={properties.locationId} value={properties.locationId}>
-                                {properties.name}
+const SurveyObjectToTableRow = observer(
+    ({ classes, survey, features }: WithStyles & SurveyRowProps) => {
+        const { surveyId } = survey;
+        const startDate = moment(survey.startDate);
+        const startDateDisplayDate = startDate.format('YYYY-MM-DD');
+        const startTime = startDate.format('kk:mm');
+        const endDate = moment(survey.endDate);
+        const endDateDisplayDate = endDate.format('YYYY-MM-DD');
+        const endTime = endDate.format('kk:mm');
+        let locationName;
+        if (features.length > 0 && survey.locationId) {
+            const properties = toJS(features).map(({ properties }) => properties);
+            locationName = groupArrayOfObjectsBy(properties, 'locationId')[survey.locationId].name;
+        } else if (features.length > 0) {
+            locationName = features[0].properties.name;
+        } else {
+            locationName = '';
+        }
+        return (
+            <TableRow key={surveyId}>
+                <TableCell component="th" scope="row">
+                    <TextField
+                        select
+                        className={classes.textField}
+                        value={survey.surveyorEmail ? survey.surveyorEmail : ''}
+                        onChange={e =>
+                            (applicationState.currentStudy.surveys[surveyId].surveyorEmail =
+                                e.target.value)
+                        }
+                        margin="normal"
+                    >
+                        {applicationState.currentStudy.surveyors.map(email => (
+                            <MenuItem key={email} value={email}>
+                                {email}
                             </MenuItem>
-                        )
-                    })}
-                </TextField>
-            </TableCell>
-        </TableRow>
-    );
-});
+                        ))}
+                    </TextField>
+                </TableCell>
+                <TableCell numeric>
+                    <TextField
+                        label="Title"
+                        className={classes.textField}
+                        value={survey.title}
+                        onChange={e =>
+                            (applicationState.currentStudy.surveys[surveyId].title = e.target.value)
+                        }
+                        margin="normal"
+                    />
+                </TableCell>
+                <DateTableCell
+                    displayDate={startDateDisplayDate}
+                    onUpdate={e => {
+                        changeStartDate(survey, e.target.value);
+                        changeEndDate(survey, e.target.value);
+                    }}
+                />
+                <TableCell>
+                    <TextField
+                        type="time"
+                        defaultValue={startTime}
+                        className={classes.textField}
+                        onChange={e => changeStartTime(survey, e.target.value)}
+                        InputLabelProps={{
+                            shrink: true
+                        }}
+                        inputProps={{
+                            step: 300 // 5 min
+                        }}
+                    />
+                </TableCell>
+                <TableCell>
+                    <TextField
+                        type="time"
+                        defaultValue={endTime}
+                        className={classes.textField}
+                        onChange={e => changeEndTime(survey, e.target.value)}
+                        InputLabelProps={{
+                            shrink: true
+                        }}
+                        inputProps={{
+                            step: 300 // 5 min
+                        }}
+                    />
+                </TableCell>
+                <TableCell component="th" scope="row">
+                    <TextField
+                        className={classes.textField}
+                        select
+                        value={locationName}
+                        onChange={e =>
+                            (applicationState.currentStudy.surveys[surveyId].locationId =
+                                e.target.value)
+                        }
+                        margin="normal"
+                    >
+                        {features.map(({ properties }) => {
+                            return (
+                                <MenuItem key={properties.locationId} value={properties.locationId}>
+                                    {properties.name}
+                                </MenuItem>
+                            );
+                        })}
+                    </TextField>
+                </TableCell>
+            </TableRow>
+        );
+    }
+);
 
 const SurveyRow = withStyles(styles)(SurveyObjectToTableRow);
 
-const SurveyView = observer((props: { surveys: any[], features: Feature[] } & WithStyles) => {
+const SurveyView = observer((props: { surveys: any[]; features: Feature[] } & WithStyles) => {
     const { classes, surveys, features } = props;
     const tableRows = Object.values(toJS(surveys)).map(s => (
         <SurveyRow survey={s} features={features} />
@@ -239,7 +254,9 @@ const SurveyView = observer((props: { surveys: any[], features: Feature[] } & Wi
             >
                 Edit Surveys
             </Typography>
-            <Button color="primary" variant="contained" onClick={addNewSurveyToCurrentStudy}>New Survey</Button>
+            <Button color="primary" variant="contained" onClick={addNewSurveyToCurrentStudy}>
+                New Survey
+            </Button>
             <Table className={classes.table}>
                 <TableHead>
                     <TableRow>
@@ -253,7 +270,7 @@ const SurveyView = observer((props: { surveys: any[], features: Feature[] } & Wi
                 </TableHead>
                 <TableBody>{tableRows}</TableBody>
             </Table>
-        </Paper >
+        </Paper>
     );
 });
 

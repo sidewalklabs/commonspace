@@ -2,7 +2,9 @@ import * as pg from 'pg';
 import dotenv from 'dotenv';
 import path from 'path';
 //dotenv.config({ path: path.join(process.env.DOTENV_CONFIG_DIR, '.env')});
-dotenv.config({ path: process.env.DOTENV_CONFIG_DIR ? path.join(process.env.DOTENV_CONFIG_DIR, '.env'): ''});
+dotenv.config({
+    path: process.env.DOTENV_CONFIG_DIR ? path.join(process.env.DOTENV_CONFIG_DIR, '.env') : ''
+});
 
 const config = {
     user: process.env.DB_USER,
@@ -24,14 +26,14 @@ pool.connect(function(err, client, done) {
     done();
 });
 
-pool.on("error", function(err, client) {
+pool.on('error', function(err, client) {
     // if an error is encountered by a client while it sits idle in the pool
     // the pool itself will emit an error event with both the error and
     // the client which emitted the original error
     // this is a rare occurrence but can happen if there is a network partition
     // between your application and the database, the database restarts, etc.
     // and so you might want to handle it and at least log it out
-    console.error("idle client error", err.message, err.stack);
+    console.error('idle client error', err.message, err.stack);
 });
 
 export default pool;

@@ -16,7 +16,11 @@ import SurveyView from './SurveyView';
 import SurveyorsView from './SurveyorsView';
 import WrapInModal from './WrapInModal';
 import uiState from '../stores/ui';
-import applicationState, { getMapCenterForStudy, ApplicationState, studyEmptySkeleton } from '../stores/applicationState';
+import applicationState, {
+    getMapCenterForStudy,
+    ApplicationState,
+    studyEmptySkeleton
+} from '../stores/applicationState';
 import { observable } from 'mobx';
 
 interface MainProps {
@@ -69,61 +73,73 @@ interface MainState {
 
 const mainState: MainState = observable({
     anchorElement: null
-})
+});
 
-const Main = observer(
-    (props: MainProps & WithStyles) => {
-        const { applicationState, classes } = props;
-        const { studies, token } = applicationState;
-        const { snackBar, modalStack } = uiState;
-        const currentStudy = applicationState.currentStudy ? applicationState.currentStudy : studyEmptySkeleton();
-        let { fields, studyId, surveyors, map, type } = currentStudy;
-        const allowedMapShapes = type === 'stationary' ? 'polygon' : 'line';
-        const { latitude, longitude } = getMapCenterForStudy(studyId);
-        const visibleModal = modalStack.slice(-1)[0]
+const Main = observer((props: MainProps & WithStyles) => {
+    const { applicationState, classes } = props;
+    const { studies } = applicationState;
+    const { snackBar, modalStack } = uiState;
+    const currentStudy = applicationState.currentStudy
+        ? applicationState.currentStudy
+        : studyEmptySkeleton();
+    let { fields, studyId, surveyors, map, type } = currentStudy;
+    const allowedMapShapes = type === 'stationary' ? 'polygon' : 'line';
+    const { latitude, longitude } = getMapCenterForStudy(studyId);
+    const visibleModal = modalStack.slice(-1)[0];
 
-        return (
-            <div className={classes.root}>
-                <CssBaseline />
-                <AppBar />
-                <div className={classes.mainBody}>
-                    <div className={classes.row}>
-                        <Typography
-                            component="h1"
-                            variant="title"
-                            color="inherit"
-                            noWrap
-                            className={classes.title}
-                        >
-                            All Studies
-                        </Typography>
-                        <Button color="primary" variant="contained" onClick={prepareNewStudy}>
-                            New study
-                        </Button>
-                    </div>
-                    <div className={classes.studiesList}>
-                        <StudiesList studies={studies} />
-                    </div>
-                    <WrapInModal modalName={'study'} visibleModal={visibleModal}>
-                        <StudyView study={currentStudy} studyIsNew={uiState.currentStudyIsNew} />
-                    </WrapInModal>
-                    <WrapInModal modalName={'surveyors'} visibleModal={visibleModal}>
-                        <SurveyorsView studyId={currentStudy.studyId} surveyors={currentStudy.surveyors} />
-                    </WrapInModal>
-                    <WrapInModal modalName={'surveys'} visibleModal={visibleModal}>
-                        <SurveyView surveys={Object.values(currentStudy.surveys)} features={currentStudy.map.features} />
-                    </WrapInModal>
-                    <WrapInModal modalName={'studyFields'} visibleModal={visibleModal}>
-                        <FieldsList studyType={type} fields={fields} />
-                    </WrapInModal>
-                    <WrapInModal modalName={'map'} visibleModal={visibleModal}>
-                        <MapView study={currentStudy} allowedShapes={allowedMapShapes} lat={latitude} lng={longitude} featureCollection={map} />
-                    </WrapInModal>
+    return (
+        <div className={classes.root}>
+            <CssBaseline />
+            <AppBar />
+            <div className={classes.mainBody}>
+                <div className={classes.row}>
+                    <Typography
+                        component="h1"
+                        variant="title"
+                        color="inherit"
+                        noWrap
+                        className={classes.title}
+                    >
+                        All Studies
+                    </Typography>
+                    <Button color="primary" variant="contained" onClick={prepareNewStudy}>
+                        New study
+                    </Button>
                 </div>
-            </div >
-        )
-    }
-);
+                <div className={classes.studiesList}>
+                    <StudiesList studies={studies} />
+                </div>
+                <WrapInModal modalName={'study'} visibleModal={visibleModal}>
+                    <StudyView study={currentStudy} studyIsNew={uiState.currentStudyIsNew} />
+                </WrapInModal>
+                <WrapInModal modalName={'surveyors'} visibleModal={visibleModal}>
+                    <SurveyorsView
+                        studyId={currentStudy.studyId}
+                        surveyors={currentStudy.surveyors}
+                    />
+                </WrapInModal>
+                <WrapInModal modalName={'surveys'} visibleModal={visibleModal}>
+                    <SurveyView
+                        surveys={Object.values(currentStudy.surveys)}
+                        features={currentStudy.map.features}
+                    />
+                </WrapInModal>
+                <WrapInModal modalName={'studyFields'} visibleModal={visibleModal}>
+                    <FieldsList studyType={type} fields={fields} />
+                </WrapInModal>
+                <WrapInModal modalName={'map'} visibleModal={visibleModal}>
+                    <MapView
+                        study={currentStudy}
+                        allowedShapes={allowedMapShapes}
+                        lat={latitude}
+                        lng={longitude}
+                        featureCollection={map}
+                    />
+                </WrapInModal>
+            </div>
+        </div>
+    );
+});
 
 // @ts-ignore
 export default withStyles(styles)(Main);

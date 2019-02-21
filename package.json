@@ -11,6 +11,8 @@
     "lint": "tsc --noEmit",
     "it": "jest  -c jest.config.integration.js --runInBand --detectOpenHandles",
     "it-old": "jest -c jest.config.integration.js --runInBand",
+    "pretty": "yarn prettier --config prettier.config.json --write \"src/**/*.tsx\" \"src/**/*.ts\"",
+    "prettier-check": "yarn prettier  --check --config prettier.config.json \"src/**/*.tsx\" \"src/**/*.ts\"",
     "test": "jest -c jest.config.test.js",
     "watch": "yarn build --env.TILE_SERVER_URL=http://{s}.tile.osm.org/{z}/{x}/{y}.png --watch --mode development"
   },
@@ -32,6 +34,7 @@
     "copy-webpack-plugin": "^4.5.3",
     "html-webpack-plugin": "^3.2.0",
     "jest": "24",
+    "prettier": "1.16.4",
     "ts-jest": "24",
     "typescript": "^3.0.1",
     "webpack": "^4.16.4",

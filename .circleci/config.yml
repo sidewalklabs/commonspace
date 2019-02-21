@@ -14,6 +14,25 @@ jobs:
              packer validate deployment/commons_nginx.json
              packer validate deployment/commons_server.json
 
+  lint:
+    docker:
+      - image: node:10.15
+
+    steps:
+      - checkout
+
+      - run:
+          name: install
+          command: yarn
+
+      - run:
+          name: lint
+          command: yarn lint
+
+      - run:
+          name: prettier
+          command: yarn prettier-check
+
   build-admin-server-image:
     docker:
       - image: californianseabass/gcloud-packer-docker:v0.0.1
@@ -148,26 +167,24 @@ workflows:
   build-and-deploy:
     jobs:
       - validate
+      - lint
       - build-admin-server-image:
           requires:
             - validate
+            - lint
       - build-nginx-image:
           requires:
             - validate
+            - lint
       - patch-k8s:
           requires:
             - validate
+            - lint
       - deploy-staging:
           requires:
             - build-admin-server-image
             - build-nginx-image
             - patch-k8s
-          filters:
-            branches:
-              only: master
       - run-integration-test:
           requires:
              - deploy-staging
-          filters:
-            branches:
-              only: master
