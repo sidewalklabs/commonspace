@@ -5,8 +5,15 @@ interface AvailableLocation {
     name: string;
 }
 
-export type AvailableModals = 'studyFields' | 'study' | 'surveyors' | 'surveys' | 'error' | 'map' | null
-type AvailableSnackbarType = 'success' | 'error' | null
+export type AvailableModals =
+    | 'studyFields'
+    | 'study'
+    | 'surveyors'
+    | 'surveys'
+    | 'error'
+    | 'map'
+    | null;
+type AvailableSnackbarType = 'success' | 'error' | null;
 
 export interface SnackBar {
     snackBarType: AvailableSnackbarType;
@@ -16,7 +23,7 @@ export interface SnackBar {
 export interface UiState {
     availableLocations: AvailableLocation[];
     currentStudyIsNew: boolean;
-    modalStack: AvailableModals[]
+    modalStack: AvailableModals[];
     snackBar: SnackBar;
 }
 
@@ -24,7 +31,7 @@ export function setSnackBar(snackBarType: AvailableSnackbarType, snackBarText: s
     uiState.snackBar = {
         snackBarType,
         snackBarText
-    }
+    };
 }
 
 const uiState: UiState = observable({

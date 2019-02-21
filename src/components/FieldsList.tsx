@@ -12,7 +12,15 @@ import applicationState from '../stores/applicationState';
 import { StudyField } from '../datastore/utils';
 import { StudyType } from '../datastore/study';
 
-const AVAILABLE_FIELDS: StudyField[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object']
+const AVAILABLE_FIELDS: StudyField[] = [
+    'gender',
+    'age',
+    'mode',
+    'posture',
+    'activities',
+    'groups',
+    'object'
+];
 
 const styles = theme => ({
     root: {
@@ -21,7 +29,7 @@ const styles = theme => ({
         marginTop: theme.spacing.unit * 3,
         overflow: 'auto'
     }
-})
+});
 
 interface FieldsListProps {
     fields: StudyField[];
@@ -29,53 +37,54 @@ interface FieldsListProps {
 }
 
 // @ts-ignore
-const FieldsList = withStyles(styles)(observer((props: FieldsListProps & WithStyles) => {
-    const { classes, fields, studyType } = props;
-    const { currentStudy } = applicationState;
+const FieldsList = withStyles(styles)(
+    observer((props: FieldsListProps & WithStyles) => {
+        const { classes, fields, studyType } = props;
+        const { currentStudy } = applicationState;
 
-    const chips = AVAILABLE_FIELDS.map(possibleField => {
-        // we don't allow our user to chooose mode for stationary studies
-        if (studyType === 'stationary' && possibleField === 'mode') {
-            return null;
-        }
-        const index = fields.indexOf(possibleField);
-        if (index === -1) {
-            // for ux reasons, it's best to present the buttons in a consistent order
-            const newFields = [...currentStudy.fields, possibleField];
-            newFields.sort((a, b) => AVAILABLE_FIELDS.indexOf(a) - AVAILABLE_FIELDS.indexOf(b));
-            return (< Chip
-                key={possibleField}
-                label={possibleField}
-                onClick={() => {
-                    currentStudy.fields = newFields;
-                }}
-                className={classes.chip}
-            />)
-        } else {
-            return (< Chip
-                label={possibleField}
-                key={possibleField}
-                onDelete={() => {
-                    currentStudy.fields.splice(index, 1)
-                    currentStudy.fields = [...currentStudy.fields];
-                }}
-                className={classes.chip}
-            />)
-        }
-    });
-    return (
-        <Paper className={classes.root}>
-            <Typography
-                component="h2"
-                variant="title"
-                color="inherit"
-                noWrap
-            >
-                Choose Fields
-            </Typography>
-            {chips}
-        </Paper>
-    )
-}));
+        const chips = AVAILABLE_FIELDS.map(possibleField => {
+            // we don't allow our user to chooose mode for stationary studies
+            if (studyType === 'stationary' && possibleField === 'mode') {
+                return null;
+            }
+            const index = fields.indexOf(possibleField);
+            if (index === -1) {
+                // for ux reasons, it's best to present the buttons in a consistent order
+                const newFields = [...currentStudy.fields, possibleField];
+                newFields.sort((a, b) => AVAILABLE_FIELDS.indexOf(a) - AVAILABLE_FIELDS.indexOf(b));
+                return (
+                    <Chip
+                        key={possibleField}
+                        label={possibleField}
+                        onClick={() => {
+                            currentStudy.fields = newFields;
+                        }}
+                        className={classes.chip}
+                    />
+                );
+            } else {
+                return (
+                    <Chip
+                        label={possibleField}
+                        key={possibleField}
+                        onDelete={() => {
+                            currentStudy.fields.splice(index, 1);
+                            currentStudy.fields = [...currentStudy.fields];
+                        }}
+                        className={classes.chip}
+                    />
+                );
+            }
+        });
+        return (
+            <Paper className={classes.root}>
+                <Typography component="h2" variant="title" color="inherit" noWrap>
+                    Choose Fields
+                </Typography>
+                {chips}
+            </Paper>
+        );
+    })
+);
 
 export default FieldsList;

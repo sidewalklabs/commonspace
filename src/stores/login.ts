@@ -1,28 +1,28 @@
 import { observable } from 'mobx';
 
-import authState from './auth'
-import {navigate} from './router';
+import authState from './auth';
+import { navigate } from './router';
 import uiState, { setSnackBar } from './ui';
 
 export async function logInUser() {
-    const {password, email} = loginInState;
+    const { password, email } = loginInState;
     const data = {
         password,
-        email,
-    }
+        email
+    };
     const response = await fetch(`/auth/login`, {
-        method: "POST", // *GET, POST, PUT, DELETE, etc.
-        mode: "cors", // no-cors, cors, *same-origin
-        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-        credentials: "same-origin", // include, same-origin, *omit
+        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, cors, *same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, same-origin, *omit
         headers: {
-            "Content-Type": "application/json; charset=utf-8",
+            'Content-Type': 'application/json; charset=utf-8'
             // "Content-Type": "application/x-www-form-urlencoded",
         },
-        redirect: "follow", // manual, *follow, error
-        referrer: "no-referrer", // no-referrer, *client
-        body: JSON.stringify(data), // body data type must match "Content-Type" header
-    })
+        redirect: 'follow', // manual, *follow, error
+        referrer: 'no-referrer', // no-referrer, *client
+        body: JSON.stringify(data) // body data type must match "Content-Type" header
+    });
     if (response.status === 200) {
         authState.isAuth = true;
         navigate('/studies');
@@ -43,7 +43,7 @@ const loginInState: LogInState = observable({
     email: '',
     password: '',
     emailErrorMessage: '',
-    passwordErrorMessage: '',
-})
+    passwordErrorMessage: ''
+});
 
 export default loginInState;

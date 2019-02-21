@@ -3,7 +3,7 @@ import pg, { Pool } from 'pg';
 import * as uuid from 'uuid';
 import { UNIQUE_VIOLATION } from 'pg-error-constants';
 
-import { IdAlreadyExists, IdDoesNotExist } from './utils'
+import { IdAlreadyExists, IdDoesNotExist } from './utils';
 
 export interface User {
     userId: string;
@@ -34,7 +34,7 @@ export async function findUser(pool: pg.Pool, email: string) {
     try {
         const pgRes = await pool.query(query, values);
         if (pgRes.rowCount !== 1) {
-            throw new Error(`User not found for email: ${email}`)
+            throw new Error(`User not found for email: ${email}`);
         }
         const user = pgRes.rows[0];
         return user;
@@ -46,7 +46,7 @@ export async function findUser(pool: pg.Pool, email: string) {
 
 export async function findUserWithPassword(pool: pg.Pool, email: string, password: string) {
     const user = await findUser(pool, email);
-    const isMatch = await bcrypt.compare(password, user.password)
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
         throw new Error(`Invalid Password for user ${email}`);
     }
@@ -55,11 +55,11 @@ export async function findUserWithPassword(pool: pg.Pool, email: string, passwor
 
 export async function findUserById(pool: pg.Pool, userId: string) {
     const query = `SELECT * from users where user_id=$1`;
-    const values = [userId]
+    const values = [userId];
     try {
         const pgRes = await pool.query(query, values);
         if (pgRes.rowCount !== 1) {
-            throw new Error(`User not found for user_id: ${userId}`)
+            throw new Error(`User not found for user_id: ${userId}`);
         }
         const user = pgRes.rows[0];
         return user;
@@ -69,26 +69,26 @@ export async function findUserById(pool: pg.Pool, userId: string) {
     }
 }
 
-export async function changeUserPassword(pool: pg.Pool, email:string, password: string) {
-    const hash = await bcrypt.hash(password, 14)
+export async function changeUserPassword(pool: pg.Pool, email: string, password: string) {
+    const hash = await bcrypt.hash(password, 14);
     const query = `UPDATE users
                    SET password = $1
-                   WHERE email = $2`
-    const values = [hash, email]
+                   WHERE email = $2`;
+    const values = [hash, email];
     try {
-        await pool.query(query, values)
+        await pool.query(query, values);
     } catch (error) {
-        console.error(`[query ${query}][values ${values}] ${error}`)
-        throw error
+        console.error(`[query ${query}][values ${values}] ${error}`);
+        throw error;
     }
 }
 
 export async function createUser(pool: pg.Pool, user: User): Promise<void> {
     const { userId, email, name, password } = user;
-    const hash = await bcrypt.hash(user.password, 14)
+    const hash = await bcrypt.hash(user.password, 14);
     const query = `INSERT INTO users(user_id, email, name, password)
                    VALUES($1, $2, $3, $4)`;
-    const values = [ userId, email, name, hash ];
+    const values = [userId, email, name, hash];
     try {
         await pool.query(query, values);
     } catch (error) {
@@ -96,7 +96,7 @@ export async function createUser(pool: pg.Pool, user: User): Promise<void> {
             console.error(error);
             throw new IdAlreadyExists(userId);
         }
-        throw new Error(`User for email ${user.email} already exists`)
+        throw new Error(`User for email ${user.email} already exists`);
         console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
         throw error;
     }
@@ -105,10 +105,10 @@ export async function createUser(pool: pg.Pool, user: User): Promise<void> {
 export async function deleteUser(pool: pg.Pool, userId: string): Promise<void> {
     const query = `DELETE
                    FROM public.users
-                   WHERE users.user_id = $1`
+                   WHERE users.user_id = $1`;
     const values = [userId];
     try {
-        const {rowCount} = await pool.query(query, values);
+        const { rowCount } = await pool.query(query, values);
         if (rowCount === 0) {
             throw new IdDoesNotExist(`Could not delete user for user_id: ${userId}`);
         }
@@ -121,10 +121,10 @@ export async function deleteUser(pool: pg.Pool, userId: string): Promise<void> {
 export async function userIsOAuthUser(pool: Pool, email: string) {
     const query = `SELECT user_id
                    FROM users
-                   WHERE password = '' and email = $1`
+                   WHERE password = '' and email = $1`;
     const values = [email];
     try {
-        const { rowCount } = await pool.query(query, values)
+        const { rowCount } = await pool.query(query, values);
         if (rowCount === 1) {
             return true;
         }
@@ -145,7 +145,7 @@ export async function authenticateOAuthUser(pool: pg.Pool, email: string) {
                    DO UPDATE SET email=EXCLUDED.email RETURNING user_id`;
     const values = [userId, email];
     try {
-        const {rowCount, rows, command} = await pool.query(query, values);
+        const { rowCount, rows, command } = await pool.query(query, values);
         if (rowCount !== 1 && command !== 'INSERT') {
             throw new Error(`error OAuth authentication for email ${email}`);
         }

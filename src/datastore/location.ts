@@ -13,7 +13,14 @@ export interface Location {
 export class IdNotFoundError extends Error {}
 
 export async function createLocation(pool: pg.Pool, location: Location): Promise<Location> {
-    const { locationId, namePrimary, geometry, country='', city='', subdivision='' } = location;
+    const {
+        locationId,
+        namePrimary,
+        geometry,
+        country = '',
+        city = '',
+        subdivision = ''
+    } = location;
     const query = `INSERT INTO data_collection.location
                    (location_id, country, city, name_primary, subdivision, geometry)
                    VALUES ($1, $2, $3, $4, $5, ST_GeomFromGeoJSON($6))`;
@@ -38,7 +45,7 @@ export async function deleteLocation(pool: pg.Pool, locationId: string): Promise
             throw new IdNotFoundError(`location for location_id ${locationId} not found`);
         }
     } catch (error) {
-        console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`)
+        console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
         throw error;
     }
 }

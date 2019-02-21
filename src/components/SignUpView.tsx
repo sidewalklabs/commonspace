@@ -1,15 +1,15 @@
 import React from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button'
-import Paper from '@material-ui/core/Paper'
-import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
+import Button from '@material-ui/core/Button';
+import Paper from '@material-ui/core/Paper';
+import TextField from '@material-ui/core/TextField';
+import Typography from '@material-ui/core/Typography';
 
 import { observer } from 'mobx-react';
 
-import signUpState, { signUpUser } from '../stores/signup'
-import { navigate } from '../stores/router'
+import signUpState, { signUpUser } from '../stores/signup';
+import { navigate } from '../stores/router';
 import { setSnackBar } from '../stores/ui';
 
 const styles = theme => ({
@@ -27,7 +27,7 @@ const styles = theme => ({
             marginLeft: 'auto',
             marginRight: 'auto',
             marginTop: theme.spacing.unit * 3,
-            height: 'auto',
+            height: 'auto'
         },
         display: 'flex',
         flex: '0 1 auto',
@@ -35,72 +35,92 @@ const styles = theme => ({
         flexDirection: 'column',
         alignContent: 'center',
         justifyContent: 'center',
-        padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit * 3}px`
+        padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit *
+            3}px`
     },
     avatar: {
-        marginBottom: theme.spacing.unit * 2,
+        marginBottom: theme.spacing.unit * 2
     },
     signUpButton: {
         margin: theme.spacing.unit * 3,
         width: '100%',
         maxWidth: '400px',
-        boxShadow: "none",
+        boxShadow: 'none'
     },
     buttonLabel: {
-        textTransform: 'none',
+        textTransform: 'none'
     },
     textField: {
         margin: theme.spacing.unit,
         width: '100%',
-        maxWidth: '400px',
+        maxWidth: '400px'
     }
 });
 
-const responseGoogleFailure = (response) => {
+const responseGoogleFailure = response => {
     console.error(response);
     setSnackBar('error', 'Unable to authenticate with Google OAuth');
-}
+};
 
 // @ts-ignore
-const SignUpView = withStyles(styles)(observer((props: WithStyles) => {
-    const { classes } = props;
-    return (
-        <Paper className={classes.root}>
-            <Avatar alt="Commons Icon" src="/assets/images/CircleIcon.png" className={classes.avatar} />
-            <Typography variant="title" align='center' gutterBottom>Sign up for CommonSpace</Typography>
-            <Typography variant="body1" align='center' gutterBottom>CommonSpace Admin is in beta, and sign up will fail if you have not been approved.</Typography>
-            <Typography variant="body1" align='center' gutterBottom>Contact product-support@sidewalklabs.com if you are interested in administering studies.</Typography>
-            <TextField
-                id="signUp-email"
-                label="Email"
-                onChange={e => signUpState.email = e.target.value}
-                error={signUpState.emailErrorMessage ? true : false}
-                className={classes.textField} />
-            <TextField
-                id="signUp-password"
-                label="Password"
-                type="password"
-                onChange={e => signUpState.password = e.target.value}
-                error={signUpState.passwordErrorMessage ? true : false}
-                className={classes.textField} />
-            <TextField
-                id="signUp-password-confirmation"
-                label="Re-Enter Password"
-                type="password"
-                onChange={e => signUpState.passwordConfirmation = e.target.value}
-                error={signUpState.passwordConfirmationErrorMessage ? true : false}
-                className={classes.textField} />
-            <Button classes={{
-                root: classes.signUpButton,
-                label: classes.buttonLabel
-            }} variant="extendedFab" onClick={signUpUser}>
-                Sign Up
-            </Button>
-            <Button onClick={() => navigate('/login')}>
-                Already Signed Up? Login Here
-            </Button>
-        </Paper >
-    )
-}))
+const SignUpView = withStyles(styles)(
+    observer((props: WithStyles) => {
+        const { classes } = props;
+        return (
+            <Paper className={classes.root}>
+                <Avatar
+                    alt="Commons Icon"
+                    src="/assets/images/CircleIcon.png"
+                    className={classes.avatar}
+                />
+                <Typography variant="title" align="center" gutterBottom>
+                    Sign up for CommonSpace
+                </Typography>
+                <Typography variant="body1" align="center" gutterBottom>
+                    CommonSpace Admin is in beta, and sign up will fail if you have not been
+                    approved.
+                </Typography>
+                <Typography variant="body1" align="center" gutterBottom>
+                    Contact product-support@sidewalklabs.com if you are interested in administering
+                    studies.
+                </Typography>
+                <TextField
+                    id="signUp-email"
+                    label="Email"
+                    onChange={e => (signUpState.email = e.target.value)}
+                    error={signUpState.emailErrorMessage ? true : false}
+                    className={classes.textField}
+                />
+                <TextField
+                    id="signUp-password"
+                    label="Password"
+                    type="password"
+                    onChange={e => (signUpState.password = e.target.value)}
+                    error={signUpState.passwordErrorMessage ? true : false}
+                    className={classes.textField}
+                />
+                <TextField
+                    id="signUp-password-confirmation"
+                    label="Re-Enter Password"
+                    type="password"
+                    onChange={e => (signUpState.passwordConfirmation = e.target.value)}
+                    error={signUpState.passwordConfirmationErrorMessage ? true : false}
+                    className={classes.textField}
+                />
+                <Button
+                    classes={{
+                        root: classes.signUpButton,
+                        label: classes.buttonLabel
+                    }}
+                    variant="extendedFab"
+                    onClick={signUpUser}
+                >
+                    Sign Up
+                </Button>
+                <Button onClick={() => navigate('/login')}>Already Signed Up? Login Here</Button>
+            </Paper>
+        );
+    })
+);
 
 export default SignUpView;

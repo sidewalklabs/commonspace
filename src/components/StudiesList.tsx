@@ -19,10 +19,10 @@ import uiState from '../stores/ui';
 
 const styles = theme => ({
     icon: {
-        margin: theme.spacing.unit * 2,
+        margin: theme.spacing.unit * 2
     },
     borderLessCell: {
-        border: "none"
+        border: 'none'
     }
 });
 
@@ -35,44 +35,57 @@ export interface StudiesListProps {
     studies: { [key: string]: Study };
 }
 
-export default withStyles(styles)(observer((props: StudiesListProps & WithStyles) => {
-    const { studies, classes } = props;
-    const studiesAsRows = Object.values(studies).map((study, index) => {
-        const { studyId, title, lastUpdated, createdAt } = study;
-        const createdAtDate = moment(createdAt).format('MMM D, YYYY');
-        const lastUpdatedDate = moment(lastUpdated).format('MMM D, YYYY')
+export default withStyles(styles)(
+    observer((props: StudiesListProps & WithStyles) => {
+        const { studies, classes } = props;
+        const studiesAsRows = Object.values(studies).map((study, index) => {
+            const { studyId, title, lastUpdated, createdAt } = study;
+            const createdAtDate = moment(createdAt).format('MMM D, YYYY');
+            const lastUpdatedDate = moment(lastUpdated).format('MMM D, YYYY');
+            return (
+                <ExpansionPanel
+                    key={studyId}
+                    onChange={(event, expanded) => {
+                        expanded && transitionToViewStudy(study);
+                    }}
+                >
+                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                        <Table>
+                            <TableBody>
+                                <TableRow>
+                                    <TableCell className={classes.borderLessCell}>
+                                        {title}
+                                    </TableCell>
+                                    <TableCell className={classes.borderLessCell}>
+                                        {createdAtDate}
+                                    </TableCell>
+                                    <TableCell className={classes.borderLessCell}>
+                                        {lastUpdatedDate}
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </ExpansionPanelSummary>
+                    <ExpansionPanelDetails>
+                        <StudyView study={study} studyIsNew={false} />
+                    </ExpansionPanelDetails>
+                </ExpansionPanel>
+            );
+        });
         return (
-            <ExpansionPanel key={studyId} onChange={(event, expanded) => { expanded && transitionToViewStudy(study) }}>
-                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                    <Table>
-                        <TableBody>
-                            <TableRow>
-                                <TableCell className={classes.borderLessCell}>{title}</TableCell>
-                                <TableCell className={classes.borderLessCell}>{createdAtDate}</TableCell>
-                                <TableCell className={classes.borderLessCell}>{lastUpdatedDate}</TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails>
-                    <StudyView study={study} studyIsNew={false} />
-                </ExpansionPanelDetails>
-            </ExpansionPanel>
+            <Fragment>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Study</TableCell>
+                            <TableCell>Created</TableCell>
+                            <TableCell>Updated</TableCell>
+                            <TableCell />
+                        </TableRow>
+                    </TableHead>
+                </Table>
+                {studiesAsRows}
+            </Fragment>
         );
-    });
-    return (
-        <Fragment>
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Study</TableCell>
-                        <TableCell>Created</TableCell>
-                        <TableCell>Updated</TableCell>
-                        <TableCell />
-                    </TableRow>
-                </TableHead>
-            </Table>
-            {studiesAsRows}
-        </Fragment>
-    )
-}));
+    })
+);

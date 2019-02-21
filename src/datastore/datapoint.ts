@@ -34,8 +34,17 @@ const validDataPointProperties = new Set([
     'notes'
 ]);
 
-
-const allStudyFieldsArray: StudyField[] = ['gender', 'age', 'mode', 'posture', 'activities', 'groups', 'object', 'location', 'notes'];
+const allStudyFieldsArray: StudyField[] = [
+    'gender',
+    'age',
+    'mode',
+    'posture',
+    'activities',
+    'groups',
+    'object',
+    'location',
+    'notes'
+];
 const allStudyFields: Set<StudyField> = new Set(allStudyFieldsArray);
 const allStudyFieldsStrings: Set<string> = allStudyFields;
 
@@ -68,12 +77,12 @@ export async function getTablenameForSurveyId(pool: Pool, surveyId: string) {
 function processDataPointToValue(key, value): any[] | any {
     if (key === 'location') {
         const location = value;
-        if (location.type && location.type === "Point") {
+        if (location.type && location.type === 'Point') {
             //return `ST_GeomFromGeoJSON('${JSON.stringify(location)}')`;
             //return `ST_GeomFromGeoJSON('${JSON.stringify(location)}')`;
             return JSON.stringify(location);
         } else {
-            const { longitude, latitude } = location
+            const { longitude, latitude } = location;
             return [longitude, latitude];
             //return `ST_GeomFromText('POINT(${longitude} ${latitude})', 4326)`;
         }
@@ -97,40 +106,45 @@ function convertKeyToParamterBinding(index, key, value) {
         let binding;
         const location = value;
         if (location.type && location.type === 'Point') {
-            binding = `ST_GeomFromGeoJSON($${index})`
+            binding = `ST_GeomFromGeoJSON($${index})`;
             return { index: index + 1, binding };
         } else {
-            binding = `ST_GeomFromText($${index}, $${index + 1})`
+            binding = `ST_GeomFromText($${index}, $${index + 1})`;
             return { index: index + 2, binding };
         }
     } else {
-        const binding = `$${index}`
+        const binding = `$${index}`;
         return { index: index + 1, binding };
     }
 }
 
 function deleteNonStudyFields(o: any) {
-    const unwantedKeys = Object.keys(o).filter(x => !allStudyFieldsStrings.has(x) || o[x] === null)
+    const unwantedKeys = Object.keys(o).filter(x => !allStudyFieldsStrings.has(x) || o[x] === null);
     unwantedKeys.forEach(k => delete o[k]);
     return o;
 }
 
-function processDataPointToPreparedStatement(acc: { columns: string[], values: string[], parameterBindings: string[], index: number }, curr: { key: string, value: string }) {
+function processDataPointToPreparedStatement(
+    acc: { columns: string[]; values: string[]; parameterBindings: string[]; index: number },
+    curr: { key: string; value: string }
+) {
     const { key, value } = curr;
     const { columns, values, parameterBindings } = acc;
     columns.push(key);
     const { binding, index } = convertKeyToParamterBinding(acc.index, key, value);
-    parameterBindings.push(binding)
+    parameterBindings.push(binding);
     return {
         columns,
         values: [...values, ...wrapInArray(processDataPointToValue(key, value))],
         parameterBindings,
         index
-    }
+    };
 }
 
 function processKeyAndValues(dataPoint) {
-    const kvs = Object.entries(dataPoint).map(([key, value]) => { return { key, value } });
+    const kvs = Object.entries(dataPoint).map(([key, value]) => {
+        return { key, value };
+    });
     return kvs.reduce(processDataPointToPreparedStatement, {
         columns: [],
         values: [],
@@ -145,28 +159,33 @@ function transformToPostgresInsert(surveyId: string, dataPoint) {
     dataPointForPostgres.survey_id = surveyId;
     dataPointForPostgres.data_point_id = data_point_id;
     const { columns, values, parameterBindings } = processKeyAndValues(dataPointForPostgres);
-    const insert_statement = `(${(columns.join(', '))}) VALUES (${parameterBindings.join(', ')})`;
+    const insert_statement = `(${columns.join(', ')}) VALUES (${parameterBindings.join(', ')})`;
     const query = `${insert_statement}
                    ON CONFLICT (data_point_id)
-                   DO UPDATE SET (${(columns.join(', '))}) = (${parameterBindings.join(', ')})`;
+                   DO UPDATE SET (${columns.join(', ')}) = (${parameterBindings.join(', ')})`;
     return { query, values };
 }
 
 export async function addDataPointToSurveyNoStudyId(pool: Pool, surveyId: string, dataPoint: any) {
     const tablename = await getTablenameForSurveyId(pool, surveyId);
     const dataPointWithSurveyId = { ...dataPoint, survey_id: surveyId };
-    let { query, values } = transformToPostgresInsert(surveyId, dataPointWithSurveyId)
+    let { query, values } = transformToPostgresInsert(surveyId, dataPointWithSurveyId);
     query = `INSERT INTO ${tablename}
              ${query}`;
     try {
         await pool.query(query, values);
     } catch (error) {
-        console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`)
+        console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
         throw error;
     }
 }
 
-export async function addDataPointToSurveyWithStudyId(pool: Pool, studyId: string, surveyId: string, dataPoint: any) {
+export async function addDataPointToSurveyWithStudyId(
+    pool: Pool,
+    studyId: string,
+    surveyId: string,
+    dataPoint: any
+) {
     const tablename = await studyIdToTablename(studyId);
     const dataPointWithSurveyId = { ...dataPoint, survey_id: surveyId };
     let { query, values } = transformToPostgresInsert(surveyId, dataPointWithSurveyId);
@@ -175,12 +194,16 @@ export async function addDataPointToSurveyWithStudyId(pool: Pool, studyId: strin
     try {
         return pool.query(query, values);
     } catch (error) {
-        console.error(`error executing sql query: ${query}`)
+        console.error(`error executing sql query: ${query}`);
         throw error;
     }
 }
 
-export async function getDataPointsForStudy(pool: Pool, userId: string, studyId: string): Promise< DataPoint[] > {
+export async function getDataPointsForStudy(
+    pool: Pool,
+    userId: string,
+    studyId: string
+): Promise<DataPoint[]> {
     const fieldsQuery = `SELECT study_id, fields, tablename
                          FROM data_collection.study
                          WHERE study_id = $1 and user_id =$2`;
@@ -191,7 +214,9 @@ export async function getDataPointsForStudy(pool: Pool, userId: string, studyId:
             throw new IdNotFoundError(studyId);
         }
         const { fields, tablename } = rows[0];
-        const fieldsAsColumns = ['data_point_id', 'creation_date', 'last_updated'].concat(fields).join(', ');
+        const fieldsAsColumns = ['data_point_id', 'creation_date', 'last_updated']
+            .concat(fields)
+            .join(', ');
         const dataPointsQuery = `SELECT ${fieldsAsColumns}
                                  FROM ${tablename}`;
         const { rows: datapoints } = await pool.query(dataPointsQuery);
@@ -201,18 +226,20 @@ export async function getDataPointsForStudy(pool: Pool, userId: string, studyId:
                 data_point_id: dataPointId,
                 creation_date: creationDate,
                 last_updated: lastUpdated
-            } = r
+            } = r;
             return {
                 ...r,
                 surveyId,
                 dataPointId,
                 creationDate,
                 lastUpdated
-            }
+            };
         });
         return datapoints as DataPoint[];
     } catch (error) {
-        console.error(`[fieldsQuery ${fieldsQuery}][fieldsValues ${JSON.stringify(fieldsValues)}] ${error}`)
+        console.error(
+            `[fieldsQuery ${fieldsQuery}][fieldsValues ${JSON.stringify(fieldsValues)}] ${error}`
+        );
     }
 }
 
@@ -233,9 +260,9 @@ export async function getDataPointsForSurvey(pool, surveyId) {
                 ...r,
                 location
             };
-        });;
+        });
     } catch (error) {
-        console.error(`[sql ${query}][values ${JSON.stringify(values)}] ${error}`)
+        console.error(`[sql ${query}][values ${JSON.stringify(values)}] ${error}`);
         throw error;
     }
 }
@@ -249,11 +276,13 @@ export async function deleteDataPoint(pool: Pool, surveyId: string, dataPointId:
         const res = await pool.query(query, values);
         const { rowCount } = res;
         if (rowCount !== 1) {
-            throw new Error(`[query ${query}] No data point found to delete for data_point_id: ${dataPointId}`)
+            throw new Error(
+                `[query ${query}] No data point found to delete for data_point_id: ${dataPointId}`
+            );
         }
         return res;
     } catch (error) {
-        console.error(`[ query ${query}] ${error}`)
+        console.error(`[ query ${query}] ${error}`);
         throw error;
     }
 }

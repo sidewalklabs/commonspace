@@ -29,14 +29,14 @@ const styles = theme => ({
 });
 
 async function handleLogOut() {
-    await postToApi('/auth/logout', {}) as {};
+    (await postToApi('/auth/logout', {})) as {};
     mainState.anchorElement = null;
     AuthState.isAuth = false;
     navigate('/login');
 }
 
 async function handleResetPassword() {
-    await postToApi('/auth/logout', {}) as {};
+    (await postToApi('/auth/logout', {})) as {};
     AuthState.isAuth = false;
     mainState.anchorElement = null;
     navigate('/reset');
@@ -48,58 +48,54 @@ interface MainState {
 
 const mainState: MainState = observable({
     anchorElement: null
-})
+});
 
-const Main = observer(
-    (props: any & WithStyles) => {
-        const { classes } = props;
-        const { anchorElement } = mainState;
+const Main = observer((props: any & WithStyles) => {
+    const { classes } = props;
+    const { anchorElement } = mainState;
 
-        return (
-            <AppBar
-                className={classes.appBar}
-                position="sticky"
-                color="default"
-            >
-                <Toolbar className={classes.toolbar}>
-                    <IconButton
-                        color="inherit"
-                        aria-label="CommonSpace Home"
-                        onClick={e => { navigate('/') }}
-                    >
-                        <Avatar alt="CommonSpace Icon" src="/assets/images/CircleIcon.png" />
-                    </IconButton>
-                    <Typography
-                        component="h1"
-                        variant="title"
-                        color="inherit"
-                        noWrap
-                        className={classes.title}
-                    >
-                        CommonSpace
-                    </Typography>
-                    <IconButton
-                        color="inherit"
-                        aria-label="Open Menu"
-                        onClick={e => mainState.anchorElement = e.currentTarget}
-                        className={classes.menuIcon}
-                    >
-                        <MoreVertIcon />
-                    </IconButton>
-                    <Menu
-                        id="simple-menu"
-                        anchorEl={anchorElement}
-                        open={!!anchorElement}
-                        onClose={() => mainState.anchorElement = null}
-                    >
-                        <MenuItem onClick={handleResetPassword}>Reset Password</MenuItem>
-                        <MenuItem onClick={handleLogOut}>Logout</MenuItem>
-                    </Menu>
-                </Toolbar>
-            </AppBar>
-        )
-    }
-);
+    return (
+        <AppBar className={classes.appBar} position="sticky" color="default">
+            <Toolbar className={classes.toolbar}>
+                <IconButton
+                    color="inherit"
+                    aria-label="CommonSpace Home"
+                    onClick={e => {
+                        navigate('/');
+                    }}
+                >
+                    <Avatar alt="CommonSpace Icon" src="/assets/images/CircleIcon.png" />
+                </IconButton>
+                <Typography
+                    component="h1"
+                    variant="title"
+                    color="inherit"
+                    noWrap
+                    className={classes.title}
+                >
+                    CommonSpace
+                </Typography>
+                <IconButton
+                    color="inherit"
+                    aria-label="Open Menu"
+                    onClick={e => (mainState.anchorElement = e.currentTarget)}
+                    className={classes.menuIcon}
+                >
+                    <MoreVertIcon />
+                </IconButton>
+                <Menu
+                    id="simple-menu"
+                    anchorEl={anchorElement}
+                    open={!!anchorElement}
+                    onClose={() => (mainState.anchorElement = null)}
+                >
+                    <MenuItem onClick={handleResetPassword}>Reset Password</MenuItem>
+                    <MenuItem onClick={handleLogOut}>Logout</MenuItem>
+                </Menu>
+            </Toolbar>
+        </AppBar>
+    );
+});
 
 // @ts-ignore
 export default withStyles(styles)(Main);

@@ -55,7 +55,7 @@ const styles = theme => ({
         marginRight: theme.spacing.unit,
         width: 200
     }
-})
+});
 
 export interface TextTableCellProps {
     displayText: string;
@@ -76,8 +76,8 @@ const TextTableCell = withStyles(styles)((props: TextTableCellProps & WithStyles
                 margin="normal"
             />
         </TableCell>
-    )
-})
+    );
+});
 
 interface SurveyorsViewProps {
     addNewCell: (...args: any[]) => void;
@@ -86,22 +86,26 @@ interface SurveyorsViewProps {
 }
 
 // @ts-ignore
-const Row = withStyles(styles)(observer(props => {
-    const { email, classes, index } = props;
-    return (
-        <TableRow key={index}>
-            <TableCell className={classes.column} component="th" scope="row">
-                <TextField
-                    placeholder="Enter an email"
-                    className={classes.textField}
-                    value={email}
-                    onChange={e => applicationState.currentStudy.surveyors[index] = e.target.value}
-                    margin="normal"
-                />
-            </TableCell>
-        </TableRow>
-    )
-}))
+const Row = withStyles(styles)(
+    observer(props => {
+        const { email, classes, index } = props;
+        return (
+            <TableRow key={index}>
+                <TableCell className={classes.column} component="th" scope="row">
+                    <TextField
+                        placeholder="Enter an email"
+                        className={classes.textField}
+                        value={email}
+                        onChange={e =>
+                            (applicationState.currentStudy.surveyors[index] = e.target.value)
+                        }
+                        margin="normal"
+                    />
+                </TableCell>
+            </TableRow>
+        );
+    })
+);
 
 function handleAddingNewSurveyor(studyId, email) {
     applicationState.currentStudy.surveyors.push('');
@@ -119,13 +123,20 @@ const SurveyorsView = observer((props: SurveyorsViewProps & WithStyles) => {
 
     const addNewEmptySurveyorToStudy = () => {
         applicationState.currentStudy.surveyors = [...surveyors, ''];
-    }
-    const tableRows = surveyors.map((email, index) => <Row key={index} email={email} index={index} />);
+    };
+    const tableRows = surveyors.map((email, index) => (
+        <Row key={index} email={email} index={index} />
+    ));
     return (
         <div>
             <Paper className={classes.root}>
                 Add Surveyors
-                <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={addNewEmptySurveyorToStudy}>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    className={classes.rightCornerButton}
+                    onClick={addNewEmptySurveyorToStudy}
+                >
                     Add Surveyor
                 </Button>
                 <br />
@@ -137,10 +148,10 @@ const SurveyorsView = observer((props: SurveyorsViewProps & WithStyles) => {
                     </TableHead>
                     <TableBody>{tableRows}</TableBody>
                 </Table>
-            </Paper >
-        </div >
-    )
-})
+            </Paper>
+        </div>
+    );
+});
 
 // @ts-ignore
 export default withStyles(styles)(SurveyorsView);

@@ -6,20 +6,21 @@ import uuid from 'uuid';
 
 import { get, set, toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { Map, Marker, Popup, TileLayer, FeatureGroup, Feature, GeoJSON } from 'react-leaflet'
-import { EditControl } from 'react-leaflet-draw'
+import { Map, Marker, Popup, TileLayer, FeatureGroup, Feature, GeoJSON } from 'react-leaflet';
+import { EditControl } from 'react-leaflet-draw';
 
-import applicationState from '../stores/applicationState'
+import applicationState from '../stores/applicationState';
 import { FeatureCollection } from 'geojson';
 import { stringHash } from '../utils';
 import uiState from '../stores/ui';
-
 
 const INITIAL_ZOOM_LEVEL = 17;
 const CENTER_COORDINATES = [-74.00293, 40.750496];
 const { TILE_SERVER_URL } = process.env;
 //    'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png';
-const MAP_ATTRIBUTION = process.env.MAP_ATTRIBUTION ? process.env.MAP_ATTRIBUTION : '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors';
+const MAP_ATTRIBUTION = process.env.MAP_ATTRIBUTION
+    ? process.env.MAP_ATTRIBUTION
+    : '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors';
 
 const styles = theme => ({
     container: {
@@ -65,7 +66,6 @@ interface MapViewProps {
     isEditable: boolean;
 }
 
-
 const MapView = observer((props: MapViewProps & WithStyles) => {
     const { classes, lat, lng, featureCollection, isEditable } = props;
 
@@ -74,17 +74,23 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
 
     return (
         <Paper className={classes.root}>
-            <Map className={classes.map} center={[lat, lng]} zoom={17} boxZoom={false} doubleClickZoom={false} scrollWheelZoom={false} dragging={false} zoomControl={false}>
-                <TileLayer
-                    attribution={MAP_ATTRIBUTION}
-                    url={TILE_SERVER_URL}
-                />
+            <Map
+                className={classes.map}
+                center={[lat, lng]}
+                zoom={17}
+                boxZoom={false}
+                doubleClickZoom={false}
+                scrollWheelZoom={false}
+                dragging={false}
+                zoomControl={false}
+            >
+                <TileLayer attribution={MAP_ATTRIBUTION} url={TILE_SERVER_URL} />
                 <GeoJSON data={geojson} key={geojsonHash} />
             </Map>
-            {isEditable ?
+            {isEditable ? (
                 <EditIcon className={classes.edit} onClick={() => uiState.modalStack.push('map')} />
-                : null}
-        </Paper >
+            ) : null}
+        </Paper>
     );
 });
 

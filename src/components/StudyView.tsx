@@ -12,44 +12,48 @@ import Typography from '@material-ui/core/Typography';
 import LockedMapView from './LockedMapView';
 
 import uiState from '../stores/ui';
-import applicationState, { saveNewStudy, updateStudy, Study, getMapCenterForStudy } from '../stores/applicationState';
+import applicationState, {
+    saveNewStudy,
+    updateStudy,
+    Study,
+    getMapCenterForStudy
+} from '../stores/applicationState';
 import { groupArrayOfObjectsBy } from '../utils';
 import { FeatureCollection } from 'geojson';
-
 
 const styles = theme => ({
     container: {
         display: 'flex',
         flexDirection: 'column',
-        flex: 1,
+        flex: 1
     },
     header: {
         borderBottom: `1px solid ${theme.palette.divider}`,
         padding: theme.spacing.unit * 2,
-        marginBottom: theme.spacing.unit * 2,
+        marginBottom: theme.spacing.unit * 2
     },
     footer: {
         borderTop: `1px solid ${theme.palette.divider}`,
-        display: "flex",
+        display: 'flex',
         marginTop: theme.spacing.unit * 2,
         paddingLeft: theme.spacing.unit * 2,
         paddingRight: theme.spacing.unit * 2,
         paddingTop: theme.spacing.unit * 2,
-        justifyContent: "flex-end"
+        justifyContent: 'flex-end'
     },
     columns: {
-        display: 'flex',
+        display: 'flex'
     },
     column: {
-        flex: "1 1 0",
+        flex: '1 1 0',
         display: 'flex',
         flexDirection: 'column',
         marginLeft: theme.spacing.unit * 2,
-        marginRight: theme.spacing.unit * 2,
+        marginRight: theme.spacing.unit * 2
     },
     textField: {
         marginLeft: theme.spacing.unit,
-        marginRight: theme.spacing.unit,
+        marginRight: theme.spacing.unit
     },
     rightCornerButton: {
         alignContent: 'flex-end',
@@ -65,9 +69,9 @@ async function update(study) {
     await updateStudy(study);
 
     // if this is rendered in a modal, close on success
-    const visibleModal = uiState.modalStack.slice(-1)[0]
+    const visibleModal = uiState.modalStack.slice(-1)[0];
     if (visibleModal === 'study') {
-        uiState.modalStack.pop()
+        uiState.modalStack.pop();
     }
 }
 
@@ -76,9 +80,9 @@ async function create(study) {
     uiState.currentStudyIsNew = false;
 
     // if this is rendered in a modal, close on success
-    const visibleModal = uiState.modalStack.slice(-1)[0]
+    const visibleModal = uiState.modalStack.slice(-1)[0];
     if (visibleModal === 'study') {
-        uiState.modalStack.pop()
+        uiState.modalStack.pop();
     }
 }
 
@@ -93,13 +97,23 @@ const CreateOrUpdateButton = withStyles(styles)((props: CreateOrUpdateButtonProp
     const { studyIsNew, study, classes } = props;
     if (studyIsNew) {
         return (
-            <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={async () => await create(study)}>
+            <Button
+                variant="contained"
+                color="primary"
+                className={classes.rightCornerButton}
+                onClick={async () => await create(study)}
+            >
                 Create
-            </Button >
+            </Button>
         );
     } else {
         return (
-            <Button variant="contained" color="primary" className={classes.rightCornerButton} onClick={async () => await update(study)}>
+            <Button
+                variant="contained"
+                color="primary"
+                className={classes.rightCornerButton}
+                onClick={async () => await update(study)}
+            >
                 Update
             </Button>
         );
@@ -112,23 +126,23 @@ interface LocationTextFieldProps {
 }
 
 // @ts-ignore
-const LocationTextField = withStyles(styles)(observer((props: LocationTextFieldProps & WithStyles) => {
-    const { editable, location, classes } = props;
-    if (editable) {
-        return (<TextField
-            className={classes.textField}
-            label="Location"
-            value={location}
-            onChange={e => applicationState.currentStudy.location = e.target.value}
-        />)
-    } else {
-        return (<TextField
-            className={classes.textField}
-            label="Location"
-            value={location}
-        />)
-    }
-}))
+const LocationTextField = withStyles(styles)(
+    observer((props: LocationTextFieldProps & WithStyles) => {
+        const { editable, location, classes } = props;
+        if (editable) {
+            return (
+                <TextField
+                    className={classes.textField}
+                    label="Location"
+                    value={location}
+                    onChange={e => (applicationState.currentStudy.location = e.target.value)}
+                />
+            );
+        } else {
+            return <TextField className={classes.textField} label="Location" value={location} />;
+        }
+    })
+);
 
 interface StudyViewProps {
     study: Study;
@@ -156,71 +170,96 @@ const StudyView = observer((props: any & WithStyles) => {
 
     const { study, classes, studyIsNew } = props;
     if (study) {
-        const { title, author, authorUrl, description, location, surveys = {}, studyId, fields, surveyors, protocolVersion, type, map } = study as Study;
+        const {
+            title,
+            author,
+            authorUrl,
+            description,
+            location,
+            surveys = {},
+            studyId,
+            fields,
+            surveyors,
+            protocolVersion,
+            type,
+            map
+        } = study as Study;
         const { latitude, longitude } = getMapCenterForStudy(studyId);
         const features = map && map.features ? map.features : [];
-        const StudyTypeField = props => studyIsNew ?
-            (<TextField
-                select
-                label="Study Type"
-                className={classes.textField}
-                value={groupArrayOfObjectsBy(STUDY_TYPES, 'value')[type].value}
-                onChange={e => {
-                    study.type = e.target.value;
-                }}
-                SelectProps={{
-                    MenuProps: {
-                        className: classes.menu
-                    }
-                }}
-                margin="normal"
-            >
-                {STUDY_TYPES.map(({ value, label }) => {
-                    return <MenuItem key={label} value={value}>
-                        {label}
-                    </MenuItem>
-                })}
-            </TextField>) : (<TextField
-                label="Study Type"
-                className={classes.textField}
-                value={groupArrayOfObjectsBy(STUDY_TYPES, 'value')[type].label}
-                margin="normal"
-                InputProps={{
-                    readOnly: true
-                }}
-            />)
+        const StudyTypeField = props =>
+            studyIsNew ? (
+                <TextField
+                    select
+                    label="Study Type"
+                    className={classes.textField}
+                    value={groupArrayOfObjectsBy(STUDY_TYPES, 'value')[type].value}
+                    onChange={e => {
+                        study.type = e.target.value;
+                    }}
+                    SelectProps={{
+                        MenuProps: {
+                            className: classes.menu
+                        }
+                    }}
+                    margin="normal"
+                >
+                    {STUDY_TYPES.map(({ value, label }) => {
+                        return (
+                            <MenuItem key={label} value={value}>
+                                {label}
+                            </MenuItem>
+                        );
+                    })}
+                </TextField>
+            ) : (
+                <TextField
+                    label="Study Type"
+                    className={classes.textField}
+                    value={groupArrayOfObjectsBy(STUDY_TYPES, 'value')[type].label}
+                    margin="normal"
+                    InputProps={{
+                        readOnly: true
+                    }}
+                />
+            );
 
         return (
             <div className={classes.container}>
-                {studyIsNew && <div className={classes.header}>
-                    <Typography variant="title">New Study</Typography>
-                </div>}
+                {studyIsNew && (
+                    <div className={classes.header}>
+                        <Typography variant="title">New Study</Typography>
+                    </div>
+                )}
                 <div className={classes.columns}>
                     <div className={classes.column}>
                         <TextField
                             label="Title"
                             className={classes.textField}
                             value={title}
-                            onChange={e => study.title = e.target.value}
+                            onChange={e => (study.title = e.target.value)}
                             margin="normal"
                         />
                         <TextField
                             className={classes.textField}
                             label="Description"
                             value={description}
-                            onChange={e => applicationState.currentStudy.description = e.target.value}
+                            onChange={e =>
+                                (applicationState.currentStudy.description = e.target.value)
+                            }
                         />
                         <TextField
                             className={classes.textField}
                             label="Author"
                             value={author}
-                            onChange={e => applicationState.currentStudy.author = e.target.value}
+                            onChange={e => (applicationState.currentStudy.author = e.target.value)}
                         />
                         <TextField
                             className={classes.textField}
                             label="Author Url"
                             value={authorUrl}
-                            onChange={e => applicationState.currentStudy.authorUrl = e.target.value}
+                            onChange={e =>
+                                (applicationState.currentStudy.authorUrl = e.target.value)
+                            }
                         />
                         <StudyTypeField />
                         <TextField
@@ -229,10 +268,13 @@ const StudyView = observer((props: any & WithStyles) => {
                             value={`${fields.length} Fields`}
                             InputProps={{
                                 startAdornment: (
-                                    <InputAdornment position="end" onClick={() => uiState.modalStack.push("studyFields")}>
+                                    <InputAdornment
+                                        position="end"
+                                        onClick={() => uiState.modalStack.push('studyFields')}
+                                    >
                                         <EditIcon />
                                     </InputAdornment>
-                                ),
+                                )
                             }}
                         />
                         <TextField
@@ -241,27 +283,30 @@ const StudyView = observer((props: any & WithStyles) => {
                             value={`${surveyors.length} Surveyors`}
                             InputProps={{
                                 startAdornment: (
-                                    <InputAdornment position="end" onClick={() => uiState.modalStack.push("surveyors")}>
+                                    <InputAdornment
+                                        position="end"
+                                        onClick={() => uiState.modalStack.push('surveyors')}
+                                    >
                                         <EditIcon />
                                     </InputAdornment>
-                                ),
+                                )
                             }}
-                        >
-
-                        </TextField>
+                        />
                         <TextField
                             className={classes.textField}
                             label="Surveys"
                             value={`${Object.keys(toJS(surveys)).length} Surveys`}
                             InputProps={{
                                 startAdornment: (
-                                    <InputAdornment position="end" onClick={() => uiState.modalStack.push("surveys")}>
+                                    <InputAdornment
+                                        position="end"
+                                        onClick={() => uiState.modalStack.push('surveys')}
+                                    >
                                         <EditIcon />
                                     </InputAdornment>
-                                ),
+                                )
                             }}
-                        >
-                        </TextField>
+                        />
                     </div>
                     <div className={classes.column}>
                         <LocationTextField location={location} editable={studyIsNew} />
@@ -286,7 +331,12 @@ const StudyView = observer((props: any & WithStyles) => {
                     </MenuItem>)
                     })}
                     </TextField> */}
-                        <LockedMapView isEditable lat={latitude} lng={longitude} featureCollection={map} />
+                        <LockedMapView
+                            isEditable
+                            lat={latitude}
+                            lng={longitude}
+                            featureCollection={map}
+                        />
                     </div>
                 </div>
                 <div className={classes.footer}>
