@@ -492,7 +492,12 @@ router.put(
 router.delete(
   "/surveys/:surveyId/datapoints/:dataPointId",
   return500OnError(async (req: Request, res: Response) => {
+      const { user_id: userId } = req.user;
     const { surveyId, dataPointId } = req.params;
+      if (!checkUserIdIsSurveyor(DbPool, userId, surveyId)) {
+          throw new UnauthorizedError();
+          return;
+      }
     await deleteDataPoint(DbPool, surveyId, dataPointId);
     res.status(200).send();
   })
@@ -545,10 +550,15 @@ router.get(
 
 router.put(
   "/studies/:studyId",
-  return500OnError(async (req: Request, res: Response) => {
+    return500OnError(return401OnUnauthorizedError(async (req: Request, res: Response) => {
       const { user_id: userId } = req.user;
       const study  = camelcaseKeys(req.body as Study);
-      const  { surveys, studyId } = study;
+        const { studyId } = req.params;
+        if (userIdIsAdminOfStudy(DbPool, studyId, userId)) {
+            throw new UnauthorizedError();
+            return;
+        }
+      const  { surveys } = study;
       await updateStudy(DbPool, {userId, ...study});
       const pgQueries = await Promise.all(
           surveys.map(s =>
@@ -556,17 +566,22 @@ router.put(
                       DbPool,
                       camelcaseKeys({ studyId, ...s, userEmail: s.surveyor_email }))));
       res.sendStatus(200);
-  })
+    }))
 );
 
 router.post(
   "/studies/:studyId/surveyors",
-  return500OnError(async (req, res) => {
-    const { studyId } = req.params;
-    const { email } = req.body;
-    const [_, newUserId] = await giveUserStudyAccess(DbPool, email, studyId);
-    res.send({ email, studyId, newUserId });
-  })
+    return500OnError(return401OnUnauthorizedError(async (req, res) => {
+        const { user_id: userId } = req.user;
+        const { studyId } = req.params;
+        const { email } = req.body;
+        if (userIdIsAdminOfStudy(DbPool, studyId, userId)) {
+            throw new UnauthorizedError();
+            return;
+        }
+        const [_, newUserId] = await giveUserStudyAccess(DbPool, email, studyId);
+        res.send({ email, studyId, newUserId });
+    }))
 );
 
 
