@@ -157,11 +157,11 @@ export async function addDataPointToSurveyNoStudyId(pool: Pool, surveyId: string
     const dataPointWithSurveyId = { ...dataPoint, survey_id: surveyId };
     let { query, values } = transformToPostgresInsert(surveyId, dataPointWithSurveyId)
     query = `INSERT INTO ${tablename}
-                   ${query}`;
+             ${query}`;
     try {
-        return pool.query(query, values);
+        await pool.query(query, values);
     } catch (error) {
-        console.error(`[sql ${query}] ${error}`)
+        console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`)
         throw error;
     }
 }

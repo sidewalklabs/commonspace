@@ -440,8 +440,8 @@ export async function checkUserIdIsSurveyor(pool: pg.Pool, userId: string, surve
                    WHERE user_id = $1 and survey_id = $2`
     const values = [userId, surveyId];
     try {
-        const { command, rowCount } = await pool.query(query, values);
-        if (command !== 'SELECT' && rowCount !== 1) {
+        const { rowCount } = await pool.query(query, values);
+        if ( rowCount !== 1) {
             return false
         }
         return true
