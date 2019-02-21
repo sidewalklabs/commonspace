@@ -1,4 +1,4 @@
-import * as pg from 'pg';
+import { Pool } from 'pg';
 import { IdAlreadyExists } from './utils';
 import { UNIQUE_VIOLATION } from 'pg-error-constants'
 
@@ -62,7 +62,7 @@ function joinSurveyWithUserEmailCTE(survey: Survey) {
     return { query, values };
 }
 
-export async function createNewSurveyForStudy(pool: pg.Pool, survey: Survey) {
+export async function createNewSurveyForStudy(pool: Pool, survey: Survey) {
     let { query, values } = joinSurveyWithUserEmailCTE(survey);
     if (survey.locationId ) {
         query = `INSERT INTO data_collection.survey (study_id, survey_id, title, start_date, end_date, representation, method, user_id, location_id)
@@ -82,7 +82,7 @@ export async function createNewSurveyForStudy(pool: pg.Pool, survey: Survey) {
     }
 }
 
-export function updateSurvey(pool: pg.Pool, survey: Survey) {
+export function updateSurvey(pool: Pool, survey: Survey) {
     const { title, locationId, startDate, endDate, userEmail, surveyId } = survey;
     const query = `UPDATE data_collection.survey as sur
                    SET title = $1,
@@ -93,6 +93,23 @@ export function updateSurvey(pool: pg.Pool, survey: Survey) {
     const values = [title, locationId, startDate, endDate, surveyId] ;
     try {
         return pool.query(query, values);
+    } catch (error) {
+        console.error(`[query: ${query}][values: ${JSON.stringify(values)}] ${error}`)
+        throw error;
+    }
+}
+
+export async function checkUserIdIsSurveyor(pool: Pool, userId: string, surveyId: string) {
+    const query = `SELECT survey_id
+                   FROM data_collection.survey
+                   WHERE user_id = $1 and survey_id = $2`;
+    const values = [userId, surveyId]
+    try {
+        const { rowCount } = await pool.query(query, values)
+        if ( rowCount !== 1) {
+            return false
+        }
+        return true
     } catch (error) {
         console.error(`[query: ${query}][values: ${JSON.stringify(values)}] ${error}`)
         throw error;

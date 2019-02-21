@@ -433,20 +433,3 @@ export async function giveUserStudyAccess(pool: pg.Pool, userEmail: string, stud
         throw error;
     }
 }
-
-export async function checkUserIdIsSurveyor(pool: pg.Pool, userId: string, surveyId: string) {
-    const query = `SELECT user_id, survey_id
-                   FROM data_collection.survey
-                   WHERE user_id = $1 and survey_id = $2`
-    const values = [userId, surveyId];
-    try {
-        const { rowCount } = await pool.query(query, values);
-        if ( rowCount !== 1) {
-            return false
-        }
-        return true
-    } catch (error) {
-        console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
-        throw error;
-    }
-}
