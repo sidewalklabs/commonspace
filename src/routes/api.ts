@@ -200,6 +200,35 @@ router.get(
     })
 );
 
+router.get(
+    '/studies/download',
+    return500OnError(async (req: Request, res: Response) => {
+        const { user_id: userId } = req.user;
+        const studies = await returnStudiesForAdmin(DbPool, userId) as Study[];
+        const studiesWithDataPoints = await Promise.all(studies.map(async study => {
+            const surveyIdToSurvey = await Promise.all(study.surveys.map(async survey => {
+                const data_points = await getDataPointsForSurvey(DbPool, survey.survey_id)
+                const surveyObject = {
+                    ...survey,
+                    data_points
+                }
+                const res = {}
+                res[survey.survey_id] = surveyObject;
+                return res;
+            }))
+            const idToSurvey = Object.assign({}, ...surveyIdToSurvey);
+            study.surveys = study.surveys.map(s => {
+                const { survey_id: surveyId } = s;
+                const survey = idToSurvey[surveyId] ?
+                    idToSurvey[surveyId] : {...s, data_points: []};
+                return survey
+            })
+            return { ...study }
+        }))
+        res.send(studiesWithDataPoints);
+    })
+)
+
 async function saveStudyForUser(userId: string, inputStudy: Study) {
     const {
         protocol_version: protocolVersion,
@@ -418,6 +447,28 @@ router.get(
     res.send(databaseDataPoints);
     }))
 );
+
+router.post(
+    '/surveys/:surveyId/datapoints',
+    return500OnError(return401OnUnauthorizedError(async (req: Request, res: Response) => {
+        const { user_id: userId } = req.user;
+        const { surveyId } = req.params;
+        const userCanAccessSurvey = await checkUserIdIsSurveyor(
+            DbPool,
+            userId,
+            surveyId
+        )
+        if (!userCanAccessSurvey) {
+            throw new UnauthorizedError();
+            return;
+        }
+        const datapoint = req.body;
+        datapoint.creation_date = datapoint.date;
+        datapoint.last_updated = datapoint.date;
+        await addDataPointToSurveyNoStudyId(DbPool, surveyId, datapoint);
+        res.status(200).send();
+    }))
+)
 
 router.post(
   "/surveys/:surveyId/datapoints/:dataPointId",

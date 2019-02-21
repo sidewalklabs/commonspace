@@ -11,6 +11,8 @@ export interface User {
 export class UnauthorizedError extends Error {}
 export class ResourceNotFoundError extends Error {}
 
+type HttpFunction = (...args: any[]) => Promise<Response>
+
 const fetchParams: RequestInit = {
     //mode: "sam", // no-cors, cors, *same-origin
     cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
@@ -19,10 +21,10 @@ const fetchParams: RequestInit = {
     referrer: 'no-referrer'
 }
 
-function extractBodyFromResponse<T>(f: (...args: any[]) => Promise<Response>): (args: any[]) => Promise<T> {
+function extractBodyFromResponse<T>(f: HttpFunction): (...args: any[]) => Promise<T> {
     return (...args) => {
         return new Promise((resolve, reject) => {
-            f(args).then(async response => {
+            f(...args).then(async response => {
                 if (response.status !== 200) {
                     throw new Error(`${response.status} ${response.statusText}`);
                 }
@@ -37,7 +39,38 @@ function extractBodyFromResponse<T>(f: (...args: any[]) => Promise<Response>): (
     }
 }
 
-export async function deleteRest(uri: string, token?: string): Promise<void> {
+function handle404(f: HttpFunction): HttpFunction {
+    return async (...args) => {
+        const response = await f(...args)
+        if (response.status === 404)
+            throw new ResourceNotFoundError(`Resource not found ${response.url}`)
+        return response
+    }
+}
+
+function handle401(f: HttpFunction): HttpFunction {
+    return async (...args) => {
+        const response = await f(...args)
+        if (response.status === 401)
+            throw new UnauthorizedError(`Not Authorized: ${response.url}`)
+        return response
+    }
+}
+
+const handleAllHttpErrors: (f: HttpFunction) => HttpFunction = f =>
+    (...args) =>
+        throwGenericErrorIfNot200(handle401(handle404(f)))(...args)
+
+function throwGenericErrorIfNot200(f: HttpFunction): HttpFunction {
+    return async (...args) => {
+        const response = await f(...args)
+        if (response.status !== 200)
+            throw Error(`${response.status} ${response.statusText}`)
+        return response
+    }
+}
+
+export const deleteRest: (uri: string, token?: string) => Promise<Response> = handleAllHttpErrors(async (uri, token) => {
     try {
         const params = {
             ...fetchParams,
@@ -48,19 +81,14 @@ export async function deleteRest(uri: string, token?: string): Promise<void> {
             params.headers['Authorization'] = `bearer ${token}`;
         }
         const response = await fetch(uri, params)
-        if (response.status === 404) {
-            throw new ResourceNotFoundError(`Resource not found ${uri}`)
-        } else if (response.status !== 200) {
-            throw Error(`${response.status} ${response.statusText}`);
-        }
-        return;
+        return response;
     } catch (err) {
         console.error(`[route ${uri}] ${err}`)
         throw err;
     }
-}
+})
 
-export async function postRestNoBody(uri: string, data: any, token?:string): Promise<void> {
+export const postRestNoBody: (uri: string, data: any, token?:string) => Promise<Response> = handleAllHttpErrors(async (uri, data, token) => {
     const body = JSON.stringify(snakecasePayload(data));
     try {
         const params = {
@@ -75,42 +103,16 @@ export async function postRestNoBody(uri: string, data: any, token?:string): Pro
             params.headers['Authorization'] = `bearer ${token}`;
         }
         const response = await fetch(uri, params)
-        if (response.status !== 200) {
-            throw Error(`${response.status} ${response.statusText}`);
-        }
-        return;
-    } catch (err) {
-        console.error(`[route ${uri}] [data ${body}] ${err}`)
-        throw err;
-    }
-}
-
-export async function postRest(uri: string, data: any, token?: string): Promise<Response> {
-    const body = JSON.stringify(snakecasePayload(data));
-    try {
-        const params = {
-            ...fetchParams,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json; charset=utf-8"
-            },
-            body
-        }
-        if (token) {
-            params.headers['Authorization'] = `bearer ${token}`;
-        }
-        const response = await fetch(uri, params)
-        if (response.status !== 200) {
-            throw Error(`${response.status} ${response.statusText}`);
-        }
         return response;
     } catch (err) {
         console.error(`[route ${uri}] [data ${body}] ${err}`)
         throw err;
     }
-}
+})
 
-export async function getRest<T>(uri:string, token?: string): Promise<T> {
+export const postRest: (uri: string, data: any, token?: string) => Promise<Response> = extractBodyFromResponse(postRestNoBody)
+
+export const getRest: <T>(uri:string, token?: string) => Promise<T> = extractBodyFromResponse(handleAllHttpErrors(async (uri, token) => {
     const params = {
         ...fetchParams,
       method: 'GET',
@@ -121,22 +123,9 @@ export async function getRest<T>(uri:string, token?: string): Promise<T> {
     if (token) {
         params.headers['Authorization'] = `bearer ${token}`;
     }
-    const response = await fetch(
-        uri,
-        params,
-    );
-    if (response.status === 404) {
-        throw new ResourceNotFoundError(`Resource not found: ${uri}`)
-    }
-    if (response.status === 401) {
-        throw new UnauthorizedError(`Not Authorized: ${uri}`)
-    }
-    if (response.status !== 200) {
-        throw new Error(`Status: ${response.status}, could not fetch get ${uri}`);
-    }
-    const body = await response.json();
-    return body as T;
-}
+    const response = await fetch(uri, params)
+    return response
+}))
 
 export async function clearLocationsFromApi(hostname: string, fc: FeatureCollection, token: string): Promise<void> {
     try {
@@ -158,6 +147,23 @@ export async function clearLocationsFromApi(hostname: string, fc: FeatureCollect
 export async function getStudiesForAdmin(token?: string) {
     const studiesFromApi = await getRest('/api/studies?type=admin', token)
     return camelcaseKeys(studiesFromApi);
+}
+
+async function signupJwt(hostname: string, user: User) {
+    const uri = `${hostname}/auth/signup`
+    const requestBody = JSON.stringify(user)
+    const fetchParams = {
+        method: 'Post',
+        headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            Accept: 'application/bearer.token+json'
+        },
+        body: requestBody
+    }
+
+    const response = await fetch(uri, fetchParams)
+    const responseBody = await response.json()
+    return responseBody;
 }
 
 // warning this version of loginJwt swallows the error, assumes user doesn't exist

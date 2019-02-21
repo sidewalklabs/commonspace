@@ -173,6 +173,29 @@ const laJollaBeach: FeatureCollection = {
     features: [kelpForest, southEndCove]
 }
 
+const dataPointOne = {
+    'gender': 'unknown',
+    'age': '15-24',
+    'posture': 'standing',
+    'data_point_id': '5ac9f389-51a9-444c-85c6-ddfe0d306a87'
+}
+
+const dataPointTwo = {
+    'gender': 'female',
+    'age': '25-64',
+    'posture': 'lying',
+    'data_point_id': 'a878b48b-9c9f-46bc-8aa7-171c31135fd2'
+}
+
+const dataPointThree = {
+    'gender': 'male',
+    'age': '65+',
+    'posture': 'sitting_informal',
+    'data_point_id': '77412f57-decb-4db7-8b68-77379c1ac01d'
+}
+
+export const SeaBassFishCountDataPoints = [ dataPointOne, dataPointTwo, dataPointThree]
+
 export const SeaBassFishCountStudy = {
     "study_id": SeaBassFishCountConfig.studyId,
     "title": "Sea Bass Fish Count",

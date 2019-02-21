@@ -4,7 +4,7 @@ import { FeatureCollection } from 'geojson';
 import path from 'path';
 import fetch from "isomorphic-fetch";
 
-import { adminUser, surveyorUser, SeaBassFishCountStudy, MarchOnWashington } from './integration_test_data'
+import { adminUser, surveyorUser, SeaBassFishCountDataPoints, SeaBassFishCountStudy, MarchOnWashington } from './integration_test_data'
 import { snakecasePayload } from './utils'
 import dotenv from 'dotenv';
 import { deleteRest, postRestNoBody, postRest, getRest, clearLocationsFromApi, getStudiesForAdmin, loginJwt, User, UnauthorizedError, ResourceNotFoundError } from './client'
@@ -155,9 +155,49 @@ describe('create/delete/modify studies', async () => {
         expect(multipleStudies.length).toBe(saveMultipleStudies.length)
     })
 
+    test('save data points to a survey if user is a surveyor', async () => {
+        const surveyorSurvey = SeaBassFishCountStudy.surveys.filter(({surveyor_email}) => {
+            return surveyor_email === surveyorUser.email
+        })[0];
+        const { survey_id } = surveyorSurvey;
+        //const dataPoint = SeaBassFishCountDataPoints[0]
+        await Promise.all(SeaBassFishCountDataPoints.map( dataPoint => {
+            return postRestNoBody(API_SERVER + `/api/surveys/${survey_id}/datapoints`, dataPoint, surveyorToken)
+        }))
+        const dataPoints = await getRest(API_SERVER + `/api/surveys/${survey_id}/datapoints`, surveyorToken) as any[];
+        expect(dataPoints.length).toBe(SeaBassFishCountDataPoints.length);
+    })
+
+    test('saving a data point fails if the user is not signed up for a surveyor', async () => {
+        const surveyorSurvey = SeaBassFishCountStudy.surveys.filter(({surveyor_email}) => {
+            return surveyor_email === surveyorUser.email
+        })[0];
+        const { survey_id } = surveyorSurvey;
+        const dataPoint = SeaBassFishCountDataPoints[0]
+        await expect(postRestNoBody(API_SERVER + `/api/surveys/${survey_id}/datapoints`, dataPoint, adminToken)).rejects.toThrow(UnauthorizedError);
+    })
+
+    test('we should be able to download all of the users data and it should have the data points nested with the survey', async () => {
+        const allStudies = await getRest(API_SERVER + '/api/studies/download', adminToken) as any[];
+
+        const { survey_id: surveyorSurveyId } = SeaBassFishCountStudy.surveys.filter(({surveyor_email}) => {
+            return surveyor_email === surveyorUser.email
+        })[0];
+        expect(allStudies.length).toBe(2);
+
+        const study = allStudies.filter(({study_id}) => study_id === SeaBassFishCountStudy.study_id)[0];
+        if (!study) {
+            console.error(allStudies);
+        }
+        const surveyorsSurvey = study.surveys.filter(({survey_id}) => survey_id === surveyorSurveyId)[0];
+        if (!surveyorsSurvey) {
+            console.error(study);
+        }
+        expect(surveyorsSurvey.data_points.length).toBe(SeaBassFishCountDataPoints.length);
+    })
+
     test('once a user logout out using a token, the token should result in a 401', async () => {
         await postRestNoBody(API_SERVER + '/auth/logout', {}, surveyorToken);
-
         await expect(getRest(API_SERVER + '/api/studies?type=surveyor', surveyorToken)).rejects.toThrow(UnauthorizedError)
     })
 });
