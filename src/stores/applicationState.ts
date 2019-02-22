@@ -10,6 +10,7 @@ import { StudyField } from '../datastore/utils';
 import { StudyType } from '../datastore/study';
 import { setSnackBar } from './ui';
 import { getFromApi, postToApi, putToApi } from './utils';
+import { deleteRest, getRest } from '../client';
 
 const DEFAULT_LATITUDE = 40.730819;
 const DEFAULT_LONGITUDE = -73.997461;
@@ -55,13 +56,6 @@ const fetchParams: RequestInit = {
     referrer: 'no-referrer'
 };
 
-function deleteFromApi(route: string) {
-    return fetch(route, {
-        ...fetchParams,
-        method: 'DELETE'
-    });
-}
-
 async function fetchSurveysForStudy(studyId: string) {
     const study = applicationState.studies[studyId];
     if (!study.surveys) {
@@ -73,7 +67,7 @@ async function fetchSurveysForStudy(studyId: string) {
 
 export async function getStudies(): Promise<{ [studyId: string]: Study }> {
     try {
-        const studies = camelcaseKeys(await getFromApi('/api/studies?type=admin'));
+        const studies = camelcaseKeys(await getRest('/api/studies?type=admin'));
         return groupArrayOfObjectsBy(studies, 'studyId');
     } catch (error) {
         setSnackBar('error', `Could not load studies: ${error}`);
@@ -90,6 +84,7 @@ export async function updateStudy(studyInput) {
         const response = await putToApi(`/api/studies/${studyId}`, study);
         setSnackBar('success', `Updated study ${studyInput.title}`);
     } catch (error) {
+        console.error(error);
         setSnackBar('error', `Unable to update study ${studyInput.title}`);
         throw error;
     }
@@ -122,19 +117,25 @@ export async function saveNewStudy(studyInput: Study) {
     });
     const route = `/api/studies`;
     try {
-        const createdStudy = (await postToApi(route, study)) as Study;
+        const createdStudy = camelcaseKeys((await postToApi(route, study)) as Study);
         applicationState.studies[study.studyId] = createdStudy;
         setSnackBar('success', 'Saved Study!');
     } catch (error) {
+        console.error(error);
         setSnackBar('error', 'Failed to save study');
         throw error;
     }
 }
 
 export async function deleteStudy(studyId: string) {
-    const route = `/api/studies/${studyId}`;
-    const response = await deleteFromApi(route);
-    delete applicationState.studies[studyId];
+    try {
+        await deleteRest(`/api/studies/${studyId}`);
+        delete applicationState.studies[studyId];
+    } catch (error) {
+        console.error(error);
+        setSnackBar('error', 'Failed to delete study');
+        throw error;
+    }
 }
 
 export async function selectNewStudy(study: any) {
@@ -290,9 +291,5 @@ export function getMapCenterForStudy(studyId: string) {
     }
     return { latitude, longitude };
 }
-
-autorun(() => {
-    console.log(toJS(applicationState.mapCenters));
-});
 
 export default applicationState;

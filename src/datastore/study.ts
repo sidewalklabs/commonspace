@@ -188,7 +188,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                         sas.emails
                     FROM
                         data_collection.study AS stu
-                        INNER JOIN study_and_surveyors AS sas
+                        LEFT JOIN study_and_surveyors AS sas
                         ON stu.study_id = sas.study_id
                     WHERE
                         stu.user_id=$1`;
@@ -505,12 +505,14 @@ export async function updateStudy(pool: pg.Pool, study: Study) {
         map
     } = study;
     const studyTablename = studyIdToTablename(studyId);
+    const lastUpdated = Date.now() / 1000;
     const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, author, author_url, description, protocol_version, study_type, fields, tablename, map, location, last_updated)
 VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, to_timestamp($13))`;
     const query = `${newStudyMetadataQuery}
                    ON CONFLICT (study_id)
                    DO UPDATE SET (title, author, author_url, description, protocol_version, fields, map, location, last_updated)
-                       = ($14, $15, $16, $17, $18, $19, $20, $21, to_timestamp($22))`;
+                       = ($14, $15, $16, $17, $18, $19, $20, $21, to_timestamp($22))
+                       RETURNING last_updated`;
     const values = [
         studyId,
         title,
@@ -524,7 +526,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, to_timestamp($13))`;
         studyTablename,
         JSON.stringify(map),
         location,
-        Date.now() / 1000,
+        lastUpdated,
         title,
         author,
         authorUrl,
@@ -533,12 +535,12 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, to_timestamp($13))`;
         fields,
         JSON.stringify(map),
         location,
-        Date.now() / 1000
+        lastUpdated
     ];
     try {
         const { rows } = await pool.query(query, values);
-        const { last_updated: lastUpdated, created_at: createdAt } = rows[0];
-        return { ...study, lastUpdated, createdAt };
+        const { last_updated: lastUpdated } = rows[0];
+        return { ...study, lastUpdated };
     } catch (error) {
         console.error(`[sql ${query}] [values ${JSON.stringify(values)}] ${error}`);
         throw error;

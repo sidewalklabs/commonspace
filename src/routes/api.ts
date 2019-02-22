@@ -30,7 +30,7 @@ import {
     usersSurveysForStudy,
     returnStudyMetadata
 } from '../datastore/study';
-import { checkUserIdIsSurveyor, createNewSurveyForStudy, updateSurvey } from '../datastore/survey';
+import { userIdIsSurveyor, createNewSurveyForStudy, updateSurvey } from '../datastore/survey';
 import { userIsAdminOfStudy, deleteUser } from '../datastore/user';
 import { createLocation } from '../datastore/location';
 import DbPool from '../database';
@@ -361,7 +361,7 @@ router.delete(
         return401OnUnauthorizedError(async (req: Request, res: Response) => {
             const { user_id: userId } = req.user;
             const { studyId } = req.params;
-            if (!userIsAdminOfStudy(DbPool, studyId, userId)) {
+            if (!(await userIdIsAdminOfStudy(DbPool, studyId, userId))) {
                 throw new UnauthorizedError();
                 return;
             }
@@ -377,7 +377,7 @@ router.get(
         return401OnUnauthorizedError(async (req: Request, res: Response) => {
             const { user_id: userId } = req.user;
             const { studyId } = req.params;
-            if (!userIsAdminOfStudy(DbPool, studyId, userId)) {
+            if (!(await userIdIsAdminOfStudy(DbPool, studyId, userId))) {
                 throw new UnauthorizedError();
                 return;
             }
@@ -420,7 +420,7 @@ async function saveGeoJsonFeatureAsLocation(x: Feature | FeatureCollection) {
 async function saveDataPoint(req: Request, res: Response) {
     const { user_id: userId } = req.user;
     const { surveyId, dataPointId } = req.params;
-    const userCanAccessSurvey = await checkUserIdIsSurveyor(DbPool, userId, surveyId);
+    const userCanAccessSurvey = await userIdIsSurveyor(DbPool, userId, surveyId);
     if (!userCanAccessSurvey) {
         throw new UnauthorizedError();
         return;
@@ -446,7 +446,7 @@ router.get(
         return401OnUnauthorizedError(async (req: Request, res: Response) => {
             const { user_id: userId } = req.user;
             const { surveyId } = req.params;
-            const userCanAccessSurvey = await checkUserIdIsSurveyor(DbPool, userId, surveyId);
+            const userCanAccessSurvey = await userIdIsSurveyor(DbPool, userId, surveyId);
             if (!userCanAccessSurvey) {
                 res.statusMessage = 'not allowed to access survey';
                 throw new UnauthorizedError();
@@ -463,8 +463,7 @@ router.post(
         return401OnUnauthorizedError(async (req: Request, res: Response) => {
             const { user_id: userId } = req.user;
             const { surveyId } = req.params;
-            const userCanAccessSurvey = await checkUserIdIsSurveyor(DbPool, userId, surveyId);
-            if (!userCanAccessSurvey) {
+            if (!(await userIdIsSurveyor(DbPool, userId, surveyId))) {
                 throw new UnauthorizedError();
                 return;
             }
@@ -480,11 +479,16 @@ router.post(
 router.post(
     '/surveys/:surveyId/datapoints/:dataPointId',
     return500OnError(
-        return401OnUnauthorizedError((req: Request, res: Response) => {
+        return401OnUnauthorizedError(async (req: Request, res: Response) => {
+            const { user_id: userId } = req.user;
+            const { surveyId } = req.params;
+            if (!(await userIdIsSurveyor(DbPool, userId, surveyId))) {
+                throw new UnauthorizedError();
+                return;
+            }
             const datapoint = req.body as DataPoint;
-            req.body.creation_date = datapoint.date;
-            req.body.last_updated = datapoint.date;
-            return saveDataPoint(req, res);
+            await saveDataPoint(req, res);
+            res.status(200).send(datapoint);
         })
     )
 );
@@ -492,10 +496,16 @@ router.post(
 router.put(
     '/surveys/:surveyId/datapoints/:dataPointId',
     return500OnError(
-        return401OnUnauthorizedError((req: Request, res: Response) => {
+        return401OnUnauthorizedError(async (req: Request, res: Response) => {
+            const { user_id: userId } = req.user;
+            const { surveyId } = req.params;
+            if (!(await userIdIsSurveyor(DbPool, userId, surveyId))) {
+                throw new UnauthorizedError();
+                return;
+            }
             const datapoint = req.body as DataPoint;
-            req.body.last_updated = datapoint.date;
-            return saveDataPoint(req, res);
+            await saveDataPoint(req, res);
+            res.status(200).send(datapoint);
         })
     )
 );
@@ -505,7 +515,7 @@ router.delete(
     return500OnError(async (req: Request, res: Response) => {
         const { user_id: userId } = req.user;
         const { surveyId, dataPointId } = req.params;
-        if (!checkUserIdIsSurveyor(DbPool, userId, surveyId)) {
+        if (!(await userIdIsSurveyor(DbPool, userId, surveyId))) {
             throw new UnauthorizedError();
             return;
         }
@@ -565,12 +575,12 @@ router.put(
             const { user_id: userId } = req.user;
             const study = camelcaseKeys(req.body as Study);
             const { studyId } = req.params;
-            if (userIdIsAdminOfStudy(DbPool, studyId, userId)) {
+            if (!(await userIdIsAdminOfStudy(DbPool, studyId, userId))) {
                 throw new UnauthorizedError();
                 return;
             }
             const { surveys } = study;
-            await updateStudy(DbPool, { userId, ...study });
+            const updatedStudy = await updateStudy(DbPool, { ...study, userId });
             const pgQueries = await Promise.all(
                 surveys.map(s =>
                     updateSurvey(
@@ -579,7 +589,7 @@ router.put(
                     )
                 )
             );
-            res.sendStatus(200);
+            res.status(200).send(updatedStudy);
         })
     )
 );
@@ -591,7 +601,7 @@ router.post(
             const { user_id: userId } = req.user;
             const { studyId } = req.params;
             const { email } = req.body;
-            if (userIdIsAdminOfStudy(DbPool, studyId, userId)) {
+            if (!(await userIdIsAdminOfStudy(DbPool, studyId, userId))) {
                 throw new UnauthorizedError();
                 return;
             }
