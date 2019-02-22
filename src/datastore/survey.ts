@@ -119,7 +119,7 @@ export function updateSurvey(pool: Pool, survey: Survey) {
     }
 }
 
-export async function checkUserIdIsSurveyor(pool: Pool, userId: string, surveyId: string) {
+export async function userIdIsSurveyor(pool: Pool, userId: string, surveyId: string) {
     const query = `SELECT survey_id
                    FROM data_collection.survey
                    WHERE user_id = $1 and survey_id = $2`;
