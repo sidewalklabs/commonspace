@@ -1,19 +1,8 @@
 import { observable, autorun } from 'mobx';
+import { navigate } from './router';
 
 interface AuthState {
     isAuth: boolean;
-}
-
-// this wrapping isn't great, because we can't handle errors generically underneath, we need special knowledge about f
-export async function logoutIfUnAuthorized(
-    f: (...args: any[]) => Promise<Response>
-): Promise<Response> {
-    const response = await f();
-    if (response.status === 401) {
-        authState.isAuth = false;
-        return response;
-    }
-    return response;
 }
 
 const authState = observable({

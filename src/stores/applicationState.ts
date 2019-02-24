@@ -10,7 +10,8 @@ import { StudyField } from '../datastore/utils';
 import { StudyType } from '../datastore/study';
 import { setSnackBar } from './ui';
 import { getFromApi, postToApi, putToApi } from './utils';
-import { deleteRest, getRest } from '../client';
+import { deleteRest, getRest, UnauthorizedError } from '../client';
+import { logoutIfError } from './router';
 
 const DEFAULT_LATITUDE = 40.730819;
 const DEFAULT_LONGITUDE = -73.997461;
@@ -56,26 +57,27 @@ const fetchParams: RequestInit = {
     referrer: 'no-referrer'
 };
 
-async function fetchSurveysForStudy(studyId: string) {
+const fetchSurveysForStudy = logoutIfError(UnauthorizedError, async (studyId: string) => {
     const study = applicationState.studies[studyId];
     if (!study.surveys) {
         const surveys = camelcaseKeys(await getFromApi(`/api/studies/${studyId}/surveys`));
         study.surveys = groupArrayOfObjectsBy(surveys, 'surveyId');
     }
     return study;
-}
+});
 
-export async function getStudies(): Promise<{ [studyId: string]: Study }> {
+export const getStudies = logoutIfError(UnauthorizedError, async () => {
     try {
         const studies = camelcaseKeys(await getRest('/api/studies?type=admin'));
-        return groupArrayOfObjectsBy(studies, 'studyId');
+        return groupArrayOfObjectsBy<Study>(studies, 'studyId');
     } catch (error) {
-        setSnackBar('error', `Could not load studies: ${error}`);
+        console.error(error);
+        setSnackBar('error', `Could not load studies`);
         throw error;
     }
-}
+});
 
-export async function updateStudy(studyInput) {
+export const updateStudy = logoutIfError(UnauthorizedError, async studyInput => {
     const { studyId } = studyInput;
     const surveys = Object.values(toJS(studyInput.surveys));
     const study = toJS(applicationState.currentStudy);
@@ -88,21 +90,9 @@ export async function updateStudy(studyInput) {
         setSnackBar('error', `Unable to update study ${studyInput.title}`);
         throw error;
     }
-}
+});
 
-function handleErrors(f: (...x: any[]) => Promise<Response>): (...y: any[]) => Promise<Response> {
-    return async (...args: any[]) => {
-        const response = await f(args);
-        if (response.status !== 200) {
-            throw new Error(
-                `[args: ${args}] [stausText ${response.statusText}] ${response.status}`
-            );
-        }
-        return response;
-    };
-}
-
-export async function saveNewStudy(studyInput: Study) {
+export const saveNewStudy = logoutIfError(UnauthorizedError, async (studyInput: Study) => {
     const study: Study = toJS(studyInput);
     if (study.fields.indexOf('notes') === -1) {
         study.fields = [...study.fields, 'notes'];
@@ -125,9 +115,9 @@ export async function saveNewStudy(studyInput: Study) {
         setSnackBar('error', 'Failed to save study');
         throw error;
     }
-}
+});
 
-export async function deleteStudy(studyId: string) {
+export const deleteStudy = logoutIfError(UnauthorizedError, async (studyId: string) => {
     try {
         await deleteRest(`/api/studies/${studyId}`);
         delete applicationState.studies[studyId];
@@ -136,7 +126,7 @@ export async function deleteStudy(studyId: string) {
         setSnackBar('error', 'Failed to delete study');
         throw error;
     }
-}
+});
 
 export async function selectNewStudy(study: any) {
     applicationState.currentStudy = await fetchSurveysForStudy(study.studyId);
