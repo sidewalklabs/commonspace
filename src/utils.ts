@@ -2,7 +2,7 @@
  *  [{}, {}, ..., {}] => {{}[field]: {}, {}[field]: {}, .... {}[field]: {}}
  * take a collection and create a hash index according to a choosen field, there can only be one unique value for each key.
  */
-export function groupArrayOfObjectsBy(xs: any, field: string) {
+export function groupArrayOfObjectsBy<T>(xs: T[], field: string): { [key: string]: T } {
     const pairs = xs.map(x => {
         const pair = {};
         pair[x[field]] = x;

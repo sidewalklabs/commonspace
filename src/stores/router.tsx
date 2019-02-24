@@ -53,6 +53,23 @@ export function navigate(route: string) {
     router.uri = sanitizedPathname();
 }
 
+export function logoutIfError<T>(
+    eC: Function,
+    f: (...args: any[]) => Promise<T>
+): (...args: any[]) => Promise<T> {
+    return async (...args) => {
+        try {
+            const result = await f(...args);
+            return result;
+        } catch (error) {
+            if (error instanceof eC) {
+                authState.isAuth = false;
+                navigate('/login');
+            }
+        }
+    };
+}
+
 export interface Router {
     uri: string;
 }
