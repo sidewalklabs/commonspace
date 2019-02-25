@@ -1,6 +1,7 @@
 import React from 'react';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
+import Button from '@material-ui/core/Button';
+import Typography from '@material-ui/core/Typography';
 import uuid from 'uuid';
 
 import { toJS } from 'mobx';
@@ -11,6 +12,7 @@ import { ReactLeafletSearch } from 'react-leaflet-search';
 
 import applicationState, { updateFeatureName, Study } from '../stores/applicationState';
 import { FeatureCollection } from 'geojson';
+import { closeModalIfVisible } from '../stores/ui';
 import { stringHash } from '../utils';
 
 const { TILE_SERVER_URL } = process.env;
@@ -20,27 +22,24 @@ const MAP_ATTRIBUTION = process.env.MAP_ATTRIBUTION
     : '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors';
 
 const styles = theme => ({
-    container: {
-        flexWrap: 'wrap'
+    header: {
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        padding: theme.spacing.unit * 3,
+        paddingBottom: theme.spacing.unit * 2
     },
-    root: {
+    body: {
+        padding: theme.spacing.unit * 3,
         display: 'flex',
-        width: '100%',
-        height: '400px',
-        marginTop: theme.spacing.unit * 3,
-        overflow: 'auto'
+        height: '450px'
+    },
+    footer: {
+        borderTop: `1px solid ${theme.palette.divider}`,
+        display: 'flex',
+        padding: theme.spacing.unit * 3,
+        justifyContent: 'flex-end'
     },
     map: {
         flex: '1 0 auto'
-    },
-    table: {
-        minWidth: 400,
-        overflow: 'auto'
-    },
-    textfield: {
-        marginLeft: theme.spacing.unit,
-        marginRight: theme.spacing.unit,
-        width: 125
     }
 });
 
@@ -194,34 +193,52 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
     };
 
     return (
-        <Paper className={classes.root}>
-            <Map className={classes.map} center={[lat, lng]} zoom={17} zoomControl={false}>
-                <TileLayer attribution={MAP_ATTRIBUTION} url={TILE_SERVER_URL} />
-
-                <GeoJSON
-                    data={geojson}
-                    key={geojsonHash}
-                    onEachFeature={(feature, layer) =>
-                        layer.on({ click: () => onEachFeature(feature, layer) })
-                    }
-                />
-                <WrappedLeaftletSearch position="topleft" />
-                <FeatureGroup>
-                    <EditControl
-                        position="topright"
-                        onEdited={onEdited}
-                        onCreated={onCreated}
-                        onDeleted={onDeleted}
-                        onMounted={onMounted}
-                        onEditStart={onEditStart}
-                        onEditStop={onEditStop}
-                        onDeleteStart={onDeleteStart}
-                        onDeleteStop={onDeleteStop}
-                        draw={ControlMenuOptions}
+        <>
+            <div className={classes.header}>
+                <Typography component="h2" variant="h6" color="inherit" gutterBottom noWrap>
+                    Draw Zones and Points of Interest
+                </Typography>
+                <Typography component="h2" variant="subtitle1" color="inherit" gutterBottom noWrap>
+                    Double click existing zones to rename them
+                </Typography>
+            </div>
+            <div className={classes.body}>
+                <Map className={classes.map} center={[lat, lng]} zoom={17} zoomControl={false}>
+                    <TileLayer attribution={MAP_ATTRIBUTION} url={TILE_SERVER_URL} />
+                    <GeoJSON
+                        data={geojson}
+                        key={geojsonHash}
+                        onEachFeature={(feature, layer) =>
+                            layer.on({ click: () => onEachFeature(feature, layer) })
+                        }
                     />
-                </FeatureGroup>
-            </Map>
-        </Paper>
+                    <WrappedLeaftletSearch position="topleft" />
+                    <FeatureGroup>
+                        <EditControl
+                            position="topright"
+                            onEdited={onEdited}
+                            onCreated={onCreated}
+                            onDeleted={onDeleted}
+                            onMounted={onMounted}
+                            onEditStart={onEditStart}
+                            onEditStop={onEditStop}
+                            onDeleteStart={onDeleteStart}
+                            onDeleteStop={onDeleteStop}
+                            draw={ControlMenuOptions}
+                        />
+                    </FeatureGroup>
+                </Map>
+            </div>
+            <div className={classes.footer}>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => closeModalIfVisible('map')}
+                >
+                    Return to Study
+                </Button>
+            </div>
+        </>
     );
 });
 

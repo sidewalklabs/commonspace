@@ -8,11 +8,11 @@ import uiState from '../stores/ui';
 const styles = theme => ({
     paper: {
         position: 'absolute',
-        width: '700px',
+        width: '100%',
+        maxWidth: '800px',
         maxHeight: '700px',
         overflow: 'auto',
         backgroundColor: theme.palette.background.paper,
-        padding: theme.spacing.unit * 4,
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)'

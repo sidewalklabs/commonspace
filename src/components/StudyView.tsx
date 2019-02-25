@@ -4,6 +4,7 @@ import { observer } from 'mobx-react';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import EditIcon from '@material-ui/icons/Edit';
+import IconButton from '@material-ui/core/IconButton';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
@@ -11,7 +12,7 @@ import Typography from '@material-ui/core/Typography';
 
 import LockedMapView from './LockedMapView';
 
-import uiState from '../stores/ui';
+import uiState, { closeModalIfVisible } from '../stores/ui';
 import applicationState, {
     saveNewStudy,
     updateStudy,
@@ -29,16 +30,14 @@ const styles = theme => ({
     },
     header: {
         borderBottom: `1px solid ${theme.palette.divider}`,
-        padding: theme.spacing.unit * 2,
+        padding: theme.spacing.unit * 3,
         marginBottom: theme.spacing.unit * 2
     },
     footer: {
         borderTop: `1px solid ${theme.palette.divider}`,
         display: 'flex',
         marginTop: theme.spacing.unit * 2,
-        paddingLeft: theme.spacing.unit * 2,
-        paddingRight: theme.spacing.unit * 2,
-        paddingTop: theme.spacing.unit * 2,
+        padding: theme.spacing.unit * 3,
         justifyContent: 'flex-end'
     },
     columns: {
@@ -48,8 +47,8 @@ const styles = theme => ({
         flex: '1 1 0',
         display: 'flex',
         flexDirection: 'column',
-        marginLeft: theme.spacing.unit * 2,
-        marginRight: theme.spacing.unit * 2
+        marginLeft: theme.spacing.unit * 3,
+        marginRight: theme.spacing.unit * 3
     },
     textField: {
         marginLeft: theme.spacing.unit,
@@ -67,23 +66,13 @@ const styles = theme => ({
 
 async function update(study) {
     await updateStudy(study);
-
-    // if this is rendered in a modal, close on success
-    const visibleModal = uiState.modalStack.slice(-1)[0];
-    if (visibleModal === 'study') {
-        uiState.modalStack.pop();
-    }
+    closeModalIfVisible('study');
 }
 
 async function create(study) {
     await saveNewStudy(study);
     uiState.currentStudyIsNew = false;
-
-    // if this is rendered in a modal, close on success
-    const visibleModal = uiState.modalStack.slice(-1)[0];
-    if (visibleModal === 'study') {
-        uiState.modalStack.pop();
-    }
+    closeModalIfVisible('study');
 }
 
 interface CreateOrUpdateButtonProps {
@@ -214,6 +203,7 @@ const StudyView = observer((props: any & WithStyles) => {
             ) : (
                 <TextField
                     label="Study Type"
+                    disabled
                     className={classes.textField}
                     value={groupArrayOfObjectsBy(STUDY_TYPES, 'value')[type].label}
                     margin="normal"
@@ -227,7 +217,7 @@ const StudyView = observer((props: any & WithStyles) => {
             <div className={classes.container}>
                 {studyIsNew && (
                     <div className={classes.header}>
-                        <Typography variant="title">New Study</Typography>
+                        <Typography variant="h6">New Study</Typography>
                     </div>
                 )}
                 <div className={classes.columns}>
@@ -265,14 +255,17 @@ const StudyView = observer((props: any & WithStyles) => {
                         <TextField
                             className={classes.textField}
                             label="Study Fields"
+                            disabled
                             value={`${fields.length} Fields`}
                             InputProps={{
-                                startAdornment: (
-                                    <InputAdornment
-                                        position="end"
-                                        onClick={() => uiState.modalStack.push('studyFields')}
-                                    >
-                                        <EditIcon />
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="Edit Fields"
+                                            onClick={() => uiState.modalStack.push('studyFields')}
+                                        >
+                                            <EditIcon />
+                                        </IconButton>
                                     </InputAdornment>
                                 )
                             }}
@@ -280,29 +273,35 @@ const StudyView = observer((props: any & WithStyles) => {
                         <TextField
                             className={classes.textField}
                             label="Surveyors"
+                            disabled
                             value={`${surveyors.length} Surveyors`}
                             InputProps={{
-                                startAdornment: (
-                                    <InputAdornment
-                                        position="end"
-                                        onClick={() => uiState.modalStack.push('surveyors')}
-                                    >
-                                        <EditIcon />
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="Edit Surveyors"
+                                            onClick={() => uiState.modalStack.push('surveyors')}
+                                        >
+                                            <EditIcon />
+                                        </IconButton>
                                     </InputAdornment>
                                 )
                             }}
                         />
                         <TextField
                             className={classes.textField}
+                            disabled
                             label="Surveys"
                             value={`${Object.keys(toJS(surveys)).length} Surveys`}
                             InputProps={{
-                                startAdornment: (
-                                    <InputAdornment
-                                        position="end"
-                                        onClick={() => uiState.modalStack.push('surveys')}
-                                    >
-                                        <EditIcon />
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="Edit Surveys"
+                                            onClick={() => uiState.modalStack.push('surveys')}
+                                        >
+                                            <EditIcon />
+                                        </IconButton>
                                     </InputAdornment>
                                 )
                             }}
@@ -333,6 +332,7 @@ const StudyView = observer((props: any & WithStyles) => {
                     </TextField> */}
                         <LockedMapView
                             isEditable
+                            showOverlay={!features.length}
                             lat={latitude}
                             lng={longitude}
                             featureCollection={map}

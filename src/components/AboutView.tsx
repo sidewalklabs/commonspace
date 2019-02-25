@@ -32,7 +32,7 @@ const AboutView = observer((props: AboutViewProps & WithStyles) => {
         <>
             {!webview && <AppBar />}
             <div className={classes.content}>
-                <Typography variant="title" gutterBottom>
+                <Typography variant="h6" gutterBottom>
                     About CommonSpace
                 </Typography>
                 <Typography variant="body1" paragraph>
@@ -58,7 +58,7 @@ const AboutView = observer((props: AboutViewProps & WithStyles) => {
                     portal.
                 </Typography>
 
-                <Typography variant="title" gutterBottom>
+                <Typography variant="h6" gutterBottom>
                     Why we built CommonSpace
                 </Typography>
                 <Typography variant="body1" paragraph>
@@ -86,7 +86,7 @@ const AboutView = observer((props: AboutViewProps & WithStyles) => {
                     making cities for and with people.
                 </Typography>
 
-                <Typography variant="title" gutterBottom>
+                <Typography variant="h6" gutterBottom>
                     The Public Life Data Protocol
                 </Typography>
                 <Typography variant="body1" paragraph>
@@ -119,7 +119,7 @@ const AboutView = observer((props: AboutViewProps & WithStyles) => {
                     cities and regions.
                 </Typography>
 
-                <Typography variant="title" gutterBottom>
+                <Typography variant="h6" gutterBottom>
                     Pilot in Thorncliffe Park
                 </Typography>
                 <Typography variant="body1" paragraph>
@@ -180,7 +180,7 @@ const AboutView = observer((props: AboutViewProps & WithStyles) => {
                     .
                 </Typography>
 
-                <Typography variant="title" gutterBottom>
+                <Typography variant="h6" gutterBottom>
                     News
                 </Typography>
                 <ul>
@@ -191,7 +191,7 @@ const AboutView = observer((props: AboutViewProps & WithStyles) => {
                     </li>
                 </ul>
 
-                <Typography variant="title" gutterBottom>
+                <Typography variant="h6" gutterBottom>
                     Links
                 </Typography>
                 <Typography variant="subheading" gutterBottom>
@@ -285,7 +285,7 @@ const AboutView = observer((props: AboutViewProps & WithStyles) => {
                     </li>
                 </ul>
 
-                <Typography variant="title" gutterBottom>
+                <Typography variant="h6" gutterBottom>
                     Contact
                 </Typography>
                 <Typography variant="body1" paragraph>
@@ -298,7 +298,7 @@ const AboutView = observer((props: AboutViewProps & WithStyles) => {
                     <a href="mailto:commonspace@sidewalklabs.com">CommonSpace@sidewalklabs.com</a>.
                 </Typography>
 
-                <Typography variant="title" gutterBottom>
+                <Typography variant="h6" gutterBottom>
                     FAQs
                 </Typography>
                 <Typography variant="body2">Placeholder question?</Typography>

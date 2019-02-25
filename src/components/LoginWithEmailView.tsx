@@ -2,6 +2,7 @@ import React from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
+import Fab from '@material-ui/core/Fab';
 import Paper from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
@@ -62,7 +63,7 @@ const LoginWithEmailView = withStyles(styles)(
                     src="/assets/images/CircleIcon.png"
                     className={classes.avatar}
                 />
-                <Typography variant="title" align="center" gutterBottom>
+                <Typography variant="h6" align="center" gutterBottom>
                     Login to CommonSpace
                 </Typography>
                 <TextField
@@ -80,16 +81,16 @@ const LoginWithEmailView = withStyles(styles)(
                     error={logInState.passwordErrorMessage ? true : false}
                     className={classes.textField}
                 />
-                <Button
+                <Fab
                     classes={{
                         root: classes.logInButton,
                         label: classes.buttonLabel
                     }}
-                    variant="extendedFab"
+                    variant="extended"
                     onClick={logInUser}
                 >
                     Log In
-                </Button>
+                </Fab>
                 <Button onClick={() => navigate('/reset')}>Forgot Password</Button>
                 <Button onClick={() => navigate('/signup')}>Sign Up</Button>
             </Paper>

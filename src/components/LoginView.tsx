@@ -1,7 +1,7 @@
 import React from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
+import Fab from '@material-ui/core/Fab';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { GoogleLogin } from 'react-google-login';
@@ -89,7 +89,7 @@ const LoginView = withStyles(styles)(
                         src="/assets/images/CircleIcon.png"
                         className={classes.avatar}
                     />
-                    <Typography variant="title" align="center" gutterBottom>
+                    <Typography variant="h6" align="center" gutterBottom>
                         Welcome to CommonSpace
                     </Typography>
                     <Typography variant="body1" align="center">
@@ -100,8 +100,8 @@ const LoginView = withStyles(styles)(
                         onSuccess={logInUserGoogleOAuth}
                         onFailure={responseGoogleFailure}
                         render={renderProps => (
-                            <Button
-                                variant="extendedFab"
+                            <Fab
+                                variant="extended"
                                 onClick={renderProps.onClick}
                                 classes={{
                                     root: classes.button,
@@ -109,14 +109,14 @@ const LoginView = withStyles(styles)(
                                 }}
                             >
                                 Continue with Google
-                            </Button>
+                            </Fab>
                         )}
                     />
                     <Typography variant="caption" align="center">
                         OR
                     </Typography>
-                    <Button
-                        variant="extendedFab"
+                    <Fab
+                        variant="extended"
                         color="secondary"
                         onClick={() => navigate('/loginWithEmail')}
                         classes={{
@@ -125,7 +125,7 @@ const LoginView = withStyles(styles)(
                         }}
                     >
                         Continue with Email
-                    </Button>
+                    </Fab>
                     <Typography variant="caption" align="center" gutterBottom>
                         By continuing, you agree to CommonSpace <a href="/terms">terms</a> and{' '}
                         <a href="/privacy">privacy</a>
@@ -140,8 +140,8 @@ const LoginView = withStyles(styles)(
                     >
                         CommonSpace is an app for running Public Life Studies
                     </Typography>
-                    <Button
-                        variant="extendedFab"
+                    <Fab
+                        variant="extended"
                         color="secondary"
                         href="/about"
                         classes={{
@@ -151,7 +151,7 @@ const LoginView = withStyles(styles)(
                         style={{ width: 'auto', marginBottom: 'auto' }}
                     >
                         Learn More
-                    </Button>
+                    </Fab>
                 </div>
             </Paper>
         );

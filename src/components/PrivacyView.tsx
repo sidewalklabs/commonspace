@@ -28,7 +28,7 @@ const PrivacyView = observer((props: PrivacyViewProps & WithStyles) => {
             {!webview && <AppBar />}
             <div className={classes.content}>
                 <Typography variant="headline" gutterBottom>
-                    ​Sidewalk Toronto Privacy Policy
+                    Sidewalk Toronto Privacy Policy
                 </Typography>
                 <Typography variant="body2" paragraph>
                     Last Updated: June 6, 2018
@@ -40,7 +40,7 @@ const PrivacyView = observer((props: PrivacyViewProps & WithStyles) => {
                     contractors.{' '}
                 </Typography>
 
-                <Typography variant="title" gutterBottom>
+                <Typography variant="h6" gutterBottom>
                     Collection of Information{' '}
                 </Typography>
                 <Typography variant="body2">Information You Provide to Us</Typography>
@@ -91,7 +91,7 @@ const PrivacyView = observer((props: PrivacyViewProps & WithStyles) => {
                     .
                 </Typography>
 
-                <Typography variant="title" gutterBottom>
+                <Typography variant="h6" gutterBottom>
                     Use of Information
                 </Typography>
                 <Typography variant="body1">We may use this information to:</Typography>
@@ -134,7 +134,7 @@ const PrivacyView = observer((props: PrivacyViewProps & WithStyles) => {
                     the purposes for which information is being collected, used or disclosed.
                 </Typography>
 
-                <Typography variant="title" gutterBottom>
+                <Typography variant="h6" gutterBottom>
                     Sharing of Information
                 </Typography>
                 <Typography variant="body1" paragraph>
@@ -148,7 +148,7 @@ const PrivacyView = observer((props: PrivacyViewProps & WithStyles) => {
                     same high level as we do.{' '}
                 </Typography>
 
-                <Typography variant="title" gutterBottom>
+                <Typography variant="h6" gutterBottom>
                     Transfer of Information to Other Countries
                 </Typography>
                 <Typography variant="body1" paragraph>
@@ -156,7 +156,7 @@ const PrivacyView = observer((props: PrivacyViewProps & WithStyles) => {
                     laws. Still, we require guarantees from our partners that it will be kept safe.
                 </Typography>
 
-                <Typography variant="title" gutterBottom>
+                <Typography variant="h6" gutterBottom>
                     Your Access and Correction Rights
                 </Typography>
                 <Typography variant="body1" paragraph>
@@ -168,7 +168,7 @@ const PrivacyView = observer((props: PrivacyViewProps & WithStyles) => {
                     law. In that case we will justify our refusal.
                 </Typography>
 
-                <Typography variant="title" gutterBottom>
+                <Typography variant="h6" gutterBottom>
                     Contact Us
                 </Typography>
                 <Typography variant="body1" paragraph>

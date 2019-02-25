@@ -1,16 +1,16 @@
 import React from 'react';
 import { observer } from 'mobx-react';
-import { toJS } from 'mobx';
-import Modal from '@material-ui/core/Modal';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 
+import Button from '@material-ui/core/Button';
 import Chip from '@material-ui/core/Chip';
-import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 
 import applicationState from '../stores/applicationState';
 import { StudyField } from '../datastore/utils';
 import { StudyType } from '../datastore/study';
+
+import uiState, { closeModalIfVisible } from '../stores/ui';
 
 const AVAILABLE_FIELDS: StudyField[] = [
     'gender',
@@ -23,11 +23,21 @@ const AVAILABLE_FIELDS: StudyField[] = [
 ];
 
 const styles = theme => ({
-    root: {
-        width: '100%',
-        height: '40%',
-        marginTop: theme.spacing.unit * 3,
-        overflow: 'auto'
+    header: {
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        padding: theme.spacing.unit * 3
+    },
+    body: {
+        padding: theme.spacing.unit * 3
+    },
+    footer: {
+        borderTop: `1px solid ${theme.palette.divider}`,
+        display: 'flex',
+        padding: theme.spacing.unit * 3,
+        justifyContent: 'flex-end'
+    },
+    chip: {
+        margin: theme.spacing.unit / 2
     }
 });
 
@@ -48,41 +58,54 @@ const FieldsList = withStyles(styles)(
                 return null;
             }
             const index = fields.indexOf(possibleField);
-            if (index === -1) {
-                // for ux reasons, it's best to present the buttons in a consistent order
-                const newFields = [...currentStudy.fields, possibleField];
-                newFields.sort((a, b) => AVAILABLE_FIELDS.indexOf(a) - AVAILABLE_FIELDS.indexOf(b));
-                return (
-                    <Chip
-                        key={possibleField}
-                        label={possibleField}
-                        onClick={() => {
-                            currentStudy.fields = newFields;
-                        }}
-                        className={classes.chip}
-                    />
-                );
+            const isSelected = index >= 0;
+            let onClick = undefined;
+            let onDelete = undefined;
+
+            if (isSelected) {
+                onDelete = () => {
+                    currentStudy.fields.splice(index, 1);
+                    currentStudy.fields = [...currentStudy.fields];
+                };
             } else {
-                return (
-                    <Chip
-                        label={possibleField}
-                        key={possibleField}
-                        onDelete={() => {
-                            currentStudy.fields.splice(index, 1);
-                            currentStudy.fields = [...currentStudy.fields];
-                        }}
-                        className={classes.chip}
-                    />
-                );
+                onClick = () => {
+                    // for ux reasons, it's best to present the buttons in a consistent order
+                    const newFields = [...currentStudy.fields, possibleField];
+                    newFields.sort(
+                        (a, b) => AVAILABLE_FIELDS.indexOf(a) - AVAILABLE_FIELDS.indexOf(b)
+                    );
+                    currentStudy.fields = newFields;
+                };
             }
+            return (
+                <Chip
+                    key={possibleField}
+                    label={possibleField}
+                    onClick={onClick}
+                    onDelete={onDelete}
+                    color={isSelected ? 'primary' : 'default'}
+                    className={classes.chip}
+                />
+            );
         });
         return (
-            <Paper className={classes.root}>
-                <Typography component="h2" variant="title" color="inherit" noWrap>
-                    Choose Fields
-                </Typography>
-                {chips}
-            </Paper>
+            <>
+                <div className={classes.header}>
+                    <Typography component="h2" variant="h6" color="inherit" gutterBottom noWrap>
+                        Choose Fields
+                    </Typography>
+                </div>
+                <div className={classes.body}>{chips}</div>
+                <div className={classes.footer}>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => closeModalIfVisible('studyFields')}
+                    >
+                        Return to Study
+                    </Button>
+                </div>
+            </>
         );
     })
 );

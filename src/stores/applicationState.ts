@@ -1,15 +1,16 @@
 import camelcaseKeys from 'camelcase-keys';
 import { FeatureCollection } from 'geojson';
-import { observable, autorun, toJS, get, set, computed } from 'mobx';
+import { observable, autorun, toJS, computed } from 'mobx';
 import moment from 'moment';
 import { center } from '@turf/turf';
 import uuid from 'uuid';
 
-import { groupArrayOfObjectsBy, snakecasePayload } from '../utils';
+import { groupArrayOfObjectsBy } from '../utils';
 import { StudyField } from '../datastore/utils';
 import { StudyType } from '../datastore/study';
 import { setSnackBar } from './ui';
 import { getFromApi, postToApi, putToApi } from './utils';
+
 import { deleteRest, getRest, UnauthorizedError } from '../client';
 import { logoutIfError } from './router';
 
@@ -44,6 +45,7 @@ export interface Study {
 }
 
 export interface ApplicationState {
+    draftSurveyor: string;
     currentStudy: null | Study;
     studies: { [key: string]: Study };
     mapCenters: { [key: string]: LongitudeLatitude };
@@ -57,21 +59,24 @@ const fetchParams: RequestInit = {
     referrer: 'no-referrer'
 };
 
-const fetchSurveysForStudy = logoutIfError(UnauthorizedError, async (studyId: string) => {
-    const study = applicationState.studies[studyId];
-    if (!study.surveys) {
-        const surveys = camelcaseKeys(await getFromApi(`/api/studies/${studyId}/surveys`));
-        study.surveys = groupArrayOfObjectsBy(surveys, 'surveyId');
-    }
-    return study;
-});
+function deleteFromApi(route: string) {
+    return fetch(route, {
+        ...fetchParams,
+        method: 'DELETE'
+    });
+}
 
 export const getStudies = logoutIfError(UnauthorizedError, async () => {
     try {
-        const studies = camelcaseKeys(await getRest('/api/studies?type=admin'));
+        const studies = camelcaseKeys(await getFromApi('/api/studies?type=admin'));
+        studies.forEach(study => {
+            // TODO: need to camel case the surveys array, but for some reason
+            // deep camelcasing studies breaks the map coordinates
+            study.surveys = study.surveys.map(survey => camelcaseKeys(survey));
+            study.surveys = groupArrayOfObjectsBy(study.surveys, 'surveyId');
+        });
         return groupArrayOfObjectsBy<Study>(studies, 'studyId');
     } catch (error) {
-        console.error(error);
         setSnackBar('error', `Could not load studies`);
         throw error;
     }
@@ -86,7 +91,6 @@ export const updateStudy = logoutIfError(UnauthorizedError, async studyInput => 
         const response = await putToApi(`/api/studies/${studyId}`, study);
         setSnackBar('success', `Updated study ${studyInput.title}`);
     } catch (error) {
-        console.error(error);
         setSnackBar('error', `Unable to update study ${studyInput.title}`);
         throw error;
     }
@@ -102,34 +106,41 @@ export const saveNewStudy = logoutIfError(UnauthorizedError, async (studyInput: 
         return {
             method,
             representation,
+            surveyorEmail: survey.email,
             ...survey
         };
     });
     const route = `/api/studies`;
     try {
-        const createdStudy = camelcaseKeys((await postToApi(route, study)) as Study);
-        applicationState.studies[study.studyId] = createdStudy;
+        const createdStudy = camelcaseKeys(await postToApi(route, study));
+        // TODO: need to camel case the surveys array, but for some reason deep camelcasing a study breaks the geojson
+        createdStudy.surveys = createdStudy.surveys.map(survey => camelcaseKeys(survey));
+        createdStudy.surveys = groupArrayOfObjectsBy(createdStudy.surveys, 'surveyId');
+        applicationState.currentStudy = createdStudy;
+        applicationState.studies[createdStudy.studyId] = createdStudy;
         setSnackBar('success', 'Saved Study!');
     } catch (error) {
-        console.error(error);
+        applicationState.currentStudy = null;
         setSnackBar('error', 'Failed to save study');
         throw error;
     }
 });
 
 export const deleteStudy = logoutIfError(UnauthorizedError, async (studyId: string) => {
-    try {
-        await deleteRest(`/api/studies/${studyId}`);
-        delete applicationState.studies[studyId];
-    } catch (error) {
-        console.error(error);
-        setSnackBar('error', 'Failed to delete study');
-        throw error;
-    }
+    const route = `/api/studies/${studyId}`;
+    const response = await deleteFromApi(route);
+    delete applicationState.studies[studyId];
 });
 
+export function getCurrentStudyId() {
+    if (applicationState.currentStudy) {
+        return applicationState.currentStudy.studyId;
+    }
+    return undefined;
+}
+
 export async function selectNewStudy(study: any) {
-    applicationState.currentStudy = await fetchSurveysForStudy(study.studyId);
+    applicationState.currentStudy = study;
 }
 
 export function updateFeatureName(study: Study, locationId: string, name: string) {
@@ -187,14 +198,19 @@ export function setCurrentStudyEmptySkeleton() {
 
 export async function addNewSurveyToCurrentStudy() {
     const newSurveyId = uuid.v4();
-    applicationState.currentStudy.surveys[newSurveyId] = {
+    const startMoment = moment().startOf('hour');
+    const newSurvey = {
         surveyId: newSurveyId,
-        startDate: moment().toISOString(),
-        endDate: moment()
-            .add(1, 'hours')
-            .toISOString(),
-        surveyorEmail: '',
-        locationId: ''
+        startDate: startMoment.toISOString(),
+        endDate: startMoment.add(1, 'hours').toISOString(),
+        email: '',
+        locationId: '',
+        title: startMoment.format('h a')
+    };
+
+    applicationState.currentStudy.surveys = {
+        ...applicationState.currentStudy.surveys,
+        [newSurveyId]: newSurvey
     };
 }
 
@@ -205,11 +221,10 @@ export async function addNewSurveyorToSurvey(studyId: string, email: string) {
 export async function init() {
     const studies = await getStudies();
     applicationState.studies = studies;
-    const studyIds = Object.keys(studies);
-    await Promise.all(studyIds.map(fetchSurveysForStudy));
 }
 
 let applicationState: ApplicationState = observable({
+    draftSurveyor: '',
     currentStudy: null,
     studies: {},
     mapCenters: {}
