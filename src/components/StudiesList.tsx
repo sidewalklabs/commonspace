@@ -4,12 +4,8 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import StudyView from './StudyView';
 
 import { observer } from 'mobx-react';
@@ -22,14 +18,24 @@ import applicationState, {
 import uiState from '../stores/ui';
 
 const styles = theme => ({
-    icon: {
-        margin: theme.spacing.unit * 2
+    columnTitle: {
+        flex: 1,
+        paddingTop: theme.spacing.unit,
+        paddingBottom: theme.spacing.unit,
+        paddingLeft: theme.spacing.unit,
+        paddingRight: theme.spacing.unit * 3
     },
-    borderLessCell: {
-        border: 'none'
+    columnDate: {
+        paddingTop: theme.spacing.unit,
+        paddingBottom: theme.spacing.unit,
+        paddingLeft: theme.spacing.unit * 3,
+        paddingRight: theme.spacing.unit * 7,
+        flexBasis: '200px'
     },
     expansionPanelDetailsRoot: {
-        padding: 0
+        padding: 0,
+        paddingTop: theme.spacing.unit * 3,
+        borderTop: `1px solid ${theme.palette.divider}`
     }
 });
 
@@ -63,21 +69,17 @@ export default withStyles(styles)(
                     }}
                 >
                     <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                        <Table>
-                            <TableBody>
-                                <TableRow>
-                                    <TableCell className={classes.borderLessCell}>
-                                        {title}
-                                    </TableCell>
-                                    <TableCell className={classes.borderLessCell}>
-                                        {createdAtDate}
-                                    </TableCell>
-                                    <TableCell className={classes.borderLessCell}>
-                                        {lastUpdatedDate}
-                                    </TableCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
+                        <div className={classes.columnTitle}>
+                            <Typography color="primary" variant="body2">
+                                {title}
+                            </Typography>
+                        </div>
+                        <div className={classes.columnDate}>
+                            <Typography variant="body2">{createdAtDate}</Typography>
+                        </div>
+                        <div className={classes.columnDate}>
+                            <Typography variant="body2">{lastUpdatedDate}</Typography>
+                        </div>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails classes={{ root: classes.expansionPanelDetailsRoot }}>
                         <StudyView study={study} studyIsNew={false} />
@@ -87,16 +89,19 @@ export default withStyles(styles)(
         });
         return (
             <>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Study</TableCell>
-                            <TableCell>Created</TableCell>
-                            <TableCell>Updated</TableCell>
-                            <TableCell />
-                        </TableRow>
-                    </TableHead>
-                </Table>
+                <ExpansionPanel expanded={false}>
+                    <ExpansionPanelSummary style={{ cursor: 'default', pointerEvents: 'none' }}>
+                        <div className={classes.columnTitle}>
+                            <Typography variant="subtitle2">Study</Typography>
+                        </div>
+                        <div className={classes.columnDate}>
+                            <Typography variant="subtitle2">Created</Typography>
+                        </div>
+                        <div className={classes.columnDate}>
+                            <Typography variant="subtitle2">Updated</Typography>
+                        </div>
+                    </ExpansionPanelSummary>
+                </ExpansionPanel>
                 {studiesAsRows}
             </>
         );
