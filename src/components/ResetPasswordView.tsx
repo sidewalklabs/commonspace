@@ -2,6 +2,7 @@ import React from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
+import Fab from '@material-ui/core/Fab';
 import Paper from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
@@ -111,7 +112,7 @@ const ResetPassword = observer((props: ResetPasswordProps & WithStyles) => {
                 src="/assets/images/CircleIcon.png"
                 className={classes.avatar}
             />
-            <Typography variant="title" align="center" gutterBottom>
+            <Typography variant="h6" align="center" gutterBottom>
                 Reset Password
             </Typography>
             <TextField
@@ -129,16 +130,16 @@ const ResetPassword = observer((props: ResetPasswordProps & WithStyles) => {
                 error={state.matchingPasswordErrorMessage ? true : false}
                 className={classes.textField}
             />
-            <Button
+            <Fab
                 classes={{
                     root: classes.button,
                     label: classes.buttonLabel
                 }}
-                variant="extendedFab"
+                variant="extended"
                 onClick={async () => await ResetPasswordRequest(token)}
             >
                 Reset
-            </Button>
+            </Fab>
         </Paper>
     );
 });

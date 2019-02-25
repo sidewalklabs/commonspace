@@ -1,21 +1,17 @@
 import React from 'react';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import EditIcon from '@material-ui/icons/Edit';
+import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
-import uuid from 'uuid';
 
-import { get, set, toJS } from 'mobx';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { Map, Marker, Popup, TileLayer, FeatureGroup, Feature, GeoJSON } from 'react-leaflet';
-import { EditControl } from 'react-leaflet-draw';
+import { Map, TileLayer, GeoJSON } from 'react-leaflet';
 
-import applicationState from '../stores/applicationState';
 import { FeatureCollection } from 'geojson';
 import { stringHash } from '../utils';
 import uiState from '../stores/ui';
 
-const INITIAL_ZOOM_LEVEL = 17;
-const CENTER_COORDINATES = [-74.00293, 40.750496];
 const { TILE_SERVER_URL } = process.env;
 //    'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png';
 const MAP_ATTRIBUTION = process.env.MAP_ATTRIBUTION
@@ -26,14 +22,26 @@ const styles = theme => ({
     container: {
         flexWrap: 'wrap'
     },
-    edit: {
+    instructionOverlay: {
         position: 'absolute',
-        display: 'inline-block',
-        bottom: 0,
+        top: 0,
+        left: 0,
         right: 0,
-        width: '35px',
-        height: '35px',
+        bottom: 0,
+        zIndex: 1000,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    editButton: {
+        position: 'absolute',
+        bottom: theme.spacing.unit,
+        right: theme.spacing.unit,
         zIndex: 1000
+    },
+    editIcon: {
+        marginRight: theme.spacing.unit
     },
     root: {
         display: 'flex',
@@ -57,17 +65,16 @@ const styles = theme => ({
     }
 });
 
-type MapDrawShape = 'line' | 'polygon';
-
 interface MapViewProps {
     lat: number;
     lng: number;
     featureCollection: FeatureCollection;
     isEditable: boolean;
+    showOverlay: boolean;
 }
 
 const MapView = observer((props: MapViewProps & WithStyles) => {
-    const { classes, lat, lng, featureCollection, isEditable } = props;
+    const { classes, lat, lng, featureCollection, isEditable, showOverlay } = props;
 
     const geojson = toJS(featureCollection);
     const geojsonHash = stringHash(JSON.stringify(geojson));
@@ -87,8 +94,29 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
                 <TileLayer attribution={MAP_ATTRIBUTION} url={TILE_SERVER_URL} />
                 <GeoJSON data={geojson} key={geojsonHash} />
             </Map>
-            {isEditable ? (
-                <EditIcon className={classes.edit} onClick={() => uiState.modalStack.push('map')} />
+            {isEditable && showOverlay ? (
+                <div className={classes.instructionOverlay}>
+                    <Button
+                        className={classes.overlayEditButton}
+                        variant="contained"
+                        aria-label="Edit Features"
+                        onClick={() => uiState.modalStack.push('map')}
+                    >
+                        <EditIcon className={classes.editIcon} />
+                        Add a zone
+                    </Button>
+                </div>
+            ) : null}
+            {isEditable && !showOverlay ? (
+                <Button
+                    className={classes.editButton}
+                    variant="contained"
+                    aria-label="Edit Features"
+                    onClick={() => uiState.modalStack.push('map')}
+                >
+                    <EditIcon className={classes.editIcon} />
+                    Edit Zones
+                </Button>
             ) : null}
         </Paper>
     );

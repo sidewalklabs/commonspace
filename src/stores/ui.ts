@@ -34,6 +34,13 @@ export function setSnackBar(snackBarType: AvailableSnackbarType, snackBarText: s
     };
 }
 
+export function closeModalIfVisible(modal: AvailableModals) {
+    const visibleModal = uiState.modalStack.slice(-1)[0];
+    if (visibleModal === modal) {
+        uiState.modalStack.pop();
+    }
+}
+
 const uiState: UiState = observable({
     availableLocations: [],
     currentStudyIsNew: false,

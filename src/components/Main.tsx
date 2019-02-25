@@ -38,17 +38,20 @@ const styles = theme => ({
         backgroundColor: 'transparent'
     },
     mainBody: {
-        width: '80%',
-        minWidth: '300px',
-        display: 'flex',
-        alignItems: 'center',
-        flexDirection: 'column'
+        width: 'auto',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit *
+            3}px`,
+        [theme.breakpoints.up('md')]: {
+            width: theme.breakpoints.values.md
+        }
     },
     row: {
         display: 'flex',
         justifyContent: 'space-between',
-        marginTop: '25px',
-        marginBottom: '15px',
+        marginTop: theme.spacing.unit * 3,
+        marginBottom: theme.spacing.unit * 2,
         width: '100%'
     },
     studiesList: {
@@ -95,9 +98,10 @@ const Main = observer((props: MainProps & WithStyles) => {
                 <div className={classes.row}>
                     <Typography
                         component="h1"
-                        variant="title"
+                        variant="h6"
                         color="inherit"
                         noWrap
+                        gutterBottom
                         className={classes.title}
                     >
                         All Studies

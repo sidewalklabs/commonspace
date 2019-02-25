@@ -2,6 +2,7 @@ import React from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
+import Fab from '@material-ui/core/Fab';
 import Paper from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
@@ -64,7 +65,7 @@ const ResetView = observer((props: ResetProps & WithStyles) => {
                 src="/assets/images/CircleIcon.png"
                 className={classes.avatar}
             />
-            <Typography variant="title" align="center" gutterBottom>
+            <Typography variant="h6" align="center" gutterBottom>
                 Reset Password
             </Typography>
             <Typography variant="body1" align="center">
@@ -76,16 +77,16 @@ const ResetView = observer((props: ResetProps & WithStyles) => {
                 onChange={e => (resetState.email = e.target.value)}
                 className={classes.textField}
             />
-            <Button
+            <Fab
                 classes={{
                     root: classes.button,
                     label: classes.buttonLabel
                 }}
-                variant="extendedFab"
+                variant="extended"
                 onClick={async () => await resetPasswordRequest()}
             >
                 Send
-            </Button>
+            </Fab>
             <Button onClick={() => navigate('/login')}>Back to Log In</Button>
         </Paper>
     );

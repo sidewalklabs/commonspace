@@ -68,7 +68,7 @@ const Main = observer((props: any & WithStyles) => {
                 </IconButton>
                 <Typography
                     component="h1"
-                    variant="title"
+                    variant="h6"
                     color="inherit"
                     noWrap
                     className={classes.title}

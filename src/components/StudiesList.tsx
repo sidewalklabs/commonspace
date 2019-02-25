@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import moment from 'moment';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
@@ -14,7 +14,11 @@ import StudyView from './StudyView';
 
 import { observer } from 'mobx-react';
 
-import { selectNewStudy, Study } from '../stores/applicationState';
+import applicationState, {
+    getCurrentStudyId,
+    selectNewStudy,
+    Study
+} from '../stores/applicationState';
 import uiState from '../stores/ui';
 
 const styles = theme => ({
@@ -23,6 +27,9 @@ const styles = theme => ({
     },
     borderLessCell: {
         border: 'none'
+    },
+    expansionPanelDetailsRoot: {
+        padding: 0
     }
 });
 
@@ -42,11 +49,17 @@ export default withStyles(styles)(
             const { studyId, title, lastUpdated, createdAt } = study;
             const createdAtDate = moment(createdAt).format('MMM D, YYYY');
             const lastUpdatedDate = moment(lastUpdated).format('MMM D, YYYY');
+            const expanded = getCurrentStudyId() === studyId;
             return (
                 <ExpansionPanel
                     key={studyId}
-                    onChange={(event, expanded) => {
-                        expanded && transitionToViewStudy(study);
+                    expanded={expanded}
+                    onChange={() => {
+                        if (expanded) {
+                            applicationState.currentStudy = null;
+                        } else {
+                            transitionToViewStudy(study);
+                        }
                     }}
                 >
                     <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
@@ -66,14 +79,14 @@ export default withStyles(styles)(
                             </TableBody>
                         </Table>
                     </ExpansionPanelSummary>
-                    <ExpansionPanelDetails>
+                    <ExpansionPanelDetails classes={{ root: classes.expansionPanelDetailsRoot }}>
                         <StudyView study={study} studyIsNew={false} />
                     </ExpansionPanelDetails>
                 </ExpansionPanel>
             );
         });
         return (
-            <Fragment>
+            <>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -85,7 +98,7 @@ export default withStyles(styles)(
                     </TableHead>
                 </Table>
                 {studiesAsRows}
-            </Fragment>
+            </>
         );
     })
 );

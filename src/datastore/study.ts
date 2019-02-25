@@ -344,7 +344,7 @@ export async function usersSurveysForStudy(pool: pg.Pool, studyId: string, userI
 }
 
 export async function allSurveysForStudy(pool: pg.Pool, studyId: string) {
-    const query = `SELECT s.start_date, s.end_date, s.user_id,  u.email, s.survey_id, s.title, s.representation, s.microclimate, s.temperature_c, s.method, s.user_id, s.notes
+    const query = `SELECT s.start_date, s.end_date, s.user_id,  u.email, s.survey_id, s.title, s.location_id, s.representation, s.microclimate, s.temperature_c, s.method, s.user_id, s.notes
                    FROM data_collection.survey AS s
                    JOIN public.users AS u
                    ON s.user_id = u.user_id
