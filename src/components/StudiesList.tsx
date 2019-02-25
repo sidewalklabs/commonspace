@@ -22,15 +22,13 @@ const styles = theme => ({
         flex: 1,
         paddingTop: theme.spacing.unit,
         paddingBottom: theme.spacing.unit,
-        paddingLeft: theme.spacing.unit,
         paddingRight: theme.spacing.unit * 3
     },
     columnDate: {
         paddingTop: theme.spacing.unit,
         paddingBottom: theme.spacing.unit,
-        paddingLeft: theme.spacing.unit * 3,
-        paddingRight: theme.spacing.unit * 7,
-        flexBasis: '200px'
+        paddingRight: theme.spacing.unit * 3,
+        flexBasis: '180px'
     },
     expansionPanelDetailsRoot: {
         padding: 0,
@@ -52,7 +50,7 @@ export default withStyles(styles)(
     observer((props: StudiesListProps & WithStyles) => {
         const { studies, classes } = props;
         const studiesAsRows = Object.values(studies).map((study, index) => {
-            const { studyId, title, lastUpdated, createdAt } = study;
+            const { studyId, title, lastUpdated, createdAt, location } = study;
             const createdAtDate = moment(createdAt).format('MMM D, YYYY');
             const lastUpdatedDate = moment(lastUpdated).format('MMM D, YYYY');
             const expanded = getCurrentStudyId() === studyId;
@@ -75,10 +73,19 @@ export default withStyles(styles)(
                             </Typography>
                         </div>
                         <div className={classes.columnDate}>
-                            <Typography variant="body2">{createdAtDate}</Typography>
+                            <Typography color="textSecondary" variant="subtitle2">
+                                {location}
+                            </Typography>
                         </div>
                         <div className={classes.columnDate}>
-                            <Typography variant="body2">{lastUpdatedDate}</Typography>
+                            <Typography color="textSecondary" variant="body2">
+                                {createdAtDate}
+                            </Typography>
+                        </div>
+                        <div className={classes.columnDate}>
+                            <Typography color="textSecondary" variant="body2">
+                                {lastUpdatedDate}
+                            </Typography>
                         </div>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails classes={{ root: classes.expansionPanelDetailsRoot }}>
@@ -93,6 +100,9 @@ export default withStyles(styles)(
                     <ExpansionPanelSummary style={{ cursor: 'default', pointerEvents: 'none' }}>
                         <div className={classes.columnTitle}>
                             <Typography variant="subtitle2">Study</Typography>
+                        </div>
+                        <div className={classes.columnDate}>
+                            <Typography variant="subtitle2">Location</Typography>
                         </div>
                         <div className={classes.columnDate}>
                             <Typography variant="subtitle2">Created</Typography>
