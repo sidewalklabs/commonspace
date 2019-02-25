@@ -50,17 +50,25 @@ const styles = theme => ({
         marginLeft: theme.spacing.unit * 3,
         marginRight: theme.spacing.unit * 3
     },
-    textField: {
-        marginLeft: theme.spacing.unit,
-        marginRight: theme.spacing.unit
-    },
-    rightCornerButton: {
-        alignContent: 'flex-end',
-        width: 150
-    },
     map: {
         width: '300px',
         height: '300px'
+    },
+    undisabled: {
+        // this component is disabled to prevent text input interaction and UI feedback
+        // override some of the styles so it looks like an enabled text field
+        color: theme.palette.text.primary,
+        cursor: 'pointer',
+        '&:before': {
+            // The dashed underline in the disabled state has a lot of specificity
+            // In this one case !important seems justifiable
+            borderBottomStyle: 'solid !important'
+        }
+    },
+    undisabledLabel: {
+        // this component is disabled to prevent text input interaction and UI feedback
+        // override some of the styles so it looks like an enabled text field
+        color: `${theme.palette.text.secondary} !important`
     }
 });
 
@@ -77,33 +85,55 @@ async function create(study) {
 
 interface CreateOrUpdateButtonProps {
     study: Study;
-    map: FeatureCollection;
     studyIsNew: boolean;
 }
 
 // @ts-ignore
 const CreateOrUpdateButton = withStyles(styles)((props: CreateOrUpdateButtonProps & WithStyles) => {
-    const { studyIsNew, study, classes } = props;
+    const { studyIsNew, study } = props;
+    // Prevent users from creating incomplete studies, since sometimes that causes weird things to happen
+    // TODO: add real validation
+    const {
+        title,
+        description,
+        author,
+        authorUrl,
+        fields,
+        surveyors,
+        surveys,
+        location,
+        map
+    } = study;
+    const disabled =
+        !title ||
+        !description ||
+        !author ||
+        !authorUrl ||
+        !fields.length ||
+        !surveyors.length ||
+        !Object.keys(surveys).length ||
+        !location ||
+        !map.features.length;
     if (studyIsNew) {
         return (
             <Button
+                disabled={disabled}
                 variant="contained"
                 color="primary"
-                className={classes.rightCornerButton}
                 onClick={async () => await create(study)}
             >
-                Create
+                Create Study
             </Button>
         );
     } else {
         return (
             <Button
+                disabled={disabled}
                 variant="contained"
                 color="primary"
-                className={classes.rightCornerButton}
                 onClick={async () => await update(study)}
             >
-                Update
+                Update Study
             </Button>
         );
     }
@@ -121,14 +151,14 @@ const LocationTextField = withStyles(styles)(
         if (editable) {
             return (
                 <TextField
-                    className={classes.textField}
-                    label="Location"
+                    label="Location Name"
                     value={location}
+                    margin="dense"
                     onChange={e => (applicationState.currentStudy.location = e.target.value)}
                 />
             );
         } else {
-            return <TextField className={classes.textField} label="Location" value={location} />;
+            return <TextField disabled margin="dense" label="Location Name" value={location} />;
         }
     })
 );
@@ -180,7 +210,6 @@ const StudyView = observer((props: any & WithStyles) => {
                 <TextField
                     select
                     label="Study Type"
-                    className={classes.textField}
                     value={groupArrayOfObjectsBy(STUDY_TYPES, 'value')[type].value}
                     onChange={e => {
                         study.type = e.target.value;
@@ -190,7 +219,7 @@ const StudyView = observer((props: any & WithStyles) => {
                             className: classes.menu
                         }
                     }}
-                    margin="normal"
+                    margin="dense"
                 >
                     {STUDY_TYPES.map(({ value, label }) => {
                         return (
@@ -203,13 +232,9 @@ const StudyView = observer((props: any & WithStyles) => {
             ) : (
                 <TextField
                     label="Study Type"
-                    disabled
-                    className={classes.textField}
                     value={groupArrayOfObjectsBy(STUDY_TYPES, 'value')[type].label}
-                    margin="normal"
-                    InputProps={{
-                        readOnly: true
-                    }}
+                    margin="dense"
+                    disabled
                 />
             );
 
@@ -224,40 +249,48 @@ const StudyView = observer((props: any & WithStyles) => {
                     <div className={classes.column}>
                         <TextField
                             label="Title"
-                            className={classes.textField}
                             value={title}
                             onChange={e => (study.title = e.target.value)}
-                            margin="normal"
+                            margin="dense"
                         />
                         <TextField
-                            className={classes.textField}
                             label="Description"
                             value={description}
+                            margin="dense"
                             onChange={e =>
                                 (applicationState.currentStudy.description = e.target.value)
                             }
                         />
                         <TextField
-                            className={classes.textField}
                             label="Author"
                             value={author}
+                            margin="dense"
                             onChange={e => (applicationState.currentStudy.author = e.target.value)}
                         />
                         <TextField
-                            className={classes.textField}
                             label="Author Url"
                             value={authorUrl}
+                            margin="dense"
                             onChange={e =>
                                 (applicationState.currentStudy.authorUrl = e.target.value)
                             }
                         />
                         <StudyTypeField />
                         <TextField
-                            className={classes.textField}
-                            label="Study Fields"
                             disabled
+                            label="Study Fields"
                             value={`${fields.length} Fields`}
+                            margin="dense"
+                            onClick={() => uiState.modalStack.push('studyFields')}
+                            InputLabelProps={{
+                                classes: {
+                                    disabled: classes.undisabledLabel
+                                }
+                            }}
                             InputProps={{
+                                classes: {
+                                    disabled: classes.undisabled
+                                },
                                 endAdornment: (
                                     <InputAdornment position="end">
                                         <IconButton
@@ -271,11 +304,20 @@ const StudyView = observer((props: any & WithStyles) => {
                             }}
                         />
                         <TextField
-                            className={classes.textField}
-                            label="Surveyors"
                             disabled
+                            label="Surveyors"
                             value={`${surveyors.length} Surveyors`}
+                            margin="dense"
+                            onClick={() => uiState.modalStack.push('surveyors')}
+                            InputLabelProps={{
+                                classes: {
+                                    disabled: classes.undisabledLabel
+                                }
+                            }}
                             InputProps={{
+                                classes: {
+                                    disabled: classes.undisabled
+                                },
                                 endAdornment: (
                                     <InputAdornment position="end">
                                         <IconButton
@@ -289,11 +331,20 @@ const StudyView = observer((props: any & WithStyles) => {
                             }}
                         />
                         <TextField
-                            className={classes.textField}
                             disabled
                             label="Surveys"
                             value={`${Object.keys(toJS(surveys)).length} Surveys`}
+                            onClick={() => uiState.modalStack.push('surveys')}
+                            margin="dense"
+                            InputLabelProps={{
+                                classes: {
+                                    disabled: classes.undisabledLabel
+                                }
+                            }}
                             InputProps={{
+                                classes: {
+                                    disabled: classes.undisabled
+                                },
                                 endAdornment: (
                                     <InputAdornment position="end">
                                         <IconButton
@@ -309,27 +360,6 @@ const StudyView = observer((props: any & WithStyles) => {
                     </div>
                     <div className={classes.column}>
                         <LocationTextField location={location} editable={studyIsNew} />
-                        {/* <TextField
-                    select
-                    label="Gehl Protocol Version"
-                    className={classes.textField}
-                    value={groupArrayOfObjectsBy(PROTOCOL_SELECTIONS, 'value')[protocolVersion].label}
-                    onChange={e => {
-                    study.protocolVersion = e.target.value;
-                    }}
-                    SelectProps={{
-                    MenuProps: {
-                    className: classes.menu
-                    }
-                    }}
-                    margin="normal"
-                    >
-                 
-                    return (<MenuItem key={value} value={value}>
-                    {label}
-                    </MenuItem>)
-                    })}
-                    </TextField> */}
                         <LockedMapView
                             isEditable
                             showOverlay={!features.length}
