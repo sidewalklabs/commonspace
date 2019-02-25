@@ -33,7 +33,7 @@ function extractBodyFromResponse<T>(f: HttpFunction): (...args: any[]) => Promis
                         !response.headers.get('content-length') ||
                         parseInt(response.headers.get('content-length')) === 0
                     ) {
-                        return {} as T;
+                        resolve({} as T);
                     }
                     resolve((await response.json()) as T);
                 })
@@ -92,37 +92,61 @@ export const deleteRest: (uri: string, token?: string) => Promise<Response> = ha
     }
 );
 
-export const postRestNoBody: (
+export const postRest: <T>(
     uri: string,
     data: any,
     token?: string
-) => Promise<Response> = handleAllHttpErrors(async (uri, data, token) => {
-    const body = JSON.stringify(snakecasePayload(data));
-    try {
-        const params = {
-            ...fetchParams,
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json; charset=utf-8'
-            },
-            body
-        };
-        if (token) {
-            params.headers['Authorization'] = `bearer ${token}`;
+) => Promise<T> = extractBodyFromResponse(
+    handleAllHttpErrors(async (uri, data, token) => {
+        const body = JSON.stringify(snakecasePayload(data));
+        try {
+            const params = {
+                ...fetchParams,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json; charset=utf-8'
+                },
+                body
+            };
+            if (token) {
+                params.headers['Authorization'] = `bearer ${token}`;
+            }
+            const response = await fetch(uri, params);
+            return response;
+        } catch (err) {
+            console.error(`[route ${uri}] [data ${body}] ${err}`);
+            throw err;
         }
-        const response = await fetch(uri, params);
-        return response;
-    } catch (err) {
-        console.error(`[route ${uri}] [data ${body}] ${err}`);
-        throw err;
-    }
-});
+    })
+);
 
-export const postRest: (
+export const putRest: <T>(
     uri: string,
     data: any,
     token?: string
-) => Promise<Response> = extractBodyFromResponse(postRestNoBody);
+) => Promise<T> = extractBodyFromResponse(
+    handleAllHttpErrors(async (uri, data, token) => {
+        const body = JSON.stringify(snakecasePayload(data));
+        try {
+            const params = {
+                ...fetchParams,
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json; charset=utf-8'
+                },
+                body
+            };
+            if (token) {
+                params.headers['Authorization'] = `bearer ${token}`;
+            }
+            const response = await fetch(uri, params);
+            return response;
+        } catch (err) {
+            console.error(`[route ${uri}] [data ${body}] ${err}`);
+            throw err;
+        }
+    })
+);
 
 export const getRest: <T>(uri: string, token?: string) => Promise<T> = extractBodyFromResponse(
     handleAllHttpErrors(async (uri, token) => {

@@ -15,7 +15,7 @@ import { observer } from 'mobx-react';
 import { observable } from 'mobx';
 import AuthState from '../stores/auth';
 import { navigate } from '../stores/router';
-import { postToApi } from '../stores/utils';
+import { postRest } from '../client';
 
 const styles = theme => ({
     toolbar: {
@@ -29,14 +29,14 @@ const styles = theme => ({
 });
 
 async function handleLogOut() {
-    (await postToApi('/auth/logout', {})) as {};
+    (await postRest('/auth/logout', {})) as {};
     mainState.anchorElement = null;
     AuthState.isAuth = false;
     navigate('/login');
 }
 
 async function handleResetPassword() {
-    (await postToApi('/auth/logout', {})) as {};
+    (await postRest('/auth/logout', {})) as {};
     AuthState.isAuth = false;
     mainState.anchorElement = null;
     navigate('/reset');

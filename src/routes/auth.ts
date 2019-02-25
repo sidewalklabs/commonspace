@@ -152,7 +152,7 @@ router.get(
     return500OnError(async function(req, res) {
         const { token, email } = req.query;
         if (await validateEmail(DbPool, email, token)) {
-            res.redirect('/studies');
+            res.status(200).send();
             return;
         }
         res.status(400);
