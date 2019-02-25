@@ -3,33 +3,28 @@ import { observable } from 'mobx';
 import authState from './auth';
 import { navigate } from './router';
 import uiState, { setSnackBar } from './ui';
+import { postRest } from '../client';
 
 export async function logInUser() {
-    const { password, email } = loginInState;
+    const { password, email } = loginState;
     const data = {
         password,
         email
     };
-    const response = await fetch(`/auth/login`, {
-        method: 'POST', // *GET, POST, PUT, DELETE, etc.
-        mode: 'cors', // no-cors, cors, *same-origin
-        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-        credentials: 'same-origin', // include, same-origin, *omit
-        headers: {
-            'Content-Type': 'application/json; charset=utf-8'
-            // "Content-Type": "application/x-www-form-urlencoded",
-        },
-        redirect: 'follow', // manual, *follow, error
-        referrer: 'no-referrer', // no-referrer, *client
-        body: JSON.stringify(data) // body data type must match "Content-Type" header
-    });
-    if (response.status === 200) {
+    try {
+        await postRest(`/auth/login`, { password, email });
         authState.isAuth = true;
         navigate('/studies');
-    } else {
-        console.error(response.statusText);
+    } catch (error) {
         setSnackBar('error', `Unable to log in, are email and password correct?`);
+    } finally {
+        resetLoginState();
     }
+}
+
+function resetLoginState() {
+    loginState.email = '';
+    loginState.password = '';
 }
 
 export interface LogInState {
@@ -39,11 +34,11 @@ export interface LogInState {
     passwordErrorMessage: string;
 }
 
-const loginInState: LogInState = observable({
+const loginState: LogInState = observable({
     email: '',
     password: '',
     emailErrorMessage: '',
     passwordErrorMessage: ''
 });
 
-export default loginInState;
+export default loginState;
