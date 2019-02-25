@@ -15,7 +15,6 @@ import { snakecasePayload } from './utils';
 import dotenv from 'dotenv';
 import {
     deleteRest,
-    postRestNoBody,
     postRest,
     getRest,
     clearLocationsFromApi,
@@ -81,14 +80,6 @@ async function clearUserFromApp(maps: FeatureCollection[], token: string) {
             throw error;
         }
     }
-}
-
-async function login(user: User) {
-    const uri = `${API_SERVER}/auth/login`;
-    const { headers } = await postRest(uri, user);
-    const [keyValue, path, expires] = headers.get('set-cookie').split(';');
-    const [key, token] = keyValue.split('=');
-    return token;
 }
 
 async function signupJwt(user: User) {
@@ -210,7 +201,7 @@ describe('create/delete/modify studies', async () => {
         //const dataPoint = SeaBassFishCountDataPoints[0]
         await Promise.all(
             SeaBassFishCountDataPoints.map(dataPoint => {
-                return postRestNoBody(
+                return postRest(
                     API_SERVER + `/api/surveys/${survey_id}/datapoints`,
                     dataPoint,
                     surveyorToken
@@ -231,11 +222,7 @@ describe('create/delete/modify studies', async () => {
         const { survey_id } = surveyorSurvey;
         const dataPoint = SeaBassFishCountDataPoints[0];
         await expect(
-            postRestNoBody(
-                API_SERVER + `/api/surveys/${survey_id}/datapoints`,
-                dataPoint,
-                adminToken
-            )
+            postRest(API_SERVER + `/api/surveys/${survey_id}/datapoints`, dataPoint, adminToken)
         ).rejects.toThrow(UnauthorizedError);
     });
 
@@ -268,7 +255,7 @@ describe('create/delete/modify studies', async () => {
     });
 
     test('once a user logout out using a token, the token should result in a 401', async () => {
-        await postRestNoBody(API_SERVER + '/auth/logout', {}, surveyorToken);
+        await postRest(API_SERVER + '/auth/logout', {}, surveyorToken);
         await expect(
             getRest(API_SERVER + '/api/studies?type=surveyor', surveyorToken)
         ).rejects.toThrow(UnauthorizedError);

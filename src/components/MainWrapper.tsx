@@ -19,7 +19,7 @@ import TermsView from './TermsView';
 import { ApplicationState } from '../stores/applicationState';
 import { UiState } from '../stores/ui';
 import { Router, addSideEffectRoute, assignComponentToRoute, navigate } from '../stores/router';
-import { getFromApi } from '../stores/utils';
+import { getRest } from '../client';
 
 interface MainProps {
     router: Router;
@@ -123,10 +123,9 @@ const MainWrapper = observer((props: MainProps & WithStyles) => {
             return pathname === '/verify';
         },
         async () => {
-            const { query } = parse(uri);
-            // @ts-ignore
-            const { token, email } = queryParamsParse(query);
-            await getFromApi('/auth' + uri);
+            // make a call to the backend to verify the email, using the token in the uri, if successful redirect
+            await getRest('/auth' + uri);
+            navigate('/studies');
         }
     );
     const Main = assignComponentToRoute('/studies', () => (
