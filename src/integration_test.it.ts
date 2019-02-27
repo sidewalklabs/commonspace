@@ -25,6 +25,8 @@ import {
     ResourceNotFoundError
 } from './client';
 
+import { DataPoint, Study, Survey } from './routes/api_types';
+
 dotenv.config({
     path: process.env.DOTENV_CONFIG_DIR
         ? path.join(process.env.DOTENV_CONFIG_DIR, '.env')
@@ -109,7 +111,7 @@ beforeAll(async () => {
 });
 
 test("we expect an authoization error if we don't yet have an authentication token", async () => {
-    await expect(getRest(API_SERVER + '/api/studies?type=surveyor')).rejects.toThrow(
+    await expect(getRest<Study[]>(API_SERVER + '/api/studies?type=surveyor')).rejects.toThrow(
         UnauthorizedError
     );
 });
@@ -130,13 +132,13 @@ describe('create/delete/modify studies', async () => {
     });
 
     test('create a new study', async () => {
-        const study = await postRest(
+        const study = await postRest<Study>(
             API_SERVER + '/api/studies',
             SeaBassFishCountStudy,
             adminToken
         );
 
-        const studiesForAdmin = (await getRest(
+        const studiesForAdmin = (await getRest<Study[]>(
             API_SERVER + '/api/studies?type=admin',
             adminToken
         )) as any[];
@@ -144,7 +146,7 @@ describe('create/delete/modify studies', async () => {
     });
 
     test('surveyor should have one study for the new fish count study', async () => {
-        const studiesForSurveyor = (await getRest(
+        const studiesForSurveyor = (await getRest<Study[]>(
             API_SERVER + '/api/studies?type=surveyor',
             adminToken
         )) as any[];
@@ -154,13 +156,13 @@ describe('create/delete/modify studies', async () => {
     test('admin should see all the surveys saved on their new study', async () => {
         const { study_id: studyId } = SeaBassFishCountStudy;
         const expectedNumberOfSurveys = SeaBassFishCountStudy.surveys.length;
-        const studiesForAdmin = (await getRest(
+        const studiesForAdmin = (await getRest<Study[]>(
             API_SERVER + '/api/studies?type=admin',
             adminToken
         )) as any[];
         expect(studiesForAdmin[0].surveys.length).toBe(expectedNumberOfSurveys);
 
-        const surveys = (await getRest(
+        const surveys = (await getRest<Survey[]>(
             API_SERVER + `/api/studies/${studyId}/surveys`,
             adminToken
         )) as any[];
@@ -169,10 +171,10 @@ describe('create/delete/modify studies', async () => {
 
     test('a surveyor should only be able to see their own surveys', async () => {
         const { study_id: studyId } = SeaBassFishCountStudy;
-        const surveys = (await getRest(
+        const surveys = await getRest<Survey[]>(
             API_SERVER + `/api/studies/${studyId}/surveys`,
             surveyorToken
-        )) as any[];
+        );
         expect(surveys.length).toBe(1);
     });
 
@@ -189,9 +191,13 @@ describe('create/delete/modify studies', async () => {
             title: 'the additional survey'
         };
         SeaBassFishCountStudy.surveys.push(newSurvey);
-        await putRest(API_SERVER + `/api/studies/${studyId}`, SeaBassFishCountStudy, adminToken);
+        await putRest<Study[]>(
+            API_SERVER + `/api/studies/${studyId}`,
+            SeaBassFishCountStudy,
+            adminToken
+        );
 
-        const updatedStudies = (await getRest(
+        const updatedStudies = (await getRest<Study[]>(
             API_SERVER + `/api/studies?type=admin`,
             adminToken
         )) as any[];
@@ -203,17 +209,30 @@ describe('create/delete/modify studies', async () => {
         await deleteRest(API_SERVER + '/api/studies/' + SeaBassFishCountStudy.study_id, adminToken);
         await clearLocationsFromApi(API_SERVER, SeaBassFishCountStudy.map, adminToken);
         await expect(
-            getRest(API_SERVER + '/api/studies/' + SeaBassFishCountStudy.study_id, adminToken)
+            getRest<Study[]>(
+                API_SERVER + '/api/studies/' + SeaBassFishCountStudy.study_id,
+                adminToken
+            )
         ).rejects.toThrow(ResourceNotFoundError);
     });
 
-    test('save an array of studies to the studies endpoint', async () => {
+    test('post /studies Study[], returns last_updated, created_at fields ', async () => {
         const saveMultipleStudies = [SeaBassFishCountStudy, MarchOnWashington];
-        await postRest(API_SERVER + '/api/studies', saveMultipleStudies, adminToken);
-        const multipleStudies = (await getRest(
+        const studies = await postRest<Study[]>(
+            API_SERVER + '/api/studies',
+            saveMultipleStudies,
+            adminToken
+        );
+        console.error(studies);
+        expect(
+            studies
+                .map(({ created_at, last_updated }) => created_at && last_updated)
+                .reduce((acc, curr) => acc && curr)
+        ).toBeTruthy();
+        const multipleStudies = await getRest<Study[]>(
             API_SERVER + '/api/studies?type=admin',
             adminToken
-        )) as any[];
+        );
         expect(multipleStudies.length).toBe(saveMultipleStudies.length);
     });
 
@@ -225,17 +244,17 @@ describe('create/delete/modify studies', async () => {
         //const dataPoint = SeaBassFishCountDataPoints[0]
         await Promise.all(
             SeaBassFishCountDataPoints.map(dataPoint => {
-                return postRest(
+                return postRest<DataPoint>(
                     API_SERVER + `/api/surveys/${survey_id}/datapoints`,
                     dataPoint,
                     surveyorToken
                 );
             })
         );
-        const dataPoints = (await getRest(
+        const dataPoints = await getRest<DataPoint[]>(
             API_SERVER + `/api/surveys/${survey_id}/datapoints`,
             surveyorToken
-        )) as any[];
+        );
         expect(dataPoints.length).toBe(SeaBassFishCountDataPoints.length);
     });
 
@@ -246,15 +265,16 @@ describe('create/delete/modify studies', async () => {
         const { survey_id } = surveyorSurvey;
         const dataPoint = SeaBassFishCountDataPoints[0];
         await expect(
-            postRest(API_SERVER + `/api/surveys/${survey_id}/datapoints`, dataPoint, adminToken)
+            postRest<DataPoint>(
+                API_SERVER + `/api/surveys/${survey_id}/datapoints`,
+                dataPoint,
+                adminToken
+            )
         ).rejects.toThrow(UnauthorizedError);
     });
 
     test('we should be able to download all of the users data and it should have the data points nested with the survey', async () => {
-        const allStudies = (await getRest(
-            API_SERVER + '/api/studies/download',
-            adminToken
-        )) as any[];
+        const allStudies = await getRest<Study[]>(API_SERVER + '/api/studies/download', adminToken);
 
         const { survey_id: surveyorSurveyId } = SeaBassFishCountStudy.surveys.filter(
             ({ email }) => {
@@ -275,13 +295,14 @@ describe('create/delete/modify studies', async () => {
         if (!surveyorsSurvey) {
             console.error(study);
         }
+        // @ts-ignore
         expect(surveyorsSurvey.data_points.length).toBe(SeaBassFishCountDataPoints.length);
     });
 
     test('once a user logout out using a token, the token should result in a 401', async () => {
-        await postRest(API_SERVER + '/auth/logout', {}, surveyorToken);
+        await postRest<{}>(API_SERVER + '/auth/logout', {}, surveyorToken);
         await expect(
-            getRest(API_SERVER + '/api/studies?type=surveyor', surveyorToken)
+            getRest<Study[]>(API_SERVER + '/api/studies?type=surveyor', surveyorToken)
         ).rejects.toThrow(UnauthorizedError);
     });
 });
