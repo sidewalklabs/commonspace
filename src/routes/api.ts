@@ -582,12 +582,7 @@ router.put(
             const { surveys } = study;
             const updatedStudy = await updateStudy(DbPool, { ...study, userId });
             const pgQueries = await Promise.all(
-                surveys.map(s =>
-                    updateSurvey(
-                        DbPool,
-                        camelcaseKeys({ studyId, ...s  })
-                    )
-                )
+                surveys.map(s => updateSurvey(DbPool, camelcaseKeys({ studyId, ...s })))
             );
             res.status(200).send(updatedStudy);
         })
