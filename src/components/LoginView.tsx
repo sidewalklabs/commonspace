@@ -4,11 +4,11 @@ import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Fab from '@material-ui/core/Fab';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import { GoogleLogin } from 'react-google-login';
+// import { GoogleLogin } from 'react-google-login';
 
 import { observer } from 'mobx-react';
 
-import { logInUserGoogleOAuth } from '../stores/signup';
+// import { logInUserGoogleOAuth } from '../stores/signup';
 import { navigate } from '../stores/router';
 import { setSnackBar } from '../stores/ui';
 
@@ -95,7 +95,8 @@ const LoginView = withStyles(styles)(
                     <Typography variant="body1" align="center">
                         Study the places you love
                     </Typography>
-                    <GoogleLogin
+                    {/* { Take out Google Login until our android and ios apps can support it } */}
+                    {/* <GoogleLogin
                         clientId={process.env.GOOGLE_AUTH_CLIENT_ID}
                         onSuccess={logInUserGoogleOAuth}
                         onFailure={responseGoogleFailure}
@@ -114,7 +115,7 @@ const LoginView = withStyles(styles)(
                     />
                     <Typography variant="caption" align="center">
                         OR
-                    </Typography>
+                    </Typography> */}
                     <Fab
                         variant="extended"
                         color="secondary"

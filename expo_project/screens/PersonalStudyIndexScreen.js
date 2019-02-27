@@ -23,6 +23,10 @@ class PersonalStudyIndexScreen extends React.Component {
         }}
         style={{
           paddingHorizontal: 12,
+          height: '100%',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
         }}>
         <Icon.MaterialCommunityIcons name="menu" color="white" size={24} />
       </TouchableOpacity>

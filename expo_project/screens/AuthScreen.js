@@ -1,12 +1,12 @@
 import React from 'react';
 import { Alert, AsyncStorage, Image, TouchableHighlight, Text, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
-import { WebBrowser } from 'expo';
+import { AppAuth, WebBrowser } from 'expo';
 import color from 'color';
 import SharedGradient from '../components/SharedGradient';
 import authStyles from '../stylesheets/auth';
 import urls from '../config/urls';
-import { logInUserWithGoogleAccessToken } from '../lib/commonsClient';
+// import { getOauthClientId, logInUserWithGoogleAccessToken } from '../lib/commonsClient';
 
 class AuthScreen extends React.Component {
   static navigationOptions = {
@@ -15,27 +15,40 @@ class AuthScreen extends React.Component {
     gesturesEnabled: false,
   };
 
-  _signIn = async () => {
-    try {
-      // TODO: should we remove these keys?
-      /* eslint-disable no-undef */
-      const { user, accessToken } = await Expo.Google.logInAsync({
-        androidClientId: '8677857213-avso90qgtscpsfj9cs1r5ri2p9i1nh4q.apps.googleusercontent.com',
-        androidStandaloneAppClientId:
-          '8677857213-pp4g0meb9ah2bfbvt851n7u32st7gt14.apps.googleusercontent.com',
-        iosClientId: '8677857213-j9dn9ebe425td60q8c9tc20gomjbojip.apps.googleusercontent.com',
-        iosStandaloneAppClientId:
-          '8677857213-s1rosh2e597b3nccpqv67dbfpmc3q53o.apps.googleusercontent.com',
-        scopes: ['email'],
-      });
-      /* eslint-enable no-undef */
-      const token = await logInUserWithGoogleAccessToken(accessToken);
-      const { email } = user;
-      await AsyncStorage.multiSet([['token', token], ['email', email]]);
-      this.props.navigation.navigate('App');
-    } catch (error) {
-      Alert.alert(error.name, error.message, [{ text: 'OK' }]);
-    }
+  _signInWithGoogleAsync = async () => {
+    // Google auth broke with the upgrade to Expo 32
+    // In its current state, it works within the Expo client and on Standalone android
+    // But the web browser does not redirect back to the app on standalone android app.
+    // Removing Google Auth for now
+    // TODO: switch to Expo's GoogleSignIn component once it's documented and stable
+    // try {
+    //   // Workaround: OAuthRedirect uses the our bundle id redirect back to the app, but gets confused with mixed case
+    //   // First use string interpolation to flatten, since OAuthRedirect is an array on iOS, and a string on android.
+    //   const lowercaseRedirect = `${AppAuth.OAuthRedirect}`.toLowerCase();
+    //   const redirectUrl = `${lowercaseRedirect}:/oauthredirect`;
+    //   const clientId = getOauthClientId();
+    //   const { accessToken } = await AppAuth.authAsync({
+    //     issuer: 'https://accounts.google.com',
+    //     scopes: ['email'],
+    //     redirectUrl,
+    //     clientId,
+    //   });
+    //   // Web login only returns an accessToken so
+    //   // Use it to fetch the same info that native login does.
+    //   const userInfoResponse = await fetch('https://www.googleapis.com/userinfo/v2/me', {
+    //     headers: { Authorization: `Bearer ${accessToken}` },
+    //   });
+    //   const userInfo = await userInfoResponse.json();
+    //   const token = await logInUserWithGoogleAccessToken(accessToken);
+    //   await AsyncStorage.multiSet([
+    //     ['token', token],
+    //     ['googleAccessToken', accessToken],
+    //     ['email', userInfo.email || ''],
+    //   ]);
+    //   this.props.navigation.navigate('App');
+    // } catch (error) {
+    //   Alert.alert('Error', 'Unabled to sign in. Please try again later.', [{ text: 'OK' }]);
+    // }
   };
 
   _openLink = async uri => WebBrowser.openBrowserAsync(uri);
@@ -47,12 +60,12 @@ class AuthScreen extends React.Component {
         <View style={authStyles.content}>
           <Text style={authStyles.title}>{'Get started with\nCommonSpace'}</Text>
           <Text style={authStyles.paragraph}>
-            If you are a volunteer or existing organizer, log in to start your study.
+            If you are an volunteer or existing organizer, log in to start your study.
           </Text>
-          <TouchableHighlight
+          {/* <TouchableHighlight
             style={[authStyles.cta, authStyles.primaryCta]}
             underlayColor={color('#ffcf2b').darken(0.2)}
-            onPress={this._signIn}>
+            onPress={this._signInWithGoogleAsync}>
             <View style={authStyles.ctaCopyWrapper}>
               <Image
                 style={authStyles.ctaImage}
@@ -62,21 +75,21 @@ class AuthScreen extends React.Component {
                 Connect with Google
               </Text>
             </View>
+          </TouchableHighlight> */}
+          <TouchableHighlight
+            underlayColor={color('#ffcf2b').darken(0.2)}
+            style={[authStyles.cta, authStyles.primaryCta]}
+            onPress={() => this.props.navigation.navigate('LogInWithEmailScreen')}>
+            <Text style={[authStyles.ctaCopy, authStyles.primaryCtaCopy]}>Login</Text>
           </TouchableHighlight>
           <TouchableHighlight
             underlayColor="#00000020"
             style={[authStyles.cta, { backgroundColor: '#00000010' }]}
-            onPress={() => this.props.navigation.navigate('LogInWithEmailScreen')}>
-            <Text style={[authStyles.ctaCopy, { opacity: 1 }]}>Login with Email</Text>
+            onPress={() => this.props.navigation.navigate('DemoStack')}>
+            <Text style={[authStyles.ctaCopy, { opacity: 1 }]}>Try a Demo</Text>
           </TouchableHighlight>
         </View>
         <View style={authStyles.footer}>
-          <TouchableHighlight
-            underlayColor="#00000010"
-            style={authStyles.cta}
-            onPress={() => this.props.navigation.navigate('DemoStack')}>
-            <Text style={authStyles.ctaCopy}>Try a Demo</Text>
-          </TouchableHighlight>
           <TouchableHighlight
             underlayColor="#00000010"
             style={authStyles.cta}
