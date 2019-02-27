@@ -61,6 +61,13 @@ export const getStudies = logoutIfError(UnauthorizedError, async () => {
     try {
         const studies = camelcaseKeys(await getRest('/api/studies?type=admin'));
         studies.forEach(study => {
+            const notesIndex = study.fields.indexOf('notes');
+            if (notesIndex !== 1) {
+                const { fields } = study;
+                study.fields = fields
+                    .slice(0, notesIndex)
+                    .concat(fields.slice(notesIndex + 1, fields.length));
+            }
             // TODO: need to camel case the surveys array, but for some reason
             // deep camelcasing studies breaks the map coordinates
             study.surveys = study.surveys.map(survey => camelcaseKeys(survey));
@@ -73,13 +80,22 @@ export const getStudies = logoutIfError(UnauthorizedError, async () => {
     }
 });
 
-export const updateStudy = logoutIfError(UnauthorizedError, async studyInput => {
+export const updateStudy = logoutIfError(UnauthorizedError, async (studyInput: Study) => {
     const { studyId } = studyInput;
-    const surveys = Object.values(toJS(studyInput.surveys));
-    const study = toJS(applicationState.currentStudy);
-    study.surveys = surveys;
+    const study: Study = toJS(studyInput);
+    if (study.fields.indexOf('notes') === -1) {
+        study.fields = [...study.fields, 'notes'];
+    }
+    study.surveys = Object.values(toJS(studyInput.surveys)).map(survey => {
+        const { method = 'analog', representation = 'absolute' } = survey;
+        return {
+            method,
+            representation,
+            ...survey
+        };
+    });
     try {
-        const response = await putRest(`/api/studies/${studyId}`, study);
+        await putRest(`/api/studies/${studyId}`, study);
         setSnackBar('success', `Updated study ${studyInput.title}`);
     } catch (error) {
         setSnackBar('error', `Unable to update study ${studyInput.title}`);
