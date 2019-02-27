@@ -15,6 +15,7 @@ import dotenv from 'dotenv';
 import {
     deleteRest,
     postRest,
+    putRest,
     getRest,
     clearLocationsFromApi,
     getStudiesForAdmin,
@@ -173,6 +174,29 @@ describe('create/delete/modify studies', async () => {
             surveyorToken
         )) as any[];
         expect(surveys.length).toBe(1);
+    });
+
+    test('an admin should be able to update a study by adding surveys to it', async () => {
+        const { study_id: studyId } = SeaBassFishCountStudy;
+        const newSurvey = {
+            method: 'analog',
+            representation: 'absolute',
+            survey_id: 'dca22de2-ac90-4193-8c08-7640afabfd97',
+            start_date: '2019-02-05T21:05:55.523Z',
+            end_date: '2019-02-05T22:05:55.523Z',
+            email: 'sebastian@sidewalklabs.com',
+            location_id: 'cddcc8bb-34ce-4442-a3fa-bef0bfc9a120',
+            title: 'the additional survey'
+        };
+        SeaBassFishCountStudy.surveys.push(newSurvey);
+        await putRest(API_SERVER + `/api/studies/${studyId}`, SeaBassFishCountStudy, adminToken);
+
+        const updatedStudies = (await getRest(
+            API_SERVER + `/api/studies?type=admin`,
+            adminToken
+        )) as any[];
+        expect(updatedStudies.length).toBe(1);
+        expect(updatedStudies[0].surveys.length).toBe(SeaBassFishCountStudy.surveys.length);
     });
 
     test('the admin should be able to delete their study making it unavailable from the api', async () => {

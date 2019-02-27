@@ -1,6 +1,7 @@
 import { Pool } from 'pg';
 import { IdAlreadyExists } from './utils';
 import { UNIQUE_VIOLATION } from 'pg-error-constants';
+import { findUser } from './user';
 
 export interface Survey {
     studyId: string;
@@ -86,10 +87,10 @@ export async function createNewSurveyForStudy(pool: Pool, survey: Survey) {
     let { query, values } = joinSurveyWithUserEmailCTE(survey);
     if (survey.locationId) {
         query = `INSERT INTO data_collection.survey (study_id, survey_id, title, start_date, end_date, representation, method, user_id, location_id)
-                   ${query};`;
+                   ${query}`;
     } else {
         query = `INSERT INTO data_collection.survey (study_id, survey_id, title, start_date, end_date, representation, method, user_id)
-                   ${query};`;
+                   ${query}`;
     }
     try {
         return pool.query(query, values);
@@ -102,21 +103,36 @@ export async function createNewSurveyForStudy(pool: Pool, survey: Survey) {
     }
 }
 
-export function updateSurvey(pool: Pool, survey: Survey) {
+export async function updateSurvey(pool: Pool, survey: Survey) {
     const { title, locationId, startDate, endDate, email, surveyId } = survey;
-    const query = `UPDATE data_collection.survey as sur
-                   SET title = $1,
-                       location_id = $2,
-                       start_date = $3,
-                       end_date = $4,
-                       email = $5
-                   WHERE sur.survey_id = $6`;
-    const values = [title, locationId, startDate, endDate, email, surveyId];
+    let { query, values } = joinSurveyWithUserEmailCTE(survey);
+    query = `INSERT INTO data_collection.survey (study_id, survey_id, title, start_date, end_date, representation, method, user_id, location_id)
+             ${query}
+                   ON CONFLICT (survey_id)
+                   DO UPDATE
+                   SET title = $${values.length + 1},
+                       location_id = $${values.length + 2},
+                       start_date = $${values.length + 3},
+                       end_date = $${values.length + 4}`;
+    values = values.concat([title, locationId, startDate, endDate]);
     try {
-        return pool.query(query, values);
+        await pool.query(query, values);
+        return;
     } catch (error) {
         console.error(`[query: ${query}][values: ${JSON.stringify(values)}] ${error}`);
         throw error;
+    }
+    const { user_id: userId } = await findUser(pool, email);
+    const updateUserQuery = `UPDATE data_collection
+                             SET user_id = $1
+                             WHERE survey_id = $1`;
+    const updateUserValues = [userId, surveyId];
+    try {
+        await pool.query(updateUserQuery, updateUserValues);
+    } catch (error) {
+        console.error(
+            `[query: ${updateUserQuery}][values: ${JSON.stringify(updateUserValues)}] ${error}`
+        );
     }
 }
 

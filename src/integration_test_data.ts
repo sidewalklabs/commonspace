@@ -59,6 +59,7 @@ const releasetheseabassSurvey = {
     location_id: 'cce59ff5-5751-4278-beeb-0b81784d1d8a',
     title: 'swing shift'
 };
+
 const sebastianSurvey = {
     method: 'analog',
     representation: 'absolute',

@@ -8,7 +8,6 @@ import { IdAlreadyExists, IdDoesNotExist } from './utils';
 export interface User {
     userId: string;
     email: string;
-    name: string;
     password: string;
 }
 
@@ -84,19 +83,17 @@ export async function changeUserPassword(pool: pg.Pool, email: string, password:
 }
 
 export async function createUser(pool: pg.Pool, user: User): Promise<void> {
-    const { userId, email, name, password } = user;
+    const { userId, email, password } = user;
     const hash = await bcrypt.hash(user.password, 14);
-    const query = `INSERT INTO users(user_id, email, name, password)
-                   VALUES($1, $2, $3, $4)`;
-    const values = [userId, email, name, hash];
+    const query = `INSERT INTO users(user_id, email, password)
+                   VALUES($1, $2, $3)`;
+    const values = [userId, email, hash];
     try {
         await pool.query(query, values);
     } catch (error) {
         if (error.code === UNIQUE_VIOLATION) {
-            console.error(error);
-            throw new IdAlreadyExists(userId);
+            throw new Error(`User for email ${user.email} already exists`);
         }
-        throw new Error(`User for email ${user.email} already exists`);
         console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
         throw error;
     }
