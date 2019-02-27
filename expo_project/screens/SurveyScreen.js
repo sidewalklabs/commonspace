@@ -69,20 +69,28 @@ class SurveyScreen extends React.Component {
             navigation.goBack();
           }}
           style={{
-            backgroundColor: 'white',
-            paddingHorizontal: 15,
-            paddingVertical: 5,
-            borderRadius: 20,
-            marginLeft: 10,
+            height: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
           }}>
-          <Text
+          <View
             style={{
-              fontSize: 14,
-              color: Theme.colors.primary,
-              fontFamily: 'product-medium',
+              backgroundColor: 'white',
+              paddingHorizontal: 15,
+              paddingVertical: 5,
+              borderRadius: 20,
+              marginLeft: 10,
             }}>
-            Exit
-          </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                color: Theme.colors.primary,
+                fontFamily: 'product-medium',
+              }}>
+              Exit
+            </Text>
+          </View>
         </TouchableOpacity>
       ),
       headerRight: (
@@ -90,7 +98,11 @@ class SurveyScreen extends React.Component {
           activeOpacity={1}
           onPress={() => params.navigateToMarkerList()}
           style={{
-            marginRight: 10,
+            height: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingHorizontal: 12,
           }}>
           <Icon.MaterialIcons name="people" size={30} color="white" />
         </TouchableOpacity>
@@ -191,18 +203,17 @@ class SurveyScreen extends React.Component {
     });
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     const surveyId = this.props.navigation.getParam('surveyId');
 
     this.props.navigation.setParams({
       navigateToMarkerList: this.navigateToMarkerList,
     });
 
-    getDataPointsforSurvey(this.state.token, surveyId).then(dataPoints => {
+    await getDataPointsforSurvey(this.state.token, surveyId).then(dataPoints => {
       const markers = dataPoints.map((d, i) => {
         const title = `Person ${i}`;
         const color = getRandomIconColor();
-        console.log('datapoint', d);
         return {
           ...d,
           color,

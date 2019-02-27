@@ -10,10 +10,11 @@ import {
   View,
 } from 'react-native';
 import { Divider } from 'react-native-paper';
-import { Icon, WebBrowser } from 'expo';
+import { AppAuth, Icon, WebBrowser } from 'expo';
 import { SafeAreaView } from 'react-navigation';
 import Theme from '../constants/Theme';
 import urls from '../config/urls';
+// import { getOauthClientId } from '../lib/commonsClient';
 
 class DrawerNavigatorScreen extends React.Component {
   state = {
@@ -27,6 +28,26 @@ class DrawerNavigatorScreen extends React.Component {
   }
 
   _signOut = async () => {
+    //  TODO: add this logic back once we add Google Auth back
+    // const accessToken = await AsyncStorage.getItem('googleAccessToken');
+    // if (accessToken) {
+    //   // If user logged in with google oauth, revoke the access token
+    //   try {
+    //     const clientId = getOauthClientId();
+    //     await AppAuth.revokeAsync(
+    //       {
+    //         issuer: 'https://accounts.google.com',
+    //         clientId,
+    //       },
+    //       {
+    //         token: accessToken,
+    //         isClientIdProvided: true,
+    //       },
+    //     );
+    //   } catch (error) {
+    //     Alert.alert(error.name, error.message, [{ text: 'OK' }]);
+    //   }
+    // }
     await AsyncStorage.clear();
     this.props.navigation.navigate('Auth');
   };

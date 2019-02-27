@@ -1,5 +1,5 @@
 import React from 'react';
-import { StatusBar, Text, View } from 'react-native';
+import { StatusBar, View } from 'react-native';
 import { AppLoading, Font, Icon } from 'expo';
 import { Provider as PaperProvider } from 'react-native-paper';
 import AppNavigator from './navigation/AppNavigator';
@@ -11,7 +11,6 @@ export default class App extends React.Component {
     this.state = {
       isLoadingComplete: false,
     };
-    Text.defaultProps.style = { fontFamily: 'product' };
   }
 
   loadResourcesAsync = async () =>

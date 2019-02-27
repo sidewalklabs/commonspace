@@ -12,7 +12,11 @@ class BackArrow extends React.Component {
           this.props.goBack();
         }}
         style={{
-          marginLeft: 10,
+          paddingHorizontal: 12,
+          height: '100%',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
         }}>
         <Icon.Feather name="arrow-left" size={30} color="white" />
       </TouchableOpacity>
