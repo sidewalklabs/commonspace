@@ -55,7 +55,7 @@ const releasetheseabassSurvey = {
     survey_id: '4bfb8cde-903b-4a96-98ce-716403e7e5bc',
     start_date: '2019-02-05T21:04:33.221Z',
     end_date: '2019-02-05T22:04:33.224Z',
-    surveyor_email: 'releasetheseabass@gmail.com',
+    email: 'releasetheseabass@gmail.com',
     location_id: 'cce59ff5-5751-4278-beeb-0b81784d1d8a',
     title: 'swing shift'
 };
@@ -65,7 +65,7 @@ const sebastianSurvey = {
     survey_id: 'dcb61274-3979-4852-a1e0-05bfc06fb61c',
     start_date: '2019-02-05T21:05:55.523Z',
     end_date: '2019-02-05T22:05:55.523Z',
-    surveyor_email: 'sebastian@sidewalklabs.com',
+    email: 'sebastian@sidewalklabs.com',
     location_id: 'cce59ff5-5751-4278-beeb-0b81784d1d8a',
     title: 'late late shift'
 };
@@ -75,7 +75,7 @@ const pandanantaSurvey = {
     survey_id: '0f62328e-1d99-43a6-9de5-11ec6003d76a',
     start_date: '2019-02-05T21:05:56.559Z',
     end_date: '2019-02-05T22:05:56.559Z',
-    surveyor_email: 'pandananta@gmail.com',
+    email: 'pandananta@gmail.com',
     location_id: 'cce59ff5-5751-4278-beeb-0b81784d1d8a',
     title: 'panda panda panda'
 };
@@ -85,7 +85,7 @@ const mhtSurvey = {
     survey_id: 'facab2d0-22fb-49b0-904b-795501142aa7',
     start_date: '2019-02-05T21:05:57.284Z',
     end_date: '2019-02-05T22:05:57.284Z',
-    surveyor_email: 'mht@sidewalklabs.com',
+    email: 'mht@sidewalklabs.com',
     location_id: 'cce59ff5-5751-4278-beeb-0b81784d1d8a',
     title: 'mht airport'
 };
@@ -95,7 +95,7 @@ const mattSurvey = {
     survey_id: '7251f996-ade0-49cb-88c5-ef149baa14e7',
     start_date: '2019-02-05T21:06:05.895Z',
     end_date: '2019-02-05T22:06:05.895Z',
-    surveyor_email: 'matt@sidewalklabs.com',
+    email: 'matt@sidewalklabs.com',
     location_id: 'cce59ff5-5751-4278-beeb-0b81784d1d8a',
     title: 'the breuer experience'
 };
@@ -105,7 +105,7 @@ const interfacedSurvey = {
     survey_id: '2ddbe79b-5132-4559-8987-930c90b6a26a',
     start_date: '2019-02-05T21:06:09.837Z',
     end_date: '2019-02-05T22:06:09.837Z',
-    surveyor_email: 'interfaced@gmail.com',
+    email: 'interfaced@gmail.com',
     location_id: 'cce59ff5-5751-4278-beeb-0b81784d1d8a',
     title: 'this is patrick'
 };
@@ -262,7 +262,7 @@ const releasetheseabassWashingtonSurvey = {
     survey_id: '12e41cd7-38cf-4acc-bfe3-4c624ce54d78',
     start_date: '2019-02-05T21:04:33.221Z',
     end_date: '2019-02-05T22:04:33.224Z',
-    surveyor_email: 'releasetheseabass@gmail.com',
+    email: 'releasetheseabass@gmail.com',
     location_id: 'cce59ff5-5751-4278-beeb-0b81784d1d8a',
     title: 'reflecting pool'
 };
@@ -272,7 +272,7 @@ const sebastianWashingtonSurvey = {
     survey_id: '47cd5259-356e-4e0d-9bc4-77d04e73b6d2',
     start_date: '2019-02-05T21:05:55.523Z',
     end_date: '2019-02-05T22:05:55.523Z',
-    surveyor_email: 'sebastian@sidewalklabs.com',
+    email: 'sebastian@sidewalklabs.com',
     location_id: 'cce59ff5-5751-4278-beeb-0b81784d1d8a',
     title: 'lincoln memorial'
 };
@@ -282,7 +282,7 @@ const pandanantaWashingtonSurvey = {
     survey_id: 'b10670ea-267e-4f36-a5e9-559a940fef1e',
     start_date: '2019-02-05T21:05:56.559Z',
     end_date: '2019-02-05T22:05:56.559Z',
-    surveyor_email: 'pandananta@gmail.com',
+    email: 'pandananta@gmail.com',
     location_id: 'cce59ff5-5751-4278-beeb-0b81784d1d8a',
     title: 'lincoln memorial'
 };

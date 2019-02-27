@@ -97,7 +97,6 @@ export const saveNewStudy = logoutIfError(UnauthorizedError, async (studyInput: 
         return {
             method,
             representation,
-            surveyorEmail: survey.email,
             ...survey
         };
     });

@@ -19,6 +19,7 @@ export type StudyScale =
     | 'neighborhood'
     | 'blockScale'
     | 'singleSite';
+
 export type StudyType = 'stationary' | 'movement';
 
 export interface Study {

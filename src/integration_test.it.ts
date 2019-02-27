@@ -1,5 +1,4 @@
 import 'babel-polyfill';
-import camelcaseKeys from 'camelcase-keys';
 import { FeatureCollection } from 'geojson';
 import path from 'path';
 import fetch from 'isomorphic-fetch';
@@ -24,6 +23,7 @@ import {
     UnauthorizedError,
     ResourceNotFoundError
 } from './client';
+
 dotenv.config({
     path: process.env.DOTENV_CONFIG_DIR
         ? path.join(process.env.DOTENV_CONFIG_DIR, '.env')
@@ -194,8 +194,8 @@ describe('create/delete/modify studies', async () => {
     });
 
     test('save data points to a survey if user is a surveyor', async () => {
-        const surveyorSurvey = SeaBassFishCountStudy.surveys.filter(({ surveyor_email }) => {
-            return surveyor_email === surveyorUser.email;
+        const surveyorSurvey = SeaBassFishCountStudy.surveys.filter(({ email }) => {
+            return email === surveyorUser.email;
         })[0];
         const { survey_id } = surveyorSurvey;
         //const dataPoint = SeaBassFishCountDataPoints[0]
@@ -216,8 +216,8 @@ describe('create/delete/modify studies', async () => {
     });
 
     test('saving a data point fails if the user is not signed up for a surveyor', async () => {
-        const surveyorSurvey = SeaBassFishCountStudy.surveys.filter(({ surveyor_email }) => {
-            return surveyor_email === surveyorUser.email;
+        const surveyorSurvey = SeaBassFishCountStudy.surveys.filter(({ email }) => {
+            return email === surveyorUser.email;
         })[0];
         const { survey_id } = surveyorSurvey;
         const dataPoint = SeaBassFishCountDataPoints[0];
@@ -233,8 +233,8 @@ describe('create/delete/modify studies', async () => {
         )) as any[];
 
         const { survey_id: surveyorSurveyId } = SeaBassFishCountStudy.surveys.filter(
-            ({ surveyor_email }) => {
-                return surveyor_email === surveyorUser.email;
+            ({ email }) => {
+                return email === surveyorUser.email;
             }
         )[0];
         expect(allStudies.length).toBe(2);

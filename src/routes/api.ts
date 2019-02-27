@@ -80,7 +80,7 @@ export interface Survey {
     location_id: string;
     start_date: string;
     end_date: string;
-    surveyor_email: string;
+    email: string;
     representation: string;
     microclimate?: string;
     temperature_celsius?: string;
@@ -276,7 +276,7 @@ async function saveStudyForUser(userId: string, inputStudy: Study) {
                 camelcaseKeys({
                     studyId,
                     ...survey,
-                    userEmail: survey.surveyor_email
+                    userEmail: survey.email
                 })
             );
         })
@@ -545,7 +545,7 @@ function convertDatabaseSurveyToRestSurvey(survey): Survey {
         location_id,
         start_date: time_start,
         end_date: time_stop,
-        surveyor_email: email,
+        email: email,
         representation,
         microclimate,
         temperature_celsius,
@@ -585,7 +585,7 @@ router.put(
                 surveys.map(s =>
                     updateSurvey(
                         DbPool,
-                        camelcaseKeys({ studyId, ...s, userEmail: s.surveyor_email })
+                        camelcaseKeys({ studyId, ...s  })
                     )
                 )
             );

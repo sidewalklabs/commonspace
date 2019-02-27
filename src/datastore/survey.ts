@@ -14,7 +14,7 @@ export interface Survey {
     microclimate?: string;
     temperatureCelcius?: number;
     method: string;
-    userEmail?: string;
+    email?: string;
     notes?: string;
 }
 
@@ -27,12 +27,12 @@ function joinSurveyWithUserEmailCTE(survey: Survey) {
         endDate,
         representation,
         method,
-        userEmail,
+        email,
         locationId
     } = survey;
     let query, values;
     if (locationId) {
-        query = `WITH t (study_id, survey_id, title, start_date, end_date, representation, method, user_email, location_id) AS (
+        query = `WITH t (study_id, survey_id, title, start_date, end_date, representation, method, email, location_id) AS (
               VALUES(
                      $1::UUID,
                      $2::UUID,
@@ -48,7 +48,7 @@ function joinSurveyWithUserEmailCTE(survey: Survey) {
             SELECT t.study_id, t.survey_id, t.title, t.start_date, t.end_date, t.representation, t.method, u.user_id, t.location_id
             FROM  t
             JOIN public.users u
-            ON t.user_email = u.email`;
+            ON t.email = u.email`;
         values = [
             studyId,
             surveyId,
@@ -57,11 +57,11 @@ function joinSurveyWithUserEmailCTE(survey: Survey) {
             endDate,
             representation,
             method,
-            userEmail,
+            email,
             locationId
         ];
     } else {
-        query = `WITH t (study_id, survey_id, title, start_date, end_date, representation, method, user_email) AS (
+        query = `WITH t (study_id, survey_id, title, start_date, end_date, representation, method, email) AS (
               VALUES(
                      $1::UUID,
                      $2::UUID,
@@ -76,8 +76,8 @@ function joinSurveyWithUserEmailCTE(survey: Survey) {
             SELECT t.study_id, t.survey_id, t.title, t.start_date, t.end_date, t.representation, t.method, u.user_id
             FROM  t
             JOIN public.users u
-            ON t.user_email = u.email`;
-        values = [studyId, surveyId, title, startDate, endDate, representation, method, userEmail];
+            ON t.email = u.email`;
+        values = [studyId, surveyId, title, startDate, endDate, representation, method, email];
     }
     return { query, values };
 }
@@ -103,14 +103,15 @@ export async function createNewSurveyForStudy(pool: Pool, survey: Survey) {
 }
 
 export function updateSurvey(pool: Pool, survey: Survey) {
-    const { title, locationId, startDate, endDate, userEmail, surveyId } = survey;
+    const { title, locationId, startDate, endDate, email, surveyId } = survey;
     const query = `UPDATE data_collection.survey as sur
                    SET title = $1,
-                      location_id = $2,
-                      start_date = $3,
-                      end_date = $4
-                   WHERE sur.survey_id = $5`;
-    const values = [title, locationId, startDate, endDate, surveyId];
+                       location_id = $2,
+                       start_date = $3,
+                       end_date = $4,
+                       email = $5
+                   WHERE sur.survey_id = $6`;
+    const values = [title, locationId, startDate, endDate, email, surveyId];
     try {
         return pool.query(query, values);
     } catch (error) {
