@@ -38,55 +38,9 @@ import { Feature, FeatureCollection, Point } from 'geojson';
 import { snakecasePayload } from '../utils';
 import { tokenIsBlacklisted } from '../auth';
 
+import { DataPoint, Study, Survey } from './api_types';
+
 const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org/reverse?format=json';
-
-export interface DataPoint {
-    data_point_id: string; // UUID
-    created_at: string;
-    last_updated: string;
-    gender?: string;
-    age?: string;
-    mode?: string;
-    posture?: string;
-    activities?: string[];
-    groups?: string;
-    object?: string;
-    date: string;
-    location: Point;
-}
-
-export interface Study {
-    study_id: string;
-    title: string;
-    author?: string;
-    author_url?: string;
-    protocol_version: string;
-    surveyors: string[];
-    type: StudyType;
-    map?: FeatureCollection;
-    surveys?: Survey[];
-    fields: StudyField[];
-    location: string;
-    description?: string;
-    created_at?: any;
-    last_updated?: any;
-    data_points?: DataPoint[];
-}
-
-export interface Survey {
-    survey_id: string;
-    title?: string;
-    location?: Feature;
-    location_id: string;
-    start_date: string;
-    end_date: string;
-    email: string;
-    representation: string;
-    microclimate?: string;
-    temperature_celsius?: string;
-    method: string;
-    notes?: string;
-}
 
 // have the rest methods throw these errors
 class UnauthorizedError extends Error {}
@@ -290,8 +244,14 @@ router.post(
         const { user_id: userId } = req.user;
         try {
             if (Array.isArray(req.body)) {
-                const datetimes: { createdAt; lastUpdated }[] = await Promise.all(
-                    req.body.map(s => saveStudyForUser(userId, s as Study))
+                const datetimes = await Promise.all(
+                    req.body.map(async (s: Study) => {
+                        const {
+                            createdAt: created_at,
+                            lastUpdated: last_updated
+                        } = await saveStudyForUser(userId, s as Study);
+                        return { ...s, created_at, last_updated };
+                    })
                 );
                 res.send(datetimes);
             } else {
@@ -299,7 +259,7 @@ router.post(
                     userId,
                     req.body as Study
                 );
-                res.send({ ...req.body, created_at, last_updated });
+                res.send({ ...(req.body as Study), created_at, last_updated });
             }
         } catch (error) {
             if (error instanceof IdAlreadyExists) {

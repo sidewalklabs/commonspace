@@ -1,13 +1,12 @@
 import React from 'react';
-import { withStyles, WithStyles } from '@material-ui/core/styles';
-import CssBaseline from '@material-ui/core/CssBaseline';
-
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import AppBar from '../components/AppBar';
-
 import { observer } from 'mobx-react';
 
+import { withStyles, WithStyles } from '@material-ui/core/styles';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
+
+import AppBar from './AppBar';
 import FieldsList from './FieldsList';
 import MapView from './MapView';
 import StudiesList from './StudiesList';
