@@ -60,7 +60,7 @@ const LoginWithEmailView = withStyles(styles)(
             <Paper className={classes.root}>
                 <Avatar
                     alt="Commons Icon"
-                    src="/assets/images/CircleIcon.png"
+                    src="/assets/images/AppIconSVG.svg"
                     className={classes.avatar}
                 />
                 <Typography variant="h6" align="center" gutterBottom>
