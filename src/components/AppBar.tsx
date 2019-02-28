@@ -51,7 +51,7 @@ const mainState: MainState = observable({
 });
 
 async function downloadUserData() {
-    const response = await fetch('/api/studies/download')
+    const response = await fetch('/api/studies/download');
     const url = window.URL.createObjectURL(await response.blob());
     const link = document.createElement('a');
     link.href = url;
