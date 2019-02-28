@@ -64,7 +64,7 @@ const Main = observer((props: any & WithStyles) => {
                         navigate('/');
                     }}
                 >
-                    <Avatar alt="CommonSpace Icon" src="/assets/images/CircleIcon.png" />
+                    <Avatar alt="CommonSpace Icon" src="/assets/images/AppIconSVG.svg" />
                 </IconButton>
                 <Typography
                     component="h1"

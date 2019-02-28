@@ -86,7 +86,7 @@ const LoginView = withStyles(styles)(
                 <div className={classes.content}>
                     <Avatar
                         alt="Commons Icon"
-                        src="/assets/images/CircleIcon.png"
+                        src="/assets/images/AppIconSVG.svg"
                         className={classes.avatar}
                     />
                     <Typography variant="h6" align="center" gutterBottom>
@@ -118,10 +118,9 @@ const LoginView = withStyles(styles)(
                     </Typography> */}
                     <Fab
                         variant="extended"
-                        color="secondary"
                         onClick={() => navigate('/loginWithEmail')}
                         classes={{
-                            root: classes.oulinedButton,
+                            root: classes.button,
                             label: classes.buttonLabel
                         }}
                     >
