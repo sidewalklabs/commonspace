@@ -1,4 +1,4 @@
-import { MapView } from 'expo';
+import { MapView, Permissions } from 'expo';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { Platform, StyleSheet, TouchableOpacity } from 'react-native';
@@ -16,8 +16,20 @@ class MapWithMarkers extends React.Component {
     this.state = {
       circularProgressLocation: null,
       markerColor: null,
+      showsUserLocation: false,
     };
   }
+
+  componentDidMount() {
+    this.getLocationAsync();
+  }
+
+  getLocationAsync = async () => {
+    const { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status === 'granted') {
+      this.setState({ showsUserLocation: true });
+    }
+  };
 
   componentWillUnmount = () => {
     clearTimeout(this.timeout);
@@ -89,7 +101,7 @@ class MapWithMarkers extends React.Component {
           provider="google"
           onPress={() => onMapPress()}
           onLongPress={e => onMapLongPress(e.nativeEvent.coordinate, this.state.markerColor)}
-          showsUserLocation
+          showsUserLocation={this.state.showsUserLocation}
           loadingEnabled
           moveOnMarkerPress={false}
           zoomEnabled
