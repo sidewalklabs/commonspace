@@ -47,13 +47,9 @@ export function checkEmailInput(email: string): string {
 
 export async function logInUserGoogleOAuth(hostname, response) {
     const { profileObj, accessToken } = response;
-    // console.log('test: ', JSON.stringify(profileObj));
-    // console.log('snorlax: ', JSON.stringify(response));
-
-    // console.log('pikachu: ', JSON.stringify(profileObj));
-    // console.log('charizard: ', JSON.stringify(response));
+    const { email } = profileObj;
     try {
-        await postRest(hostname + '/check_whitelist', { email: 'releastheseabass@gmail.com' });
+        await postRest(hostname + '/auth/check_whitelist', { email });
     } catch (error) {
         if (error instanceof UnauthorizedError) {
             console.error('not whitelisted');
@@ -61,6 +57,24 @@ export async function logInUserGoogleOAuth(hostname, response) {
         }
         throw error;
         return;
+    } finally {
+        const url = `https://accounts.google.com/o/oauth2/revoke?token=${accessToken}`;
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'Content-type': 'application/x-www-form-urlencoded'
+                }
+            });
+            if (response.status !== 200) {
+                console.error(
+                    `[email ${email}][accessToken: ${accessToken}] Unable to sign user out of oauth, ${
+                        response.status
+                    }`
+                );
+            }
+        } catch (error) {
+            console.error(`[url: ${url}] ${error}`);
+        }
     }
 
     const { status, statusText } = await fetch(
