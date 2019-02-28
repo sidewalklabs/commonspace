@@ -81,7 +81,6 @@ const responseGoogleFailure = response => {
 const LoginView = withStyles(styles)(
     observer((props: WithStyles) => {
         const { classes } = props;
-        const serverName: string = process.env.SERVER_HOSTNAME ? process.env.SERVER_HOSTNAME : '';
         return (
             <Paper className={classes.root}>
                 <div className={classes.content}>
@@ -98,7 +97,7 @@ const LoginView = withStyles(styles)(
                     </Typography>
                     <GoogleLogin
                         clientId={process.env.GOOGLE_AUTH_CLIENT_ID}
-                        onSuccess={async response => logInUserGoogleOAuth(serverName, response)}
+                        onSuccess={async response => logInUserGoogleOAuth('', response)}
                         onFailure={responseGoogleFailure}
                         render={renderProps => (
                             <Fab
