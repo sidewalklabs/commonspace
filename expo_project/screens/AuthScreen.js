@@ -76,7 +76,7 @@ class AuthScreen extends React.Component {
             underlayColor="#00000020"
             style={[authStyles.cta, { backgroundColor: '#00000010' }]}
             onPress={() => this.props.navigation.navigate('LogInWithEmailScreen')}>
-            <Text style={[authStyles.ctaCopy, { opacity: 1 }]}>Login</Text>
+            <Text style={[authStyles.ctaCopy, { opacity: 1 }]}>Login with Email</Text>
           </TouchableHighlight>
         </View>
         <View style={authStyles.footer}>
