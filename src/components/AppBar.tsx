@@ -50,6 +50,16 @@ const mainState: MainState = observable({
     anchorElement: null
 });
 
+async function downloadUserData() {
+    const response = await fetch('/api/studies/download')
+    const url = window.URL.createObjectURL(await response.blob());
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'data.json');
+    document.body.appendChild(link);
+    link.click();
+}
+
 const Main = observer((props: any & WithStyles) => {
     const { classes } = props;
     const { anchorElement } = mainState;
@@ -90,6 +100,7 @@ const Main = observer((props: any & WithStyles) => {
                     onClose={() => (mainState.anchorElement = null)}
                 >
                     <MenuItem onClick={handleResetPassword}>Reset Password</MenuItem>
+                    <MenuItem onClick={downloadUserData}>Download My Data</MenuItem>
                     <MenuItem onClick={handleLogOut}>Logout</MenuItem>
                 </Menu>
             </Toolbar>
