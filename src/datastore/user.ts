@@ -91,9 +91,21 @@ export async function createUser(pool: pg.Pool, user: User): Promise<void> {
     try {
         await pool.query(query, values);
     } catch (error) {
-        if (error.code === UNIQUE_VIOLATION) {
-            // todo if email exists, and the password is empty, we can overwrite with a new password
-            throw new Error(`User for email ${user.email} already exists`);
+        console.error('could not create a new user: ', error);
+        if (error.code === UNIQUE_VIOLATION && error.constraint === 'users_email_key') {
+            // if email exists, and the password is empty, we can overwrite with a new password
+            const select_user = `SELECT user_id
+                                 FROM USERS
+                                 WHERE email = $1 and password = $2 and is_oauth = $3`;
+            const { rows, rowCount } = await pool.query(select_user, [email, '', false]);
+            if (rowCount === 1) {
+                const resetPassword = `UPDATE users
+                                       SET password = $1
+                                       WHERE email = $2`;
+                await pool.query(resetPassword, [password, email]);
+                return;
+            }
+            throw new Error(`[error ${error}]User for email ${user.email} already exists`);
         }
         console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
         throw error;
@@ -117,14 +129,22 @@ export async function deleteUser(pool: pg.Pool, userId: string): Promise<void> {
 }
 
 export async function userIsOAuthUser(pool: Pool, email: string) {
+    const userDoesNotExistYetQuery = `SELECT user_id
+                                      FROM users
+                                      WHERE email = $1`;
+    const { rowCount: rc } = await pool.query(userDoesNotExistYetQuery, [email]);
+    if (rc === 0) {
+        return true;
+    }
     const query = `SELECT user_id
                    FROM users
-                   WHERE password = '' and email = $1`;
-    const values = [email];
+                   WHERE email = $1 and is_oauth = $2`;
+    const values = [email, true];
     try {
-        const { rowCount } = await pool.query(query, values);
+        const { rowCount, rows } = await pool.query(query, values);
         if (rowCount === 1) {
-            return true;
+            const user = rows[0];
+            return user.is_oauth;
         }
         return false;
     } catch (error) {
@@ -135,13 +155,14 @@ export async function userIsOAuthUser(pool: Pool, email: string) {
 
 export async function authenticateOAuthUser(pool: pg.Pool, email: string) {
     const userId = uuid.v4();
-    const query = `INSERT INTO users (user_id, email)
+    const query = `INSERT INTO users (user_id, email, is_oauth)
                    VALUES (
                        $1,
-                       $2
+                       $2,
+                       $3
                    ) ON CONFLICT (email)
                    DO UPDATE SET email=EXCLUDED.email RETURNING user_id`;
-    const values = [userId, email];
+    const values = [userId, email, true];
     try {
         const { rowCount, rows, command } = await pool.query(query, values);
         if (rowCount !== 1 && command !== 'INSERT') {

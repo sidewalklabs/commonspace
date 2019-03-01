@@ -324,7 +324,7 @@ const init = (mode: string) => {
                 async function(request, accessToken, refreshToken, profile, done) {
                     const email = profile.emails[0].value;
                     try {
-                        if (userIsOAuthUser(DbPool, email)) {
+                        if (await userIsOAuthUser(DbPool, email)) {
                             const user = await authenticateOAuthUser(DbPool, email);
                             request.user = { user_id: user.userId };
                             done(null, request.user);
