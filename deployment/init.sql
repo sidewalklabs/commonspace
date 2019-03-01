@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users
     user_id UUID PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
     password TEXT,
+    is_oauth BOOLEAN DEFAULT FALSE,
     name TEXT
 );
 
