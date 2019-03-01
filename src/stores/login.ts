@@ -3,7 +3,7 @@ import { observable } from 'mobx';
 import authState from './auth';
 import { navigate } from './router';
 import uiState, { setSnackBar } from './ui';
-import { postRest } from '../client';
+import { postRest, UnauthorizedError } from '../client';
 
 export async function logInUser() {
     const { password, email } = loginState;
@@ -11,8 +11,22 @@ export async function logInUser() {
         password,
         email
     };
+    if (process.env.CLIENT_ENV === 'staging' || process.env.CLIENT_ENV === 'production') {
+        try {
+            await postRest(`/auth/check_whitelist`, { email });
+        } catch (error) {
+            if (error instanceof UnauthorizedError) {
+                setSnackBar(
+                    'error',
+                    `User has not been whitelisted, contact product-support@sidewalklabs.com`
+                );
+            } else {
+                throw error;
+            }
+            return;
+        }
+    }
     try {
-        await postRest(`/auth/check_whitelist`, { email });
         await postRest(`/auth/login`, { password, email });
         authState.isAuth = true;
         navigate('/studies');
