@@ -6,6 +6,7 @@
   "author": "Sidewalk Labs Eng",
   "license": "Apache-2.0",
   "scripts": {
+    "admin": "yarn build --config admin.webpack.config.js ",
     "build": "yarn webpack",
     "clean": "rm -rf dist/",
     "lint": "tsc --noEmit --skipLibCheck",
@@ -13,8 +14,9 @@
     "it-old": "jest -c jest.config.integration.js --runInBand",
     "pretty": "yarn prettier --config prettier.config.json --write \"src/**/*.tsx\" \"src/**/*.ts\"",
     "prettier-check": "yarn prettier  --check --config prettier.config.json \"src/**/*.tsx\" \"src/**/*.ts\"",
+    "server": "yarn build --config server.webpack.config.js",
     "test": "jest -c jest.config.test.js",
-    "watch": "yarn build --env.TILE_SERVER_URL=http://{s}.tile.osm.org/{z}/{x}/{y}.png --watch --mode development"
+    "watch": "yarn admin --env.TILE_SERVER_URL=http://{s}.tile.osm.org/{z}/{x}/{y}.png --env.CLIENT_ENV=development --watch --mode development"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",

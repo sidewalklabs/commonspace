@@ -84,7 +84,7 @@
     },
     {
       "type": "file",
-      "source": "webpack.config.js",
+      "source": "server.webpack.config.js",
       "destination": "commons/webpack.config.js"
     },
     {
@@ -93,12 +93,8 @@
         "cd commons/",
 	"npm install -g -s --no-progress yarn",
 	"yarn install",
-        "yarn build --env.SERVER_HOSTNAME={{ user `SERVER_HOSTNAME` }} --env.TILE_SERVER_URL={{ user `TILE_SERVER_URL` }} --mode={{ user `NODE_ENV` }}"
+        "yarn build --mode={{ user `NODE_ENV` }}"
       ]
-    },
-    {
-      "type": "shell",
-      "inline": ["cp -r /commons/dist/ /commons/build/"]
     }
   ],
   "post-processors": [

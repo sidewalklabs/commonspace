@@ -15,10 +15,17 @@ Content-Type: application/json
   "password": :password
 }
 #
-:studies = :host/studies
+:studies = :host/api/studies
 GET :studies
 Accept-Encoding: application/json
 Content-Type: application/json
+Authorization: bearer :jwt
+#
+:byStudyId = :host/api/studies/:studyId
+GET :byStudyId
+Accept-Encoding: application/json
+Content-Type: application/json
+Authorization: bearer :jwt
 #
 :surveys = :host/studies/36d00ab2-0dba-4eca-8973-9e1e0a6bb074/surveys
 GET :surveys

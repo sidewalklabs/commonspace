@@ -48,32 +48,36 @@ export function checkEmailInput(email: string): string {
 export async function logInUserGoogleOAuth(hostname, response) {
     const { profileObj, accessToken } = response;
     const { email } = profileObj;
-    try {
-        await postRest(hostname + '/auth/check_whitelist', { email });
-    } catch (error) {
-        if (error instanceof UnauthorizedError) {
-            console.error('not whitelisted');
-            console.error(error);
-        }
-        throw error;
-        return;
-    } finally {
-        const url = `https://accounts.google.com/o/oauth2/revoke?token=${accessToken}`;
+    if (process.env.CLIENT_ENV === 'staging' || process.env.CLIENT_ENV === 'production') {
         try {
-            const response = await fetch(url, {
-                headers: {
-                    'Content-type': 'application/x-www-form-urlencoded'
-                }
-            });
-            if (response.status !== 200) {
-                console.error(
-                    `[email ${email}][accessToken: ${accessToken}] Unable to sign user out of oauth, ${
-                        response.status
-                    }`
-                );
-            }
+            await postRest(`/auth/check_whitelist`, { email });
         } catch (error) {
-            console.error(`[url: ${url}] ${error}`);
+            if (error instanceof UnauthorizedError) {
+                setSnackBar(
+                    'error',
+                    `User has not been whitelisted, contact product-support@sidewalklabs.com`
+                );
+            } else {
+                throw error;
+            }
+        } finally {
+            const url = `https://accounts.google.com/o/oauth2/revoke?token=${accessToken}`;
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-type': 'application/x-www-form-urlencoded'
+                    }
+                });
+                if (response.status !== 200) {
+                    console.error(
+                        `[email ${email}][accessToken: ${accessToken}] Unable to sign user out of oauth, ${
+                            response.status
+                        }`
+                    );
+                }
+            } catch (error) {
+                console.error(`[url: ${url}] ${error}`);
+            }
         }
     }
 
@@ -117,8 +121,22 @@ export async function signUpUser() {
         }
         return;
     }
+    if (process.env.CLIENT_ENV === 'staging' || process.env.CLIENT_ENV === 'production') {
+        try {
+            await postRest(`/auth/check_whitelist`, { email });
+        } catch (error) {
+            if (error instanceof UnauthorizedError) {
+                setSnackBar(
+                    'error',
+                    `User has not been whitelisted, contact product-support@sidewalklabs.com`
+                );
+            } else {
+                throw error;
+            }
+            return;
+        }
+    }
     try {
-        await postRest(`/auth/check_whitelist`, { email });
         await postRest(`/auth/signup`, { password, email });
         authState.isAuth = true;
         navigate('/studies');
