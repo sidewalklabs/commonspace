@@ -8,7 +8,8 @@ import {
     surveyorUser,
     SeaBassFishCountDataPoints,
     SeaBassFishCountStudy,
-    MarchOnWashington
+    MarchOnWashington,
+    SampleDataPointOne
 } from './integration_test_data';
 import { snakecasePayload } from './utils';
 import dotenv from 'dotenv';
@@ -207,7 +208,6 @@ describe('create/delete/modify studies', async () => {
             saveMultipleStudies,
             adminToken
         );
-        console.error(studies);
         expect(
             studies
                 .map(({ created_at, last_updated }) => created_at && last_updated)
@@ -281,6 +281,28 @@ describe('create/delete/modify studies', async () => {
         }
         // @ts-ignore
         expect(surveyorsSurvey.data_points.length).toBe(SeaBassFishCountDataPoints.length);
+    });
+
+    test('save another data point', async () => {
+        const surveyorSurvey = SeaBassFishCountStudy.surveys.filter(({ email }) => {
+            return email === surveyorUser.email;
+        })[0];
+        const { survey_id } = surveyorSurvey;
+        await postRest<DataPoint>(
+            API_SERVER + `/api/surveys/${survey_id}/datapoints/${SampleDataPointOne.data_point_id}`,
+            SampleDataPointOne,
+            surveyorToken
+        );
+
+        const dataPoints = await getRest<DataPoint[]>(
+            API_SERVER + `/api/surveys/${survey_id}/datapoints`,
+            surveyorToken
+        );
+        expect(
+            dataPoints.filter(
+                ({ data_point_id }) => data_point_id === SampleDataPointOne.data_point_id
+            )
+        ).toBeTruthy();
     });
 
     test('once a user logout out using a token, the token should result in a 401', async () => {

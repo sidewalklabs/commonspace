@@ -310,3 +310,15 @@ export const MarchOnWashington = {
     ],
     map: washingtonMall
 };
+
+export const SampleDataPointOne = {
+    data_point_id: '8e6c8475-6812-41d0-ad27-3795b8897ea8',
+    color: '#D10115',
+    title: 'Person 2',
+    creation_date: '2019-03-02T03:24:56.954Z',
+    gender: 'unknown',
+    location: {
+        type: 'Point',
+        coordinates: [-73.99744212627411, 40.730430884370335]
+    }
+};

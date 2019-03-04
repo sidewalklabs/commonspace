@@ -192,9 +192,9 @@ export async function addDataPointToSurveyWithStudyId(
     query = `INSERT INTO ${tablename}
              ${query}`;
     try {
-        return pool.query(query, values);
+        await pool.query(query, values);
     } catch (error) {
-        console.error(`error executing sql query: ${query}`);
+        console.error(`[query ${query}][values ${JSON.stringify(values)}]: ${error}`);
         throw error;
     }
 }
