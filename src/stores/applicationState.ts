@@ -10,7 +10,7 @@ import { StudyField } from '../datastore/utils';
 import { StudyType } from '../datastore/study';
 import { setSnackBar } from './ui';
 import { deleteRest, getRest, postRest, UnauthorizedError, putRest } from '../client';
-import { logoutIfError } from './router';
+import { logoutIfError, navigate } from './router';
 
 const DEFAULT_LATITUDE = 40.730819;
 const DEFAULT_LONGITUDE = -73.997461;
@@ -58,6 +58,16 @@ const fetchParams: RequestInit = {
 };
 
 export const getStudies = logoutIfError(UnauthorizedError, async () => {
+    if (process.env.CLIENT_ENV === 'staging' || process.env.CLIENT_ENV === 'production') {
+        try {
+            await getRest('/api/user/is_verified');
+        } catch (error) {
+            console.error(error);
+            setSnackBar('error', 'Have you signed up and verified your email?');
+            throw error;
+            return;
+        }
+    }
     try {
         const studies = camelcaseKeys(await getRest('/api/studies?type=admin'));
         studies.forEach(study => {
@@ -76,7 +86,7 @@ export const getStudies = logoutIfError(UnauthorizedError, async () => {
         return groupArrayOfObjectsBy<Study>(studies, 'studyId');
     } catch (error) {
         setSnackBar('error', `Could not load studies`);
-        throw error;
+        navigate('/login');
     }
 });
 

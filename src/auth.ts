@@ -28,6 +28,8 @@ dotenv.config({
     path: process.env.DOTENV_CONFIG_DIR ? path.join(process.env.DOTENV_CONFIG_DIR, '.env') : ''
 });
 
+const FROM_STRING = 'Gehl Data Collector <thorncliffeparkpubliclifepilot@gmail.com>';
+
 const LocalStrategy = passportLocal.Strategy;
 const ExtractJwt = passportJWT.ExtractJwt;
 const GoogleStrategy = passportGoogle.Strategy;
@@ -120,6 +122,25 @@ export async function emailForResetToken(pool: Pool, token: string): Promise<str
     }
 }
 
+export async function emailIsVerified(pool: Pool, userId: string): Promise<boolean> {
+    const query = `SELECT verified
+                   FROM account_verification av
+                   JOIN users urs
+                   ON av.email = urs.email
+                   WHERE urs.user_id = $1`;
+    const values = [userId];
+    try {
+        const { rowCount, rows } = await pool.query(query, values);
+        if (rowCount !== 1) {
+            return false;
+        }
+        return rows[0].verified;
+    } catch (error) {
+        console.error(`[query ${query}][values ${values}] ${error}`);
+        throw error;
+    }
+}
+
 export async function validateEmail(pool: Pool, email: string, token: string): Promise<boolean> {
     const query = `UPDATE account_verification
                    SET verified = TRUE
@@ -147,11 +168,11 @@ export async function resetPassword(pool: Pool, password: string, token: string)
     return;
 }
 
-export async function sendEmailResetLink(email: string, token: string) {
-    const link = `${process.env.SERVER_HOSTNAME}/reset_password?token=${token}`;
+export async function sendEmailResetLink(host: string, email: string, token: string) {
+    const link = `${host}/reset_password?token=${token}`;
     const html = `Hello ${email},<br> Please Click on the link to reset your email.<br><a href="${link}">Click Here To Reset</a>`;
     const mailOptions: nodemailer.SendMailOptions = {
-        from: `Gehl Data Collector <thorncliffeparkpubliclifepilot@gmail.com>`,
+        from: FROM_STRING,
         to: email,
         subject: 'Password reset for CommonSpace',
         html
@@ -164,16 +185,21 @@ export async function sendEmailResetLink(email: string, token: string) {
     }
 }
 
-export function sendSignupVerificationEmail(host: string, email: string, token: string) {
-    const link = encodeURI(`${process.env.SERVER_HOSTNAME}/verify?token=${token}&email=${email}`);
+export async function sendSignupVerificationEmail(host: string, email: string, token: string) {
+    const link = `${host}/verify?token=${token}&email=${email}`;
+    const html = `Hello ${email},<br> Please Click on the link to validate your email.<br><a href="${link}">Click here</a>`;
     const mailOptions: nodemailer.SendMailOptions = {
-        from: `Gehl Data Collector <thorncliffeparkpubliclifepilot@gmail.com>`,
+        from: FROM_STRING,
         to: email,
-        subject: 'Invite to collect survey data for a study',
-        html: `Hello,<br> Please Click on the link to verify your email.<br><a href="${link}">Click here to verify</a>`
+        subject: 'Validate your email with CommonSpace',
+        html
     };
-    console.log(`add new user: ${JSON.stringify(mailOptions)}`);
-    SMTP_TRANSPORT.sendMail(mailOptions);
+    try {
+        await SMTP_TRANSPORT.sendMail(mailOptions);
+    } catch (error) {
+        console.error(`[mailOptions ${JSON.stringify(mailOptions)}] [mailUrl ${link}] ${error}`);
+        throw error;
+    }
 }
 
 export class PasswordValidationError extends Error {}
@@ -214,9 +240,8 @@ const signupStrategy = new LocalStrategy(
             await createUser(DbPool, user);
             const token = await createRandomStringForTokenUse();
             await saveTokenForEmailVerification(DbPool, email, token);
-            await sendSignupVerificationEmail(req.get('host'), user.email, token);
-            req.user = user;
-            return done(null, { user_id: userId, email });
+            //await sendSignupVerificationEmail(req.get('host'), email, token); weird html escaping
+            return done(null, { user_id: userId, email, token });
         } catch (error) {
             console.error(
                 `[body ${JSON.stringify(req.body)}][params: ${JSON.stringify(req.params)}] ${error}`
@@ -251,18 +276,18 @@ function jwtFromRequest(req: Request) {
     }
 }
 
-const jwtOptions = {
+const jwtOptions: passportJWT.StrategyOptions = {
     jwtFromRequest,
     secretOrKey: process.env.JWT_SECRET
 };
 
-const jwtStrategy = new JwtStrategy(jwtOptions, async (jwt_payload, next) => {
+const jwtStrategy = new JwtStrategy(jwtOptions, async (jwt_payload, done) => {
     const { user_id: userId } = jwt_payload;
-    const user = await findUserById(DbPool, userId);
-    if (user) {
-        next(null, { user_id: userId });
-    } else {
-        next(new Error(`No User: ${JSON.stringify(jwt_payload)}`), null);
+    try {
+        const user = await findUserById(DbPool, userId);
+        return done(null, { user_id: userId });
+    } catch (error) {
+        return done(error, null);
     }
 });
 
@@ -327,11 +352,11 @@ const init = (mode: string) => {
                         if (await userIsOAuthUser(DbPool, email)) {
                             const user = await authenticateOAuthUser(DbPool, email);
                             request.user = { user_id: user.userId };
-                            done(null, request.user);
+                            return done(null, request.user);
                         }
-                        done(new Error('not valid login'), null);
+                        return done(new Error('not valid login'), null);
                     } catch (error) {
-                        done(error, null);
+                        return done(error, null);
                     }
                 }
             );
@@ -342,7 +367,7 @@ const init = (mode: string) => {
                     try {
                         const user = await authenticateOAuthUser(DbPool, email);
                         request.user = user;
-                        done(null, user, request);
+                        return done(null, user, request);
                     } catch (error) {
                         return done(error, null, request);
                     }

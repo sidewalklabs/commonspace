@@ -10,11 +10,13 @@ import {
     createRandomStringForTokenUse,
     emailForResetToken,
     saveTokenForPasswordReset,
-    validateEmail
+    validateEmail,
+    sendSignupVerificationEmail
 } from '../auth';
 import DbPool from '../database';
 import { User } from '../datastore/user';
 import { checkUserIsWhitelistApproved } from '../datastore/whitelist';
+import { return401OnUnauthorizedError, UnauthorizedError } from './errors';
 
 const router = express.Router();
 
@@ -68,13 +70,14 @@ router.post('/signup', (req, res, next) => {
     passport.authenticate(
         'signup',
         { session: false, successRedirect: '/', failureRedirect: '/signup' },
-        (err, user) => {
+        async (err, user) => {
             if (err) {
                 const errorMessage = `${err}`;
                 res.statusMessage = errorMessage;
                 res.status(400).send({ error_message: errorMessage });
                 return;
             }
+            await sendSignupVerificationEmail(req.get('host'), user.email, user.token);
             return respondWithAuthentication(req, res, user);
         }
     )(req, res, next);
@@ -117,7 +120,7 @@ router.post(
         const token = await createRandomStringForTokenUse();
         // TODO: only if the user exists in the database already
         await saveTokenForPasswordReset(DbPool, email, token);
-        await sendEmailResetLink(email, token);
+        await sendEmailResetLink(req.get('host'), email, token);
         res.status(200).send();
     })
 );
@@ -153,8 +156,7 @@ router.get(
     return500OnError(async function(req, res) {
         const { token, email } = req.query;
         if (await validateEmail(DbPool, email, token)) {
-            res.status(200).send();
-            return;
+            return respondWithAuthentication(req, res, req.user);
         }
         res.status(400);
     })
