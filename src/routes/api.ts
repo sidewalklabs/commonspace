@@ -14,7 +14,7 @@ import {
     getDataPointsForSurvey,
     getDataPointsForStudy
 } from '../datastore/datapoint';
-import { StudyField, IdAlreadyExists, IdDoesNotExist } from '../datastore/utils';
+import { StudyField, IdAlreadyExists } from '../datastore/utils';
 import {
     createStudy,
     deleteStudy,
@@ -36,55 +36,16 @@ import { createLocation } from '../datastore/location';
 import DbPool from '../database';
 import { Feature, FeatureCollection, Point } from 'geojson';
 import { snakecasePayload } from '../utils';
-import { tokenIsBlacklisted } from '../auth';
+import { emailIsVerified, tokenIsBlacklisted } from '../auth';
+import {
+    return404OnIdDoesNotExist,
+    return401OnUnauthorizedError,
+    UnauthorizedError
+} from './errors';
 
 import { DataPoint, Study, Survey } from './api_types';
 
 const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org/reverse?format=json';
-
-// have the rest methods throw these errors
-class UnauthorizedError extends Error {
-    constructor(route, userId) {
-        super(userId);
-        this.message = `user_id  ${userId}, not authorized for route ${route}`;
-    }
-}
-
-// these error handlers will return the appropriate http status code
-export function return401OnUnauthorizedError(f: (req: Request, res: Response, next) => any) {
-    return async (req: Request, res: Response, next) => {
-        try {
-            const result = await f(req, res, next);
-            return result;
-        } catch (error) {
-            if (error instanceof UnauthorizedError) {
-                const errorMessage = `${error}`;
-                res.statusMessage = errorMessage;
-                res.clearCookie('commonspacejwt');
-                res.status(401).send({ error_message: errorMessage });
-                return;
-            }
-            throw error;
-        }
-    };
-}
-
-export function return404OnIdDoesNotExist(f: (req: Request, res: Response, next) => any) {
-    return async (req: Request, res: Response, next) => {
-        try {
-            const result = await f(req, res, next);
-            return result;
-        } catch (error) {
-            if (error instanceof IdDoesNotExist) {
-                const errorMessage = `${error}`;
-                res.statusMessage = errorMessage;
-                res.status(404).send({ error_message: errorMessage });
-                return;
-            }
-            throw error;
-        }
-    };
-}
 
 const STUDY_FIELDS: StudyField[] = [
     'gender',
@@ -126,6 +87,22 @@ router.delete(
         await deleteUser(DbPool, userId);
         res.status(200).send();
     })
+);
+
+router.get(
+    '/user/is_verified',
+    return500OnError(
+        return401OnUnauthorizedError(async function(req, res) {
+            const { user_id: userId } = req.user;
+            const isVerified = await emailIsVerified(DbPool, userId);
+            if (isVerified) {
+                res.status(200).send();
+                return;
+            } else {
+                throw new UnauthorizedError(req.route, userId);
+            }
+        })
+    )
 );
 
 router.get(
