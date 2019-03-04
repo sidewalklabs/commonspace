@@ -74,7 +74,7 @@
         "cd commons/",
 	"npm install -g -s --no-progress yarn",
 	"yarn",
-        "yarn build --env.GOOGLE_AUTH_CLIENT_ID={{ user `GOOGLE_AUTH_CLIENT_ID` }} --env.TILE_SERVER_URL={{ user `TILE_SERVER_URL` }} --env.CLIENT_ENV=={{ user `CLIENT_ENV` }} --mode={{ user `NODE_ENV` }}"
+        "yarn build --env.GOOGLE_AUTH_CLIENT_ID={{ user `GOOGLE_AUTH_CLIENT_ID` }} --env.TILE_SERVER_URL={{ user `TILE_SERVER_URL` }} --env.CLIENT_ENV={{ user `CLIENT_ENV` }} --mode={{ user `NODE_ENV` }}"
       ]
     },
     {
