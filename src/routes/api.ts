@@ -43,7 +43,12 @@ import { DataPoint, Study, Survey } from './api_types';
 const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org/reverse?format=json';
 
 // have the rest methods throw these errors
-class UnauthorizedError extends Error {}
+class UnauthorizedError extends Error {
+    constructor(route, userId) {
+        super(userId);
+        this.message = `user_id  ${userId}, not authorized for route ${route}`;
+    }
+}
 
 // these error handlers will return the appropriate http status code
 export function return401OnUnauthorizedError(f: (req: Request, res: Response, next) => any) {
@@ -279,7 +284,7 @@ router.get(
                 const { user_id: userId } = req.user;
                 const { studyId } = req.params;
                 if (!userIsAdminOfStudy(DbPool, studyId, userId)) {
-                    throw new UnauthorizedError();
+                    throw new UnauthorizedError(req.route, userId);
                     return;
                 }
                 const studyMetadata = await returnStudyMetadata(DbPool, studyId);
@@ -322,7 +327,7 @@ router.delete(
             const { user_id: userId } = req.user;
             const { studyId } = req.params;
             if (!(await userIdIsAdminOfStudy(DbPool, studyId, userId))) {
-                throw new UnauthorizedError();
+                throw new UnauthorizedError(req.route, userId);
                 return;
             }
             await deleteStudy(DbPool, studyId);
@@ -338,7 +343,7 @@ router.get(
             const { user_id: userId } = req.user;
             const { studyId } = req.params;
             if (!(await userIdIsAdminOfStudy(DbPool, studyId, userId))) {
-                throw new UnauthorizedError();
+                throw new UnauthorizedError(req.route, userId);
                 return;
             }
             const dataPoints = await getDataPointsForStudy(DbPool, userId, studyId);
@@ -380,21 +385,17 @@ async function saveGeoJsonFeatureAsLocation(x: Feature | FeatureCollection) {
 async function saveDataPoint(req: Request, res: Response) {
     const { user_id: userId } = req.user;
     const { surveyId, dataPointId } = req.params;
-    const userCanAccessSurvey = await userIdIsSurveyor(DbPool, userId, surveyId);
-    if (!userCanAccessSurvey) {
-        throw new UnauthorizedError();
-        return;
-    }
+
     const dataPointFromBody = req.body as DataPoint;
     if (dataPointFromBody.data_point_id && dataPointFromBody.data_point_id !== dataPointId) {
         const errorMessage = 'data_point_id in url must match that in body';
         res.statusMessage = errorMessage;
         res.status(400).send({ error_message: errorMessage });
+        return;
     }
-    const dataPoint = { ...dataPointFromBody, data_point_id: dataPointId };
 
     await addDataPointToSurveyNoStudyId(DbPool, surveyId, {
-        ...dataPoint,
+        ...dataPointFromBody,
         data_point_id: dataPointId
     });
     res.status(200).send();
@@ -409,7 +410,8 @@ router.get(
             const userCanAccessSurvey = await userIdIsSurveyor(DbPool, userId, surveyId);
             if (!userCanAccessSurvey) {
                 res.statusMessage = 'not allowed to access survey';
-                throw new UnauthorizedError();
+                throw new UnauthorizedError(req.route, userId);
+                return;
             }
             const databaseDataPoints = await getDataPointsForSurvey(DbPool, surveyId);
             res.send(databaseDataPoints);
@@ -423,8 +425,9 @@ router.post(
         return401OnUnauthorizedError(async (req: Request, res: Response) => {
             const { user_id: userId } = req.user;
             const { surveyId } = req.params;
-            if (!(await userIdIsSurveyor(DbPool, userId, surveyId))) {
-                throw new UnauthorizedError();
+            const userCanAccessSurvey = await userIdIsSurveyor(DbPool, userId, surveyId);
+            if (!userCanAccessSurvey) {
+                throw new UnauthorizedError(req.route, userId);
                 return;
             }
             const datapoint = req.body;
@@ -442,8 +445,9 @@ router.post(
         return401OnUnauthorizedError(async (req: Request, res: Response) => {
             const { user_id: userId } = req.user;
             const { surveyId } = req.params;
-            if (!(await userIdIsSurveyor(DbPool, userId, surveyId))) {
-                throw new UnauthorizedError();
+            const userCanAccessSurvey = await userIdIsSurveyor(DbPool, userId, surveyId);
+            if (!userCanAccessSurvey) {
+                throw new UnauthorizedError(req.route, userId);
                 return;
             }
             const datapoint = req.body as DataPoint;
@@ -460,7 +464,7 @@ router.put(
             const { user_id: userId } = req.user;
             const { surveyId } = req.params;
             if (!(await userIdIsSurveyor(DbPool, userId, surveyId))) {
-                throw new UnauthorizedError();
+                throw new UnauthorizedError(req.route, userId);
                 return;
             }
             const datapoint = req.body as DataPoint;
@@ -476,7 +480,7 @@ router.delete(
         const { user_id: userId } = req.user;
         const { surveyId, dataPointId } = req.params;
         if (!(await userIdIsSurveyor(DbPool, userId, surveyId))) {
-            throw new UnauthorizedError();
+            throw new UnauthorizedError(req.route, userId);
             return;
         }
         await deleteDataPoint(DbPool, surveyId, dataPointId);
@@ -536,7 +540,7 @@ router.put(
             const study = camelcaseKeys(req.body as Study);
             const { studyId } = req.params;
             if (!(await userIdIsAdminOfStudy(DbPool, studyId, userId))) {
-                throw new UnauthorizedError();
+                throw new UnauthorizedError(req.route, userId);
                 return;
             }
             const { surveys } = study;
@@ -557,7 +561,7 @@ router.post(
             const { studyId } = req.params;
             const { email } = req.body;
             if (!(await userIdIsAdminOfStudy(DbPool, studyId, userId))) {
-                throw new UnauthorizedError();
+                throw new UnauthorizedError(req.route, userId);
                 return;
             }
             const [_, newUserId] = await giveUserStudyAccess(DbPool, email, studyId);
