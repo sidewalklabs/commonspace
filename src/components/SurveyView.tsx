@@ -109,9 +109,9 @@ const SurveyObjectToTableRow = observer(
                             onChange={(m: moment.Moment) => {
                                 // picker uses moment to preserve date time and update time
                                 changeStartDate(surveyId, m.toISOString());
+                                changeSurveyTitle(surveyId, m.format('h a'));
                                 // assume we want to update end date to be a 1 hour shift
                                 changeEndDate(surveyId, m.add(1, 'hours').toISOString());
-                                changeSurveyTitle(surveyId, m.format('h a'));
                             }}
                         />
                     </MuiPickersUtilsProvider>
