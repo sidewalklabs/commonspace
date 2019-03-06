@@ -74,7 +74,11 @@ const styles = theme => ({
 
 const responseGoogleFailure = response => {
     console.error(response);
-    setSnackBar('error', 'Unable to authenticate with Google OAuth');
+    const errorMessage =
+        response.error === 'idpiframe_initialization_failed'
+            ? 'Google OAuth not available, contact product-support@sidewalklabs.com'
+            : 'Unable to authenticate with Google OAuth';
+    setSnackBar('error', errorMessage);
 };
 
 // @ts-ignore
@@ -97,7 +101,7 @@ const LoginView = withStyles(styles)(
                     </Typography>
                     <GoogleLogin
                         clientId={process.env.GOOGLE_AUTH_CLIENT_ID}
-                        onSuccess={async response => logInUserGoogleOAuth('', response)}
+                        onSuccess={logInUserGoogleOAuth}
                         onFailure={responseGoogleFailure}
                         render={renderProps => (
                             <Fab
