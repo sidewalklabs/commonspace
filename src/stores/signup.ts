@@ -45,7 +45,7 @@ export function checkEmailInput(email: string): string {
     return email;
 }
 
-export async function logInUserGoogleOAuth(hostname, response) {
+export async function logInUserGoogleOAuth(response) {
     const { profileObj, accessToken } = response;
     const { email } = profileObj;
     if (process.env.CLIENT_ENV === 'staging' || process.env.CLIENT_ENV === 'production') {
