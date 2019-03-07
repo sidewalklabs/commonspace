@@ -351,7 +351,7 @@ const init = (mode: string) => {
                     try {
                         if (await userIsOAuthUser(DbPool, email)) {
                             const user = await authenticateOAuthUser(DbPool, email);
-                            request.user = { user_id: user.userId };
+                            request.user = user;
                             return done(null, request.user);
                         }
                         return done(new Error('not valid login'), null);

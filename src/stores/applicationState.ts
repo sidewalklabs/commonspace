@@ -58,16 +58,6 @@ const fetchParams: RequestInit = {
 };
 
 export const getStudies = logoutIfError(UnauthorizedError, async () => {
-    if (process.env.CLIENT_ENV === 'staging' || process.env.CLIENT_ENV === 'production') {
-        try {
-            await getRest('/api/user/is_verified');
-        } catch (error) {
-            console.error(error);
-            setSnackBar('error', 'Have you signed up and verified your email?');
-            throw error;
-            return;
-        }
-    }
     try {
         const studies = camelcaseKeys(await getRest('/api/studies?type=admin'));
         studies.forEach(study => {
@@ -241,6 +231,12 @@ export async function addNewSurveyorToSurvey(studyId: string, email: string) {
 export async function init() {
     const studies = await getStudies();
     applicationState.studies = studies;
+}
+
+export function resetApplicationState() {
+    applicationState.studies = {};
+    applicationState.currentStudy = null;
+    applicationState.mapCenters = {};
 }
 
 let applicationState: ApplicationState = observable({

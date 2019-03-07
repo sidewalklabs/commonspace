@@ -59,28 +59,10 @@ export async function logInUserGoogleOAuth(response) {
             } else {
                 throw error;
             }
-        } finally {
-            const url = `https://accounts.google.com/o/oauth2/revoke?token=${accessToken}`;
-            try {
-                const response = await fetch(url, {
-                    headers: {
-                        'Content-type': 'application/x-www-form-urlencoded'
-                    }
-                });
-                if (response.status !== 200) {
-                    console.error(
-                        `[email ${email}][accessToken: ${accessToken}] Unable to sign user out of oauth, ${
-                            response.status
-                        }`
-                    );
-                }
-            } catch (error) {
-                console.error(`[url: ${url}] ${error}`);
-            }
         }
     }
 
-    const { status, statusText } = await fetch(`${location.host}/auth/google/token`, {
+    const { status, statusText } = await fetch(`/auth/google/token`, {
         mode: 'cors',
         cache: 'no-cache',
         credentials: 'same-origin',
@@ -91,6 +73,23 @@ export async function logInUserGoogleOAuth(response) {
             'access-token': `${accessToken}`
         }
     });
+    // const url = `https://accounts.google.com/o/oauth2/revoke?token=${accessToken}`;
+    // try {
+    //     const response = await fetch(url, {
+    //         headers: {
+    //             'Content-type': 'application/x-www-form-urlencoded'
+    //         }
+    //     });
+    //     if (response.status !== 200) {
+    //         console.error(
+    //             `[email ${email}][accessToken: ${accessToken}] Unable to sign user out of oauth, ${
+    //                 response.status
+    //             }`
+    //         );
+    //     }
+    // } catch (error) {
+    //     console.error(`[url: ${url}] ${error}`);
+    // }
 
     if (status === 200) {
         navigate('/studies');
@@ -141,7 +140,7 @@ export async function signUpUser() {
     }
 }
 
-function resetSignupState() {
+export function resetSignupState() {
     signUpState.email = '';
     signUpState.password = '';
 }

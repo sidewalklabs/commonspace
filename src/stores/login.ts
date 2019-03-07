@@ -35,7 +35,7 @@ export async function logInUser() {
     }
 }
 
-function resetLoginState() {
+export function resetLoginState() {
     loginState.email = '';
     loginState.password = '';
 }
