@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { observable, autorun } from 'mobx';
 import pathToRegexp from 'path-to-regexp';
 import { init } from './applicationState';
-import authState from './auth';
 
 type BooleanFunction = (...args: any[]) => boolean;
 type ElementFunction = (...props: any[]) => JSX.Element;
@@ -63,7 +62,6 @@ export function logoutIfError<T>(
             return result;
         } catch (error) {
             if (error instanceof eC) {
-                authState.isAuth = false;
                 navigate('/login');
             }
         }
@@ -78,18 +76,14 @@ const TRAILING_SLASH = /\/$/;
 // nginx will sometimes add a trailing slash to a url
 function sanitizedPathname() {
     const route = window.location.pathname + window.location.search;
-    if (route === '/' && !authState.isAuth) {
-        window.location.pathname = '/login';
-        return;
-    } else if (route === '/' && authState.isAuth) {
-        window.location.pathname = '/studies';
+    if (route === '/') {
+        window.location.pathname = '/welcome';
         return;
     }
     return route.replace(TRAILING_SLASH, '');
 }
 
 const router: Router = observable({
-    isAuth: false,
     uri: sanitizedPathname()
 });
 

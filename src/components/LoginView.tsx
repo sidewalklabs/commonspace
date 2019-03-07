@@ -94,10 +94,10 @@ const LoginView = withStyles(styles)(
                         className={classes.avatar}
                     />
                     <Typography variant="h6" align="center" gutterBottom>
-                        Welcome to CommonSpace
+                        Welcome to CommonSpace (Beta)
                     </Typography>
-                    <Typography variant="body1" align="center">
-                        Study the places you love
+                    <Typography variant="caption" align="center">
+                        If you are a beta tester, log in below.
                     </Typography>
                     <GoogleLogin
                         clientId={process.env.GOOGLE_AUTH_CLIENT_ID}

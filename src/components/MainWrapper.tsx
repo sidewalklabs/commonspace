@@ -14,6 +14,7 @@ import PrivacyView from './PrivacyView';
 import ResetView from './ResetView';
 import ResetPasswordView from './ResetPasswordView';
 import SignUpView from './SignUpView';
+import SplashView from './SplashView';
 import TermsView from './TermsView';
 import PageNotFoundView from './PageNotFoundView';
 
@@ -68,6 +69,7 @@ const MainWrapper = observer((props: MainProps & WithStyles) => {
         signup: assignComponentToRoute('/signup', SignUpView),
         loginWithEmail: assignComponentToRoute('/loginWithEmail', LoginWithEmailView),
         reset: assignComponentToRoute('/reset', ResetView),
+        welcome: assignComponentToRoute('/welcome', SplashView),
         reset_password: assignComponentToRoute('/reset_password', () => {
             const { query } = parse(uri);
             // @ts-ignore

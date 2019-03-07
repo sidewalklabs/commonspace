@@ -20,7 +20,6 @@ import applicationState, {
     getMapCenterForStudy
 } from '../stores/applicationState';
 import { groupArrayOfObjectsBy } from '../utils';
-import { FeatureCollection } from 'geojson';
 
 const styles = theme => ({
     container: {

@@ -1,7 +1,6 @@
 import { observable } from 'mobx';
 import snakecaseKeys from 'snakecase-keys';
 
-import authState from './auth';
 import { navigate } from './router';
 import uiState, { setSnackBar } from './ui';
 import { postRest, UnauthorizedError } from '../client';
@@ -81,23 +80,19 @@ export async function logInUserGoogleOAuth(response) {
         }
     }
 
-    const { status, statusText } = await fetch(
-        `${location.host}/auth/google/token`,
-        {
-            mode: 'cors',
-            cache: 'no-cache',
-            credentials: 'same-origin',
-            redirect: 'follow',
-            referrer: 'no-referrer',
-            headers: {
-                'Content-Type': 'application/json; charset=utf-8',
-                'access-token': `${accessToken}`
-            }
+    const { status, statusText } = await fetch(`${location.host}/auth/google/token`, {
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        redirect: 'follow',
+        referrer: 'no-referrer',
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'access-token': `${accessToken}`
         }
-    );
+    });
 
     if (status === 200) {
-        authState.isAuth = true;
         navigate('/studies');
     } else {
         console.error(statusText);
@@ -138,7 +133,6 @@ export async function signUpUser() {
     }
     try {
         await postRest(`/auth/signup`, { password, email });
-        authState.isAuth = true;
         navigate('/studies');
     } catch (error) {
         setSnackBar('error', `Unable to sign sign ${error}`);

@@ -13,7 +13,6 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
 import { observer } from 'mobx-react';
 
 import { observable } from 'mobx';
-import AuthState from '../stores/auth';
 import { navigate } from '../stores/router';
 import { postRest } from '../client';
 
@@ -30,23 +29,21 @@ const styles = theme => ({
 
 async function handleLogOut() {
     (await postRest('/auth/logout', {})) as {};
-    mainState.anchorElement = null;
-    AuthState.isAuth = false;
-    navigate('/login');
+    appBarState.anchorElement = null;
+    navigate('/');
 }
 
 async function handleResetPassword() {
     (await postRest('/auth/logout', {})) as {};
-    AuthState.isAuth = false;
-    mainState.anchorElement = null;
+    appBarState.anchorElement = null;
     navigate('/reset');
 }
 
-interface MainState {
+interface AppBarState {
     anchorElement: HTMLElement | null;
 }
 
-const mainState: MainState = observable({
+const appBarState: AppBarState = observable({
     anchorElement: null
 });
 
@@ -60,12 +57,17 @@ async function downloadUserData() {
     link.click();
 }
 
-const Main = observer((props: any & WithStyles) => {
-    const { classes } = props;
-    const { anchorElement } = mainState;
+// This is a stopgap until client knows about auth state reliably
+interface AppBarProps {
+    rightHeaderType?: 'login' | 'account-menu';
+}
+
+const CustomAppBar = observer((props: AppBarProps & WithStyles) => {
+    const { classes, rightHeaderType } = props;
+    const { anchorElement } = appBarState;
 
     return (
-        <AppBar className={classes.appBar} position="sticky" color="default">
+        <AppBar position="sticky" color="default">
             <Toolbar className={classes.toolbar}>
                 <IconButton
                     color="inherit"
@@ -85,19 +87,22 @@ const Main = observer((props: any & WithStyles) => {
                 >
                     CommonSpace
                 </Typography>
-                <IconButton
-                    color="inherit"
-                    aria-label="Open Menu"
-                    onClick={e => (mainState.anchorElement = e.currentTarget)}
-                    className={classes.menuIcon}
-                >
-                    <MoreVertIcon />
-                </IconButton>
+                {rightHeaderType === 'login' && <Button href="/login">Log In</Button>}
+                {rightHeaderType === 'account-menu' && (
+                    <IconButton
+                        color="inherit"
+                        aria-label="Open Menu"
+                        onClick={e => (appBarState.anchorElement = e.currentTarget)}
+                        className={classes.menuIcon}
+                    >
+                        <MoreVertIcon />
+                    </IconButton>
+                )}
                 <Menu
                     id="simple-menu"
                     anchorEl={anchorElement}
                     open={!!anchorElement}
-                    onClose={() => (mainState.anchorElement = null)}
+                    onClose={() => (appBarState.anchorElement = null)}
                 >
                     <MenuItem onClick={handleResetPassword}>Reset Password</MenuItem>
                     <MenuItem onClick={downloadUserData}>Download My Data</MenuItem>
@@ -109,4 +114,4 @@ const Main = observer((props: any & WithStyles) => {
 });
 
 // @ts-ignore
-export default withStyles(styles)(Main);
+export default withStyles(styles)(CustomAppBar);
