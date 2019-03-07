@@ -82,7 +82,7 @@ export async function logInUserGoogleOAuth(response) {
     }
 
     const { status, statusText } = await fetch(
-        'https://commons-staging.sidewalklabs.com/auth/google/token',
+        `${location.host}/auth/google/token`,
         {
             mode: 'cors',
             cache: 'no-cache',
