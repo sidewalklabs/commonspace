@@ -165,10 +165,11 @@ export async function authenticateOAuthUser(pool: pg.Pool, email: string) {
     const values = [userId, email, true];
     try {
         const { rowCount, rows, command } = await pool.query(query, values);
-        if (rowCount !== 1 && command !== 'INSERT') {
+        if (rowCount !== 1) {
             throw new Error(`error OAuth authentication for email ${email}`);
         }
-        return rows[0] as User;
+        const user: { user_id: string } = rows[0];
+        return user;
     } catch (error) {
         console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
         throw error;
