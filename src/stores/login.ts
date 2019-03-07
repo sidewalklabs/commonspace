@@ -1,6 +1,5 @@
 import { observable } from 'mobx';
 
-import authState from './auth';
 import { navigate } from './router';
 import uiState, { setSnackBar } from './ui';
 import { postRest, UnauthorizedError } from '../client';
@@ -28,7 +27,6 @@ export async function logInUser() {
     }
     try {
         await postRest(`/auth/login`, { password, email });
-        authState.isAuth = true;
         navigate('/studies');
     } catch (error) {
         setSnackBar('error', `Unable to log in, are email and password correct?`);

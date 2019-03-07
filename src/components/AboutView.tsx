@@ -30,7 +30,7 @@ const AboutView = observer((props: AboutViewProps & WithStyles) => {
     const { classes, webview } = props;
     return (
         <>
-            {!webview && <AppBar />}
+            {!webview && <AppBar rightHeaderType="login" />}
             <div className={classes.content}>
                 <Typography variant="h6" gutterBottom>
                     About CommonSpace

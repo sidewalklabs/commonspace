@@ -20,11 +20,9 @@ import applicationState, {
     ApplicationState,
     studyEmptySkeleton
 } from '../stores/applicationState';
-import { observable } from 'mobx';
 
 interface MainProps {
     applicationState: ApplicationState;
-    anchorElement: null | HTMLElement;
 }
 
 const styles = theme => ({
@@ -69,22 +67,14 @@ function prepareNewStudy() {
     uiState.modalStack.push('study');
 }
 
-interface MainState {
-    anchorElement: HTMLElement | null;
-}
-
-const mainState: MainState = observable({
-    anchorElement: null
-});
-
 const Main = observer((props: MainProps & WithStyles) => {
     const { applicationState, classes } = props;
     const { studies } = applicationState;
-    const { snackBar, modalStack } = uiState;
+    const { modalStack } = uiState;
     const currentStudy = applicationState.currentStudy
         ? applicationState.currentStudy
         : studyEmptySkeleton();
-    let { fields, studyId, surveyors, map, type } = currentStudy;
+    let { fields, studyId, surveys, surveyors, map, type } = currentStudy;
     const allowedMapShapes = type === 'stationary' ? 'polygon' : 'line';
     const { latitude, longitude } = getMapCenterForStudy(studyId);
     const visibleModal = modalStack.slice(-1)[0];
@@ -92,7 +82,7 @@ const Main = observer((props: MainProps & WithStyles) => {
     return (
         <div className={classes.root}>
             <CssBaseline />
-            <AppBar />
+            <AppBar rightHeaderType="account-menu" />
             <div className={classes.mainBody}>
                 <div className={classes.row}>
                     <Typography
@@ -116,16 +106,10 @@ const Main = observer((props: MainProps & WithStyles) => {
                     <StudyView study={currentStudy} studyIsNew={uiState.currentStudyIsNew} />
                 </WrapInModal>
                 <WrapInModal modalName={'surveyors'} visibleModal={visibleModal}>
-                    <SurveyorsView
-                        studyId={currentStudy.studyId}
-                        surveyors={currentStudy.surveyors}
-                    />
+                    <SurveyorsView studyId={studyId} surveyors={surveyors} />
                 </WrapInModal>
                 <WrapInModal modalName={'surveys'} visibleModal={visibleModal}>
-                    <SurveyView
-                        surveys={Object.values(currentStudy.surveys)}
-                        features={currentStudy.map.features}
-                    />
+                    <SurveyView surveys={Object.values(surveys)} features={map.features} />
                 </WrapInModal>
                 <WrapInModal modalName={'studyFields'} visibleModal={visibleModal}>
                     <FieldsList studyType={type} fields={fields} />
