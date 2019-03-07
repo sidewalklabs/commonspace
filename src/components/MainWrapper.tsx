@@ -15,6 +15,7 @@ import ResetView from './ResetView';
 import ResetPasswordView from './ResetPasswordView';
 import SignUpView from './SignUpView';
 import TermsView from './TermsView';
+import PageNotFoundView from './PageNotFoundView';
 
 import { ApplicationState } from '../stores/applicationState';
 import { UiState } from '../stores/ui';
@@ -61,61 +62,46 @@ const MainWrapper = observer((props: MainProps & WithStyles) => {
     const { classes, router, uiState, applicationState } = props;
     const { uri } = router;
     const { snackBar } = uiState;
-    const Login = assignComponentToRoute('/login', LoginView);
-    const SignUp = assignComponentToRoute('/signup', SignUpView);
-    const LoginWithEmail = assignComponentToRoute('/loginWithEmail', LoginWithEmailView);
-    const Reset = assignComponentToRoute('/reset', ResetView);
-    const ResetPassword = assignComponentToRoute(
-        () => {
-            const { pathname } = parse(uri);
-            return pathname === '/reset_password';
-        },
-        () => {
+
+    const routeConfig = {
+        login: assignComponentToRoute('/login', LoginView),
+        signup: assignComponentToRoute('/signup', SignUpView),
+        loginWithEmail: assignComponentToRoute('/loginWithEmail', LoginWithEmailView),
+        reset: assignComponentToRoute('/reset', ResetView),
+        reset_password: assignComponentToRoute('/reset_password', () => {
             const { query } = parse(uri);
             // @ts-ignore
             const { token } = queryParamsParse(query);
             return <ResetPasswordView token={token} />;
-        }
-    );
-
-    const Privacy = assignComponentToRoute(
-        () => {
-            const { pathname } = parse(uri);
-            return pathname === '/privacy';
-        },
-        () => {
+        }),
+        privacy: assignComponentToRoute('/privacy', () => {
             const { query } = parse(uri);
             // @ts-ignore
             const { webview } = queryParamsParse(query);
             return <PrivacyView webview={webview} />;
-        }
-    );
-
-    const Terms = assignComponentToRoute(
-        () => {
-            const { pathname } = parse(uri);
-            return pathname === '/terms';
-        },
-        () => {
+        }),
+        terms: assignComponentToRoute('/terms', () => {
             const { query } = parse(uri);
             // @ts-ignore
             const { webview } = queryParamsParse(query);
             return <TermsView webview={webview} />;
-        }
-    );
-
-    const About = assignComponentToRoute(
-        () => {
-            const { pathname } = parse(uri);
-            return pathname === '/about';
-        },
-        () => {
+        }),
+        about: assignComponentToRoute('/about', () => {
             const { query } = parse(uri);
             // @ts-ignore
             const { webview } = queryParamsParse(query);
             return <AboutView webview={webview} />;
-        }
-    );
+        }),
+        studies: assignComponentToRoute('/studies', () => (
+            <MainView applicationState={applicationState} />
+        ))
+    };
+
+    const { pathname } = parse(uri);
+    let Component = routeConfig[pathname.substr(1)];
+    if (!Component && pathname !== '/') {
+        Component = assignComponentToRoute(pathname, PageNotFoundView);
+    }
 
     addSideEffectRoute<void>(
         () => {
@@ -128,21 +114,10 @@ const MainWrapper = observer((props: MainProps & WithStyles) => {
             navigate('/studies');
         }
     );
-    const Main = assignComponentToRoute('/studies', () => (
-        <MainView applicationState={applicationState} />
-    ));
     return (
         <div className={classes.root}>
             <CssBaseline />
-            <Login />
-            <LoginWithEmail />
-            <SignUp />
-            <Reset />
-            <Main />
-            <About />
-            <Privacy />
-            <Terms />
-            <ResetPassword />
+            <Component />
             <ErrorDisplay snackBar={snackBar} />
         </div>
     );
