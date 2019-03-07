@@ -15,7 +15,7 @@ export function assignComponentToRoute(
     return class Routed extends Component {
         render() {
             const { props } = this;
-            if (typeof route === 'string' && pathToRegexp(route).exec(router.uri)) {
+            if (typeof route === 'string') {
                 return <WrappedComponent {...props} />;
             } else if (typeof route === 'function' && route(router.uri)) {
                 return <WrappedComponent {...props} />;
