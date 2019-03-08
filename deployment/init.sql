@@ -96,7 +96,7 @@ CREATE TYPE groups AS ENUM ('group_1', 'group_2', 'group_3-7', 'group_8+');
 CREATE TYPE object AS ENUM ('animal', 'bag_carried', 'clothing_cultural', 'clothing_activity', 'goods_carried', 'equipment_construction', 'equipment_receational', 'equipment_sport', 'protection_safety', 'protection_weather', 'furniture_carried', 'transportation_carried', 'transportation_stationary', 'pushcart', 'stroller', 'luggage');
 
 CREATE TABLE IF NOT EXISTS surveyors (
-    user_id UUID references public.users(user_id) NOT NULL,
+    user_id UUID references public.users(user_id) ON DELETE CASCADE NOT NULL,
     study_id UUID references study(study_id) ON DELETE CASCADE NOT NULL,
     PRIMARY KEY(study_id, user_id)
 );
