@@ -132,7 +132,11 @@ export async function signUpUser() {
     }
     try {
         await postRest(`/auth/signup`, { password, email });
-        navigate('/studies');
+        setSnackBar(
+            'success',
+            `Succesfully created account for email: ${email}, please check email for verification`
+        );
+        navigate('/login');
     } catch (error) {
         setSnackBar('error', `Unable to sign sign ${error}`);
     } finally {

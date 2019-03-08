@@ -10,23 +10,24 @@ export async function logInUser() {
         password,
         email
     };
-    if (process.env.CLIENT_ENV === 'staging' || process.env.CLIENT_ENV === 'production') {
-        try {
-            await postRest(`/auth/check_whitelist`, { email });
-        } catch (error) {
-            if (error instanceof UnauthorizedError) {
-                setSnackBar(
-                    'error',
-                    `User has not been whitelisted, contact product-support@sidewalklabs.com`
-                );
-            } else {
-                throw error;
-            }
-            return;
-        }
-    }
+
     try {
         await postRest(`/auth/login`, { password, email });
+        if (process.env.CLIENT_ENV === 'staging' || process.env.CLIENT_ENV === 'production') {
+            try {
+                await postRest(`/auth/check_whitelist`, { email });
+            } catch (error) {
+                if (error instanceof UnauthorizedError) {
+                    setSnackBar(
+                        'error',
+                        `User has not been whitelisted, contact product-support@sidewalklabs.com`
+                    );
+                } else {
+                    throw error;
+                }
+                return;
+            }
+        }
         navigate('/studies');
     } catch (error) {
         setSnackBar('error', `Unable to log in, are email and password correct?`);

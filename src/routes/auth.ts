@@ -77,7 +77,16 @@ router.post('/signup', (req, res, next) => {
                 res.status(400).send({ error_message: errorMessage });
                 return;
             }
-            await sendSignupVerificationEmail(req.get('host'), user.email, user.token);
+            try {
+                await sendSignupVerificationEmail(req.get('host'), user.email, user.token);
+            } catch (error) {
+                if (
+                    error === 'Missing credentials for "PLAIN"' &&
+                    process.env.NODE_ENV === 'STAGING'
+                ) {
+                    console.warn('Email Not Setup');
+                }
+            }
             return respondWithAuthentication(req, res, user);
         }
     )(req, res, next);
