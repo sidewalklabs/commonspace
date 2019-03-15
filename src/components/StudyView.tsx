@@ -40,7 +40,8 @@ const styles = theme => ({
         justifyContent: 'flex-end'
     },
     columns: {
-        display: 'flex'
+        display: 'flex',
+        paddingTop: theme.spacing.unit
     },
     column: {
         flex: '1 1 0',
@@ -68,6 +69,14 @@ const styles = theme => ({
         // this component is disabled to prevent text input interaction and UI feedback
         // override some of the styles so it looks like an enabled text field
         color: `${theme.palette.text.secondary} !important`
+    },
+    countRow: {
+        flex: 1,
+        paddingTop: theme.spacing.unit * 2,
+        paddingBottom: theme.spacing.unit * 2,
+        paddingLeft: theme.spacing.unit * 3,
+        backgroundColor: '#F2F2F2',
+        borderBottom: `1px solid ${theme.palette.divider}`
     }
 });
 
@@ -200,7 +209,8 @@ const StudyView = observer((props: any & WithStyles) => {
             surveyors,
             protocolVersion,
             type,
-            map
+            map,
+            datapoints = []
         } = study as Study;
         const { latitude, longitude } = getMapCenterForStudy(studyId);
         const features = map && map.features ? map.features : [];
@@ -242,6 +252,13 @@ const StudyView = observer((props: any & WithStyles) => {
                 {studyIsNew && (
                     <div className={classes.header}>
                         <Typography variant="h6">New Study</Typography>
+                    </div>
+                )}
+                {!studyIsNew && (
+                    <div className={classes.countRow}>
+                        <Typography variant="body2">
+                            {datapoints.length} data points collected
+                        </Typography>
                     </div>
                 )}
                 <div className={classes.columns}>

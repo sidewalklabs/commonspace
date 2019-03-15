@@ -25,6 +25,22 @@ interface LongitudeLatitude {
     latitude: number;
 }
 
+interface DataPoint {
+    surveyId: string;
+    dataPointId: string;
+    creationDate?: string;
+    lastUpdated?: string;
+    gender?: string;
+    age?: string;
+    mode?: string;
+    posture?: string;
+    activities?: string;
+    groups?: string;
+    object?: string;
+    location?: string;
+    notes?: string;
+}
+
 export interface Study {
     studyId: string;
     author: string;
@@ -40,6 +56,7 @@ export interface Study {
     location: string;
     createdAt?: number; // these two don't exist until the study has been saved to the backend
     lastUpdated?: number;
+    datapoints?: DataPoint[];
 }
 
 export interface ApplicationState {
@@ -60,6 +77,7 @@ const fetchParams: RequestInit = {
 export const getStudies = logoutIfError(UnauthorizedError, async () => {
     try {
         const studies = camelcaseKeys(await getRest('/api/studies?type=admin'));
+
         studies.forEach(study => {
             const notesIndex = study.fields.indexOf('notes');
             if (notesIndex !== 1) {
@@ -151,6 +169,15 @@ export function getCurrentStudyId() {
 
 export async function selectNewStudy(study: any) {
     applicationState.currentStudy = study;
+
+    try {
+        applicationState.currentStudy.datapoints = camelcaseKeys(
+            await getRest(`/api/studies/${study.studyId}/datapoints`)
+        );
+    } catch (error) {
+        setSnackBar('error', `Unable to get study datapoints!`);
+        throw error;
+    }
 }
 
 export function updateFeatureName(study: Study, locationId: string, name: string) {

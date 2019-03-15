@@ -32,7 +32,6 @@ const styles = theme => ({
     },
     expansionPanelDetailsRoot: {
         padding: 0,
-        paddingTop: theme.spacing.unit * 3,
         borderTop: `1px solid ${theme.palette.divider}`
     }
 });
