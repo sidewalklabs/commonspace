@@ -11,7 +11,6 @@ import { observer } from 'mobx-react';
 
 import signUpState, { signUpUser } from '../stores/signup';
 import { navigate } from '../stores/router';
-import { setSnackBar } from '../stores/ui';
 
 const styles = theme => ({
     hyperlinkText: {
@@ -57,11 +56,6 @@ const styles = theme => ({
         maxWidth: '400px'
     }
 });
-
-const responseGoogleFailure = response => {
-    console.error(response);
-    setSnackBar('error', 'Unable to authenticate with Google OAuth');
-};
 
 // @ts-ignore
 const SignUpView = withStyles(styles)(
