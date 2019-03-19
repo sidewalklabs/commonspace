@@ -58,10 +58,10 @@ export default [
     questionLabel: 'Groups',
     questionType: 'select',
     options: [
-      { value: 'group_1', label: '1 Person' },
-      { value: 'group_2', label: '2 People' },
-      { value: 'group_3-7', label: '3-7 People' },
-      { value: 'group_8+', label: '8+' },
+      { value: '1', label: '1 Person' },
+      { value: '2', label: '2 People' },
+      { value: '3-7', label: '3-7 People' },
+      { value: '8+', label: '8+' },
     ],
   },
   {

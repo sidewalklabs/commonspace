@@ -53,11 +53,11 @@ class Survey extends React.Component {
             />
           );
         })}
-        {activeMarker.notes && (
+        {activeMarker.note && (
           <View style={styles.noteContainer}>
             <Text style={styles.noteTitle}>Note</Text>
             <Text style={[styles.noteBody, { color: activeMarker.color }]}>
-              {activeMarker.notes}
+              {activeMarker.note}
             </Text>
           </View>
         )}
