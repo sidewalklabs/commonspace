@@ -11,7 +11,7 @@ interface DataPoint {
     age?: string;
     mode?: string;
     posture?: string;
-    activities?: string;
+    activities?: string[];
     groups?: string;
     object?: string;
     location?: string;
@@ -213,9 +213,13 @@ export async function getDataPointsForStudy(
         if (rowCount !== 1) {
             throw new IdNotFoundError(studyId);
         }
+
         const { fields, tablename } = rows[0];
+        const formattedFields = fields.map(field => {
+            return field === 'activities' ? `array_to_json(activities) as activities` : field;
+        });
         const fieldsAsColumns = ['data_point_id', 'creation_date', 'last_updated']
-            .concat(fields)
+            .concat(formattedFields)
             .join(', ');
         const dataPointsQuery = `SELECT ${fieldsAsColumns}
                                  FROM ${tablename}`;
