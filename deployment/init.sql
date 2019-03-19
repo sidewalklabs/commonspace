@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS survey (
     temperature_c FLOAT,
     method TEXT NOT NULL,
     user_id UUID references public.users(user_id),
-    FOREIGN KEY (study_id, user_id) references surveyors (study_id, user_id) ON DELETE CASCADE,
+    FOREIGN KEY (study_id, user_id) references surveyors (study_id, user_id),
     notes TEXT
 );
 

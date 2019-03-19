@@ -28,7 +28,9 @@ import {
     deleteStudiesForUserId,
     userIdIsAdminOfStudy,
     usersSurveysForStudy,
-    returnStudyMetadata
+    returnStudyMetadata,
+    getSurveyorsForStudy,
+    deleteSurveyorFromStudy
 } from '../datastore/study';
 import { userIdIsSurveyor, createNewSurveyForStudy, updateSurvey } from '../datastore/survey';
 import { userIsAdminOfStudy, deleteUser } from '../datastore/user';
@@ -386,7 +388,6 @@ router.get(
             const { surveyId } = req.params;
             const userCanAccessSurvey = await userIdIsSurveyor(DbPool, userId, surveyId);
             if (!userCanAccessSurvey) {
-                res.statusMessage = 'not allowed to access survey';
                 throw new UnauthorizedError(req.route, userId);
                 return;
             }
@@ -543,6 +544,41 @@ router.post(
             }
             const [_, newUserId] = await giveUserStudyAccess(DbPool, email, studyId);
             res.send({ email, studyId, newUserId });
+        })
+    )
+);
+
+router.put(
+    '/studies/:studyId/surveyors',
+    return500OnError(
+        return401OnUnauthorizedError(async (req, res) => {
+            const { user_id: userId } = req.user;
+            const { studyId } = req.params;
+            const emails: string[] = req.body;
+            if (!(await userIdIsAdminOfStudy(DbPool, studyId, userId))) {
+                throw new UnauthorizedError(req.route, userId);
+                return;
+            }
+            const emailsSet = new Set(emails);
+            // get all the surveyors for the study
+            const currentSurveyors = await getSurveyorsForStudy(DbPool, studyId);
+            const currentSurveyorsSet = new Set(currentSurveyors);
+            // these are the new surveyors
+            const usersToAdd = emails.filter(e => !currentSurveyorsSet.has(e));
+            // delete surveyors that are no longer in the latest request
+            const usersToRemove = currentSurveyors.filter(e => !emailsSet.has(e));
+            // return if it worked well
+            const newUsers = await Promise.all(
+                usersToAdd.map(async email => {
+                    const [_, newUserId] = await giveUserStudyAccess(DbPool, email, studyId);
+                    return { email, newUserId };
+                })
+            );
+
+            const deleteUsers = await Promise.all(
+                usersToRemove.map(email => deleteSurveyorFromStudy(DbPool, studyId, email))
+            );
+            res.send(newUsers);
         })
     )
 );
