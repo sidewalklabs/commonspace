@@ -1,4 +1,5 @@
 import { Feature, FeatureCollection } from 'geojson';
+import { Study } from './routes/api_types';
 import path from 'path';
 import dotenv from 'dotenv';
 
@@ -179,7 +180,7 @@ const dataPointThree = {
 
 export const SeaBassFishCountDataPoints = [dataPointOne, dataPointTwo, dataPointThree];
 
-export const SeaBassFishCountStudy = {
+export const SeaBassFishCountStudy: Study = {
     study_id: SeaBassFishCountConfig.studyId,
     title: 'Sea Bass Fish Count',
     author: 'californianseabass',

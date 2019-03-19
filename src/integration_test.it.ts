@@ -176,7 +176,7 @@ describe('create/delete/modify studies', async () => {
             title: 'the additional survey'
         };
         SeaBassFishCountStudy.surveys.push(newSurvey);
-        await putRest<Study[]>(
+        await putRest<Study, any>(
             API_SERVER + `/api/studies/${studyId}`,
             SeaBassFishCountStudy,
             adminToken
@@ -303,6 +303,47 @@ describe('create/delete/modify studies', async () => {
                 ({ data_point_id }) => data_point_id === SampleDataPointOne.data_point_id
             )
         ).toBeTruthy();
+    });
+
+    test('reset the surveyors', async () => {
+        const surveyorSurvey = SeaBassFishCountStudy.surveys.filter(({ email }) => {
+            return email === surveyorUser.email;
+        })[0];
+        const { survey_id } = surveyorSurvey;
+
+        const { email: surveyorEmail } = surveyorUser;
+        const updatedSurveyors = SeaBassFishCountStudy.surveyors.filter(
+            email => email !== surveyorEmail
+        );
+
+        const dataPointsA = await getRest<DataPoint[]>(
+            API_SERVER + `/api/surveys/${survey_id}/datapoints`,
+            surveyorToken
+        );
+
+        // remove the surveyor from the study
+        await putRest<string[], any>(
+            API_SERVER + `/api/studies/${SeaBassFishCountStudy.study_id}/surveyors`,
+            updatedSurveyors,
+            adminToken
+        );
+
+        // the surveyor should no longer be able to save data points
+        await expect(
+            getRest<DataPoint[]>(
+                API_SERVER + `/api/studies/${SeaBassFishCountStudy.study_id}/datapoints`,
+                surveyorToken
+            )
+        ).rejects.toThrow(UnauthorizedError);
+
+        // the data points they had previously saved should still be saved to the study
+        const dataPoints = await getRest<DataPoint[]>(
+            API_SERVER + `/api/studies/${SeaBassFishCountStudy.study_id}/datapoints`,
+            adminToken
+        );
+
+        // not a great test, for it to be meaningful only the surveyor should be adding datapoints
+        expect(dataPoints.length).toBeGreaterThan(0);
     });
 
     test('once a user logout out using a token, the token should result in a 401', async () => {

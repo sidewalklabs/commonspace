@@ -568,3 +568,39 @@ export async function giveUserStudyAccess(pool: pg.Pool, userEmail: string, stud
         throw error;
     }
 }
+
+export async function getSurveyorsForStudy(pool: pg.Pool, studyId: string): Promise<string[]> {
+    const query = `SELECT email
+                   FROM users
+                   JOIN data_collection.surveyors as svyrs
+                   ON users.user_id = svyrs.user_id
+                   WHERE study_id = $1`;
+    const values = [studyId];
+    try {
+        const { rows } = await pool.query(query, values);
+        return rows.map(({ email }) => email);
+    } catch (error) {
+        console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
+        throw error;
+    }
+}
+
+export async function deleteSurveyorFromStudy(
+    pool: pg.Pool,
+    studyId: string,
+    surveyorEmail: string
+): Promise<void> {
+    const query = `DELETE
+                   FROM data_collection.surveyors as svyrs
+                   WHERE study_id = $1
+                       AND user_id in (SELECT user_id
+                                       FROM users
+                                       WHERE users.email = $2)`;
+    const values = [studyId, surveyorEmail];
+    try {
+        await pool.query(query, values);
+    } catch (error) {
+        console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
+        throw error;
+    }
+}

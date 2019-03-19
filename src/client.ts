@@ -120,9 +120,9 @@ export const postRest: <T>(
     })
 );
 
-export const putRest: <T>(
+export const putRest: <S, T>(
     uri: string,
-    data: any,
+    data: S,
     token?: string
 ) => Promise<T> = extractBodyFromResponse(
     handleAllHttpErrors(async (uri, data, token) => {

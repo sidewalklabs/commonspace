@@ -138,9 +138,13 @@ export async function updateSurvey(pool: Pool, survey: Survey) {
 
 export async function userIdIsSurveyor(pool: Pool, userId: string, surveyId: string) {
     const query = `SELECT survey_id
-                   FROM data_collection.survey
-                   WHERE user_id = $1 and survey_id = $2`;
-    const values = [userId, surveyId];
+                   FROM data_collection.survey sur
+                   WHERE sur.user_id = $1 and sur.survey_id = $2 and sur.study_id IN (
+                       SELECT study_id
+                       FROM data_collection.surveyors srvys
+                       WHERE srvys.user_id = $3)`;
+    const values = [userId, surveyId, userId];
+
     try {
         const { rowCount } = await pool.query(query, values);
         if (rowCount !== 1) {
