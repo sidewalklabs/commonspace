@@ -112,7 +112,7 @@ class PeopleMovingCountScreen extends React.Component {
     const { surveyId, token } = this.state;
     getDataPointsforSurvey(token, surveyId).then(dataPoints => {
       const markers = dataPoints.map((d, i) => {
-        const title = `Person ${i}`;
+        const title = `Person ${i + 1}`;
         const color = getRandomIconColor();
         return {
           ...d,
