@@ -11,7 +11,7 @@ interface DataPoint {
     age?: string;
     mode?: string;
     posture?: string;
-    activities?: string[];
+    activities?: string;
     groups?: string;
     object?: string;
     location?: string;
@@ -154,12 +154,10 @@ function processKeyAndValues(dataPoint) {
 }
 
 function transformToPostgresInsert(surveyId: string, dataPoint) {
-    const { data_point_id, creation_date, last_updated, date } = dataPoint;
+    const { data_point_id } = dataPoint;
     const dataPointForPostgres = deleteNonStudyFields(dataPoint);
     dataPointForPostgres.survey_id = surveyId;
     dataPointForPostgres.data_point_id = data_point_id;
-    dataPointForPostgres.data_point_id.creation_date = creation_date || date;
-    dataPointForPostgres.data_point_id.last_updated = last_updated || date;
     const { columns, values, parameterBindings } = processKeyAndValues(dataPointForPostgres);
     const insert_statement = `(${columns.join(', ')}) VALUES (${parameterBindings.join(', ')})`;
     const query = `${insert_statement}
@@ -215,13 +213,9 @@ export async function getDataPointsForStudy(
         if (rowCount !== 1) {
             throw new IdNotFoundError(studyId);
         }
-
         const { fields, tablename } = rows[0];
-        const formattedFields = fields.map(field => {
-            return field === 'activities' ? `array_to_json(activities) as activities` : field;
-        });
         const fieldsAsColumns = ['data_point_id', 'creation_date', 'last_updated']
-            .concat(formattedFields)
+            .concat(fields)
             .join(', ');
         const dataPointsQuery = `SELECT ${fieldsAsColumns}
                                  FROM ${tablename}`;

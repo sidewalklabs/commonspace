@@ -212,7 +212,7 @@ class SurveyScreen extends React.Component {
 
     await getDataPointsforSurvey(this.state.token, surveyId).then(dataPoints => {
       const markers = dataPoints.map((d, i) => {
-        const title = `Person ${i + 1}`;
+        const title = `Person ${i}`;
         const color = getRandomIconColor();
         return {
           ...d,
@@ -365,7 +365,7 @@ class SurveyScreen extends React.Component {
         dataPointId,
         color,
         title,
-        date: date.toISOString(),
+        creationDate: date.toISOString(),
       };
 
       markersCopy.push(duplicateMarker);
@@ -410,7 +410,7 @@ class SurveyScreen extends React.Component {
       location,
       color,
       title,
-      date: date.toISOString(),
+      creationDate: date.toISOString(),
     };
 
     this.setState({ markers: [...markers, marker], activeMarkerId: dataPointId }, this.resetDrawer);
@@ -453,7 +453,7 @@ class SurveyScreen extends React.Component {
     const { studyFields } = this.props.navigation.state.params;
     const { activeMarkerId, markers } = this.state;
     const activeMarker = _.find(markers, { dataPointId: activeMarkerId });
-    const note = _.get(activeMarker, 'notes', '');
+    const note = _.get(activeMarker, 'note', '');
     const noteButtonLabel = note ? 'Edit note' : 'Add note';
     const dateLabel = activeMarker && moment(activeMarker.creationDate).format('HH:mm');
 
@@ -576,7 +576,7 @@ class SurveyScreen extends React.Component {
           <NoteModal
             initialValue={note}
             onClose={updatedNote => {
-              this.setFormResponse(activeMarkerId, 'notes', updatedNote, 0);
+              this.setFormResponse(activeMarkerId, 'note', updatedNote, 0);
               this.setState({ noteModalVisible: false });
             }}
           />
