@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
@@ -6,11 +6,25 @@ import uuid from 'uuid';
 
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { Map, TileLayer, FeatureGroup, Feature, GeoJSON, withLeaflet } from 'react-leaflet';
+import {
+    Map,
+    TileLayer,
+    FeatureGroup,
+    Feature,
+    GeoJSON,
+    Polygon,
+    Popup,
+    latLngList,
+    withLeaflet
+} from 'react-leaflet';
 import { EditControl } from 'react-leaflet-draw';
 import { ReactLeafletSearch } from 'react-leaflet-search';
 
-import applicationState, { updateFeatureName, Study } from '../stores/applicationState';
+import applicationState, {
+    updateFeatureName,
+    Study,
+    deleteFeatureFromMap
+} from '../stores/applicationState';
 import { FeatureCollection } from 'geojson';
 import { closeModalIfVisible } from '../stores/ui';
 import { stringHash } from '../utils';
@@ -107,36 +121,13 @@ function createLineFromLeafletLayer(layer, name: string): Feature {
 
 const WrappedLeaftletSearch = withLeaflet(ReactLeafletSearch);
 
-function onCreated(e) {
-    const { layer, layerType } = e;
-    const features = applicationState.currentStudy.map.features;
-    if (layerType === 'marker') {
-        const newMarker = createMarkerFromLeafletLayer(
-            layer,
-            'marker_' + features.length.toString()
-        );
-        applicationState.currentStudy.map.features = [...features, newMarker];
-    }
-
-    if (layerType === 'polygon') {
-        const newPolygon = createPolygonFromLeafletLayer(
-            layer,
-            'zone_' + features.length.toString()
-        );
-        applicationState.currentStudy.map.features = [...features, newPolygon];
-    }
-
-    if (layerType === 'polyline') {
-        const newLine = createLineFromLeafletLayer(layer, 'line_' + features.length.toString());
-        applicationState.currentStudy.map.features = [...features, newLine];
-    }
-}
-function onDeleted() {}
 function onMounted() {}
 function onEditStart() {}
 function onEditStop() {}
 function onDeleteStart() {}
 function onDeleteStop() {}
+
+const leafletIdToLocationId = {};
 
 const MapView = observer((props: MapViewProps & WithStyles) => {
     const { study, allowedShapes, classes, lat, lng, featureCollection, editable } = props;
@@ -174,7 +165,48 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
     const geojson = toJS(featureCollection);
     const geojsonHash = stringHash(JSON.stringify(geojson));
 
-    const onEachFeature = (feature, layer) => {
+    function onCreated(e) {
+        const { layer, layerType, sourceTarget } = e;
+        const { _leaflet_id } = layer;
+        const features = applicationState.currentStudy.map.features;
+        if (layerType === 'marker') {
+            const newMarker = createMarkerFromLeafletLayer(
+                layer,
+                'marker_' + features.length.toString()
+            );
+            applicationState.currentStudy.map.features = [...features, newMarker];
+        }
+
+        if (layerType === 'polygon') {
+            const newPolygon = createPolygonFromLeafletLayer(
+                layer,
+                'zone_' + features.length.toString()
+            );
+            const { locationId } = newPolygon.properties;
+            leafletIdToLocationId[_leaflet_id] = locationId;
+            applicationState.currentStudy.map.features = [...features, newPolygon];
+
+            onEachFeatureClick(newPolygon, layer);
+        }
+
+        if (layerType === 'polyline') {
+            const newLine = createLineFromLeafletLayer(layer, 'line_' + features.length.toString());
+            applicationState.currentStudy.map.features = [...features, newLine];
+        }
+    }
+
+    function onDeleted({ layers }) {
+        const { _layers } = layers;
+        const layerIds = Object.keys(_layers);
+        const locationIds = Object.keys(_layers).map(k => {
+            const { options } = _layers[k];
+            const { locationId } = options;
+            return locationId;
+        });
+        locationIds.forEach(deleteFeatureFromMap);
+    }
+
+    const onEachFeatureClick = (feature, layer) => {
         if (feature.properties && feature.properties.name) {
             const { locationId, name } = feature.properties;
             layer.bindPopup(`<form>
@@ -192,8 +224,47 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
         }
     };
 
+    const existingFeatures = geojson.features.map(({ geometry, properties }, i) => {
+        // @ts-ignore
+        const { coordinates, type } = geometry;
+        const { locationId } = properties;
+        if (type === 'Polygon') {
+            const positions: latLngList = coordinates[0].map(([lng, lat]) => {
+                return [lat, lng];
+            });
+            return (
+                <Polygon
+                    color={'blue'}
+                    key={locationId}
+                    locationId={locationId}
+                    id={locationId}
+                    positions={positions}
+                    onClick={e => {
+                        const inputBox = document.getElementById(locationId) as HTMLInputElement;
+                        inputBox.value = properties.name;
+                        inputBox.onchange = f => {
+                            // @ts-ignore this event type is wrong
+                            updateFeatureName(study, locationId, f.target.value);
+                        };
+                    }}
+                >
+                    <Popup>
+                        <input
+                            id="${locationId}"
+                            type="text"
+                            value={properties.name}
+                            onChange={f => updateFeatureName(study, locationId, f.target.value)}
+                        />
+                    </Popup>
+                </Polygon>
+            );
+        } else {
+            return null;
+        }
+    });
+
     return (
-        <>
+        <Fragment>
             <div className={classes.header}>
                 <Typography component="h2" variant="h6" color="inherit" gutterBottom noWrap>
                     Draw Zones and Points of Interest
@@ -205,13 +276,6 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
             <div className={classes.body}>
                 <Map className={classes.map} center={[lat, lng]} zoom={17} zoomControl={false}>
                     <TileLayer attribution={MAP_ATTRIBUTION} url={TILE_SERVER_URL} />
-                    <GeoJSON
-                        data={geojson}
-                        key={geojsonHash}
-                        onEachFeature={(feature, layer) =>
-                            layer.on({ click: () => onEachFeature(feature, layer) })
-                        }
-                    />
                     <WrappedLeaftletSearch position="topleft" />
                     <FeatureGroup>
                         <EditControl
@@ -226,6 +290,7 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
                             onDeleteStop={onDeleteStop}
                             draw={ControlMenuOptions}
                         />
+                        {existingFeatures}
                     </FeatureGroup>
                 </Map>
             </div>
@@ -238,7 +303,7 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
                     Return to Study
                 </Button>
             </div>
-        </>
+        </Fragment>
     );
 });
 
