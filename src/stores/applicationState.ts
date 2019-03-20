@@ -1,5 +1,5 @@
 import camelcaseKeys from 'camelcase-keys';
-import { FeatureCollection } from 'geojson';
+import { Feature, FeatureCollection } from 'geojson';
 import { observable, autorun, toJS, computed } from 'mobx';
 import moment from 'moment';
 import { center } from '@turf/turf';
@@ -88,6 +88,12 @@ export const getStudies = logoutIfError(UnauthorizedError, async () => {
             }
             // TODO: need to camel case the surveys array, but for some reason
             // deep camelcasing studies breaks the map coordinates
+            study.map.features = study.map.features.map(f => {
+                return {
+                    ...f,
+                    properties: camelcaseKeys(f.properties)
+                };
+            });
             study.surveys = study.surveys.map(survey => camelcaseKeys(survey));
             study.surveys = groupArrayOfObjectsBy(study.surveys, 'surveyId');
         });
@@ -178,6 +184,15 @@ export async function selectNewStudy(study: any) {
         setSnackBar('error', `Unable to get study datapoints!`);
         throw error;
     }
+}
+
+export function deleteFeatureFromMap(locationId: string): void {
+    const { currentStudy } = applicationState;
+    const { map } = currentStudy;
+    const features: Feature[] = toJS(map.features);
+    applicationState.currentStudy.map.features = features.filter(({ properties }) => {
+        return properties.locationId !== locationId;
+    });
 }
 
 export function updateFeatureName(study: Study, locationId: string, name: string) {
