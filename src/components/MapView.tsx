@@ -16,7 +16,8 @@ import {
     Polyline,
     Marker,
     latLngList,
-    withLeaflet
+    withLeaflet,
+    ZoomControl
 } from 'react-leaflet';
 import { EditControl } from 'react-leaflet-draw';
 import { ReactLeafletSearch } from 'react-leaflet-search';
@@ -361,6 +362,7 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
                 <Map className={classes.map} center={[lat, lng]} zoom={17} zoomControl={false}>
                     <TileLayer attribution={MAP_ATTRIBUTION} url={TILE_SERVER_URL} />
                     <WrappedLeaftletSearch position="topleft" />
+                    <ZoomControl position="bottomright" />
                     <FeatureGroup>
                         <EditControl
                             position="topright"
