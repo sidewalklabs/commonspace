@@ -236,9 +236,28 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
                         <input
                             id={locationId}
                             type="text"
-                            value={name}
-                            onChange={f => updateFeatureName(study, locationId, f.target.value)}
+                            defaultValue={name}
+                            onKeyPress={e => {
+                                if (e.key === 'Enter') {
+                                    const inputBox = document.getElementById(
+                                        locationId
+                                    ) as HTMLInputElement;
+                                    updateFeatureName(study, locationId, inputBox.value);
+                                }
+                            }}
                         />
+                        <Button
+                            size="small"
+                            color="primary"
+                            onClick={f => {
+                                const inputBox = document.getElementById(
+                                    locationId
+                                ) as HTMLInputElement;
+                                updateFeatureName(study, locationId, inputBox.value);
+                            }}
+                        >
+                            Save
+                        </Button>
                     </Popup>
                 </Polygon>
             );
@@ -253,14 +272,34 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
                     locationId={locationId}
                     id={locationId}
                     positions={positions}
+                    ref={openPopup}
                 >
                     <Popup>
                         <input
                             id={locationId}
                             type="text"
-                            value={name}
-                            onChange={f => updateFeatureName(study, locationId, f.target.value)}
+                            defaultValue={name}
+                            onKeyPress={e => {
+                                if (e.key === 'Enter') {
+                                    const inputBox = document.getElementById(
+                                        locationId
+                                    ) as HTMLInputElement;
+                                    updateFeatureName(study, locationId, inputBox.value);
+                                }
+                            }}
                         />
+                        <Button
+                            size="small"
+                            color="primary"
+                            onClick={f => {
+                                const inputBox = document.getElementById(
+                                    locationId
+                                ) as HTMLInputElement;
+                                updateFeatureName(study, locationId, inputBox.value);
+                            }}
+                        >
+                            Save
+                        </Button>
                     </Popup>
                 </Polyline>
             );
@@ -272,14 +311,34 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
                     locationId={locationId}
                     id={locationId}
                     position={position}
+                    ref={openPopup}
                 >
                     <Popup>
                         <input
                             id={locationId}
                             type="text"
-                            value={name}
-                            onChange={f => updateFeatureName(study, locationId, f.target.value)}
+                            defaultValue={name}
+                            onKeyPress={e => {
+                                if (e.key === 'Enter') {
+                                    const inputBox = document.getElementById(
+                                        locationId
+                                    ) as HTMLInputElement;
+                                    updateFeatureName(study, locationId, inputBox.value);
+                                }
+                            }}
                         />
+                        <Button
+                            size="small"
+                            color="primary"
+                            onClick={f => {
+                                const inputBox = document.getElementById(
+                                    locationId
+                                ) as HTMLInputElement;
+                                updateFeatureName(study, locationId, inputBox.value);
+                            }}
+                        >
+                            Save
+                        </Button>
                     </Popup>
                 </Marker>
             );
@@ -295,7 +354,7 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
                     Draw Zones and Points of Interest
                 </Typography>
                 <Typography component="h2" variant="subtitle1" color="inherit" gutterBottom noWrap>
-                    Double click existing zones to rename them
+                    Click existing zones to rename them
                 </Typography>
             </div>
             <div className={classes.body}>
