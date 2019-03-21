@@ -11,9 +11,10 @@ import {
     TileLayer,
     FeatureGroup,
     Feature,
-    GeoJSON,
     Polygon,
     Popup,
+    Polyline,
+    Marker,
     latLngList,
     withLeaflet
 } from 'react-leaflet';
@@ -27,7 +28,6 @@ import applicationState, {
 } from '../stores/applicationState';
 import { FeatureCollection } from 'geojson';
 import { closeModalIfVisible } from '../stores/ui';
-import { stringHash } from '../utils';
 
 const { TILE_SERVER_URL } = process.env;
 //    'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png';
@@ -163,7 +163,6 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
     }
 
     const geojson = toJS(featureCollection);
-    const geojsonHash = stringHash(JSON.stringify(geojson));
 
     function onCreated(e) {
         const { layer, layerType, sourceTarget } = e;
@@ -172,7 +171,7 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
         if (layerType === 'marker') {
             const newMarker = createMarkerFromLeafletLayer(
                 layer,
-                'marker_' + features.length.toString()
+                'marker_' + (features.length + 1).toString()
             );
             applicationState.currentStudy.map.features = [...features, newMarker];
         }
@@ -180,17 +179,18 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
         if (layerType === 'polygon') {
             const newPolygon = createPolygonFromLeafletLayer(
                 layer,
-                'zone_' + features.length.toString()
+                'zone_' + (features.length + 1).toString()
             );
             const { locationId } = newPolygon.properties;
             leafletIdToLocationId[_leaflet_id] = locationId;
             applicationState.currentStudy.map.features = [...features, newPolygon];
-
-            onEachFeatureClick(newPolygon, layer);
         }
 
         if (layerType === 'polyline') {
-            const newLine = createLineFromLeafletLayer(layer, 'line_' + features.length.toString());
+            const newLine = createLineFromLeafletLayer(
+                layer,
+                'line_' + (features.length + 1).toString()
+            );
             applicationState.currentStudy.map.features = [...features, newLine];
         }
     }
@@ -198,7 +198,7 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
     function onDeleted({ layers }) {
         const { _layers } = layers;
         const layerIds = Object.keys(_layers);
-        const locationIds = Object.keys(_layers).map(k => {
+        const locationIds = layerIds.map(k => {
             const { options } = _layers[k];
             const { locationId } = options;
             return locationId;
@@ -206,57 +206,82 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
         locationIds.forEach(deleteFeatureFromMap);
     }
 
-    const onEachFeatureClick = (feature, layer) => {
-        if (feature.properties && feature.properties.name) {
-            const { locationId, name } = feature.properties;
-            layer.bindPopup(`<form>
-                                 User name:<br>
-                                 <input id="${locationId}" type="text" name="username"><br>
-                             </form>`);
-            layer.on('click', e => {
-                const inputBox = document.getElementById(locationId) as HTMLInputElement;
-                inputBox.value = feature.properties.name;
-                inputBox.onchange = f => {
-                    // @ts-ignore this event type is wrong
-                    updateFeatureName(study, locationId, f.target.value);
-                };
+    function openPopup(layer) {
+        if (layer && layer.leafletElement) {
+            // hack to wait for layer to be added before calling
+            window.setTimeout(() => {
+                layer.leafletElement.openPopup();
             });
         }
-    };
+    }
 
     const existingFeatures = geojson.features.map(({ geometry, properties }, i) => {
         // @ts-ignore
         const { coordinates, type } = geometry;
-        const { locationId } = properties;
+        const { locationId, name } = properties;
         if (type === 'Polygon') {
             const positions: latLngList = coordinates[0].map(([lng, lat]) => {
                 return [lat, lng];
             });
             return (
                 <Polygon
-                    color={'blue'}
+                    color="blue"
                     key={locationId}
                     locationId={locationId}
                     id={locationId}
                     positions={positions}
-                    onClick={e => {
-                        const inputBox = document.getElementById(locationId) as HTMLInputElement;
-                        inputBox.value = properties.name;
-                        inputBox.onchange = f => {
-                            // @ts-ignore this event type is wrong
-                            updateFeatureName(study, locationId, f.target.value);
-                        };
-                    }}
+                    ref={openPopup}
                 >
                     <Popup>
                         <input
-                            id="${locationId}"
+                            id={locationId}
                             type="text"
-                            value={properties.name}
+                            value={name}
                             onChange={f => updateFeatureName(study, locationId, f.target.value)}
                         />
                     </Popup>
                 </Polygon>
+            );
+        } else if (type === 'LineString') {
+            const positions: latLngList = coordinates.map(([lng, lat]) => {
+                return [lat, lng];
+            });
+            return (
+                <Polyline
+                    color="blue"
+                    key={locationId}
+                    locationId={locationId}
+                    id={locationId}
+                    positions={positions}
+                >
+                    <Popup>
+                        <input
+                            id={locationId}
+                            type="text"
+                            value={name}
+                            onChange={f => updateFeatureName(study, locationId, f.target.value)}
+                        />
+                    </Popup>
+                </Polyline>
+            );
+        } else if (type === 'Point') {
+            const position = [coordinates[1], coordinates[0]];
+            return (
+                <Marker
+                    key={locationId}
+                    locationId={locationId}
+                    id={locationId}
+                    position={position}
+                >
+                    <Popup>
+                        <input
+                            id={locationId}
+                            type="text"
+                            value={name}
+                            onChange={f => updateFeatureName(study, locationId, f.target.value)}
+                        />
+                    </Popup>
+                </Marker>
             );
         } else {
             return null;

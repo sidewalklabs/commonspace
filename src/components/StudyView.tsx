@@ -97,19 +97,16 @@ interface CreateOrUpdateButtonProps {
 }
 
 async function downloadDataAsCsv(studyId: string) {
-    const response = await fetch(`/api/studies/${studyId}/download`,
-        {
-            mode: 'cors',
-            cache: 'no-cache',
-            credentials: 'same-origin',
-            redirect: 'follow',
-            referrer: 'no-referrer',
-            headers: {
-                Accept: 'text/csv',
-            }
+    const response = await fetch(`/api/studies/${studyId}/download`, {
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        redirect: 'follow',
+        referrer: 'no-referrer',
+        headers: {
+            Accept: 'text/csv'
         }
-
-    );
+    });
     const url = window.URL.createObjectURL(await response.blob());
     const link = document.createElement('a');
     link.href = url;
@@ -117,8 +114,6 @@ async function downloadDataAsCsv(studyId: string) {
     document.body.appendChild(link);
     link.click();
 }
-
-
 
 // @ts-ignore
 const CreateOrUpdateButton = withStyles(styles)((props: CreateOrUpdateButtonProps & WithStyles) => {
@@ -263,13 +258,13 @@ const StudyView = observer((props: any & WithStyles) => {
                     })}
                 </TextField>
             ) : (
-                    <TextField
-                        label="Study Type"
-                        value={groupArrayOfObjectsBy(STUDY_TYPES, 'value')[type].label}
-                        margin="dense"
-                        disabled
-                    />
-                );
+                <TextField
+                    label="Study Type"
+                    value={groupArrayOfObjectsBy(STUDY_TYPES, 'value')[type].label}
+                    margin="dense"
+                    disabled
+                />
+            );
 
         return (
             <div className={classes.container}>
