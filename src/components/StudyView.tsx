@@ -77,6 +77,9 @@ const styles = theme => ({
         paddingLeft: theme.spacing.unit * 3,
         backgroundColor: '#F2F2F2',
         borderBottom: `1px solid ${theme.palette.divider}`
+    },
+    csvButton: {
+        marginRight: theme.spacing.unit
     }
 });
 
@@ -405,13 +408,16 @@ const StudyView = observer((props: any & WithStyles) => {
                     </div>
                 </div>
                 <div className={classes.footer}>
-                    <Button
-                        variant="contained"
-                        color="secondary"
-                        onClick={() => downloadDataAsCsv(studyId)}
-                    >
-                        Download Study Data As CSV
-                    </Button>
+                    {datapoints.length && (
+                        <Button
+                            variant="contained"
+                            color="secondary"
+                            className={classes.csvButton}
+                            onClick={() => downloadDataAsCsv(studyId)}
+                        >
+                            Download Study Data As CSV
+                        </Button>
+                    )}
                     <CreateOrUpdateButton study={study} studyIsNew={studyIsNew} />
                 </div>
             </div>
