@@ -181,6 +181,7 @@ const LocationTextField = withStyles(styles)(
         if (editable) {
             return (
                 <TextField
+                    required
                     label="Location Name"
                     value={location}
                     margin="dense"
@@ -188,7 +189,15 @@ const LocationTextField = withStyles(styles)(
                 />
             );
         } else {
-            return <TextField disabled margin="dense" label="Location Name" value={location} />;
+            return (
+                <TextField
+                    required
+                    disabled
+                    margin="dense"
+                    label="Location Name"
+                    value={location}
+                />
+            );
         }
     })
 );
@@ -240,6 +249,7 @@ const StudyView = observer((props: any & WithStyles) => {
             studyIsNew ? (
                 <TextField
                     select
+                    required
                     label="Study Type"
                     value={groupArrayOfObjectsBy(STUDY_TYPES, 'value')[type].value}
                     onChange={e => {
@@ -261,13 +271,14 @@ const StudyView = observer((props: any & WithStyles) => {
                     })}
                 </TextField>
             ) : (
-                <TextField
-                    label="Study Type"
-                    value={groupArrayOfObjectsBy(STUDY_TYPES, 'value')[type].label}
-                    margin="dense"
-                    disabled
-                />
-            );
+                    <TextField
+                        required
+                        label="Study Type"
+                        value={groupArrayOfObjectsBy(STUDY_TYPES, 'value')[type].label}
+                        margin="dense"
+                        disabled
+                    />
+                );
 
         return (
             <div className={classes.container}>
@@ -285,13 +296,25 @@ const StudyView = observer((props: any & WithStyles) => {
                 )}
                 <div className={classes.columns}>
                     <div className={classes.column}>
+                        <LocationTextField location={location} editable={studyIsNew} />
+                        <LockedMapView
+                            isEditable
+                            showOverlay={!features.length}
+                            lat={latitude}
+                            lng={longitude}
+                            featureCollection={map}
+                        />
+                    </div>
+                    <div className={classes.column}>
                         <TextField
+                            required
                             label="Title"
                             value={title}
                             onChange={e => (study.title = e.target.value)}
                             margin="dense"
                         />
                         <TextField
+                            required
                             label="Description"
                             value={description}
                             margin="dense"
@@ -300,12 +323,14 @@ const StudyView = observer((props: any & WithStyles) => {
                             }
                         />
                         <TextField
+                            required
                             label="Author"
                             value={author}
                             margin="dense"
                             onChange={e => (applicationState.currentStudy.author = e.target.value)}
                         />
                         <TextField
+                            required
                             label="Author Url"
                             value={authorUrl}
                             margin="dense"
@@ -315,6 +340,7 @@ const StudyView = observer((props: any & WithStyles) => {
                         />
                         <StudyTypeField />
                         <TextField
+                            required
                             disabled
                             label="Study Fields"
                             value={`${fields.length} Fields`}
@@ -342,6 +368,7 @@ const StudyView = observer((props: any & WithStyles) => {
                             }}
                         />
                         <TextField
+                            required
                             disabled
                             label="Surveyors"
                             value={`${surveyors.length} Surveyors`}
@@ -369,6 +396,7 @@ const StudyView = observer((props: any & WithStyles) => {
                             }}
                         />
                         <TextField
+                            required
                             disabled
                             label="Surveys"
                             value={`${Object.keys(toJS(surveys)).length} Surveys`}
@@ -396,19 +424,9 @@ const StudyView = observer((props: any & WithStyles) => {
                             }}
                         />
                     </div>
-                    <div className={classes.column}>
-                        <LocationTextField location={location} editable={studyIsNew} />
-                        <LockedMapView
-                            isEditable
-                            showOverlay={!features.length}
-                            lat={latitude}
-                            lng={longitude}
-                            featureCollection={map}
-                        />
-                    </div>
                 </div>
                 <div className={classes.footer}>
-                    {datapoints.length && (
+                    {!!datapoints.length && (
                         <Button
                             variant="contained"
                             color="secondary"
