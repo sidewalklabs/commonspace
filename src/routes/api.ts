@@ -1,6 +1,7 @@
 import camelcaseKeys from 'camelcase-keys';
 import cookieParser from 'cookie-parser';
 import express, { Request, Response } from 'express';
+import { parse as json2csv } from 'json2csv';
 import passport from 'passport';
 import { NOT_NULL_VIOLATION, UNIQUE_VIOLATION } from 'pg-error-constants';
 import uuid from 'uuid';
@@ -311,6 +312,26 @@ router.delete(
             }
             await deleteStudy(DbPool, studyId);
             res.status(200).send();
+        })
+    )
+);
+
+router.get(
+    '/studies/:studyId/download',
+    return500OnError(
+        return401OnUnauthorizedError(async (req: Request, res: Response) => {
+            if (req.headers['accept'] && req.headers['accept'] === 'text/csv') {
+                const { user_id: userId } = req.user;
+                const { studyId } = req.params;
+                if (!(await userIdIsAdminOfStudy(DbPool, studyId, userId))) {
+                    throw new UnauthorizedError(req.route, userId);
+                    return;
+                }
+                const dataPoints = await getDataPointsForStudy(DbPool, userId, studyId);
+                const csv = json2csv(dataPoints);
+                res.set('Content-Type', 'text/csv');
+                res.status(200).send(csv);
+            }
         })
     )
 );
