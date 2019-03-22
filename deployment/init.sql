@@ -12,9 +12,11 @@ CREATE TABLE IF NOT EXISTS users
     user_id UUID PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
     password TEXT,
-    is_oauth BOOLEAN DEFAULT FALSE,
+    is_oauth BOOLEAN DEFAULT TRUE,
     name TEXT
 );
+
+INSERT INTO users (user_id, email) VALUES ('00000000-0000-0000-0000-000000000001', 'sentinel@commonspace.sidewalklabs.com');
 
 CREATE UNIQUE INDEX users_lower_email_unique_idx ON users (lower(email));
 
@@ -64,10 +66,13 @@ CREATE TABLE IF NOT EXISTS location
     geometry public.geometry
 );
 
+CREATE TYPE studyStatus AS ENUM ('completed', 'active');
+
 CREATE TABLE IF NOT EXISTS study
 (
     study_id UUID PRIMARY KEY,
     title TEXT,
+    study_status studyStatus DEFAULT 'active',
     author TEXT,
     author_url TEXT,
     project TEXT,
@@ -83,8 +88,8 @@ CREATE TABLE IF NOT EXISTS study
     location TEXT,
     map JSON,
     description TEXT,
-    created_at TIMESTAMP WITH TIME ZONE default now(),
-    last_updated TIMESTAMP WITH TIME ZONE default now()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    last_updated TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
 CREATE TYPE gender AS ENUM ('male', 'female', 'unknown');
@@ -117,7 +122,7 @@ CREATE TABLE IF NOT EXISTS survey (
     temperature_c FLOAT,
     method TEXT NOT NULL,
     user_id UUID references public.users(user_id),
-    FOREIGN KEY (study_id, user_id) references surveyors (study_id, user_id),
+    --FOREIGN KEY (study_id, user_id) references surveyors (study_id, user_id),
     notes TEXT
 );
 

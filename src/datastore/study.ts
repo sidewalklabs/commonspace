@@ -585,17 +585,41 @@ export async function getSurveyorsForStudy(pool: pg.Pool, studyId: string): Prom
     }
 }
 
+async function setSurveysForUserToSentinelUser(
+    pool: pg.Pool,
+    studyId: string,
+    email: string
+): Promise<void> {
+    const query = `UPDATE data_collection.survey
+                   SET user_id = '00000000-0000-0000-0000-000000000001'
+                   WHERE survey_id IN (
+                       SELECT survey_id
+                       FROM data_collection.survey sur
+                       JOIN users us
+                       ON us.user_id = sur.user_id
+                       WHERE sur.study_id = $1 and us.email = $2
+                   )`;
+    const values = [studyId, email];
+    try {
+        await pool.query(query, values);
+    } catch (error) {
+        console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
+        throw error;
+    }
+}
+
 export async function deleteSurveyorFromStudy(
     pool: pg.Pool,
     studyId: string,
     surveyorEmail: string
 ): Promise<void> {
-    const query = `DELETE
-                   FROM data_collection.surveyors as svyrs
+    await setSurveysForUserToSentinelUser(pool, studyId, surveyorEmail);
+    const query = `UPDATE data_collection.surveyors
+                   SET user_id = '00000000-0000-0000-0000-000000000001'
                    WHERE study_id = $1
                        AND user_id in (SELECT user_id
-                                       FROM users
-                                       WHERE users.email = $2)`;
+                            FROM users
+                            WHERE users.email = $2)`;
     const values = [studyId, surveyorEmail];
     try {
         await pool.query(query, values);
