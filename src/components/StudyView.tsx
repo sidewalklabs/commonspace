@@ -271,14 +271,14 @@ const StudyView = observer((props: any & WithStyles) => {
                     })}
                 </TextField>
             ) : (
-                    <TextField
-                        required
-                        label="Study Type"
-                        value={groupArrayOfObjectsBy(STUDY_TYPES, 'value')[type].label}
-                        margin="dense"
-                        disabled
-                    />
-                );
+                <TextField
+                    required
+                    label="Study Type"
+                    value={groupArrayOfObjectsBy(STUDY_TYPES, 'value')[type].label}
+                    margin="dense"
+                    disabled
+                />
+            );
 
         return (
             <div className={classes.container}>
