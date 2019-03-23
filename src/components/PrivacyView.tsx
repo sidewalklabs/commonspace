@@ -13,7 +13,8 @@ const styles = theme => ({
             3}px`,
         [theme.breakpoints.up('md')]: {
             width: theme.breakpoints.values.md
-        }
+        },
+        overflowWrap: 'break-word'
     }
 });
 
@@ -27,41 +28,65 @@ const PrivacyView = observer((props: PrivacyViewProps & WithStyles) => {
         <>
             {!webview && <AppBar />}
             <div className={classes.content}>
-                <Typography variant="headline" gutterBottom>
-                    Sidewalk Toronto Privacy Policy
+                <Typography variant="h4" gutterBottom>
+                    CommonSpace Privacy Policy
+                </Typography>
+                <Typography variant="h6" paragraph>
+                    Last Updated: March 1, 2019
                 </Typography>
                 <Typography variant="body2" paragraph>
-                    Last Updated: June 6, 2018
-                </Typography>
-                <Typography variant="body1" paragraph>
-                    This Privacy Policy explains how your personal information is collected and used
-                    by Sidewalk Toronto Limited Partnership (“Sidewalk Toronto”) when you visit its
-                    websites, when you interact with Sidewalk Toronto directly or through our
-                    contractors.{' '}
+                    This Privacy Policy explains how your personal information, as the surveyor, is
+                    collected and used by Sidewalk Toronto Limited Partnership (“Sidewalk Toronto”)
+                    or by Sidewalk Labs LLC and its controlled subsidiaries or affiliates (“Sidewalk
+                    Labs,” “we”, “our”, or “us”) when you download or use CommonSpace.
                 </Typography>
 
-                <Typography variant="h6" gutterBottom>
-                    Collection of Information{' '}
+                <Typography variant="h5" gutterBottom>
+                    Collection of Information
                 </Typography>
-                <Typography variant="body2">Information You Provide to Us</Typography>
-                <Typography variant="body1" paragraph>
-                    We only collect personal information you provide directly to us, including
-                    through our websites or when you contact us with respect to our programs or
-                    initiatives. This may include your name, email address, phone number, online
-                    profile, resume and other job application information and any other information
-                    you choose to provide.
+                <Typography variant="h6">
+                    Public Life Study Information Collected with CommonSpace
+                </Typography>
+                <Typography variant="body2" paragraph>
+                    CommonSpace supports the collection of data about the characteristics of people
+                    and their activities in the public realm or public spaces, through the practice
+                    known as public life studies. This data does not identify individuals, and as
+                    such is non-personal data and not personal information. While CommonSpace will
+                    collect your personal information as set out in this policy when you use the
+                    app, the app is not designed to collect personal or identifiable data for anyone
+                    whose activity is observed through a public life study using the app.
+                </Typography>
+                <Typography variant="body2" paragraph>
+                    You may enter broad demographic attributes of people in the public realm as
+                    determined by you into the app. You may also input free-form comments about your
+                    observations. Do not enter personal information into the free-form comments
+                    field and in-line instructions. CommonSpace will remind you not to do so.
                 </Typography>
 
-                <Typography variant="body2">Information We Collect Automatically </Typography>
-                <Typography variant="body1" paragraph>
-                    When you use our websites, we automatically collect personal information, such
-                    as the type of browser you use, your access times, your IP address and the page
-                    you visited before navigating to our website. You can opt out through your
-                    browser.{' '}
+                <Typography variant="h6">Information You Provide to Us</Typography>
+                <Typography variant="body2" paragraph>
+                    CommonSpace collects your personal information, including your email address and
+                    a password for the purpose of logging in and authenticating your use of the app.
                 </Typography>
 
-                <Typography variant="body2">Information collected by our contractors</Typography>
-                <Typography variant="body1" paragraph>
+                <Typography variant="h6">Information Collected Automatically</Typography>
+                <Typography variant="body2" paragraph>
+                    Sidewalk Labs does not collect performance metrics or usage information of
+                    CommonSpace. However, a third party, that we used to build the front-end of
+                    CommonSpace, does collect some user data for the purposes of detecting events or
+                    crashes in order to improve their product. Sidewalk Labs does not have access to
+                    this data.
+                </Typography>
+                <Typography variant="body2" paragraph>
+                    CommonSpace pulls data from the public Google Maps API to display the basemap
+                    (e.g., the locations and shapes of streets, parks, plazas, and other map
+                    features). CommonSpace will request your permission to access your device’s
+                    location services to display your location as a blue dot on the map; this data
+                    is not transmitted off your device.
+                </Typography>
+
+                <Typography variant="h6">Information collected by our contractors</Typography>
+                <Typography variant="body2" paragraph>
                     We use contractors to provide us with services. When contractors are collecting
                     personal information on behalf of Sidewalk Toronto, we put in place measures to
                     protect the privacy and security of that information. In some cases, we put in
@@ -71,115 +96,77 @@ const PrivacyView = observer((props: PrivacyViewProps & WithStyles) => {
                     provide us with aggregate, non-identifying information.
                 </Typography>
 
-                <Typography variant="body2">Analytics Services Provided by Others</Typography>
-                <Typography variant="body1" paragraph>
-                    In connection with the use of our websites, we may allow others to provide
-                    analytics services, such as Google Analytics. These entities may use cookies,
-                    web beacons, and other technologies to collect information about your use of our
-                    websites and other websites and online services, including your IP address, web
-                    browser, pages viewed, time spent on pages, links clicked and conversion
-                    information. This information may be used by us and others to, among other
-                    things, analyze and track data, determine the popularity of certain content and
-                    better understand your online activity. More information about Google Analytics
-                    and Privacy is available here:{' '}
-                    <a
-                        href="https://support.google.com/analytics/answer/6004245?hl=en"
-                        target="_blank"
-                    >
-                        https://support.google.com/analytics/answer/6004245?hl=en
-                    </a>
-                    .
+                <Typography variant="h5" gutterBottom>
+                    Use of Information Collected Using CommonSpace
+                </Typography>
+                <Typography variant="body2" paragraph>
+                    Sidewalk Labs uses your personal information: to authenticate your use of
+                    CommonSpace; to record public life activity data that you input into
+                    CommonSpace; to improve CommonSpace; to produce aggregate data to share with the
+                    public and other stakeholders; to respond to your comments, questions or
+                    requests about CommonSpace; and to administer the security of CommonSpace and to
+                    protect other users, the public, and Sidewalk Labs.
+                </Typography>
+                <Typography variant="body2" paragraph>
+                    Sidewalk Labs maintains custody of the public life activity data that you and
+                    other users collect using CommonSpace with control granted to study organizers,
+                    who have full ability to manage and delete data. Sidewalk secures this data with
+                    best practices including encryption, and records access through logging.
+                </Typography>
+                <Typography variant="body2" paragraph>
+                    CommonSpace is an open-source application and others may build, host, and
+                    distribute versions or derivatives of the app not provided, hosted, or
+                    controlled by Sidewalk Labs and that are not subject to this Privacy Policy. Any
+                    data collected by such apps, including personal information and study data, is
+                    collected and controlled by the person providing the app and not Sidewalk Labs.
+                </Typography>
+                <Typography variant="body2" paragraph>
+                    To log into CommonSpace, users may use Google Sign-in or create a new account
+                    with CommonSpace. In the case of Google Sign-in, Google maintains custody and
+                    control of the source data, which is provided upon request by Sidewalk Labs. In
+                    the case of a CommonSpace account, Sidewalk has custody and control of the data.
+                    Sidewalk stores this data in cloud servers located in Montreal.
+                </Typography>
+                <Typography variant="body2" paragraph>
+                    We will retain your information for as long as necessary to fulfill the purposes
+                    for which it was collected and as required by law.
                 </Typography>
 
-                <Typography variant="h6" gutterBottom>
-                    Use of Information
-                </Typography>
-                <Typography variant="body1">We may use this information to:</Typography>
-                <ul>
-                    <li>
-                        <Typography variant="body1">Provide and improve our websites;</Typography>
-                    </li>
-                    <li>
-                        <Typography variant="body1">
-                            Evaluate your job application and consider you for employment;
-                        </Typography>
-                    </li>
-                    <li>
-                        <Typography variant="body1">
-                            Respond to your comments, questions or requests;
-                        </Typography>
-                    </li>
-                    <li>
-                        <Typography variant="body1">
-                            Communicate with you about news and information we think will be of
-                            interest to you;
-                        </Typography>
-                    </li>
-                    <li>
-                        <Typography variant="body1">
-                            Monitor and analyze trends, usage and activities in connection with use
-                            of our websites; and
-                        </Typography>
-                    </li>
-                    <li>
-                        <Typography variant="body1">
-                            Administer the physical security of our premises, including through the
-                            use of security video surveillance.
-                        </Typography>
-                    </li>
-                </ul>
-                <Typography variant="body1" paragraph>
-                    When we solicit information, such as in connection with employment opportunities
-                    or community engagement, we will provide information to you at the time about
-                    the purposes for which information is being collected, used or disclosed.
-                </Typography>
-
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h5" gutterBottom>
                     Sharing of Information
                 </Typography>
-                <Typography variant="body1" paragraph>
-                    We do not disclose your personal information to third parties unless we have
-                    your consent or we are required by law. We use reasonable measures to keep your
-                    personal information safe.{' '}
+                <Typography variant="body2" paragraph>
+                    The study administrator will have access to the public life activity data that
+                    you collect using CommonSpace and this data will be attributable to you. Please
+                    contact the study administrator if you have questions on how they use
+                    information or on their privacy practices.
                 </Typography>
-                <Typography variant="body1" paragraph>
-                    We may share your personal information with our affiliates strictly to provide
-                    you our services. We require that they protect your personal information at the
-                    same high level as we do.{' '}
-                </Typography>
-
-                <Typography variant="h6" gutterBottom>
-                    Transfer of Information to Other Countries
-                </Typography>
-                <Typography variant="body1" paragraph>
-                    Your personal information may be held outside of Canada and subject to foreign
-                    laws. Still, we require guarantees from our partners that it will be kept safe.
+                <Typography variant="body2" paragraph>
+                    As a general rule, we do not disclose your personal information to third parties
+                    unless we have your consent or we are required by law. We use reasonable
+                    measures to keep your personal information safe. We may share your personal
+                    information with our affiliates and other contractors who collect and use your
+                    personal information on our behalf. These contractors may use your personal
+                    information only to perform the functions they carry out on our behalf, in
+                    compliance with appropriate confidentiality and security measures. We require
+                    that they protect your personal information at the same high level as we do.
                 </Typography>
 
-                <Typography variant="h6" gutterBottom>
-                    Your Access and Correction Rights
-                </Typography>
-                <Typography variant="body1" paragraph>
-                    You can request access to your personal information by contacting{' '}
-                    <a href="mailto:privacy@sidewalktoronto.ca?subject=CommonSpace">
-                        privacy@sidewalktoronto.ca
-                    </a>
-                    . We will promptly respond to your request unless we are prohibited to do so by
-                    law. In that case we will justify our refusal.
-                </Typography>
-
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h5" gutterBottom>
                     Contact Us
                 </Typography>
-                <Typography variant="body1" paragraph>
+                <Typography variant="body2" paragraph>
                     If you have any questions about this Privacy Policy, please contact us at:{' '}
-                    <a href="mailto:privacy@sidewalktoronto.ca?subject=CommonSpace">
-                        privacy@sidewalktoronto.ca
+                    <a href="mailto:privacy@sidewalklabs.com?subject=CommonSpace">
+                        privacy@sidewalklabs.com
                     </a>
                     .
                 </Typography>
-                <Typography variant="body1" paragraph>
-                    Sidewalk Toronto 20 Bay St., Suite 1310 Toronto, ON M5J 2N8 Canada
+                <Typography variant="body2" paragraph>
+                    Sidewalk Labs, 307 Lake Shore Boulevard East, <br />
+                    Toronto, ON M5A 1C1, Canada <br />
+                    <br />
+                    Sidewalk Labs, 10 Hudson Yards, 26th Floor New York, NY, 10001
                 </Typography>
             </div>
         </>
