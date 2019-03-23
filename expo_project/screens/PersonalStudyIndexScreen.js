@@ -39,7 +39,12 @@ class PersonalStudyIndexScreen extends React.Component {
   };
 
   async componentDidMount() {
+    this.refresh();
+  }
+
+  async refresh() {
     try {
+      this.setState({ loading: true });
       const token = await AsyncStorage.getItem('token');
       if (token) {
         const studies = await getStudies(token);
@@ -59,7 +64,6 @@ class PersonalStudyIndexScreen extends React.Component {
     const { loading, token, studies } = this.state;
     return (
       <View style={styles.container}>
-        {loading && <ActivityIndicator />}
         {!loading &&
           !studies.length && (
             <Banner
@@ -70,10 +74,14 @@ class PersonalStudyIndexScreen extends React.Component {
               ctaOnPress={() => this.props.navigation.navigate('DemoStack')}
             />
           )}
-        {!loading && studies.length ? (
-          <StudyFeed token={token} studies={studies} title="Your studies" />
-        ) : (
-          undefined
+        {(loading || !!studies.length) && (
+          <StudyFeed
+            token={token}
+            studies={studies}
+            title="Your studies"
+            onRefresh={() => this.refresh()}
+            refreshing={loading}
+          />
         )}
       </View>
     );
