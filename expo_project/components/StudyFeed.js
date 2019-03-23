@@ -1,6 +1,14 @@
 import { WebBrowser } from 'expo';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableHighlight, View, Image } from 'react-native';
+import {
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableHighlight,
+  View,
+  Image,
+} from 'react-native';
 import { withNavigation } from 'react-navigation';
 import { Card, CardContent, Divider } from 'react-native-paper';
 import * as _ from 'lodash';
@@ -131,11 +139,13 @@ class StudyCard extends React.Component {
 
 class StudyFeed extends React.Component {
   render() {
-    const { token, title, studies } = this.props;
+    const { token, title, studies, refreshing, onRefresh } = this.props;
 
     return (
       <View style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
           <Text style={styles.sectionTitle}>{title}</Text>
           {studies.map((study, index) => (
             <StudyCard key={index} study={study} token={token} navigation={this.props.navigation} />

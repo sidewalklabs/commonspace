@@ -29,7 +29,14 @@ class DemoStudyIndexScreen extends React.Component {
   });
 
   render() {
-    return <StudyFeed studies={DEMO_STUDIES} title="Demo Studies" />;
+    return (
+      <StudyFeed
+        studies={DEMO_STUDIES}
+        title="Demo Studies"
+        refreshing={false}
+        onRefresh={() => {}}
+      />
+    );
   }
 }
 
