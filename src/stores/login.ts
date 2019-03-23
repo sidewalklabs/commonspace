@@ -20,7 +20,7 @@ export async function logInUser() {
                 if (error instanceof UnauthorizedError) {
                     setSnackBar(
                         'error',
-                        `User has not been whitelisted, contact product-support@sidewalklabs.com`
+                        'User has not been whitelisted, contact commonspace@sidewalklabs.com'
                     );
                 } else {
                     throw error;

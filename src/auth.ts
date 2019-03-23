@@ -28,7 +28,7 @@ dotenv.config({
     path: process.env.DOTENV_CONFIG_DIR ? path.join(process.env.DOTENV_CONFIG_DIR, '.env') : ''
 });
 
-const FROM_STRING = 'Gehl Data Collector <thorncliffeparkpubliclifepilot@gmail.com>';
+const FROM_STRING = 'CommonSpace <commonspace@sidewalklabs.com>';
 
 const LocalStrategy = passportLocal.Strategy;
 const ExtractJwt = passportJWT.ExtractJwt;

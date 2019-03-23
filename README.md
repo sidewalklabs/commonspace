@@ -130,36 +130,6 @@ psql "host=127.0.0.1 sslmode=disable dbname=postgres user=postgres" -f deploymen
 psql "host=127.0.0.1 sslmode=disable dbname=postgres user=postgres" -f deployment/init.sql
 ```
 
-## Setting Up Postgres
-
-## Deploy GCP Cloud Functions
-Create an environment variables file.
-
-``` bash
-cat gehl-921be-firebase-adminsdk-46n9l-0d6437a6d4.json | node json_to_string.js | sed 's/^/gcp.serviceaccountkey=/' | firebase functions:config:set
-firebase functions:config:set $(cat gehl-921be-firebase-adminsdk-46n9l-0d6437a6d4.json)
-cat gehl-921be-firebase-adminsdk-46n9l-0d6437a6d4.json | node json_to_string.js | sed 's/^/gcp.serviceaccountkey=/' | firebase functions:config:set
-ln -s
-```
-
-### Firebase Cloud functions
-Fillout the provided templates in the config directory and rename the files to not include -template.
-run the following commands to set up enviroment variables, and deploy the functions to your firebase
-cloud instance.
-
-``` bash
-cat config/firebase-gcp.yml | sed 's/^/gcp./' | sed 's/: /=/' | xargs firebase functions:config:set
-cat config/firebase-gmail.yml | sed 's/^/email./' | sed 's/: /=/' | xargs firebase functions:config:set
-firebase deploy --only functions
-
-```
-
-``` bash
-cd /functions/uuid/
-yarn run deploy
-```
-
-
 [1]: https://cloud.google.com/sql/docs/postgres/connect-external-app#proxy
 [Install Packer]: https://www.packer.io/intro/getting-started/install.html
 [kubernetes]: https://kubernetes.io/
