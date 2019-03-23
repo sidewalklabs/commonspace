@@ -76,7 +76,7 @@ const responseGoogleFailure = response => {
     console.error(response);
     const errorMessage =
         response.error === 'idpiframe_initialization_failed'
-            ? 'Google OAuth not available, contact product-support@sidewalklabs.com'
+            ? 'Google OAuth not available, contact commonspace@sidewalklabs.com'
             : 'Unable to authenticate with Google OAuth';
     setSnackBar('error', errorMessage);
 };

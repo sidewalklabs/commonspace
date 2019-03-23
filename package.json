@@ -1,5 +1,5 @@
 {
-  "name": "gehl-protocol-data-collector",
+  "name": "commonspace",
   "version": "0.0.1",
   "description": "digital collection of gehl public life study data",
   "main": "index.js",

@@ -24,7 +24,7 @@ export async function resetPasswordRequest() {
         body: JSON.stringify(data) // body data type must match "Content-Type" header
     });
     if (response.status === 200) {
-        navigate('/signup');
+        navigate('/login');
         setSnackBar('success', 'Email sent with reset link');
     } else {
         console.error(response.statusText);

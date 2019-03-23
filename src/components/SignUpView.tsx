@@ -76,8 +76,9 @@ const SignUpView = withStyles(styles)(
                     approved.
                 </Typography>
                 <Typography variant="body1" align="center" gutterBottom>
-                    Contact product-support@sidewalklabs.com if you are interested in administering
-                    studies.
+                    Contact{' '}
+                    <a href="mailto:commonspace@sidewalklabs.com">CommonSpace@sidewalklabs.com</a>
+                    if you are interested in administering studies.
                 </Typography>
                 <TextField
                     id="signUp-email"

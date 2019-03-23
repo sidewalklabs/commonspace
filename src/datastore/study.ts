@@ -47,7 +47,7 @@ function setString(s: any) {
 }
 
 // map over the list of fields the user wants to use to create their study and use type guarding to create a sql statement
-function gehlFieldAsPgColumn(field: StudyField) {
+function fieldNameToColumnName(field: StudyField) {
     switch (field) {
         case 'gender':
             return 'gender data_collection.gender';
@@ -73,7 +73,7 @@ function gehlFieldAsPgColumn(field: StudyField) {
 }
 
 function createNewTableFromStudyFields(fields: StudyField[], tablename: string) {
-    const additionalColumns = fields.map(gehlFieldAsPgColumn).join(',\n');
+    const additionalColumns = fields.map(fieldNameToColumnName).join(',\n');
     return `CREATE TABLE ${tablename} (
                     survey_id UUID references data_collection.survey(survey_id) ON DELETE CASCADE NOT NULL,
                     data_point_id UUID PRIMARY KEY NOT NULL,
