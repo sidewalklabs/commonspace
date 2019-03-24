@@ -92,7 +92,10 @@ const FieldsList = withStyles(styles)(
             <>
                 <div className={classes.header}>
                     <Typography component="h2" variant="h6" color="inherit" gutterBottom noWrap>
-                        Choose Fields
+                        Study Fields
+                    </Typography>
+                    <Typography variant="subtitle1" color="inherit" gutterBottom noWrap>
+                        Click on the fields you would like your surveyors to study.
                     </Typography>
                 </div>
                 <div className={classes.body}>{chips}</div>

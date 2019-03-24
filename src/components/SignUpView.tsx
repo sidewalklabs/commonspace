@@ -72,13 +72,9 @@ const SignUpView = withStyles(styles)(
                     Sign up for CommonSpace
                 </Typography>
                 <Typography variant="body1" align="center" gutterBottom>
-                    CommonSpace Admin is in beta, and sign up will fail if you have not been
-                    approved.
-                </Typography>
-                <Typography variant="body1" align="center" gutterBottom>
-                    Contact{' '}
-                    <a href="mailto:commonspace@sidewalklabs.com">CommonSpace@sidewalklabs.com</a>
-                    if you are interested in administering studies.
+                    CommonSpace Admin is in private beta. Contact &nbsp;
+                    <a href="mailto:commonspace@sidewalklabs.com">commonspace@sidewalklabs.com</a>
+                    &nbsp;if you are interested in administering studies.
                 </Typography>
                 <TextField
                     id="signUp-email"

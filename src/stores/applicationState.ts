@@ -251,10 +251,13 @@ export function setCurrentStudyEmptySkeleton() {
 export async function addNewSurveyToCurrentStudy() {
     const newSurveyId = uuid.v4();
     const startMoment = moment().startOf('hour');
+    const endMoment = moment()
+        .startOf('hour')
+        .add(1, 'hours');
     const newSurvey = {
         surveyId: newSurveyId,
         startDate: startMoment.toISOString(),
-        endDate: startMoment.add(1, 'hours').toISOString(),
+        endDate: endMoment.toISOString(),
         email: '',
         locationId: '',
         title: startMoment.format('h a')

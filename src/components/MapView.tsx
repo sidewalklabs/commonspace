@@ -351,11 +351,12 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
     return (
         <Fragment>
             <div className={classes.header}>
-                <Typography component="h2" variant="h6" color="inherit" gutterBottom noWrap>
+                <Typography variant="h6" color="inherit" gutterBottom noWrap>
                     Draw Zones and Points of Interest
                 </Typography>
-                <Typography component="h2" variant="subtitle1" color="inherit" gutterBottom noWrap>
-                    Click existing zones to rename them
+                <Typography variant="subtitle1" color="inherit" gutterBottom noWrap>
+                    Use the {allowedShapes} tool to draw zones for your surveyors to study. Click
+                    existing zones to rename them.
                 </Typography>
             </div>
             <div className={classes.body}>
