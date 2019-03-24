@@ -129,12 +129,16 @@ class PeopleMovingCountScreen extends React.Component {
   };
 
   navigateToMarkerList = () => {
-    const { token, surveyId } = this.state;
+    const { token, surveyId, studyFields } = this.state;
+    const questions = _.filter(
+      QUESTION_CONFIG,
+      ({ questionKey }) => studyFields.indexOf(questionKey) !== -1,
+    );
     this.props.navigation.navigate('MarkerListScreen', {
       token,
       surveyId,
       markers: this.state.markers,
-      questions: QUESTION_CONFIG,
+      questions,
       sync: this.syncMarkersWithListView,
       emptyTitle: 'Add people as they go by',
       emptyDescription:
@@ -215,7 +219,7 @@ class PeopleMovingCountScreen extends React.Component {
   };
 
   render() {
-    const { token, studyFields, surveyId, markers } = this.state;
+    const { studyFields, markers } = this.state;
     const questions = _.filter(
       QUESTION_CONFIG,
       ({ questionKey }) => studyFields.indexOf(questionKey) !== -1,
@@ -223,7 +227,7 @@ class PeopleMovingCountScreen extends React.Component {
 
     return (
       <View style={styles.container}>
-        <PeopleMovingCountSummary markers={this.state.markers} primaryAttribute={questions[0]} />
+        <PeopleMovingCountSummary markers={markers} primaryAttribute={questions[0]} />
         <Card style={styles.card} elevation={3}>
           <View style={styles.cardContent}>
             <ScrollView>

@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  Alert,
-  ActivityIndicator,
-  AsyncStorage,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, AsyncStorage, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import { Icon } from 'expo';
 import { getStudies } from '../lib/commonsClient';
