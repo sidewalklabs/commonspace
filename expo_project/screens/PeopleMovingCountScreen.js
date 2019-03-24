@@ -178,11 +178,7 @@ class PeopleMovingCountScreen extends React.Component {
     this.setState({ markers: markersCopy });
     if (surveyId !== 'DEMO') {
       saveDataPoint(token, surveyId, marker).catch(error => {
-        Alert.alert(
-          'Error',
-          'Something went wrong while creating a marker. Please try again later.',
-          [{ text: 'OK' }],
-        );
+        Alert.alert('Error', error.message, [{ text: 'OK' }]);
         this.setState({ markers: oldMarkers });
       });
     }
@@ -206,10 +202,8 @@ class PeopleMovingCountScreen extends React.Component {
       });
 
       if (dataPointId && surveyId !== 'DEMO') {
-        deleteDataPoint(token, surveyId, dataPointId).catch(() => {
-          Alert.alert('Error', 'Something went wrong removing datapoint. Please try again later.', [
-            { text: 'OK' },
-          ]);
+        deleteDataPoint(token, surveyId, dataPointId).catch(error => {
+          Alert.alert('Error', e.message, [{ text: 'OK' }]);
           this.setState({
             markers: oldMarkers,
           });

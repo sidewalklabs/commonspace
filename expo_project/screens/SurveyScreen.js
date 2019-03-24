@@ -243,12 +243,8 @@ class SurveyScreen extends React.Component {
       });
 
       if (surveyId !== 'DEMO') {
-        saveDataPoint(token, surveyId, marker).catch(() => {
-          Alert.alert(
-            'Error',
-            'Something went wrong while updating marker. Please try again later.',
-            [{ text: 'OK' }],
-          );
+        saveDataPoint(token, surveyId, marker).catch(error => {
+          Alert.alert('Error', error.message, [{ text: 'OK' }]);
 
           marker[key] = oldMarkerValue;
           this.setState({
@@ -333,10 +329,8 @@ class SurveyScreen extends React.Component {
     });
 
     if (surveyId !== 'DEMO') {
-      deleteDataPoint(this.state.token, surveyId, dataPointId).catch(() => {
-        Alert.alert('Error', 'Something went wrong removing datapoint. Please try again later.', [
-          { text: 'OK' },
-        ]);
+      deleteDataPoint(this.state.token, surveyId, dataPointId).catch(error => {
+        Alert.alert('Error', error.message, [{ text: 'OK' }]);
         this.setState({
           markers: oldMarkers,
           activeMarkerId: dataPointId,
@@ -373,11 +367,7 @@ class SurveyScreen extends React.Component {
 
       if (surveyId !== 'DEMO') {
         saveDataPoint(this.state.token, surveyId, duplicateMarker).catch(error => {
-          Alert.alert(
-            'Error',
-            'Something went wrong while duplicating marker. Please try again later.',
-            [{ text: 'OK' }],
-          );
+          Alert.alert('Error', error.message, [{ text: 'OK' }]);
           markersCopy.pop();
           this.setState({
             markers: markersCopy,
@@ -416,11 +406,7 @@ class SurveyScreen extends React.Component {
     this.setState({ markers: [...markers, marker], activeMarkerId: dataPointId }, this.resetDrawer);
     if (surveyId !== 'DEMO') {
       saveDataPoint(this.state.token, surveyId, marker).catch(error => {
-        Alert.alert(
-          'Error',
-          'Something went wrong while creating a marker. Please try again later.',
-          [{ text: 'OK' }],
-        );
+        Alert.alert('Error', error.message, [{ text: 'OK' }]);
         this.setState({ markers, activeMarkerId: oldActiveMarkerId });
       });
     }

@@ -46,9 +46,7 @@ class PersonalStudyIndexScreen extends React.Component {
         this.setState({ loading: false });
       }
     } catch (e) {
-      Alert.alert('Error', 'Unable to load your studies. Only demo studies will be available.', [
-        { text: 'OK' },
-      ]);
+      Alert.alert('Error', e.message, [{ text: 'OK' }]);
       this.setState({ loading: false });
     }
   }
