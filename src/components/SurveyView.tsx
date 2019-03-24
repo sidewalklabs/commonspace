@@ -23,20 +23,20 @@ import { Feature } from 'geojson';
 
 const styles = theme => ({
     header: {
-        padding: theme.spacing.unit * 3,
-        display: 'flex'
+        padding: theme.spacing.unit * 3
+    },
+    table: {
+        maxHeight: '300px',
+        overflow: 'scroll'
     },
     body: {
-        padding: theme.spacing.unit * 3
+        paddingLeft: theme.spacing.unit * 3,
+        paddingRight: theme.spacing.unit * 3
     },
     footer: {
         display: 'flex',
         padding: theme.spacing.unit * 3,
         justifyContent: 'flex-end'
-    },
-    table: {
-        minWidth: 400,
-        overflow: 'auto'
     },
     tableCellRoot: {
         paddingTop: theme.spacing.unit / 2,
@@ -75,7 +75,6 @@ interface SurveyRowProps {
 const SurveyObjectToTableRow = observer(
     ({ classes, survey, features }: WithStyles & SurveyRowProps) => {
         const { surveyId, startDate, endDate, locationId } = survey;
-
         // TODO: remove this once we figure out the deep camel casing issue
         const mapFeatures = camelcaseKeys(features, { deep: true });
         return (
@@ -142,7 +141,6 @@ const SurveyObjectToTableRow = observer(
                         margin="normal"
                     >
                         {mapFeatures.map(({ properties }) => {
-                            // TODO:
                             return (
                                 <MenuItem key={properties.locationId} value={properties.locationId}>
                                     {properties.name}
@@ -178,32 +176,60 @@ const SurveyRow = withStyles(styles)(SurveyObjectToTableRow);
 
 const SurveyView = observer((props: { surveys: any[]; features: Feature[] } & WithStyles) => {
     const { classes, surveys, features } = props;
-    const tableRows = Object.values(toJS(surveys)).map((s, i) => (
-        <SurveyRow key={i} survey={s} features={features} />
-    ));
+    const tableRows = Object.values(toJS(surveys))
+        .map((s, i) => <SurveyRow key={i} survey={s} features={features} />)
+        .reverse();
     return (
         <>
             <div className={classes.header}>
-                <Typography component="h2" variant="h6" color="inherit" gutterBottom noWrap>
+                <Typography variant="h6" color="inherit" gutterBottom>
                     Edit Surveys
                 </Typography>
+                <Typography variant="subtitle1" color="inherit" gutterBottom>
+                    Add a survey for every snapshot. A survey is assigned to a volunteer and a zone.
+                    e.g. if you have 1 volunteer taking an hourly snapshot from 12pm to 3pm, you
+                    should create 4 surveys (12pm, 1pm, 2pm, and 3pm).
+                </Typography>
+                <Typography variant="subtitle1" color="inherit" gutterBottom>
+                    If you would like to see what your study looks like, assign yourself to a survey
+                    and open the CommonSpace app.
+                </Typography>
+                {!applicationState.currentStudy.surveyors.length && (
+                    <Typography variant="body2" color="error" gutterBottom>
+                        Before adding surveys, you must add surveyors on the previous screen.
+                    </Typography>
+                )}
+                {!features.length && (
+                    <Typography variant="body2" color="error" gutterBottom>
+                        Before adding surveys, you must define zones using the zone map on the
+                        previous screen.
+                    </Typography>
+                )}
             </div>
-            <Table className={classes.table}>
-                <TableHead>
-                    <TableRow>
-                        <TableCell classes={{ root: classes.tableCellRoot }}>Date</TableCell>
-                        <TableCell classes={{ root: classes.tableCellRoot }}>Start Time</TableCell>
-                        <TableCell classes={{ root: classes.tableCellRoot }}>End Time</TableCell>
-                        <TableCell classes={{ root: classes.tableCellRoot }}>Zone</TableCell>
-                        <TableCell classes={{ root: classes.tableCellRoot }}>Surveyor</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>{tableRows}</TableBody>
-            </Table>
             <div className={classes.body}>
                 <Button variant="contained" onClick={addNewSurveyToCurrentStudy}>
                     New Survey
                 </Button>
+            </div>
+            <div className={classes.table}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell classes={{ root: classes.tableCellRoot }}>Date</TableCell>
+                            <TableCell classes={{ root: classes.tableCellRoot }}>
+                                Start Time
+                            </TableCell>
+                            <TableCell classes={{ root: classes.tableCellRoot }}>
+                                End Time
+                            </TableCell>
+                            <TableCell classes={{ root: classes.tableCellRoot }}>Zone</TableCell>
+                            <TableCell classes={{ root: classes.tableCellRoot }}>
+                                Surveyor
+                            </TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>{tableRows}</TableBody>
+                </Table>
             </div>
             <div className={classes.footer}>
                 <Button

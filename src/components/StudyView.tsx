@@ -123,17 +123,7 @@ const CreateOrUpdateButton = withStyles(styles)((props: CreateOrUpdateButtonProp
     const { studyIsNew, study } = props;
     // Prevent users from creating incomplete studies, since sometimes that causes weird things to happen
     // TODO: add real validation
-    const {
-        title,
-        description,
-        author,
-        authorUrl,
-        fields,
-        surveyors,
-        surveys,
-        location,
-        map
-    } = study;
+    const { title, description, author, authorUrl, fields, surveyors, surveys, map } = study;
     const disabled =
         !title ||
         !description ||
@@ -142,7 +132,6 @@ const CreateOrUpdateButton = withStyles(styles)((props: CreateOrUpdateButtonProp
         !fields.length ||
         !surveyors.length ||
         !Object.keys(surveys).length ||
-        !location ||
         !map.features.length;
     if (studyIsNew) {
         return (
@@ -168,39 +157,6 @@ const CreateOrUpdateButton = withStyles(styles)((props: CreateOrUpdateButtonProp
         );
     }
 });
-
-interface LocationTextFieldProps {
-    location: string;
-    editable: boolean;
-}
-
-// @ts-ignore
-const LocationTextField = withStyles(styles)(
-    observer((props: LocationTextFieldProps & WithStyles) => {
-        const { editable, location, classes } = props;
-        if (editable) {
-            return (
-                <TextField
-                    required
-                    label="Location Name"
-                    value={location}
-                    margin="dense"
-                    onChange={e => (applicationState.currentStudy.location = e.target.value)}
-                />
-            );
-        } else {
-            return (
-                <TextField
-                    required
-                    disabled
-                    margin="dense"
-                    label="Location Name"
-                    value={location}
-                />
-            );
-        }
-    })
-);
 
 interface StudyViewProps {
     study: Study;
@@ -233,7 +189,6 @@ const StudyView = observer((props: any & WithStyles) => {
             author,
             authorUrl,
             description,
-            location,
             surveys = {},
             studyId,
             fields,
@@ -296,7 +251,7 @@ const StudyView = observer((props: any & WithStyles) => {
                 )}
                 <div className={classes.columns}>
                     <div className={classes.column}>
-                        <LocationTextField location={location} editable={studyIsNew} />
+                        <StudyTypeField />
                         <LockedMapView
                             isEditable
                             showOverlay={!features.length}
@@ -318,27 +273,29 @@ const StudyView = observer((props: any & WithStyles) => {
                             label="Description"
                             value={description}
                             margin="dense"
+                            helperText="Describe the purpose of your study, for your surveyors and the public data portal (if you choose to make your study public)"
                             onChange={e =>
                                 (applicationState.currentStudy.description = e.target.value)
                             }
                         />
                         <TextField
                             required
-                            label="Author"
+                            label="Organizer"
+                            helperText="Name of the organization managing the study"
                             value={author}
                             margin="dense"
                             onChange={e => (applicationState.currentStudy.author = e.target.value)}
                         />
                         <TextField
                             required
-                            label="Author Url"
+                            label="Info Url (starting with https://)"
                             value={authorUrl}
                             margin="dense"
+                            helperText="Link to a web page where surveryors can read info about the study or the study organizer"
                             onChange={e =>
                                 (applicationState.currentStudy.authorUrl = e.target.value)
                             }
                         />
-                        <StudyTypeField />
                         <TextField
                             required
                             disabled
