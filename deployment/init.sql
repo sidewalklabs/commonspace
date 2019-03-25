@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS study
 (
     study_id UUID PRIMARY KEY,
     title TEXT,
-    study_status studyStatus DEFAULT 'active',
+    status studyStatus DEFAULT 'active',
     author TEXT,
     author_url TEXT,
     project TEXT,

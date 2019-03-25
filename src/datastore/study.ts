@@ -22,6 +22,7 @@ export type StudyScale =
     | 'singleSite';
 
 export type StudyType = 'stationary' | 'movement';
+export type StudyStatus = 'active' | 'completed';
 
 export interface Study {
     studyId: string;
@@ -37,6 +38,7 @@ export interface Study {
     userId: string;
     type: StudyType;
     map?: FeatureCollection;
+    status: StudyStatus;
     protocolVersion: string;
     fields: StudyField[];
     description?: string;
@@ -81,7 +83,7 @@ function createNewTableFromStudyFields(fields: StudyField[], tablename: string) 
                     creation_date timestamptz,
                     last_updated timestamptz,
                     ${additionalColumns} 
-                    )`;
+            )`;
 }
 
 export async function returnStudyMetadata(
@@ -104,6 +106,7 @@ export async function returnStudyMetadata(
                        stu.title,
                        stu.author,
                        stu.author_url,
+                       stu.status,
                        stu.protocol_version,
                        stu.study_type,
                        stu.fields,
@@ -182,6 +185,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                         stu.description,
                         stu.protocol_version,
                         stu.map,
+                        stu.status,
                         stu.study_type,
                         stu.fields,
                         stu.location,
@@ -207,6 +211,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                 location,
                 protocol_version,
                 study_type: type,
+                status,
                 fields,
                 emails,
                 map,
@@ -225,6 +230,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                     map,
                     location,
                     type,
+                    status,
                     surveyors,
                     created_at,
                     last_updated
@@ -248,7 +254,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
 }
 
 export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: string) {
-    const query = `SELECT stu.study_id, stu.title as study_title, stu.author, stu.author_url, stu.description, stu.location, stu.protocol_version, stu.study_type, stu.fields, stu.map, svy.survey_id, svy.title as survey_title, svy.start_date, svy.end_date, ST_AsGeoJSON(loc.geometry)::json as survey_location, created_at, last_updated 
+    const query = `SELECT stu.study_id, stu.title as study_title, stu.author, stu.author_url, stu.description, stu.location, stu.protocol_version, stu.study_type, stu.status, stu.fields, stu.map, svy.survey_id, svy.title as survey_title, svy.start_date, svy.end_date, ST_AsGeoJSON(loc.geometry)::json as survey_location, created_at, last_updated
                  FROM data_collection.survey as svy
                  JOIN data_collection.study as stu
                  ON svy.study_id = stu.study_id
@@ -269,6 +275,7 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
                 protocol_version,
                 fields,
                 study_type: type,
+                status,
                 map,
                 survey_id,
                 start_date,
@@ -296,6 +303,7 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
                     authorUrl,
                     description,
                     type,
+                    status,
                     map,
                     fields,
                     location,
@@ -463,12 +471,13 @@ export async function createStudy(
         userId,
         protocolVersion,
         type,
+        status,
         location,
         map = {},
         description = ''
     } = study;
-    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, author, author_url, user_id, protocol_version, study_type, fields, tablename, map, location, description)
-                                   VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, author, author_url, user_id, protocol_version, study_type, status, fields, tablename, map, location, description)
+                                   VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
                                    RETURNING created_at, last_updated`;
     const newStudyMetadataValues = [
         studyId,
@@ -478,6 +487,7 @@ export async function createStudy(
         userId,
         protocolVersion,
         type,
+        status,
         fields,
         studyTablename,
         JSON.stringify(map),
@@ -520,18 +530,19 @@ export async function updateStudy(pool: pg.Pool, study: Study) {
         description,
         protocolVersion,
         type,
+        status,
         fields,
         location,
         map
     } = study;
     const studyTablename = studyIdToTablename(studyId);
     const lastUpdated = Date.now() / 1000;
-    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, author, author_url, description, protocol_version, study_type, fields, tablename, map, location, last_updated)
-VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, to_timestamp($13))`;
+    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, author, author_url, description, protocol_version, study_type, status, fields, tablename, map, location, last_updated)
+VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, to_timestamp($14))`;
     const query = `${newStudyMetadataQuery}
                    ON CONFLICT (study_id)
-                   DO UPDATE SET (title, author, author_url, description, protocol_version, fields, map, location, last_updated)
-                       = ($14, $15, $16, $17, $18, $19, $20, $21, to_timestamp($22))
+                   DO UPDATE SET (title, author, author_url, description, protocol_version, status, fields, map, location, last_updated)
+                       = ($15, $16, $17, $18, $19, $20, $21, $22, $23, to_timestamp($24))
                        RETURNING last_updated`;
     const values = [
         studyId,
@@ -542,6 +553,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, to_timestamp($13))`;
         description,
         protocolVersion,
         type,
+        status,
         fields,
         studyTablename,
         JSON.stringify(map),
@@ -552,6 +564,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, to_timestamp($13))`;
         authorUrl,
         description,
         protocolVersion,
+        status,
         fields,
         JSON.stringify(map),
         location,

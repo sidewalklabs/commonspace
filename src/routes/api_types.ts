@@ -11,6 +11,7 @@ export type StudyField =
     | 'location'
     | 'notes';
 
+export type StudyStatus = 'active' | 'completed';
 export type StudyType = 'stationary' | 'movement';
 
 export interface Survey {
@@ -51,6 +52,7 @@ export interface Study {
     protocol_version: string;
     surveyors: string[];
     type: StudyType;
+    status: StudyStatus;
     map?: FeatureCollection;
     surveys?: Survey[];
     fields: StudyField[];

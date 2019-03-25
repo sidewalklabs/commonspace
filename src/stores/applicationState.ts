@@ -7,7 +7,7 @@ import uuid from 'uuid';
 
 import { groupArrayOfObjectsBy } from '../utils';
 import { StudyField } from '../datastore/utils';
-import { StudyType } from '../datastore/study';
+import { StudyType, StudyStatus } from '../datastore/study';
 import { setSnackBar } from './ui';
 import { deleteRest, getRest, postRest, UnauthorizedError, putRest } from '../client';
 import { logoutIfError, navigate } from './router';
@@ -50,6 +50,7 @@ export interface Study {
     surveys: { [key: string]: any };
     surveyors: string[];
     title: string;
+    status: StudyStatus;
     type: StudyType;
     fields: StudyField[];
     map: FeatureCollection;
@@ -231,6 +232,7 @@ export function studyEmptySkeleton(): Study {
         description: '',
         location: '',
         protocolVersion: '1.0',
+        status: 'active',
         surveys: {},
         surveyors: [],
         type: 'stationary',

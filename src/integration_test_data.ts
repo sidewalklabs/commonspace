@@ -195,6 +195,7 @@ export const SeaBassFishCountStudy: Study = {
     description: 'Help Sea Bass count his underwater friends!',
     location: 'La Jolla Cove, San Diego',
     protocol_version: '1.0',
+    status: 'active',
     type: 'stationary',
     fields: ['gender', 'age', 'posture', 'notes', 'activities'],
     surveyors: [
@@ -296,7 +297,7 @@ const pandanantaWashingtonSurvey = {
     title: 'lincoln memorial'
 };
 
-export const MarchOnWashington = {
+export const MarchOnWashington: Study = {
     study_id: marchOnWashingtonCountConfig.studyId,
     title: 'March on Washington for Jobs and Freedom',
     author: 'californianseabass',
@@ -304,6 +305,7 @@ export const MarchOnWashington = {
     description: 'celebrating the centennial of the signing of the emancipation proclamation',
     location: 'Lincoln Memorial',
     protocol_version: '1.0',
+    status: 'active',
     type: 'stationary',
     fields: ['age', 'posture', 'notes'],
     surveyors: [

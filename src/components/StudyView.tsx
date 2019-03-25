@@ -3,6 +3,8 @@ import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
+import Checkbox from '@material-ui/core/Checkbox';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import EditIcon from '@material-ui/icons/Edit';
 import IconButton from '@material-ui/core/IconButton';
 import InputAdornment from '@material-ui/core/InputAdornment';
@@ -12,14 +14,16 @@ import Typography from '@material-ui/core/Typography';
 
 import LockedMapView from './LockedMapView';
 
-import uiState, { closeModalIfVisible } from '../stores/ui';
+import uiState, { closeModalIfVisible, setSnackBar } from '../stores/ui';
 import applicationState, {
     saveNewStudy,
     updateStudy,
     Study,
     getMapCenterForStudy
 } from '../stores/applicationState';
-import { groupArrayOfObjectsBy } from '../utils';
+import { groupArrayOfObjectsBy, snakecasePayload } from '../utils';
+import { putRest } from '../client';
+import { Study as RestStudy } from '../routes/api_types';
 
 const styles = theme => ({
     container: {
@@ -194,12 +198,14 @@ const StudyView = observer((props: any & WithStyles) => {
             fields,
             surveyors,
             protocolVersion,
+            status,
             type,
             map,
             datapoints = []
-        } = study as Study;
+        } = study;
         const { latitude, longitude } = getMapCenterForStudy(studyId);
         const features = map && map.features ? map.features : [];
+        const studyIsCompleted = status === 'completed';
         const StudyTypeField = props =>
             studyIsNew ? (
                 <TextField
@@ -380,6 +386,21 @@ const StudyView = observer((props: any & WithStyles) => {
                                 )
                             }}
                         />
+                        <div>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        color="primary"
+                                        checked={studyIsCompleted}
+                                        onChange={() => {
+                                            applicationState.studies[studyId].status =
+                                                status === 'active' ? 'completed' : 'active';
+                                        }}
+                                    />
+                                }
+                                label="Completed"
+                            />
+                        </div>
                     </div>
                 </div>
                 <div className={classes.footer}>
