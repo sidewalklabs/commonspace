@@ -117,9 +117,9 @@ router.get(
         async (req: Request, res: Response): Promise<Study[]> => {
             const { type = 'all' } = req.query;
             const { user_id: userId } = req.user;
-            let responseBody: Study[];
+            let responseBody: Study[] = [];
             if (type === 'admin') {
-                responseBody = (await returnStudiesForAdmin(DbPool, userId)) as Study[];
+                responseBody = await returnStudiesForAdmin(DbPool, userId);
             } else if (type === 'surveyor') {
                 responseBody = (await returnStudiesUserIsAssignedTo(DbPool, userId)) as Study[];
             } else if (type === 'all') {
@@ -144,7 +144,7 @@ router.get(
     '/studies/download',
     return500OnError(async (req: Request, res: Response) => {
         const { user_id: userId } = req.user;
-        const studies = (await returnStudiesForAdmin(DbPool, userId)) as Study[];
+        const studies: Study[] = await returnStudiesForAdmin(DbPool, userId);
         const studiesWithDataPoints = await Promise.all(
             studies.map(async study => {
                 const surveyIdToSurvey = await Promise.all(
@@ -183,6 +183,7 @@ async function saveStudyForUser(userId: string, inputStudy: Study) {
         author_url: authorUrl,
         location,
         type,
+        status = 'active',
         surveyors,
         surveys = [],
         map,
@@ -197,6 +198,7 @@ async function saveStudyForUser(userId: string, inputStudy: Study) {
         protocolVersion,
         userId,
         type,
+        status,
         map,
         location,
         fields,
@@ -278,6 +280,7 @@ router.get(
                     title,
                     author,
                     type,
+                    status,
                     fields,
                     location,
                     map,
@@ -291,6 +294,7 @@ router.get(
                     title,
                     author,
                     type,
+                    status,
                     fields,
                     location,
                     map,
@@ -542,9 +546,11 @@ router.put(
             }
             const { surveys } = study;
             const updatedStudy = await updateStudy(DbPool, { ...study, userId });
-            await Promise.all(
-                surveys.map(s => updateSurvey(DbPool, camelcaseKeys({ studyId, ...s })))
-            );
+            if (surveys) {
+                await Promise.all(
+                    surveys.map(s => updateSurvey(DbPool, camelcaseKeys({ studyId, ...s })))
+                );
+            }
             res.status(200).send();
         })
     )

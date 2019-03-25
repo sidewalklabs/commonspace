@@ -49,7 +49,7 @@ export default withStyles(styles)(
     observer((props: StudiesListProps & WithStyles) => {
         const { studies, classes } = props;
         const studiesAsRows = Object.values(studies).map((study, index) => {
-            const { studyId, title, lastUpdated, createdAt } = study;
+            const { studyId, title, status, lastUpdated, createdAt } = study;
             const createdAtDate = moment(createdAt).format('MMM D, YYYY');
             const lastUpdatedDate = moment(lastUpdated).format('MMM D, YYYY');
             const expanded = getCurrentStudyId() === studyId;
@@ -69,6 +69,11 @@ export default withStyles(styles)(
                         <div className={classes.columnTitle}>
                             <Typography color="primary" variant="body2">
                                 {title}
+                            </Typography>
+                        </div>
+                        <div className={classes.columnTitle}>
+                            <Typography color="textSecondary" variant="body2">
+                                {status}
                             </Typography>
                         </div>
                         <div className={classes.columnDate}>
@@ -94,6 +99,9 @@ export default withStyles(styles)(
                     <ExpansionPanelSummary style={{ cursor: 'default', pointerEvents: 'none' }}>
                         <div className={classes.columnTitle}>
                             <Typography variant="subtitle2">Study</Typography>
+                        </div>
+                        <div className={classes.columnTitle}>
+                            <Typography variant="subtitle2">Status</Typography>
                         </div>
                         <div className={classes.columnDate}>
                             <Typography variant="subtitle2">Created</Typography>
