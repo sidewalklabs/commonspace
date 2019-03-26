@@ -163,6 +163,7 @@ const dataPointOne = {
     age: '15-24',
     posture: 'standing',
     data_point_id: '5ac9f389-51a9-444c-85c6-ddfe0d306a87',
+    activities: ['conversing', 'electronic_engagement'],
     date: moment().toISOString()
 };
 
@@ -171,6 +172,7 @@ const dataPointTwo = {
     age: '25-64',
     posture: 'lying',
     data_point_id: 'a878b48b-9c9f-46bc-8aa7-171c31135fd2',
+    activities: ['commercial', 'consuming'],
     date: moment().toISOString()
 };
 
@@ -179,6 +181,7 @@ const dataPointThree = {
     age: '65+',
     posture: 'sitting_informal',
     data_point_id: '77412f57-decb-4db7-8b68-77379c1ac01d',
+    activities: ['commercial', 'consuming'],
     date: moment().toISOString()
 };
 
@@ -193,7 +196,7 @@ export const SeaBassFishCountStudy: Study = {
     location: 'La Jolla Cove, San Diego',
     protocol_version: '1.0',
     type: 'stationary',
-    fields: ['gender', 'age', 'posture', 'notes'],
+    fields: ['gender', 'age', 'posture', 'notes', 'activities'],
     surveyors: [
         'mht@sidewalklabs.com',
         'interfaced@gmail.com',
