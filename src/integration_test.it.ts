@@ -298,6 +298,11 @@ describe('create/delete/modify studies', async () => {
             API_SERVER + `/api/surveys/${survey_id}/datapoints`,
             surveyorToken
         );
+
+        dataPoints.forEach(({ activities }) => {
+            expect(!activities || Array.isArray(activities)).toBeTruthy();
+        });
+
         expect(
             dataPoints.filter(
                 ({ data_point_id }) => data_point_id === SampleDataPointOne.data_point_id

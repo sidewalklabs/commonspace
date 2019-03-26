@@ -88,8 +88,8 @@ function processDataPointToValue(key, value): any[] | any {
         }
     } else if (key === 'activities') {
         const activities = value;
-        const activitesAsArr = javascriptArrayToPostgresArray(wrapInArray(activities));
-        return `${activitesAsArr}`;
+        const activitiesAsArr = javascriptArrayToPostgresArray(wrapInArray(activities));
+        return `${activitiesAsArr}`;
     } else if (validDataPointProperties.has(key)) {
         // if (value === null || value === undefined) {
         //     return '';
@@ -310,11 +310,10 @@ export async function getDataPointsCSV(
 export async function getDataPointsForSurvey(pool, surveyId) {
     const tablename = await getTablenameForSurveyId(pool, surveyId);
 
-    const query = `SELECT data_point_id, gender, age, mode, posture, activities, groups, object, creation_date, last_updated, ST_AsGeoJSON(location)::json as loc, notes
+    const query = `SELECT data_point_id, gender, age, mode, posture, array_to_json(activities) as activities, groups, object, creation_date, last_updated, ST_AsGeoJSON(location)::json as loc, notes
                    FROM ${tablename}
                    WHERE survey_id = $1`;
     const values = [surveyId];
-
     try {
         const res = await pool.query(query, values);
         return res.rows.map(r => {
