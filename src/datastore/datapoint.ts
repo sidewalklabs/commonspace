@@ -224,22 +224,51 @@ export async function getDataPointsForStudy(
         const dataPointsQuery = `SELECT ${fieldsAsColumns}
                                  FROM ${tablename}`;
         const { rows: datapoints } = await pool.query(dataPointsQuery);
-        rows.map(r => {
-            const {
-                survey_id: surveyId,
-                data_point_id: dataPointId,
-                creation_date: creationDate,
-                last_updated: lastUpdated
-            } = r;
-            return {
-                ...r,
-                surveyId,
-                dataPointId,
-                creationDate,
-                lastUpdated
-            };
-        });
         return datapoints as DataPoint[];
+    } catch (error) {
+        console.error(
+            `[fieldsQuery ${fieldsQuery}][fieldsValues ${JSON.stringify(fieldsValues)}] ${error}`
+        );
+    }
+}
+
+export async function getDataPointsCSV(
+    pool: Pool,
+    userId: string,
+    studyId: string
+): Promise<DataPoint & { zone: string }[]> {
+    const fieldsQuery = `SELECT study_id, fields, tablename
+                         FROM data_collection.study
+                         WHERE study_id = $1 and user_id =$2`;
+    const fieldsValues = [studyId, userId];
+    try {
+        const { rows, rowCount } = await pool.query(fieldsQuery, fieldsValues);
+        if (rowCount !== 1) {
+            throw new IdNotFoundError(studyId);
+        }
+
+        const { fields, tablename } = rows[0];
+        const formattedFields = fields.map(field => {
+            return field === 'activities' ? `array_to_json(activities) as activities` : field;
+        });
+        const tableRefName = 'tbl';
+        const fieldsAsColumns = ['data_point_id', 'creation_date', 'last_updated']
+            .concat(formattedFields)
+            .map(f => tableRefName + '.' + f)
+            .join(', ');
+        const dataPointsQuery = `SELECT ${fieldsAsColumns}, ST_AsGeoJSON(location)::json as coordinates, name_primary as zone
+                                 FROM ${tablename} ${tableRefName}
+                                 JOIN data_collection.survey sur
+                                 ON ${tableRefName}.survey_id = sur.survey_id
+                                 LEFT JOIN data_collection.location loc
+                                 ON sur.location_id = loc.location_id
+                                 `;
+        try {
+            const { rows: datapoints } = await pool.query(dataPointsQuery);
+            return datapoints as DataPoint & { zone: string }[];
+        } catch (error) {
+            console.error(`[query ${dataPointsQuery}] ${error}`);
+        }
     } catch (error) {
         console.error(
             `[fieldsQuery ${fieldsQuery}][fieldsValues ${JSON.stringify(fieldsValues)}] ${error}`

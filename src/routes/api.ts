@@ -13,7 +13,8 @@ import {
     addDataPointToSurveyNoStudyId,
     deleteDataPoint,
     getDataPointsForSurvey,
-    getDataPointsForStudy
+    getDataPointsForStudy,
+    getDataPointsCSV
 } from '../datastore/datapoint';
 import { StudyField, IdAlreadyExists } from '../datastore/utils';
 import {
@@ -327,7 +328,7 @@ router.get(
                     throw new UnauthorizedError(req.route, userId);
                     return;
                 }
-                const dataPoints = await getDataPointsForStudy(DbPool, userId, studyId);
+                const dataPoints = await getDataPointsForStudyWithZones(DbPool, userId, studyId);
                 const csv = json2csv(dataPoints);
                 res.set('Content-Type', 'text/csv');
                 res.status(200).send(csv);
