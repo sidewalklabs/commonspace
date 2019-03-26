@@ -1,6 +1,7 @@
 import camelcaseKeys from 'camelcase-keys';
 import cookieParser from 'cookie-parser';
 import express, { Request, Response } from 'express';
+import moment from 'moment';
 import { parse as json2csv } from 'json2csv';
 import passport from 'passport';
 import { NOT_NULL_VIOLATION, UNIQUE_VIOLATION } from 'pg-error-constants';
@@ -10,11 +11,12 @@ import { deleteLocation, IdNotFoundError } from '../datastore/location';
 import { return500OnError } from './utils';
 
 import {
-    addDataPointToSurveyNoStudyId,
+    updateDataPointForSurveyNoStudyId,
     deleteDataPoint,
     getDataPointsForSurvey,
     getDataPointsForStudy,
-    getDataPointsCSV
+    getDataPointsCSV,
+    addNewDataPointToSurveyNoStudyId
 } from '../datastore/datapoint';
 import { StudyField, IdAlreadyExists } from '../datastore/utils';
 import {
@@ -328,7 +330,7 @@ router.get(
                     throw new UnauthorizedError(req.route, userId);
                     return;
                 }
-                const dataPoints = await getDataPointsForStudyWithZones(DbPool, userId, studyId);
+                const dataPoints = await getDataPointsCSV(DbPool, userId, studyId);
                 const csv = json2csv(dataPoints);
                 res.set('Content-Type', 'text/csv');
                 res.status(200).send(csv);
@@ -395,7 +397,7 @@ async function saveDataPoint(req: Request, res: Response) {
         return;
     }
 
-    await addDataPointToSurveyNoStudyId(DbPool, surveyId, {
+    await updateDataPointForSurveyNoStudyId(DbPool, surveyId, {
         ...dataPointFromBody,
         data_point_id: dataPointId
     });
@@ -431,28 +433,19 @@ router.post(
                 return;
             }
             const datapoint = req.body;
-            datapoint.creation_date = datapoint.date;
-            datapoint.last_updated = datapoint.date;
-            await addDataPointToSurveyNoStudyId(DbPool, surveyId, datapoint);
-            res.status(200).send();
-        })
-    )
-);
-
-router.post(
-    '/surveys/:surveyId/datapoints/:dataPointId',
-    return500OnError(
-        return401OnUnauthorizedError(async (req: Request, res: Response) => {
-            const { user_id: userId } = req.user;
-            const { surveyId } = req.params;
-            const userCanAccessSurvey = await userIdIsSurveyor(DbPool, userId, surveyId);
-            if (!userCanAccessSurvey) {
-                throw new UnauthorizedError(req.route, userId);
-                return;
+            if (datapoint.creation_date && !datapoint.last_updated) {
+                datapoint.last_updated = datapoint.creation_date;
+            } else {
+                datapoint.date = datapoint.date ? datapoint.date : moment().toISOString();
+                datapoint.creation_date = datapoint.creation_date
+                    ? datapoint.creation_date
+                    : datapoint.date;
+                datapoint.last_updated = datapoint.last_updated
+                    ? datapoint.last_updated
+                    : datapoint.date;
             }
-            const datapoint = req.body as DataPoint;
-            await saveDataPoint(req, res);
-            res.status(200).send(datapoint);
+            await addNewDataPointToSurveyNoStudyId(DbPool, surveyId, datapoint);
+            res.status(200).send();
         })
     )
 );
@@ -467,7 +460,11 @@ router.put(
                 throw new UnauthorizedError(req.route, userId);
                 return;
             }
-            const datapoint = req.body as DataPoint;
+            const datapoint = req.body;
+            datapoint.date = datapoint.date ? datapoint.date : moment().toISOString();
+            datapoint.last_updated = datapoint.last_updated
+                ? datapoint.last_updated
+                : datapoint.date;
             await saveDataPoint(req, res);
             res.status(200).send(datapoint);
         })

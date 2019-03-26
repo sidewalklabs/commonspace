@@ -289,7 +289,7 @@ describe('create/delete/modify studies', async () => {
         })[0];
         const { survey_id } = surveyorSurvey;
         await postRest<DataPoint>(
-            API_SERVER + `/api/surveys/${survey_id}/datapoints/${SampleDataPointOne.data_point_id}`,
+            API_SERVER + `/api/surveys/${survey_id}/datapoints`,
             SampleDataPointOne,
             surveyorToken
         );
@@ -305,7 +305,22 @@ describe('create/delete/modify studies', async () => {
         ).toBeTruthy();
     });
 
-    test('reset the surveyors', async () => {
+    test('saving the same datapoint id a second time should raise an error', async () => {
+        const surveyorSurvey = SeaBassFishCountStudy.surveys.filter(({ email }) => {
+            return email === surveyorUser.email;
+        })[0];
+        const { survey_id } = surveyorSurvey;
+
+        await expect(
+            postRest<DataPoint>(
+                API_SERVER + `/api/surveys/${survey_id}/datapoints`,
+                SampleDataPointOne,
+                surveyorToken
+            )
+        ).rejects.toThrowError();
+    });
+
+    test('remove the surveyor we have been using from the surveyors list', async () => {
         const surveyorSurvey = SeaBassFishCountStudy.surveys.filter(({ email }) => {
             return email === surveyorUser.email;
         })[0];

@@ -1,5 +1,6 @@
 import { Feature, FeatureCollection } from 'geojson';
 import { Study } from './routes/api_types';
+import moment from 'moment';
 import path from 'path';
 import dotenv from 'dotenv';
 
@@ -161,21 +162,24 @@ const dataPointOne = {
     gender: 'unknown',
     age: '15-24',
     posture: 'standing',
-    data_point_id: '5ac9f389-51a9-444c-85c6-ddfe0d306a87'
+    data_point_id: '5ac9f389-51a9-444c-85c6-ddfe0d306a87',
+    date: moment().toISOString()
 };
 
 const dataPointTwo = {
     gender: 'female',
     age: '25-64',
     posture: 'lying',
-    data_point_id: 'a878b48b-9c9f-46bc-8aa7-171c31135fd2'
+    data_point_id: 'a878b48b-9c9f-46bc-8aa7-171c31135fd2',
+    date: moment().toISOString()
 };
 
 const dataPointThree = {
     gender: 'male',
     age: '65+',
     posture: 'sitting_informal',
-    data_point_id: '77412f57-decb-4db7-8b68-77379c1ac01d'
+    data_point_id: '77412f57-decb-4db7-8b68-77379c1ac01d',
+    date: moment().toISOString()
 };
 
 export const SeaBassFishCountDataPoints = [dataPointOne, dataPointTwo, dataPointThree];
@@ -229,7 +233,7 @@ const lincolnMemorial: Feature = {
     },
     properties: {
         name: 'Lincoln Memorial',
-        location_id: '5bde4737-96e8-4fd6-8d5f-2c9e62c931ed'
+        location_id: lincolnMemorialConfig.locationId
     }
 };
 
@@ -265,7 +269,7 @@ const releasetheseabassWashingtonSurvey = {
     start_date: '2019-02-05T21:04:33.221Z',
     end_date: '2019-02-05T22:04:33.224Z',
     email: 'releasetheseabass@gmail.com',
-    location_id: 'cce59ff5-5751-4278-beeb-0b81784d1d8a',
+    location_id: reflectingPoolConfig.locationId,
     title: 'reflecting pool'
 };
 const sebastianWashingtonSurvey = {
@@ -275,7 +279,7 @@ const sebastianWashingtonSurvey = {
     start_date: '2019-02-05T21:05:55.523Z',
     end_date: '2019-02-05T22:05:55.523Z',
     email: 'sebastian@sidewalklabs.com',
-    location_id: 'cce59ff5-5751-4278-beeb-0b81784d1d8a',
+    location_id: lincolnMemorialConfig.locationId,
     title: 'lincoln memorial'
 };
 const pandanantaWashingtonSurvey = {
@@ -285,7 +289,7 @@ const pandanantaWashingtonSurvey = {
     start_date: '2019-02-05T21:05:56.559Z',
     end_date: '2019-02-05T22:05:56.559Z',
     email: 'pandananta@gmail.com',
-    location_id: 'cce59ff5-5751-4278-beeb-0b81784d1d8a',
+    location_id: lincolnMemorialConfig.locationId,
     title: 'lincoln memorial'
 };
 
@@ -316,7 +320,7 @@ export const SampleDataPointOne = {
     data_point_id: '8e6c8475-6812-41d0-ad27-3795b8897ea8',
     color: '#D10115',
     title: 'Person 2',
-    creation_date: '2019-03-02T03:24:56.954Z',
+    date: moment().toISOString(),
     gender: 'unknown',
     location: {
         type: 'Point',

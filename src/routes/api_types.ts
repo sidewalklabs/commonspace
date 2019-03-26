@@ -30,8 +30,8 @@ export interface Survey {
 
 export interface DataPoint {
     data_point_id: string; // UUID
-    created_at: string;
-    last_updated: string;
+    creation_date?: string;
+    last_updated?: string;
     gender?: string;
     age?: string;
     mode?: string;
