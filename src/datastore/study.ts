@@ -1,4 +1,4 @@
-import * as pg from 'pg';
+import pg, { QueryResult } from 'pg';
 import { FeatureCollection } from 'geojson';
 import { FOREIGN_KEY_VIOLATION, UNIQUE_VIOLATION } from 'pg-error-constants';
 
@@ -11,6 +11,7 @@ import {
     studyIdToTablename,
     StudyField
 } from './utils';
+import { string } from 'prop-types';
 
 export type StudyScale =
     | 'district'
@@ -314,16 +315,34 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
     }
 }
 
-export async function deleteUserFromSurveyors(pool: pg.Pool, userId: string): Promise<void> {
-    const query = `DELETE
-                   FROM data_collection.surveyors
-                   WHERE user_id = $1`;
+export async function removeUserFromAllSurveys(pool: pg.Pool, userId: string): Promise<void> {
     const values = [userId];
+    const addSentinelQuery = `INSERT INTO data_collection.surveyors (study_id, user_id)
+                              SELECT study_id, '00000000-0000-0000-0000-000000000001'
+                              FROM data_collection.surveyors
+                              WHERE user_id = $1
+                                  AND study_id NOT IN (
+                                      SELECT study_id
+                                      FROM data_collection.surveyors
+                                      WHERE user_id = '00000000-0000-0000-0000-000000000001'
+                                  )`;
+    const assignSurveysToSentinelQuery = `UPDATE data_collection.survey
+                                          SET user_id = '00000000-0000-0000-0000-000000000001'
+                                          WHERE user_id = $1`;
+    const removeUserFromSurveyors = `DELETE FROM data_collection.surveyors
+                                     WHERE user_id = $1`;
+    const queries = [addSentinelQuery, assignSurveysToSentinelQuery, removeUserFromSurveyors];
+
     try {
-        await pool.query(query, values);
-        return;
+        await queries
+            .map(q => pool.query(q, values))
+            .reduce(async (chain, f) => {
+                const xs = await chain;
+                const x = await f;
+                return [...xs, x];
+            }, Promise.resolve([] as QueryResult[]));
     } catch (error) {
-        console.error(`[sql ${query}][values ${JSON.stringify(values)}] ${error}`);
+        console.error(`[sql ${queries}][values ${JSON.stringify(values)}] ${error}`);
         throw error;
     }
 }
@@ -579,6 +598,19 @@ export async function getSurveyorsForStudy(pool: pg.Pool, studyId: string): Prom
     try {
         const { rows } = await pool.query(query, values);
         return rows.map(({ email }) => email);
+    } catch (error) {
+        console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
+        throw error;
+    }
+}
+
+async function removeUserFromAllTheirSurveys(pool: pg.Pool, userId: string): Promise<void> {
+    const query = `UPDATE data_collection.survey
+                   SET user_id = '00000000-0000-0000-0000-000000000001'
+                   WHERE user_id = $1`;
+    const values = [userId];
+    try {
+        await pool.query(query, values);
     } catch (error) {
         console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
         throw error;

@@ -19,7 +19,7 @@ import { StudyField, IdAlreadyExists } from '../datastore/utils';
 import {
     createStudy,
     deleteStudy,
-    deleteUserFromSurveyors,
+    removeUserFromAllSurveys,
     giveUserStudyAccess,
     returnStudiesForAdmin,
     returnStudiesUserIsAssignedTo,
@@ -85,7 +85,7 @@ router.delete(
     '/user',
     return500OnError(async (req: Request, res: Response) => {
         const { user_id: userId } = req.user;
-        await deleteUserFromSurveyors(DbPool, userId);
+        await removeUserFromAllSurveys(DbPool, userId);
         await deleteStudiesForUserId(DbPool, userId);
         await deleteUser(DbPool, userId);
         res.status(200).send();
