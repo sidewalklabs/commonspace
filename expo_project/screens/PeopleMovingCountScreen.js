@@ -7,7 +7,7 @@ import moment from 'moment';
 import * as uuid from 'uuid';
 import Selectable from '../components/Selectable';
 import Theme from '../constants/Theme';
-import { deleteDataPoint, getDataPointsforSurvey, saveDataPoint } from '../lib/commonsClient';
+import { deleteDataPoint, getDataPointsforSurvey, saveNewDataPoint } from '../lib/commonsClient';
 import QUESTION_CONFIG from '../config/peopleMovingQuestions';
 import { getRandomIconColor } from '../utils/color';
 
@@ -177,7 +177,7 @@ class PeopleMovingCountScreen extends React.Component {
     const oldMarkers = this.state.markers;
     this.setState({ markers: markersCopy });
     if (surveyId !== 'DEMO') {
-      saveDataPoint(token, surveyId, marker).catch(error => {
+      saveNewDataPoint(token, surveyId, marker).catch(error => {
         Alert.alert('Error', error.message, [{ text: 'OK' }]);
         this.setState({ markers: oldMarkers });
       });

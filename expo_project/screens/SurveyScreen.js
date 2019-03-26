@@ -23,7 +23,7 @@ import Layout from '../constants/Layout';
 import Theme from '../constants/Theme';
 import NoteModal from '../components/NoteModal';
 import MarkerMenu from '../components/MarkerMenu';
-import { deleteDataPoint, getDataPointsforSurvey, saveDataPoint } from '../lib/commonsClient';
+import { deleteDataPoint, getDataPointsforSurvey, saveNewDataPoint, updateDataPoint } from '../lib/commonsClient';
 import QUESTION_CONFIG from '../config/questions';
 
 import { getRandomIconColor } from '../utils/color';
@@ -243,9 +243,8 @@ class SurveyScreen extends React.Component {
       });
 
       if (surveyId !== 'DEMO') {
-        saveDataPoint(token, surveyId, marker).catch(error => {
+        updateDataPoint(token, surveyId, marker).catch(error => {
           Alert.alert('Error', error.message, [{ text: 'OK' }]);
-
           marker[key] = oldMarkerValue;
           this.setState({
             markers: markersCopy,
@@ -359,14 +358,14 @@ class SurveyScreen extends React.Component {
         dataPointId,
         color,
         title,
-        date: date.toISOString(),
+        creationDate: date.toISOString(),
       };
 
       markersCopy.push(duplicateMarker);
       this.setState({ markers: markersCopy, activeMarkerId: dataPointId }, this.resetDrawer);
 
       if (surveyId !== 'DEMO') {
-        saveDataPoint(this.state.token, surveyId, duplicateMarker).catch(error => {
+        saveNewDataPoint(this.state.token, surveyId, duplicateMarker).catch(error => {
           Alert.alert('Error', error.message, [{ text: 'OK' }]);
           markersCopy.pop();
           this.setState({
@@ -400,12 +399,12 @@ class SurveyScreen extends React.Component {
       location,
       color,
       title,
-      date: date.toISOString(),
+      creationDate: date.toISOString(),
     };
 
     this.setState({ markers: [...markers, marker], activeMarkerId: dataPointId }, this.resetDrawer);
     if (surveyId !== 'DEMO') {
-      saveDataPoint(this.state.token, surveyId, marker).catch(error => {
+      saveNewDataPoint(this.state.token, surveyId, marker).catch(error => {
         Alert.alert('Error', error.message, [{ text: 'OK' }]);
         this.setState({ markers, activeMarkerId: oldActiveMarkerId });
       });

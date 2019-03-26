@@ -153,11 +153,12 @@ function processKeyAndValues(dataPoint) {
     });
 }
 
-function transformToPostgresInsert(surveyId: string, dataPoint) {
-    const { data_point_id } = dataPoint;
+function transformToPostgresUpdate(surveyId: string, dataPoint) {
+    const { data_point_id, last_updated } = dataPoint;
     const dataPointForPostgres = deleteNonStudyFields(dataPoint);
     dataPointForPostgres.survey_id = surveyId;
     dataPointForPostgres.data_point_id = data_point_id;
+    dataPointForPostgres.last_updated = last_updated;
     const { columns, values, parameterBindings } = processKeyAndValues(dataPointForPostgres);
     const insert_statement = `(${columns.join(', ')}) VALUES (${parameterBindings.join(', ')})`;
     const query = `${insert_statement}
@@ -166,10 +167,40 @@ function transformToPostgresInsert(surveyId: string, dataPoint) {
     return { query, values };
 }
 
-export async function addDataPointToSurveyNoStudyId(pool: Pool, surveyId: string, dataPoint: any) {
+function transformToPostgresInsert(surveyId: string, dataPoint) {
+    const { data_point_id, creation_date, last_updated } = dataPoint;
+    const dataPointForPostgres = deleteNonStudyFields(dataPoint);
+    dataPointForPostgres.survey_id = surveyId;
+    dataPointForPostgres.data_point_id = data_point_id;
+    dataPointForPostgres.last_updated = last_updated;
+    dataPointForPostgres.creation_date = creation_date;
+    const { columns, values, parameterBindings } = processKeyAndValues(dataPointForPostgres);
+    const query = `(${columns.join(', ')}) VALUES (${parameterBindings.join(', ')})`;
+    return { query, values };
+}
+
+export async function addNewDataPointToSurveyNoStudyId(pool, surveyId: string, dataPoint: any) {
     const tablename = await getTablenameForSurveyId(pool, surveyId);
     const dataPointWithSurveyId = { ...dataPoint, survey_id: surveyId };
     let { query, values } = transformToPostgresInsert(surveyId, dataPointWithSurveyId);
+    query = `INSERT INTO ${tablename}
+             ${query}`;
+    try {
+        await pool.query(query, values);
+    } catch (error) {
+        console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
+        throw error;
+    }
+}
+
+export async function updateDataPointForSurveyNoStudyId(
+    pool: Pool,
+    surveyId: string,
+    dataPoint: any
+) {
+    const tablename = await getTablenameForSurveyId(pool, surveyId);
+    const dataPointWithSurveyId = { ...dataPoint, survey_id: surveyId };
+    let { query, values } = transformToPostgresUpdate(surveyId, dataPointWithSurveyId);
     query = `INSERT INTO ${tablename}
              ${query}`;
     try {

@@ -19,7 +19,7 @@ import Banner from '../components/Banner';
 import PersonIcon from '../components/PersonIcon';
 import MarkerMenu from '../components/MarkerMenu';
 import BackArrow from '../components/BackArrow';
-import { deleteDataPoint, saveDataPoint } from '../lib/commonsClient';
+import { deleteDataPoint, updateDataPoint } from '../lib/commonsClient';
 
 class MarkerRow extends React.Component {
   constructor(props) {
@@ -180,7 +180,7 @@ class MarkerListScreen extends React.Component {
       });
 
       if (surveyId !== 'DEMO') {
-        saveDataPoint(token, surveyId, marker).catch(error => {
+        updateDataPoint(token, surveyId, marker).catch(error => {
           Alert.alert(
             'Error',
             'Something went wrong while updating marker. Please try again later.',
