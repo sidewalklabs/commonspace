@@ -14,7 +14,7 @@ import { AppAuth, Icon, WebBrowser } from 'expo';
 import { SafeAreaView } from 'react-navigation';
 import Theme from '../constants/Theme';
 import urls from '../config/urls';
-import { getOauthClientId } from '../lib/commonsClient';
+import { logOut, getOauthClientId } from '../lib/commonsClient';
 
 class DrawerNavigatorScreen extends React.Component {
   state = {
@@ -47,6 +47,8 @@ class DrawerNavigatorScreen extends React.Component {
         Alert.alert(error.name, error.message, [{ text: 'OK' }]);
       }
     }
+    const token = await AsyncStorage.getItem('token');
+    await logOut(token);
     await AsyncStorage.clear();
     this.props.navigation.navigate('Auth');
   };
@@ -56,9 +58,6 @@ class DrawerNavigatorScreen extends React.Component {
   render() {
     const { loading, email } = this.state;
     const { navigation, activeItemKey } = this.props;
-    // TODO: Swap out links for the real ones
-    // TODO: make sure the navigation stack isn't growing infinitely
-
     return (
       <View style={styles.container}>
         <SafeAreaView style={styles.container} forceInset={{ top: 'always', horizontal: 'never' }}>
