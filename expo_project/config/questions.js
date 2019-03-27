@@ -67,7 +67,7 @@ export default [
   {
     questionKey: 'object',
     questionLabel: 'Object',
-    questionType: 'multiselect',
+    questionType: 'select',
     options: [
       { value: 'animal', label: 'Animal' },
       { value: 'bag_carried', label: 'Carrying Bag' },
