@@ -23,7 +23,12 @@ import Layout from '../constants/Layout';
 import Theme from '../constants/Theme';
 import NoteModal from '../components/NoteModal';
 import MarkerMenu from '../components/MarkerMenu';
-import { deleteDataPoint, getDataPointsforSurvey, saveNewDataPoint, updateDataPoint } from '../lib/commonsClient';
+import {
+  deleteDataPoint,
+  getDataPointsforSurvey,
+  saveNewDataPoint,
+  updateDataPoint,
+} from '../lib/commonsClient';
 import QUESTION_CONFIG from '../config/questions';
 
 import { getRandomIconColor } from '../utils/color';

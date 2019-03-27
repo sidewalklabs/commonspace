@@ -1,4 +1,4 @@
-const COMMONSPACE_URL = 'https://commons-staging.sidewalklabs.com';
+const COMMONSPACE_URL = 'https://commonspace.sidewalklabs.com';
 
 export default {
   homepage: `${COMMONSPACE_URL}/about?webview=true`,

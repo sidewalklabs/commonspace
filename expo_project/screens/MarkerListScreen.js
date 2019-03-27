@@ -49,8 +49,24 @@ class MarkerRow extends React.Component {
     this.setState({ collapsibleContentHeight, collapsibleCurrentHeight: 0 });
   };
 
+  onSelectPress = (dataPointId, key, value) => {
+    this.props.onUpdate(dataPointId, key, value);
+  };
+
+  onMultiselectPress = (dataPointId, key, value, selectedValue) => {
+    const valueArray = selectedValue || [];
+    // if value is already selected, deselect it.
+    // else, select it
+    if (_.includes(valueArray, value)) {
+      _.pull(valueArray, value);
+    } else {
+      valueArray.push(value);
+    }
+    this.props.onUpdate(dataPointId, key, valueArray);
+  };
+
   render() {
-    const { marker, expanded, onToggle, questions, onMenuButtonPress, onUpdate } = this.props;
+    const { marker, expanded, onToggle, questions, onMenuButtonPress } = this.props;
     const { color, title, creationDate, dataPointId } = marker;
     const dateLabel = moment(creationDate).format('HH:mm');
     return (
@@ -106,12 +122,15 @@ class MarkerRow extends React.Component {
                 !this.state.collapsibleContentHeight ? this.setCollapsibleContentHeight : undefined
               }>
               {_.map(questions, question => {
-                const { questionKey, questionLabel, options } = question;
+                const { questionKey, questionLabel, questionType, options } = question;
+                const selectedValue = marker[questionKey];
                 return (
                   <Selectable
                     key={questionKey}
                     onSelectablePress={(value, buttonHeight) => {
-                      onUpdate(dataPointId, questionKey, value);
+                      questionType === 'multiselect'
+                        ? this.onMultiselectPress(dataPointId, questionKey, value, selectedValue)
+                        : this.onSelectPress(dataPointId, questionKey, value);
                     }}
                     selectedValue={marker[questionKey]}
                     selectedColor={color}
