@@ -7,7 +7,7 @@ import passport from 'passport';
 import { NOT_NULL_VIOLATION, UNIQUE_VIOLATION } from 'pg-error-constants';
 import uuid from 'uuid';
 
-import { deleteLocation, IdNotFoundError } from '../datastore/location';
+import { deleteLocation } from '../datastore/location';
 import { return500OnError } from './utils';
 
 import {
@@ -18,7 +18,7 @@ import {
     getDataPointsCSV,
     addNewDataPointToSurveyNoStudyId
 } from '../datastore/datapoint';
-import { StudyField, IdAlreadyExists } from '../datastore/utils';
+import { StudyField, IdAlreadyExists, IdDoesNotExist } from '../datastore/utils';
 import {
     createStudy,
     deleteStudy,
@@ -615,7 +615,7 @@ router.delete(
         try {
             await deleteLocation(DbPool, locationId);
         } catch (error) {
-            if (error instanceof IdNotFoundError) {
+            if (error instanceof IdDoesNotExist) {
                 res.status(404).end();
                 return;
             }
