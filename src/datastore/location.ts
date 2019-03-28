@@ -1,5 +1,6 @@
 import * as pg from 'pg';
 import { Polygon } from 'geojson';
+import { IdDoesNotExist } from './utils';
 
 export interface Location {
     locationId: string;
@@ -9,8 +10,6 @@ export interface Location {
     subdivision?: string;
     geometry: Polygon;
 }
-
-export class IdNotFoundError extends Error {}
 
 export async function createLocation(pool: pg.Pool, location: Location): Promise<Location> {
     const {
@@ -42,7 +41,7 @@ export async function deleteLocation(pool: pg.Pool, locationId: string): Promise
     try {
         const { rowCount } = await pool.query(query, values);
         if (rowCount === 0) {
-            throw new IdNotFoundError(`location for location_id ${locationId} not found`);
+            throw new IdDoesNotExist(`location for location_id ${locationId} not found`);
         }
     } catch (error) {
         console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);

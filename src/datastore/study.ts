@@ -520,6 +520,28 @@ export async function createStudy(
     return { createdAt, lastUpdated };
 }
 
+export async function getFieldsAndTablenameForStudy(
+    pool: pg.Pool,
+    studyId: string,
+    userId: string
+): Promise<{ fields: string[]; tablename: string }> {
+    const query = `SELECT study_id, fields, tablename
+                   FROM data_collection.study
+                   WHERE study_id = $1 and user_id =$2`;
+    const values = [studyId, userId];
+    try {
+        const { rows, rowCount } = await pool.query(query, values);
+        if (rowCount !== 1) {
+            throw new IdDoesNotExist(studyId);
+        }
+
+        const { fields, tablename } = rows[0];
+        return { fields, tablename };
+    } catch (error) {
+        console.error(`[query ${query}][values ${JSON.stringify(values)}]: ${error}`);
+    }
+}
+
 export async function updateStudy(pool: pg.Pool, study: Study) {
     const {
         studyId,
