@@ -1,12 +1,12 @@
 import React from 'react';
-import { Alert, AsyncStorage, Image, TouchableHighlight, Text, View } from 'react-native';
+import { Alert, AsyncStorage, Image, Platform, TouchableHighlight, Text, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
-import { AppAuth, WebBrowser } from 'expo';
+import { AppAuth, Constants, WebBrowser } from 'expo';
 import color from 'color';
 import SharedGradient from '../components/SharedGradient';
 import authStyles from '../stylesheets/auth';
 import urls from '../config/urls';
-import { getOauthClientId, logInUserWithGoogleAccessToken } from '../lib/commonsClient';
+import { logInUserWithGoogleAccessToken } from '../lib/commonsClient';
 
 class AuthScreen extends React.Component {
   static navigationOptions = {
@@ -22,7 +22,10 @@ class AuthScreen extends React.Component {
       // First use string interpolation to flatten, since OAuthRedirect is an array on iOS, and a string on android.
       const lowercaseRedirect = `${AppAuth.OAuthRedirect}`.toLowerCase();
       const redirectUrl = `${lowercaseRedirect}:/oauthredirect`;
-      const clientId = getOauthClientId();
+
+      const { appOwnership, manifest } = Constants;
+      const { googleAuthClientId } = manifest.extra;
+      const clientId = googleAuthClientId[appOwnership][Platform.OS];
       const { accessToken } = await AppAuth.authAsync({
         issuer: 'https://accounts.google.com',
         scopes: ['email'],
