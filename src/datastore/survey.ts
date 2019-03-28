@@ -2,6 +2,7 @@ import { Pool } from 'pg';
 import { IdAlreadyExists } from './utils';
 import { UNIQUE_VIOLATION } from 'pg-error-constants';
 import { findUser } from './user';
+import { IdDoesNotExist } from './utils';
 
 export interface Survey {
     studyId: string;
@@ -133,6 +134,32 @@ export async function updateSurvey(pool: Pool, survey: Survey) {
         console.error(
             `[query: ${updateUserQuery}][values: ${JSON.stringify(updateUserValues)}] ${error}`
         );
+    }
+}
+
+// userId is optional, incase you want to force some authorization here
+export async function getFieldsAndTablenameForSurvey(
+    pool: Pool,
+    surveyId: string,
+    userId?: string
+) {
+    let query = `SELECT tablename, fields
+                 FROM data_collection.study stu
+                 JOIN data_collection.survey sur
+                 ON stu.study_id = sur.study_id
+                 WHERE sur.survey_id = $1`;
+    query = userId ? query + ' and $2' : query;
+    const values = userId ? [surveyId, userId] : [surveyId];
+    try {
+        const { rowCount, rows } = await pool.query(query, values);
+        if (rowCount !== 1) {
+            throw new IdDoesNotExist(surveyId);
+        }
+        const { fields, tablename } = rows[0];
+        return { fields, tablename };
+    } catch (error) {
+        console.error(`[query: ${query}][values: ${JSON.stringify(values)}] ${error}`);
+        throw error;
     }
 }
 

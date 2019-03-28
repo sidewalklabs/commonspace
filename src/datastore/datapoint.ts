@@ -1,6 +1,8 @@
 import { Pool } from 'pg';
 import { javascriptArrayToPostgresArray, studyIdToTablename, StudyField } from './utils';
-import { IdNotFoundError } from './location';
+import { IdDoesNotExist } from './utils';
+import { getFieldsAndTablenameForStudy } from './study';
+import { getFieldsAndTablenameForSurvey } from './survey';
 
 interface DataPointPg {
     survey_id: string;
@@ -14,7 +16,7 @@ interface DataPointPg {
     activities?: string[];
     groups?: string;
     object?: string;
-    location?: string;
+    location?: any;
     notes?: string;
 }
 
@@ -251,31 +253,20 @@ export async function getDataPointsForStudy(
     userId: string,
     studyId: string
 ): Promise<DataPoint[]> {
-    const fieldsQuery = `SELECT study_id, fields, tablename
-                         FROM data_collection.study
-                         WHERE study_id = $1 and user_id =$2`;
-    const fieldsValues = [studyId, userId];
+    const { fields, tablename } = await getFieldsAndTablenameForStudy(pool, studyId, userId);
+    const formattedFields = fields.map(field => {
+        return field === 'activities' ? `array_to_json(activities) as activities` : field;
+    });
+    const fieldsAsColumns = ['data_point_id', 'creation_date', 'last_updated']
+        .concat(formattedFields)
+        .join(', ');
+    const query = `SELECT ${fieldsAsColumns}
+                   FROM ${tablename}`;
     try {
-        const { rows, rowCount } = await pool.query(fieldsQuery, fieldsValues);
-        if (rowCount !== 1) {
-            throw new IdNotFoundError(studyId);
-        }
-
-        const { fields, tablename } = rows[0];
-        const formattedFields = fields.map(field => {
-            return field === 'activities' ? `array_to_json(activities) as activities` : field;
-        });
-        const fieldsAsColumns = ['data_point_id', 'creation_date', 'last_updated']
-            .concat(formattedFields)
-            .join(', ');
-        const dataPointsQuery = `SELECT ${fieldsAsColumns}
-                                 FROM ${tablename}`;
-        const { rows: datapoints } = await pool.query(dataPointsQuery);
+        const { rows: datapoints } = await pool.query(query);
         return datapoints as DataPoint[];
     } catch (error) {
-        console.error(
-            `[fieldsQuery ${fieldsQuery}][fieldsValues ${JSON.stringify(fieldsValues)}] ${error}`
-        );
+        console.error(`[query ${query}] ${error}`);
     }
 }
 
@@ -284,51 +275,56 @@ export async function getDataPointsCSV(
     userId: string,
     studyId: string
 ): Promise<DataPointPg & { zone: string }[]> {
-    const fieldsQuery = `SELECT study_id, fields, tablename
-                         FROM data_collection.study
-                         WHERE study_id = $1 and user_id =$2`;
-    const fieldsValues = [studyId, userId];
-    try {
-        const { rows, rowCount } = await pool.query(fieldsQuery, fieldsValues);
-        if (rowCount !== 1) {
-            throw new IdNotFoundError(studyId);
-        }
-
-        const { fields, tablename } = rows[0];
-        const tableRefName = 'tbl';
-        const fieldsAsColumns = ['data_point_id', 'creation_date', 'last_updated']
-            .concat(fields)
-            .map(field => {
-                if (field === 'activities') {
-                    return `array_to_json(${tableRefName}.activities) as activities`;
-                }
+    const { fields, tablename } = await getFieldsAndTablenameForStudy(pool, studyId, userId);
+    const tableRefName = 'tbl';
+    // "default" columns that we want to return for every data point
+    // location is a weird one, because we usually want it, but sometimes zone data might be what's important and super granualarity no longer matters
+    const selectColumns = ['data_point_id', 'creation_date', 'last_updated', 'location']
+        .concat(fields)
+        .map(field => {
+            // we need postgres to serialize some of data so we can work with it
+            if (field === 'activities') {
+                return `array_to_json(${tableRefName}.activities) as activities`;
+            } else if (field === 'location') {
+                return `ST_AsGeoJSON(${tableRefName}.location)::json as coordinates`;
+            } else {
                 return tableRefName + '.' + field;
-            })
-            .join(', ');
-        const dataPointsQuery = `SELECT ${fieldsAsColumns}, ST_AsGeoJSON(location)::json as coordinates, name_primary as zone
-                                 FROM ${tablename} ${tableRefName}
-                                 JOIN data_collection.survey sur
-                                 ON ${tableRefName}.survey_id = sur.survey_id
-                                 LEFT JOIN data_collection.location loc
-                                 ON sur.location_id = loc.location_id
-                                 `;
-        try {
-            const { rows: datapoints } = await pool.query(dataPointsQuery);
-            return datapoints as DataPointPg & { zone: string }[];
-        } catch (error) {
-            console.error(`[query ${dataPointsQuery}] ${error}`);
-        }
+            }
+        })
+        .concat([
+            'name_primary as zone' // this column comes from the location table
+        ])
+        .join(', ');
+    const dataPointsQuery = `SELECT ${selectColumns}
+                             FROM ${tablename} ${tableRefName}
+                             JOIN data_collection.survey sur
+                             ON ${tableRefName}.survey_id = sur.survey_id
+                             LEFT JOIN data_collection.location loc
+                             ON sur.location_id = loc.location_id`;
+    try {
+        const { rows: datapoints } = await pool.query(dataPointsQuery);
+        return datapoints as DataPointPg & { zone: string }[];
     } catch (error) {
-        console.error(
-            `[fieldsQuery ${fieldsQuery}][fieldsValues ${JSON.stringify(fieldsValues)}] ${error}`
-        );
+        console.error(`[query ${dataPointsQuery}] ${error}`);
     }
 }
 
-export async function getDataPointsForSurvey(pool, surveyId) {
-    const tablename = await getTablenameForSurveyId(pool, surveyId);
-
-    const query = `SELECT data_point_id, gender, age, mode, posture, array_to_json(activities) as activities, groups, object, creation_date, last_updated, ST_AsGeoJSON(location)::json as loc, notes
+export async function getDataPointsForSurvey(pool, surveyId): Promise<DataPointPg[]> {
+    const { fields, tablename } = await getFieldsAndTablenameForSurvey(pool, surveyId);
+    const selectColumns = ['data_point_id', 'creation_date', 'last_updated', 'location']
+        .concat(fields)
+        .map(field => {
+            // we want postgres to serialize subset of our data so we can return propery json
+            if (field === 'activities') {
+                return `array_to_json(activities) as activities`;
+            } else if (field === 'location') {
+                return `ST_AsGeoJSON(location)::json as loc`;
+            } else {
+                return field;
+            }
+        })
+        .join(',');
+    const query = `SELECT ${selectColumns}
                    FROM ${tablename}
                    WHERE survey_id = $1`;
     const values = [surveyId];
@@ -336,11 +332,10 @@ export async function getDataPointsForSurvey(pool, surveyId) {
         const res = await pool.query(query, values);
         return res.rows.map(r => {
             const { loc: location } = r;
-            delete r['loc'];
             return {
                 ...r,
                 location
-            };
+            } as DataPointPg;
         });
     } catch (error) {
         console.error(`[sql ${query}][values ${JSON.stringify(values)}] ${error}`);
