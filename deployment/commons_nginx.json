@@ -1,0 +1,108 @@
+{
+  "variables": {
+    "container_image_name": "us.gcr.io/nyc-tlc-1225/commons-nginx",
+    "version": "v0.0.1",
+    "CLIENT_ENV": "development",
+    "NODE_ENV": "development",
+    "gcloud_json_key": "",
+    "TILE_SERVER_URL": "http://{s}.tile.osm.org/{z}/{x}/{y}.png",
+    "GOOGLE_AUTH_CLIENT_ID": "NEEDS_ANY_VALUE_TO_ALLOW_WEBPACK_TO_COMPILE"
+  },
+  "builders": [
+    {
+      "type": "docker",
+      "image": "node:10.13",
+      "commit": true,
+      "changes": [
+        "EXPOSE 80 80"
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": "mkdir commons"
+    },
+    {
+      "type": "file",
+      "source": ".babelrc",
+      "destination": "commons/.babelrc"
+    },
+    {
+      "type": "file",
+      "source": "src/",
+      "destination": "commons/src"
+    },
+    {
+      "type": "file",
+      "source": "css/",
+      "destination": "commons/css"
+    },
+    {
+      "type": "file",
+      "source": "assets/",
+      "destination": "commons/assets"
+    },
+    {
+      "type": "file",
+      "source": "package.json",
+      "destination": "commons/package.json"
+    },
+    {
+      "type": "file",
+      "source": "index.html",
+      "destination": "commons/index.html"
+    },
+    {
+      "type": "file",
+      "source": "googleaa1e3a1a700a74d0.html",
+      "destination": "commons/googleaa1e3a1a700a74d0.html"
+    },
+    {
+      "type": "file",
+      "source": "yarn.lock",
+      "destination": "commons/yarn.lock"
+    },
+    {
+      "type": "file",
+      "source": "admin.webpack.config.js",
+      "destination": "commons/webpack.config.js"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "cd commons/",
+	"npm install -g -s --no-progress yarn",
+	"yarn",
+        "yarn build --env.GOOGLE_AUTH_CLIENT_ID={{ user `GOOGLE_AUTH_CLIENT_ID` }} --env.TILE_SERVER_URL={{ user `TILE_SERVER_URL` }} --env.CLIENT_ENV={{ user `CLIENT_ENV` }} --mode={{ user `NODE_ENV` }}"
+      ]
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "apt-get update",
+        "apt-get install nginx -y"  
+      ]
+    },
+    {
+      "type": "file",
+      "source": "deployment/nginx.conf",
+      "destination": "/commons.nginx.conf"
+    }
+  ],
+  "post-processors": [
+    [
+      {
+        "type": "docker-tag",
+        "repository": "{{user `container_image_name`}}",
+        "tag": "{{user `version`}}"
+      }, {
+        "type": "docker-push",
+        "login": true,
+        "login_username": "_json_key",
+        "login_password": "{{user `gcloud_json_key`}}",
+        "login_server": "https://gcr.io"
+      }
+    ]
+  ]
+}

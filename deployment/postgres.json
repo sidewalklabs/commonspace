@@ -1,0 +1,45 @@
+{
+  "variables": {
+    "pg_pass": "postgres",
+    "db_name": "dataCollect",
+    "pg_user": "postgres",
+    "sql_init_file": "init.sql"
+  },
+  "builders": [
+    {
+      "type": "docker",
+      "image": "mdillon/postgis:9.6",
+      "commit": true,
+      "changes": [
+        "ENV POSTGRES_PASSWORD {{ user `pg_pass` }}",
+        "ENV POSTGRES_USER {{ user `pg_user` }}",
+        "ENV POSTGRES_DB {{ user `db_name` }}",
+        "EXPOSE 5431 5431"
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "{{ user `sql_init_file` }}",
+      "destination": "/docker-entrypoint-initdb.d/init.sql"
+    },
+    {
+      "type": "shell",
+      "inline": "chown postgres /docker-entrypoint-initdb.d/init.sql"
+    },
+    {
+      "type": "shell",
+      "inline": "/docker-entrypoint.sh"
+    }
+  ],
+  "post-processors": [
+    [
+      {
+        "type": "docker-tag",
+        "repository": "swl-eng/commons-postgres",
+        "tag": "v0.0.1"
+      }
+    ]
+  ]
+}

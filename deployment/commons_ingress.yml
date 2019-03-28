@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: commons-traefik
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    #traefik.ingress.kubernetes.io/frontend-entry-points: http, https
+
+spec:
+  rules:
+  - host: commons-staging.sidewalklabs.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: commons-nginx-service
+          servicePort: http
+      - path: /api
+        backend:
+          serviceName: commons-server-service
+          servicePort: node
+      - path: /auth
+        backend:
+          serviceName: commons-server-service
+          servicePort: node
+  tls:
+    - secretName: sidewalklabs.com-wildcard-cert-2019
