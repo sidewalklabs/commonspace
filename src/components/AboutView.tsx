@@ -13,7 +13,8 @@ const styles = theme => ({
             3}px`,
         [theme.breakpoints.up('md')]: {
             width: theme.breakpoints.values.md
-        }
+        },
+        overflowWrap: 'break-word'
     },
     blockquote: {
         borderLeft: `2px solid ${theme.palette.primary.main}20`,

@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   AsyncStorage,
   Image,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,11 +11,11 @@ import {
   View,
 } from 'react-native';
 import { Divider } from 'react-native-paper';
-import { AppAuth, Icon, WebBrowser } from 'expo';
+import { AppAuth, Constants, Icon, WebBrowser } from 'expo';
 import { SafeAreaView } from 'react-navigation';
 import Theme from '../constants/Theme';
 import urls from '../config/urls';
-import { logOut, getOauthClientId } from '../lib/commonsClient';
+import { logOut } from '../lib/commonsClient';
 
 class DrawerNavigatorScreen extends React.Component {
   state = {
@@ -32,7 +33,10 @@ class DrawerNavigatorScreen extends React.Component {
     if (accessToken) {
       // If user logged in with google oauth, revoke the access token
       try {
-        const clientId = getOauthClientId();
+        const { appOwnership, manifest } = Constants;
+        const { googleAuthClientId } = manifest.extra;
+        const clientId = googleAuthClientId[appOwnership][Platform.OS];
+
         await AppAuth.revokeAsync(
           {
             issuer: 'https://accounts.google.com',
