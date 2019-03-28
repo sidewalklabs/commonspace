@@ -118,16 +118,15 @@ export async function updateSurvey(pool: Pool, survey: Survey) {
     values = values.concat([title, locationId, startDate, endDate]);
     try {
         await pool.query(query, values);
-        return;
     } catch (error) {
         console.error(`[query: ${query}][values: ${JSON.stringify(values)}] ${error}`);
         throw error;
     }
-    const { user_id: userId } = await findUser(pool, email);
-    const updateUserQuery = `UPDATE data_collection
+    const user = email ? (await findUser(pool, email)).user_id : null;
+    const updateUserQuery = `UPDATE data_collection.survey
                              SET user_id = $1
-                             WHERE survey_id = $1`;
-    const updateUserValues = [userId, surveyId];
+                             WHERE survey_id = $2`;
+    const updateUserValues = [user, surveyId];
     try {
         await pool.query(updateUserQuery, updateUserValues);
     } catch (error) {

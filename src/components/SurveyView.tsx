@@ -153,18 +153,19 @@ const SurveyObjectToTableRow = observer(
                     <TextField
                         select
                         fullWidth
-                        error={!survey.email}
                         value={survey.email || ''}
                         onChange={e =>
                             (applicationState.currentStudy.surveys[surveyId].email = e.target.value)
                         }
                         margin="normal"
                     >
-                        {applicationState.currentStudy.surveyors.map(email => (
-                            <MenuItem key={email} value={email}>
-                                {email}
-                            </MenuItem>
-                        ))}
+                        {[<MenuItem key={''} value={''} />].concat(
+                            applicationState.currentStudy.surveyors.map(email => (
+                                <MenuItem key={email} value={email}>
+                                    {email}
+                                </MenuItem>
+                            ))
+                        )}
                     </TextField>
                 </TableCell>
             </TableRow>

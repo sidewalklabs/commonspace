@@ -48,6 +48,10 @@ export interface StudiesListProps {
 export default withStyles(styles)(
     observer((props: StudiesListProps & WithStyles) => {
         const { studies, classes } = props;
+        // sometimes the fetch for the user studies has not resolved yet, return nothing, and mobx will take care of it when it's ready
+        if (!studies) {
+            return null;
+        }
         const studiesAsRows = Object.values(studies).map((study, index) => {
             const { studyId, title, status, lastUpdated, createdAt } = study;
             const createdAtDate = moment(createdAt).format('MMM D, YYYY');
