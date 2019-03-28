@@ -242,6 +242,26 @@ describe('create/delete/modify studies', async () => {
         expect(dataPoints.length).toBe(SeaBassFishCountDataPoints.length);
     });
 
+    test('should return a csv for a stationary study with some datapoints in there', async () => {
+        const { study_id: studyId } = SeaBassFishCountStudy;
+        const response = await fetch(API_SERVER + `/api/studies/${studyId}/download`, {
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'same-origin',
+            redirect: 'follow',
+            referrer: 'no-referrer',
+            headers: {
+                Accept: 'text/csv',
+                Authorization: `bearer ${adminToken}`
+            }
+        });
+        const studyAsCsv = await response.text();
+        const lineCount = studyAsCsv.split('\n').length;
+        const nDataPoints = SeaBassFishCountDataPoints.length;
+        // extra line for the header
+        expect(lineCount).toEqual(nDataPoints + 1);
+    });
+
     test('saving a data point fails if the user is not signed up for a surveyor', async () => {
         const surveyorSurvey = SeaBassFishCountStudy.surveys.filter(({ email }) => {
             return email === surveyorUser.email;

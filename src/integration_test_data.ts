@@ -325,6 +325,7 @@ export const SampleDataPointOne = {
     title: 'Person 2',
     date: moment().toISOString(),
     gender: 'unknown',
+    notes: 'to infinity and beyond!',
     location: {
         type: 'Point',
         coordinates: [-73.99744212627411, 40.730430884370335]

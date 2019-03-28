@@ -2,6 +2,22 @@ import { Pool } from 'pg';
 import { javascriptArrayToPostgresArray, studyIdToTablename, StudyField } from './utils';
 import { IdNotFoundError } from './location';
 
+interface DataPointPg {
+    survey_id: string;
+    dataPoint_id: string;
+    creation_date?: string;
+    last_updated?: string;
+    gender?: string;
+    age?: string;
+    mode?: string;
+    posture?: string;
+    activities?: string[];
+    groups?: string;
+    object?: string;
+    location?: string;
+    notes?: string;
+}
+
 interface DataPoint {
     surveyId: string;
     dataPointId: string;
@@ -267,7 +283,7 @@ export async function getDataPointsCSV(
     pool: Pool,
     userId: string,
     studyId: string
-): Promise<DataPoint & { zone: string }[]> {
+): Promise<DataPointPg & { zone: string }[]> {
     const fieldsQuery = `SELECT study_id, fields, tablename
                          FROM data_collection.study
                          WHERE study_id = $1 and user_id =$2`;
@@ -279,13 +295,15 @@ export async function getDataPointsCSV(
         }
 
         const { fields, tablename } = rows[0];
-        const formattedFields = fields.map(field => {
-            return field === 'activities' ? `array_to_json(activities) as activities` : field;
-        });
         const tableRefName = 'tbl';
         const fieldsAsColumns = ['data_point_id', 'creation_date', 'last_updated']
-            .concat(formattedFields)
-            .map(f => tableRefName + '.' + f)
+            .concat(fields)
+            .map(field => {
+                if (field === 'activities') {
+                    return `array_to_json(${tableRefName}.activities) as activities`;
+                }
+                return tableRefName + '.' + field;
+            })
             .join(', ');
         const dataPointsQuery = `SELECT ${fieldsAsColumns}, ST_AsGeoJSON(location)::json as coordinates, name_primary as zone
                                  FROM ${tablename} ${tableRefName}
@@ -296,7 +314,7 @@ export async function getDataPointsCSV(
                                  `;
         try {
             const { rows: datapoints } = await pool.query(dataPointsQuery);
-            return datapoints as DataPoint & { zone: string }[];
+            return datapoints as DataPointPg & { zone: string }[];
         } catch (error) {
             console.error(`[query ${dataPointsQuery}] ${error}`);
         }
