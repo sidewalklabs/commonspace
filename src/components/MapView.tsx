@@ -169,6 +169,7 @@ const MapView = observer((props: MapViewProps & WithStyles) => {
         const { layer, layerType, sourceTarget } = e;
         const { _leaflet_id } = layer;
         const features = applicationState.currentStudy.map.features;
+        e.target.removeLayer(e.layer);
         if (layerType === 'marker') {
             const newMarker = createMarkerFromLeafletLayer(
                 layer,
