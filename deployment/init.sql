@@ -92,13 +92,71 @@ CREATE TABLE IF NOT EXISTS study
     last_updated TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
-CREATE TYPE gender AS ENUM ('male', 'female', 'unknown');
-CREATE TYPE age AS ENUM ('0-14', '15-24', '25-64', '65+');
-CREATE TYPE mode AS ENUM ('pedestrian', 'bicyclist', 'other');
-CREATE TYPE posture AS ENUM ('leaning', 'lying', 'sitting', 'sitting on the ground', 'standing', 'sitting_informal', 'sitting_formal');
-CREATE TYPE activities AS ENUM ('commercial', 'consuming', 'conversing', 'electronic_engagement', 'recreation_active', 'pets', 'idle', 'running', 'recreation_passive', 'working_civic', 'cultural');
-CREATE TYPE groups AS ENUM ('group_1', 'group_2', 'group_3-7', 'group_8+');
-CREATE TYPE object AS ENUM ('animal', 'bag_carried', 'clothing_cultural', 'clothing_activity', 'goods_carried', 'equipment_construction', 'equipment_receational', 'equipment_sport', 'protection_safety', 'protection_weather', 'furniture_carried', 'transportation_carried', 'transportation_stationary', 'pushcart', 'stroller', 'luggage');
+CREATE TYPE gender AS ENUM (
+        'male',
+        'female',
+        'unknown');
+CREATE TYPE age AS ENUM (
+       '0-14',
+       '15-24',
+       '25-64',
+       '65+');
+CREATE TYPE mode AS ENUM (
+       'pedestrian',
+       'bicyclist',
+       'other');
+CREATE TYPE posture AS ENUM (
+       'leaning',
+       'lying',
+       'sitting',
+       'sitting on the ground',
+       'standing',
+       'sitting_informal',
+       'sitting_formal');
+
+CREATE TYPE activities AS ENUM (
+       'commercial',
+       'consuming',
+       'conversing',
+       'cultural',
+       'disruptive',
+       'electronic_engagement',
+       'living_public',
+       'recreation_active',
+       'recreation_passive',
+       'pets',
+       'idle',
+       'running',
+       'recreation_active',
+       'recreation_passive',
+       'smoking',
+       'soliciting',
+       'waiting_transfer',
+       'waiting_other',
+       'working_civic'
+);
+CREATE TYPE groups AS ENUM (
+       'group_1',
+       'group_2',
+       'group_3-7',
+       'group_8+');
+CREATE TYPE object AS ENUM (
+       'animal',
+       'bag_carried',
+       'clothing_cultural',
+       'clothing_activity',
+       'goods_carried',
+       'equipment_construction',
+       'equipment_receational',
+       'equipment_sport',
+       'protection_safety',
+       'protection_weather',
+       'furniture_carried',
+       'transportation_carried',
+       'transportation_stationary',
+       'pushcart',
+       'stroller',
+       'luggage');
 
 CREATE TABLE IF NOT EXISTS surveyors (
     user_id UUID references public.users(user_id) ON DELETE CASCADE NOT NULL,
