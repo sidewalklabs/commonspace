@@ -1,5 +1,21 @@
 import { Feature, FeatureCollection, Point } from 'geojson';
 
+export type Activity =
+    | 'commercial'
+    | 'consuming'
+    | 'conversing'
+    | 'cultural'
+    | 'disruptive'
+    | 'electronic_engagement'
+    | 'living_public'
+    | 'recreation_active'
+    | 'recreation_passive'
+    | 'smoking'
+    | 'soliciting'
+    | 'waiting_transfer'
+    | 'waiting_other'
+    | 'working_civic';
+
 export type StudyField =
     | 'gender'
     | 'age'
@@ -37,11 +53,12 @@ export interface DataPoint {
     age?: string;
     mode?: string;
     posture?: string;
-    activities?: string[];
+    activities?: Activity[];
     groups?: string;
     object?: string;
     date: string;
-    location: Point;
+    location?: Point;
+    notes?: string;
 }
 
 export interface Study {

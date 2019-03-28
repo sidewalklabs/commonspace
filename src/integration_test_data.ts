@@ -1,5 +1,5 @@
 import { Feature, FeatureCollection } from 'geojson';
-import { Study } from './routes/api_types';
+import { Study, DataPoint } from './routes/api_types';
 import moment from 'moment';
 import path from 'path';
 import dotenv from 'dotenv';
@@ -158,7 +158,7 @@ const laJollaBeach: FeatureCollection = {
     features: [kelpForest, southEndCove]
 };
 
-const dataPointOne = {
+const dataPointOne: DataPoint = {
     gender: 'unknown',
     age: '15-24',
     posture: 'standing',
@@ -167,7 +167,7 @@ const dataPointOne = {
     date: moment().toISOString()
 };
 
-const dataPointTwo = {
+const dataPointTwo: DataPoint = {
     gender: 'female',
     age: '25-64',
     posture: 'lying',
@@ -176,12 +176,12 @@ const dataPointTwo = {
     date: moment().toISOString()
 };
 
-const dataPointThree = {
+const dataPointThree: DataPoint = {
     gender: 'male',
     age: '65+',
     posture: 'sitting_informal',
     data_point_id: '77412f57-decb-4db7-8b68-77379c1ac01d',
-    activities: ['commercial', 'consuming'],
+    activities: ['commercial', 'consuming', 'waiting_transfer'],
     date: moment().toISOString()
 };
 
@@ -321,13 +321,12 @@ export const MarchOnWashington: Study = {
     map: washingtonMall
 };
 
-export const SampleDataPointOne = {
+export const SampleDataPointOne: DataPoint = {
     data_point_id: '8e6c8475-6812-41d0-ad27-3795b8897ea8',
-    color: '#D10115',
-    title: 'Person 2',
     date: moment().toISOString(),
     gender: 'unknown',
     notes: 'to infinity and beyond!',
+    activities: ['disruptive', 'waiting_transfer'],
     location: {
         type: 'Point',
         coordinates: [-73.99744212627411, 40.730430884370335]
