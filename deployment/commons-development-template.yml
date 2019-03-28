@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: swl-commons
+  labels:
+    app: swl-commons
+    contact: essoto
+spec:
+  selector:
+    matchLabels:
+      app: swl-commons
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: swl-commons
+    spec:
+      volumes:
+      - name: commons-config
+        secret:
+          secretName: commons-config
+      containers:
+      - name: commons-server
+        image: swl-eng/commons-server:latest
+        env:
+          - name: DB_HOST
+            value: "192.168.99.1"
+        ports:
+          - containerPort: 3000
+        command: ["node", "/commons/build/server.js"]
+        volumeMounts:
+          - name: commons-config
+            mountPath: /etc/commons
+            readOnly: true
+      - name: commons-nginx
+        image: swl-eng/commons-nginx:latest
+        ports:
+            - containerPort: 80
+        command:
+          - nginx
+          - -c
+          - /commons.nginx.conf
+          - -g
+          - 'daemon off;'
