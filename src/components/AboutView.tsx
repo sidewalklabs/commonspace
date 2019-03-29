@@ -298,14 +298,6 @@ const AboutView = observer((props: AboutViewProps & WithStyles) => {
                     emailing us at{' '}
                     <a href="mailto:commonspace@sidewalklabs.com">CommonSpace@sidewalklabs.com</a>.
                 </Typography>
-
-                <Typography variant="h6" gutterBottom>
-                    FAQs
-                </Typography>
-                <Typography variant="body2">Placeholder question?</Typography>
-                <Typography variant="body1" paragraph>
-                    Placeholder answer!
-                </Typography>
             </div>
         </>
     );
