@@ -601,7 +601,9 @@ router.put(
             );
 
             const deleteUsers = await Promise.all(
-                usersToRemove.map(async email => await deleteSurveyorFromStudy(DbPool, studyId, email))
+                usersToRemove.map(
+                    async email => await deleteSurveyorFromStudy(DbPool, studyId, email)
+                )
             );
             res.send(newUsers);
         })
