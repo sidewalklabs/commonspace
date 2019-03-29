@@ -21,4 +21,4 @@ A special thank you to everyone who contributed this project:
 
 * From Sidewalk Labs: Ananta Pandey, Sebastian Soto, Matt Breuer, Patrick Keenan, Jackie Lu
 * From Gehl Institute: Jennifer Gardner, Riley Gold
-* From Park People: Jake Tobin, Brianna Aspinall
+* From Park People: Jake Garrett, Brianna Aspinall
