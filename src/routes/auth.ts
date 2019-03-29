@@ -94,7 +94,8 @@ router.post('/signup', (req, res, next) => {
 
 router.post('/login', (req, res, next) => {
     const { body } = req;
-    if (!body.email) {
+    // probably overkill but don't let anyone sign in as the sentinel user
+    if (!body.email || body.email.toLowerCase() === 'sentinel@commonspace.sidewalklabs.com') {
         const errorMessage = 'Missing email field';
         res.statusMessage = errorMessage;
         res.status(400).send({ error_message: errorMessage });
