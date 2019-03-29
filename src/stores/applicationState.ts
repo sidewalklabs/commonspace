@@ -108,6 +108,7 @@ export const getStudies = logoutIfError(UnauthorizedError, async () => {
 export const updateStudy = logoutIfError(UnauthorizedError, async (studyInput: Study) => {
     const { studyId } = studyInput;
     const study: Study = toJS(studyInput);
+    const { surveyors } = study;
     if (study.fields.indexOf('notes') === -1) {
         study.fields = [...study.fields, 'notes'];
     }
@@ -121,7 +122,13 @@ export const updateStudy = logoutIfError(UnauthorizedError, async (studyInput: S
     });
     try {
         await putRest(`/api/studies/${studyId}`, study);
-        setSnackBar('success', `Updated study ${studyInput.title}`);
+        try {
+            await putRest<string[], any>(`/api/studies/${studyId}/surveyors`, surveyors);
+            setSnackBar('success', `Updated study ${studyInput.title}`);
+        } catch (error) {
+            setSnackBar('error', `Unable to update study's sureveyors ${studyInput.title}`);
+            throw error;
+        }
     } catch (error) {
         setSnackBar('error', `Unable to update study ${studyInput.title}`);
         throw error;

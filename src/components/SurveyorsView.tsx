@@ -1,6 +1,10 @@
 import React, { ChangeEvent } from 'react';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -9,6 +13,7 @@ import TableRow from '@material-ui/core/TableRow';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 
+import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 
 import applicationState, { addNewSurveyorToSurvey } from '../stores/applicationState';
@@ -46,6 +51,18 @@ function handleAddingNewSurveyor(studyId, email) {
     }
 }
 
+interface SurveyorsViewState {
+    anchorElement: HTMLElement | null;
+    selectedEmail: string | null;
+}
+
+const surveyorsViewState: SurveyorsViewState = observable({
+    anchorElement: null,
+    selectedEmail: null
+});
+
+
+
 interface SurveyorsViewProps {
     studyId: string;
     surveyors: string[];
@@ -54,6 +71,11 @@ interface SurveyorsViewProps {
 // todo, this is using the store components/ui.ts which may not be the best abstraction, this might be more localizable ...
 const SurveyorsView = observer((props: SurveyorsViewProps & WithStyles) => {
     const { classes, studyId, surveyors } = props;
+    const { anchorElement, selectedEmail } = surveyorsViewState;
+    const removeSelectEmailFromStudy = () => {
+        applicationState.studies[studyId].surveyors = surveyors.filter(email => email !== selectedEmail)
+        surveyorsViewState.anchorElement = null;
+    }
 
     const canAddEmail =
         applicationState.draftSurveyor && applicationState.draftSurveyor.trim().length;
@@ -82,6 +104,17 @@ const SurveyorsView = observer((props: SurveyorsViewProps & WithStyles) => {
                                 <TableCell component="th" scope="row">
                                     {email}
                                 </TableCell>
+                                <IconButton
+                                    color="inherit"
+                                    aria-label="Open Survey Row Menu"
+                                    onClick={e => {
+                                        surveyorsViewState.selectedEmail = email;
+                                        surveyorsViewState.anchorElement = e.currentTarget
+                                    }}
+                                    className={classes.menuIcon}
+                                >
+                                    <MoreVertIcon />
+                                </IconButton>
                             </TableRow>
                         ))}
                         <TableRow>
@@ -133,6 +166,14 @@ const SurveyorsView = observer((props: SurveyorsViewProps & WithStyles) => {
                     Return to Study
                 </Button>
             </div>
+            <Menu
+                id="surveyo-row-menu"
+                anchorEl={anchorElement}
+                open={!!anchorElement}
+                onClose={() => (surveyorsViewState.anchorElement = null)}
+            >
+                <MenuItem onClick={removeSelectEmailFromStudy}>Remove</MenuItem>
+            </Menu>
         </>
     );
 });

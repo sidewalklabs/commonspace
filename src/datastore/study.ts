@@ -45,6 +45,8 @@ export interface Study {
     location: string;
 }
 
+const SENTINEL_EMAIL = 'sentinel@commonspace.sidewalklabs.com';
+
 function setString(s: any) {
     return Array.from(s).toString();
 }
@@ -218,7 +220,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                 created_at,
                 last_updated
             }) => {
-                const surveyors = emails && emails.length > 0 ? emails : [];
+                const surveyors = emails && emails.length > 0 ? emails.filter(e => e !== SENTINEL_EMAIL) : [];
                 return {
                     study_id,
                     fields,
@@ -427,7 +429,7 @@ export async function deleteStudiesForEmail(pool: pg.Pool, email: string): Promi
 export async function deleteStudiesForUserId(pool: pg.Pool, userId: string): Promise<void> {
     const query = `DELETE
                    FROM data_collection.study stu
-                   WHERE stu.user_id= $1
+                   WHERE stu.user_id = $1
                    returning tablename`;
     const values = [userId];
     let rows, rowCount;
@@ -628,7 +630,8 @@ export async function getSurveyorsForStudy(pool: pg.Pool, studyId: string): Prom
                    FROM users
                    JOIN data_collection.surveyors as svyrs
                    ON users.user_id = svyrs.user_id
-                   WHERE study_id = $1`;
+                   WHERE study_id = $1
+                   AND svyrs.user_id != '00000000-0000-0000-0000-000000000001'`;
     const values = [studyId];
     try {
         const { rows } = await pool.query(query, values);
@@ -691,6 +694,24 @@ export async function deleteSurveyorFromStudy(
     try {
         await pool.query(query, values);
     } catch (error) {
+        // the sentinel user is already a part of the study, delete the user
+        if (error.code === UNIQUE_VIOLATION) {
+            const deleteQuery = `DELETE
+                                 FROM data_collection.surveyors srvys
+                                 WHERE user_id IN (
+                                     SELECT user_id
+                                     FROM users
+                                     WHERE users.email = $1)`;
+            const deleteValues = [surveyorEmail];
+            try {
+                await pool.query(deleteQuery, deleteValues);
+                return;
+            } catch (error) {
+                console.error(`[query ${deleteQuery}][values ${JSON.stringify(deleteValues)}] ${error}`);
+                throw error;
+            }
+
+        }
         console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
         throw error;
     }
