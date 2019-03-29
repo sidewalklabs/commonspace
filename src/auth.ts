@@ -170,7 +170,7 @@ export async function resetPassword(pool: Pool, password: string, token: string)
 
 export async function sendEmailResetLink(host: string, email: string, token: string) {
     const link = `${host}/reset_password?token=${token}`;
-    const html = `Hello ${email},<br> Please Click on the link to reset your email.<br><a href="${link}">Click Here To Reset</a>`;
+    const html = `Hello ${email},<br><br>Please click on the link below to reset your CommonSpace password:<br><br><a href="${link}">Click Here To Reset</a>`;
     const mailOptions: nodemailer.SendMailOptions = {
         from: FROM_STRING,
         to: email,
@@ -187,7 +187,7 @@ export async function sendEmailResetLink(host: string, email: string, token: str
 
 export async function sendSignupVerificationEmail(host: string, email: string, token: string) {
     const link = `${host}/verify?token=${token}&email=${email}`;
-    const html = `Hello ${email},<br> Please Click on the link to validate your email.<br><a href="${link}">Click here</a>`;
+    const html = `Hello ${email},<br><br>Please click on the link below to reset your CommonSpace email.<br><br><a href="${link}">Click here</a>`;
     const mailOptions: nodemailer.SendMailOptions = {
         from: FROM_STRING,
         to: email,
