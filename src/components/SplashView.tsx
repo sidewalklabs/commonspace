@@ -16,9 +16,10 @@ const styles = theme => ({
         alignItems: 'center'
     },
     root: {
-        width: 'auto',
+        width: '100%',
         margin: 0,
         height: '100%',
+        borderRadius: 0,
         [theme.breakpoints.up(700 + theme.spacing.unit * 3 * 2)]: {
             width: 700,
             height: 700,
@@ -54,12 +55,15 @@ const styles = theme => ({
     badges: {
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'center',
         marginTop: theme.spacing.unit * 2,
         marginBottom: theme.spacing.unit * 2
     },
     badge: {
         height: '40px',
-        marginRight: theme.spacing.unit * 2
+        '& + &': {
+            marginLeft: theme.spacing.unit * 2
+        }
     }
 });
 
@@ -83,16 +87,26 @@ const SplashView = withStyles(styles)(
                             Study the places you love
                         </Typography>
                         <div className={classes.badges}>
-                            <img
+                            <a
                                 className={classes.badge}
-                                src="/assets/images/apple-badge.svg"
-                                alt="Download on the App Store"
-                            />
-                            <img
+                                href="https://itunes.apple.com/us/app/commonspace/id1448384737?ls=1&mt=8"
+                            >
+                                <img
+                                    height="40px"
+                                    src="/assets/images/apple-badge.svg"
+                                    alt="Download on the App Store"
+                                />
+                            </a>
+                            <a
                                 className={classes.badge}
-                                src="/assets/images/android-badge.png"
-                                alt="Download on the Play Store"
-                            />
+                                href="https://play.google.com/store/apps/details?id=com.sidewalklabs.commonspace&hl=en"
+                            >
+                                <img
+                                    height="40px"
+                                    src="/assets/images/android-badge.png"
+                                    alt="Download on the Play Store"
+                                />
+                            </a>
                         </div>
                         <Fab
                             variant="extended"
