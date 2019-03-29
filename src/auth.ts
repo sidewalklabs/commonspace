@@ -187,7 +187,7 @@ export async function sendEmailResetLink(host: string, email: string, token: str
 
 export async function sendSignupVerificationEmail(host: string, email: string, token: string) {
     const link = `${host}/verify?token=${token}&email=${email}`;
-    const html = `Hello ${email},<br><hr>Please click on the link below to reset your CommonSpace email.<br><hr><a href="${link}">Click here</a>`;
+    const html = `Hello ${email},<br><hr>Please click on the link below to validate your email for CommonSpace.<br><hr><a href="${link}">Click here</a>`;
     const mailOptions: nodemailer.SendMailOptions = {
         from: FROM_STRING,
         to: email,
