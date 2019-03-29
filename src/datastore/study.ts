@@ -220,7 +220,8 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                 created_at,
                 last_updated
             }) => {
-                const surveyors = emails && emails.length > 0 ? emails.filter(e => e !== SENTINEL_EMAIL) : [];
+                const surveyors =
+                    emails && emails.length > 0 ? emails.filter(e => e !== SENTINEL_EMAIL) : [];
                 return {
                     study_id,
                     fields,
@@ -707,10 +708,11 @@ export async function deleteSurveyorFromStudy(
                 await pool.query(deleteQuery, deleteValues);
                 return;
             } catch (error) {
-                console.error(`[query ${deleteQuery}][values ${JSON.stringify(deleteValues)}] ${error}`);
+                console.error(
+                    `[query ${deleteQuery}][values ${JSON.stringify(deleteValues)}] ${error}`
+                );
                 throw error;
             }
-
         }
         console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
         throw error;

@@ -61,8 +61,6 @@ const surveyorsViewState: SurveyorsViewState = observable({
     selectedEmail: null
 });
 
-
-
 interface SurveyorsViewProps {
     studyId: string;
     surveyors: string[];
@@ -73,9 +71,11 @@ const SurveyorsView = observer((props: SurveyorsViewProps & WithStyles) => {
     const { classes, studyId, surveyors } = props;
     const { anchorElement, selectedEmail } = surveyorsViewState;
     const removeSelectEmailFromStudy = () => {
-        applicationState.studies[studyId].surveyors = surveyors.filter(email => email !== selectedEmail)
+        applicationState.studies[studyId].surveyors = surveyors.filter(
+            email => email !== selectedEmail
+        );
         surveyorsViewState.anchorElement = null;
-    }
+    };
 
     const canAddEmail =
         applicationState.draftSurveyor && applicationState.draftSurveyor.trim().length;
@@ -109,7 +109,7 @@ const SurveyorsView = observer((props: SurveyorsViewProps & WithStyles) => {
                                     aria-label="Open Survey Row Menu"
                                     onClick={e => {
                                         surveyorsViewState.selectedEmail = email;
-                                        surveyorsViewState.anchorElement = e.currentTarget
+                                        surveyorsViewState.anchorElement = e.currentTarget;
                                     }}
                                     className={classes.menuIcon}
                                 >
