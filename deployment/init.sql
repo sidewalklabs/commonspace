@@ -122,8 +122,6 @@ CREATE TYPE activities AS ENUM (
        'disruptive',
        'electronic_engagement',
        'living_public',
-       'recreation_active',
-       'recreation_passive',
        'pets',
        'idle',
        'running',
