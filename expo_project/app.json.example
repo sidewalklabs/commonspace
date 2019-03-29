@@ -58,8 +58,8 @@
     "extra": {
       "googleAuthClientId": {
         "expo": {
-          "android": "GENERATE_AN_AUTH_KEY",
-          "ios": "GENERATE_AN_AUTH_KEY"
+          "android": "603386649315-vp4revvrcgrcjme51ebuhbkbspl048l9.apps.googleusercontent.com",
+          "ios": "603386649315-vp4revvrcgrcjme51ebuhbkbspl048l9.apps.googleusercontent.com"
         },
         "standalone": {
           "android": "GENERATE_AN_AUTH_KEY",
