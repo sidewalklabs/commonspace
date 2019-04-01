@@ -34,6 +34,13 @@ const AboutView = observer((props: AboutViewProps & WithStyles) => {
             {!webview && <AppBar rightHeaderType="login" />}
             <div className={classes.content}>
                 <Typography variant="h6" gutterBottom>
+                    CommonSpace is in beta
+                </Typography>
+                <Typography variant="body1" paragraph>
+                    CommonSpace is currently in beta. If you're interested in conducting a public life with CommonSpace, please reach out to us at commonspace@sidewalklabs.com with information on the study you're planning. Thanks!
+                </Typography>
+                
+                <Typography variant="h6" gutterBottom>
                     About CommonSpace
                 </Typography>
                 <Typography variant="body1" paragraph>
@@ -58,7 +65,7 @@ const AboutView = observer((props: AboutViewProps & WithStyles) => {
                     a toggle to post their study and publish the underlying data on a public data
                     portal.
                 </Typography>
-
+        
                 <Typography variant="h6" gutterBottom>
                     Why we built CommonSpace
                 </Typography>
@@ -187,7 +194,7 @@ const AboutView = observer((props: AboutViewProps & WithStyles) => {
                 <ul>
                     <li>
                         <Typography variant="body1">
-                            February 5, 2019: Opened pre-launch testing to Protocol Partners
+                            March 29, 2019: Launched CommonSpace!
                         </Typography>
                     </li>
                 </ul>
