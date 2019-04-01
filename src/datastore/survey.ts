@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
-import { IdAlreadyExists } from './utils';
+import { EntityAlreadyExists } from './utils';
 import { UNIQUE_VIOLATION } from 'pg-error-constants';
-import { findUser } from './user';
+import { findUserByEmail } from './user';
 import { IdDoesNotExist } from './utils';
 
 export interface Survey {
@@ -98,7 +98,7 @@ export async function createNewSurveyForStudy(pool: Pool, survey: Survey) {
     } catch (error) {
         console.error(`[sql ${query}] [values ${JSON.stringify(values)}] ${error}`);
         if (error.code === UNIQUE_VIOLATION) {
-            throw new IdAlreadyExists(survey.surveyId);
+            throw new EntityAlreadyExists(survey.surveyId);
         }
         throw error;
     }
@@ -122,11 +122,11 @@ export async function updateSurvey(pool: Pool, survey: Survey) {
         console.error(`[query: ${query}][values: ${JSON.stringify(values)}] ${error}`);
         throw error;
     }
-    const user = email ? (await findUser(pool, email)).user_id : null;
+    const userId = email ? (await findUserByEmail(pool, email)).user_id : null;
     const updateUserQuery = `UPDATE data_collection.survey
                              SET user_id = $1
                              WHERE survey_id = $2`;
-    const updateUserValues = [user, surveyId];
+    const updateUserValues = [userId, surveyId];
     try {
         await pool.query(updateUserQuery, updateUserValues);
     } catch (error) {

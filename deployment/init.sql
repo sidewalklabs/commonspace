@@ -7,13 +7,13 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 
 CREATE ROLE data_collector;
 
+----------------------- user management -------------------------
 CREATE TABLE IF NOT EXISTS users
 (
     user_id UUID PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
     password TEXT,
-    is_oauth BOOLEAN DEFAULT TRUE,
-    name TEXT
+    is_verified BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 INSERT INTO users (user_id, email) VALUES ('00000000-0000-0000-0000-000000000001', 'sentinel@commonspace.sidewalklabs.com');
@@ -22,17 +22,16 @@ CREATE UNIQUE INDEX users_lower_email_unique_idx ON users (lower(email));
 
 CREATE TABLE IF NOT EXISTS password_reset
 (
-    email TEXT UNIQUE REFERENCES users(email) ON DELETE CASCADE,
+    email TEXT UNIQUE REFERENCES public.users(email) ON DELETE CASCADE,
     token TEXT PRIMARY KEY,
     expiration TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE IF NOT EXISTS account_verification
 (
-    email TEXT UNIQUE REFERENCES users(email) ON DELETE CASCADE,
+    user_id UUID UNIQUE NOT NULL REFERENCES public.users(user_id) ON DELETE CASCADE,
     token TEXT PRIMARY KEY,
-    expiration TIMESTAMP WITH TIME ZONE,
-    verified BOOLEAN DEFAULT FALSE
+    expiration TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE IF NOT EXISTS admin_whitelist
@@ -46,6 +45,8 @@ CREATE TABLE IF NOT EXISTS token_blacklist
     user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
     blacklisted_at TIMESTAMP WITH TIME ZONE default now()
 );
+
+--------------------------- data collection ---------------------------
 
 CREATE SCHEMA IF NOT EXISTS data_collection;
 ALTER ROLE data_collector SET search_path TO data_collection,"$user",public;
