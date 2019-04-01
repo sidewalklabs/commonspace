@@ -3,7 +3,7 @@ import snakecaseKeys from 'snakecase-keys';
 
 import { navigate } from './router';
 import uiState, { setSnackBar } from './ui';
-import { postRest, UnauthorizedError } from '../client';
+import { postRest, GenericHttpError, UnauthorizedError } from '../client';
 
 const MAX_PASSWORD_LENGTH = 1000;
 const MIN_PASSWORD_LENGTH = 7;
@@ -59,6 +59,7 @@ export async function logInUserGoogleOAuth(response) {
             } else {
                 throw error;
             }
+            return;
         }
     }
 
@@ -138,7 +139,11 @@ export async function signUpUser() {
         );
         navigate('/login');
     } catch (error) {
-        setSnackBar('error', `Unable to sign sign ${error}`);
+        if (error instanceof GenericHttpError && error.errorMessage) {
+            setSnackBar('error', error.errorMessage);
+        } else {
+            setSnackBar('error', `Unable to sign sign ${error}`);
+        }
     } finally {
         resetSignupState();
     }

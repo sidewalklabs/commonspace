@@ -1,4 +1,5 @@
 import cookieParser from 'cookie-parser';
+import { randomBytes } from 'crypto';
 import express, { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import passport from 'passport';
@@ -7,16 +8,18 @@ import {
     resetPassword,
     sendEmailResetLink,
     addToBlackList,
-    createRandomStringForTokenUse,
     emailForResetToken,
     saveTokenForPasswordReset,
     validateEmail,
+    saveTokenForEmailVerification,
     sendSignupVerificationEmail
 } from '../auth';
 import DbPool from '../database';
 import { User } from '../datastore/user';
 import { checkUserIsWhitelistApproved } from '../datastore/whitelist';
 import { return401OnUnauthorizedError, UnauthorizedError } from './errors';
+
+const N_RAND_BYTES = 32;
 
 const router = express.Router();
 
@@ -34,23 +37,27 @@ function addCookieToResponse(res, payload, name: string, secure: boolean) {
     return res;
 }
 
-function respondWithCookie(res: Response, user: User) {
+function respondWithCookie(res: Response, user: { user_id: string }) {
     res = addCookieToResponse(res, user, 'commonspacejwt', process.env.NODE_ENV !== 'development');
-    res.status(200).send();
-    return;
+    return res.status(200).send();
 }
 
-function respondWithJWT(res: Response, user: User) {
+function respondWithJWT(res: Response, user: { user_id: string }) {
     const token = jwt.sign(user, process.env.JWT_SECRET);
     return res.json({ token });
 }
 
-function respondWithAuthentication(req: Request, res: Response, user: User) {
+function respondWithAuthentication(req: Request, res: Response, user: { user_id: string }) {
     if (req.headers['accept'] && req.headers['accept'] === 'application/bearer.token+json') {
         return respondWithJWT(res, user);
     } else {
         return respondWithCookie(res, user);
     }
+}
+
+async function createRandomStringForTokenUse(nBytes: number = N_RAND_BYTES) {
+    const buffer = await randomBytes(nBytes);
+    return buffer.toString('hex');
 }
 
 router.post('/signup', (req, res, next) => {
@@ -78,7 +85,10 @@ router.post('/signup', (req, res, next) => {
                 return;
             }
             try {
-                await sendSignupVerificationEmail(req.get('host'), user.email, user.token);
+                const { email, user_id: userId } = user;
+                const token = await createRandomStringForTokenUse();
+                await saveTokenForEmailVerification(DbPool, userId, token);
+                await sendSignupVerificationEmail(req.get('host'), email, token);
             } catch (error) {
                 if (
                     error === 'Missing credentials for "PLAIN"' &&
@@ -164,9 +174,10 @@ router.post(
 router.get(
     '/verify',
     return500OnError(async function(req, res) {
-        const { token, email } = req.query;
-        if (await validateEmail(DbPool, email, token)) {
-            return respondWithAuthentication(req, res, req.user);
+        const { token } = req.query;
+        const userId = await validateEmail(DbPool, token);
+        if (userId) {
+            return respondWithAuthentication(req, res, { user_id: userId });
         }
         res.status(400);
     })

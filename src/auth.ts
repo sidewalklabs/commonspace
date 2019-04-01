@@ -1,4 +1,3 @@
-import { randomBytes } from 'crypto';
 import { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { UNIQUE_VIOLATION } from 'pg-error-constants';
@@ -14,16 +13,16 @@ import * as uuid from 'uuid';
 
 import {
     authenticateOAuthUser,
-    createUser,
+    createUserWithPassword,
     findUserWithPassword,
     findUserById,
     User,
-    changeUserPassword,
-    userIsOAuthUser
+    changeUserPassword
 } from './datastore/user';
 import DbPool from './database';
 
 import dotenv from 'dotenv';
+import { EntityAlreadyExists } from './datastore/utils';
 dotenv.config({
     path: process.env.DOTENV_CONFIG_DIR ? path.join(process.env.DOTENV_CONFIG_DIR, '.env') : ''
 });
@@ -38,8 +37,6 @@ const MAX_PASSWORD_LENGTH = 1000;
 const MIN_PASSWORD_LENGTH = 7;
 const SPECIAL_CHARACTERS = ['!', '@', '#', '$', '%', '^', '&', '*', '?'];
 
-const N_RAND_BYTES = 32;
-
 const SMTP_TRANSPORT = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
@@ -48,23 +45,18 @@ const SMTP_TRANSPORT = nodemailer.createTransport({
     }
 });
 
-export async function createRandomStringForTokenUse(nBytes: number = N_RAND_BYTES) {
-    const buffer = await randomBytes(nBytes);
-    return buffer.toString('hex');
-}
-
-async function saveTokenForEmailVerification(
+export async function saveTokenForEmailVerification(
     pool: Pool,
-    email: string,
+    userId: string,
     token: string
 ): Promise<void> {
-    const query = `INSERT INTO account_verification (email, token)
+    const query = `INSERT INTO account_verification (user_id, token)
                    VALUES ($1, $2)
-                   ON CONFLICT (email)
+                   ON CONFLICT (user_id)
                    DO
                      UPDATE
                      SET token = $3`;
-    const values = [email, token, token];
+    const values = [userId, token, token];
     try {
         await pool.query(query, values);
     } catch (error) {
@@ -122,11 +114,9 @@ export async function emailForResetToken(pool: Pool, token: string): Promise<str
     }
 }
 
-export async function emailIsVerified(pool: Pool, userId: string): Promise<boolean> {
-    const query = `SELECT verified
-                   FROM account_verification av
-                   JOIN users urs
-                   ON av.email = urs.email
+export async function accountIsVerified(pool: Pool, userId: string): Promise<boolean> {
+    const query = `SELECT is_verified
+                   FROM users urs
                    WHERE urs.user_id = $1`;
     const values = [userId];
     try {
@@ -141,17 +131,23 @@ export async function emailIsVerified(pool: Pool, userId: string): Promise<boole
     }
 }
 
-export async function validateEmail(pool: Pool, email: string, token: string): Promise<boolean> {
-    const query = `UPDATE account_verification
-                   SET verified = TRUE
-                   WHERE email = $1 and token = $2`;
-    const values = [email, token];
+export async function validateEmail(pool: Pool, token: string): Promise<string | null> {
+    // TODO: start here tuesday morning
+    const query = `UPDATE users
+                   SET is_verified = TRUE
+                   WHERE user_id IN (
+                           SELECT user_id
+                           FROM account_verification
+                           WHERE token = $1
+                       )
+                   RETURNING user_id`;
+    const values = [token];
     try {
-        const { rowCount } = await pool.query(query, values);
+        const { rows, rowCount } = await pool.query(query, values);
         if (rowCount === 1) {
-            return true;
+            return rows[0].user_id;
         }
-        return false;
+        return null;
     } catch (error) {
         console.error(`[query ${query}][values ${values}] ${error}`);
         throw error;
@@ -168,9 +164,13 @@ export async function resetPassword(pool: Pool, password: string, token: string)
     return;
 }
 
+const httpRegex = /^http:/;
 export async function sendEmailResetLink(host: string, email: string, token: string) {
+    if (!httpRegex.exec(host)) {
+        host = process.env.NODE_ENV === 'development' ? 'http://' + host : 'https://' + host;
+    }
     const link = `${host}/reset_password?token=${token}`;
-    const html = `Hello ${email},<br><hr>Please click on the link below to reset your CommonSpace password:<br><hr><a href="${link}">Click Here To Reset</a>`;
+    const html = `Hello ${email},<br><hr>Please click on the link below to reset your CommonSpace password.<br><hr><a href="${link}">Click Here To Reset</a>`;
     const mailOptions: nodemailer.SendMailOptions = {
         from: FROM_STRING,
         to: email,
@@ -186,8 +186,11 @@ export async function sendEmailResetLink(host: string, email: string, token: str
 }
 
 export async function sendSignupVerificationEmail(host: string, email: string, token: string) {
-    const link = `${host}/verify?token=${token}&email=${email}`;
-    const html = `Hello ${email},<br><hr>Please click on the link below to validate your email for CommonSpace.<br><hr><a href="${link}">Click here</a>`;
+    if (!httpRegex.exec(host)) {
+        host = process.env.NODE_ENV === 'development' ? 'http://' + host : 'https://' + host;
+    }
+    const link = encodeURI(`${host}/verify?token=${token}`);
+    const html = `Hello ${email},<br><br>Please click on the link below to validate your email for CommonSpace.<br><br><a href=${link}>Click here</a>`;
     const mailOptions: nodemailer.SendMailOptions = {
         from: FROM_STRING,
         to: email,
@@ -237,12 +240,12 @@ const signupStrategy = new LocalStrategy(
         try {
             const userId = uuid.v4();
             const user = { email, password: checkPasswordRequirements(password), userId, name: '' };
-            await createUser(DbPool, user);
-            const token = await createRandomStringForTokenUse();
-            await saveTokenForEmailVerification(DbPool, email, token);
-            //await sendSignupVerificationEmail(req.get('host'), email, token); weird html escaping
-            return done(null, { user_id: userId, email, token });
+            await createUserWithPassword(DbPool, user);
+            return done(null, { user_id: userId, email });
         } catch (error) {
+            if (error instanceof EntityAlreadyExists) {
+                return done(new Error(`Account already exists for ${email}`));
+            }
             console.error(
                 `[body ${JSON.stringify(req.body)}][params: ${JSON.stringify(req.params)}] ${error}`
             );
@@ -255,8 +258,8 @@ const loginStrategy = new LocalStrategy(
     { passReqToCallback: true, usernameField: 'email' },
     async (req, email, password, done) => {
         try {
-            const user = await findUserWithPassword(DbPool, email, password);
-            return done(null, { user_id: user.user_id });
+            const { user_id } = await findUserWithPassword(DbPool, email, password);
+            return done(null, { user_id });
         } catch (err) {
             console.error(
                 `[body ${JSON.stringify(req.body)}][params: ${JSON.stringify(req.params)}] ${err}`
@@ -299,7 +302,7 @@ export async function addToBlackList(pool: Pool, userId: string, req: Request): 
     try {
         await pool.query(query, values);
     } catch (error) {
-        // by swallowing this error, we the method idempotent
+        // by swallowing this error, we make the method idempotent
         if (error.code === UNIQUE_VIOLATION && error.constraint === 'token_blacklist_pkey') {
             return;
         }
@@ -349,25 +352,23 @@ const init = (mode: string) => {
                 async function(request, accessToken, refreshToken, profile, done) {
                     const email = profile.emails[0].value;
                     try {
-                        if (await userIsOAuthUser(DbPool, email)) {
-                            const user = await authenticateOAuthUser(DbPool, email);
-                            request.user = user;
-                            return done(null, request.user);
-                        }
-                        return done(new Error('not valid login'), null);
+                        const userId = await authenticateOAuthUser(DbPool, email);
+                        request.user = { email, user_id: userId };
+                        return done(null, request.user);
                     } catch (error) {
                         return done(error, null);
                     }
                 }
             );
+
             passport.use('google-oauth', googleOAuthStrategy);
             const googleTokenStrategy = new GoogleTokenStrategy(
                 { tokenFromRequest: 'header', passReqToCallback: true },
                 async (request, email, done) => {
                     try {
-                        const user = await authenticateOAuthUser(DbPool, email);
-                        request.user = user;
-                        return done(null, user, request);
+                        const userId = await authenticateOAuthUser(DbPool, email);
+                        request.user = { email, user_id: userId };
+                        return done(null, request.user, request);
                     } catch (error) {
                         return done(error, null, request);
                     }

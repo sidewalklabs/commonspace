@@ -6,7 +6,7 @@ import { createUserFromEmail } from './user';
 import {
     ALL_STUDY_FIELDS,
     javascriptArrayToPostgresArray,
-    IdAlreadyExists,
+    EntityAlreadyExists,
     IdDoesNotExist,
     studyIdToTablename,
     StudyField
@@ -392,22 +392,23 @@ export async function allSurveysForStudy(pool: pg.Pool, studyId: string) {
 
 export async function deleteStudy(pool: pg.Pool, studyId: string) {
     const tablename = await studyIdToTablename(studyId);
-    const deleteStudyTable = `DROP TABLE ${tablename}`;
-    const deleteStudy = `DELETE from data_collection.study
-                         WHERE study_id = $1`;
-    const values = [studyId];
+    const deleteStudyTable = `DROP TABLE IF EXISTS ${tablename}`;
     try {
         await pool.query(deleteStudyTable);
-        const { rowCount, command } = await pool.query(deleteStudy, values);
-        if (rowCount !== 1 && command !== 'DELETE') {
-            throw new Error(`Unable to delete study: ${studyId}`);
+        const deleteStudy = `DELETE from data_collection.study
+                             WHERE study_id = $1`;
+        const values = [studyId];
+        try {
+            const { rowCount, command } = await pool.query(deleteStudy, values);
+            if (rowCount !== 1 && command !== 'DELETE') {
+                throw new Error(`Unable to delete study: ${studyId}`);
+            }
+        } catch (error) {
+            console.error(`[[query ${deleteStudy}][values ${JSON.stringify(values)}] ${error}`);
+            throw error;
         }
     } catch (error) {
-        console.error(
-            `[sql ${deleteStudyTable}] [query ${deleteStudy}][values ${JSON.stringify(
-                values
-            )}] ${error}`
-        );
+        console.error(`[query ${deleteStudyTable}] ${error}`);
         throw error;
     }
 }
@@ -507,7 +508,7 @@ export async function createStudy(
             )}] ${error}`
         );
         if (error.code === UNIQUE_VIOLATION) {
-            throw new IdAlreadyExists(studyId);
+            throw new EntityAlreadyExists(studyId);
         }
         throw error;
     }

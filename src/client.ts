@@ -21,6 +21,26 @@ const fetchParams: RequestInit = {
     referrer: 'no-referrer'
 };
 
+export interface GenericHttpErrorInterface extends Error {
+    statusMessage: string;
+    code: number;
+    url: string;
+}
+
+export class GenericHttpError extends Error {
+    errorMessage: string;
+    code: number;
+    url: string;
+
+    constructor(message, code, url) {
+        super();
+        this.errorMessage = message;
+        this.code = code;
+        this.url = url;
+        this.message = `[url ${url}] [status ${code}] [errorMessage ${message}]`;
+    }
+}
+
 function extractBodyFromResponse<T>(f: HttpFunction): (...args: any[]) => Promise<T> {
     return (...args) => {
         return new Promise((resolve, reject) => {
@@ -67,7 +87,11 @@ const handleAllHttpErrors: (f: HttpFunction) => HttpFunction = f => (...args) =>
 function throwGenericErrorIfNot200(f: HttpFunction): HttpFunction {
     return async (...args) => {
         const response = await f(...args);
-        if (response.status !== 200) throw Error(`${response.status} ${response.statusText}`);
+        if (response.status !== 200) {
+            const { status, statusText, url } = response;
+            const errorMessage = statusText ? statusText : (await response.json()).error_message;
+            throw new GenericHttpError(errorMessage, status, url);
+        }
         return response;
     };
 }

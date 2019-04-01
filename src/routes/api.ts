@@ -18,7 +18,7 @@ import {
     getDataPointsCSV,
     addNewDataPointToSurveyNoStudyId
 } from '../datastore/datapoint';
-import { StudyField, IdAlreadyExists, IdDoesNotExist } from '../datastore/utils';
+import { StudyField, EntityAlreadyExists, IdDoesNotExist } from '../datastore/utils';
 import {
     createStudy,
     deleteStudy,
@@ -42,7 +42,7 @@ import { createLocation } from '../datastore/location';
 import DbPool from '../database';
 import { Feature, FeatureCollection, Point } from 'geojson';
 import { snakecasePayload } from '../utils';
-import { emailIsVerified, tokenIsBlacklisted } from '../auth';
+import { accountIsVerified, tokenIsBlacklisted } from '../auth';
 import {
     return404OnIdDoesNotExist,
     return401OnUnauthorizedError,
@@ -100,8 +100,7 @@ router.get(
     return500OnError(
         return401OnUnauthorizedError(async function(req, res) {
             const { user_id: userId } = req.user;
-            const isVerified = await emailIsVerified(DbPool, userId);
-            if (isVerified) {
+            if (await accountIsVerified(DbPool, userId)) {
                 res.status(200).send();
                 return;
             } else {
@@ -123,6 +122,7 @@ router.get(
             } else if (type === 'surveyor') {
                 responseBody = (await returnStudiesUserIsAssignedTo(DbPool, userId)) as Study[];
             } else if (type === 'all') {
+                // if a user is assigned to a survey for the study, that survey may show up multiple times
                 const adminStudies = (await returnStudiesForAdmin(DbPool, userId)) as Study[];
                 const suveyorStudies = (await returnStudiesUserIsAssignedTo(
                     DbPool,
@@ -252,7 +252,7 @@ router.post(
                 res.send({ ...(req.body as Study), created_at, last_updated });
             }
         } catch (error) {
-            if (error instanceof IdAlreadyExists) {
+            if (error instanceof EntityAlreadyExists) {
                 res.statusMessage = error.message;
                 res.status(409).send({ error_message: error.message });
                 return;

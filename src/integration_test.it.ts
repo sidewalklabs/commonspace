@@ -37,64 +37,6 @@ dotenv.config({
 
 const { INTEGRATION_TEST_SERVER: API_SERVER = '' } = process.env;
 
-// async function clearUserFromDatabase(email: string, map: FeatureCollection) {
-//     const host = process.env.DB_HOST;
-//     const dbUser = process.env.DB_USER;
-//     const dbPass = process.env.DB_PASS;
-//     const dbName = process.env.DB_NAME;
-//     const dbPort = parseInt(process.env.DB_PORT);
-//     const pool = new pg.Pool({
-//         max: 1,
-//         host: host,
-//         user: dbUser,
-//         password: dbPass,
-//         database: dbName,
-//         port: dbPort
-//     })
-//     const query = `DELETE
-//                    FROM data_collection.study stu
-//                    USING public.users usr
-//                    WHERE usr.user_id = stu.user_id and usr.email = $1
-//                    returning tablename`
-//     const values = [email];
-//     const { rowCount: rc1, rows } = await pool.query(query, values);
-//     await Promise.all(rows.map(({tablename}) => {
-//         return pool.query(`drop table ${tablename}`);
-//     }))
-//     await clearLocations(map);
-//     console.log(`deleted ${rc1} studies for user ${email}`)
-//     console.log(JSON.stringify(rows));
-//     const query2 = `DELETE
-//                    FROM public.users
-//                    WHERE users.email = $1`
-//     const values2 = [email];
-//     const { rowCount: rc2 } = await pool.query(query2, values2);
-//     if (rc2 === 1) {
-//         console.log(`Deleted user for email ${email}`);
-//     }
-//     return;
-// }
-
-// test that all a user's data can be deleted, could be more explicit, but tests basic not failing
-async function clearUserFromApp(maps: FeatureCollection[], token: string) {
-    await Promise.all(maps.map(m => clearLocationsFromApi(API_SERVER, m, token)));
-    try {
-        await deleteRest(API_SERVER + '/api/user', token);
-    } catch (error) {
-        if (!(error instanceof ResourceNotFoundError)) {
-            throw error;
-        }
-    }
-}
-
-beforeAll(async () => {
-    const { token: adminToDeleteToken } = await loginJwt(API_SERVER, adminUser);
-    if (adminToDeleteToken) {
-        const maps = [SeaBassFishCountStudy.map, MarchOnWashington.map];
-        await clearUserFromApp(maps, adminToDeleteToken);
-    }
-});
-
 test("we expect an authoization error if we don't yet have an authentication token", async () => {
     await expect(getRest<Study[]>(API_SERVER + '/api/studies?type=surveyor')).rejects.toThrow(
         UnauthorizedError
@@ -104,16 +46,38 @@ test("we expect an authoization error if we don't yet have an authentication tok
 describe('create/delete/modify studies', async () => {
     let surveyorToken, adminToken;
 
-    test('login a previously existing user', async () => {
+    test('login a user to be our surveyor', async () => {
         const { token } = await loginJwt(API_SERVER, surveyorUser);
         expect(token).toBeTruthy();
         surveyorToken = token;
     });
 
-    test('signup a new user', async () => {
-        const { token } = await signupJwt(API_SERVER, adminUser);
+    test('login the admin new user', async () => {
+        const { token } = await loginJwt(API_SERVER, adminUser);
         expect(token).toBeTruthy();
         adminToken = token;
+    });
+
+    test('delete any previously existing studies for the admin user', async () => {
+        const maps = [SeaBassFishCountStudy.map, MarchOnWashington.map];
+        await Promise.all(
+            maps.map(async m => await clearLocationsFromApi(API_SERVER, m, adminToken))
+        );
+
+        const studies = await getRest<Study[]>(API_SERVER + '/api/studies', adminToken);
+        const studyIds = studies.map(({ study_id: studyId }) => studyId);
+
+        await Promise.all(
+            studyIds.map(async studyId => {
+                await deleteRest(API_SERVER + '/api/studies/' + studyId, adminToken);
+            })
+        );
+
+        const studiesTwo = await getRest<Study[]>(
+            API_SERVER + '/api/studies?type=surveyor',
+            adminToken
+        );
+        expect(studiesTwo).toHaveLength(0);
     });
 
     test('create a new study', async () => {
@@ -123,10 +87,11 @@ describe('create/delete/modify studies', async () => {
             adminToken
         );
 
-        const studiesForAdmin = (await getRest<Study[]>(
-            API_SERVER + '/api/studies?type=admin',
+        const studiesForAdmin = await getRest<Study[]>(
+            API_SERVER + '/api/studies?type=surveyor',
             adminToken
-        )) as any[];
+        );
+
         expect(studiesForAdmin.length).toBe(1);
     });
 

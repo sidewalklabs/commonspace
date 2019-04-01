@@ -48,10 +48,10 @@ export function javascriptArrayToPostgresArray(xs) {
     return `{${arrayElements}}`;
 }
 
-export class IdAlreadyExists extends Error {
+export class EntityAlreadyExists extends Error {
     constructor(entityId) {
         super(entityId);
-        this.message = `Id already exists: ${entityId}`;
+        this.message = `Entity already exists: ${entityId}`;
     }
 }
 
