@@ -1,0 +1,7 @@
+dist/
+build/
+.env*
+config/
+.expo/
+.DS_Store
+node_modules/*
