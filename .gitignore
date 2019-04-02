@@ -1,0 +1,12 @@
+dist/
+build/
+functions/lib/
+js_scripts/
+.env*
+config/firebase-gcp.yml
+config/firebase-gmail.yml
+config/env.yml
+config/development.env
+.expo/
+.DS_Store
+node_modules/*
