@@ -31,7 +31,7 @@ yarn
 
 1. Run the develop script
 ```
-./deployment/develop.sh
+cd /deployment && ./develop.sh
 ```
 
 1. In another terminal tab, bundle the front end app
