@@ -7,6 +7,7 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 
 import AppBar from './AppBar';
+import DeleteStudy from './DeleteStudy';
 import FieldsList from './FieldsList';
 import MapView from './MapView';
 import StudiesList from './StudiesList';
@@ -104,6 +105,9 @@ const Main = observer((props: MainProps & WithStyles) => {
                 </div>
                 <WrapInModal modalName={'study'} visibleModal={visibleModal}>
                     <StudyView study={currentStudy} studyIsNew={uiState.currentStudyIsNew} />
+                </WrapInModal>
+                <WrapInModal modalName={'deleteStudy'} visibleModal={visibleModal}>
+                    <DeleteStudy study={currentStudy} />
                 </WrapInModal>
                 <WrapInModal modalName={'surveyors'} visibleModal={visibleModal}>
                     <SurveyorsView studyId={studyId} surveyors={surveyors} />

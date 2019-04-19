@@ -14,16 +14,14 @@ import Typography from '@material-ui/core/Typography';
 
 import LockedMapView from './LockedMapView';
 
-import uiState, { closeModalIfVisible, setSnackBar } from '../stores/ui';
+import uiState, { closeModalIfVisible } from '../stores/ui';
 import applicationState, {
     saveNewStudy,
     updateStudy,
     Study,
     getMapCenterForStudy
 } from '../stores/applicationState';
-import { groupArrayOfObjectsBy, snakecasePayload } from '../utils';
-import { putRest } from '../client';
-import { Study as RestStudy } from '../routes/api_types';
+import { groupArrayOfObjectsBy } from '../utils';
 
 const styles = theme => ({
     container: {
@@ -82,7 +80,7 @@ const styles = theme => ({
         backgroundColor: '#F2F2F2',
         borderBottom: `1px solid ${theme.palette.divider}`
     },
-    csvButton: {
+    footerButton: {
         marginRight: theme.spacing.unit
     }
 });
@@ -179,13 +177,6 @@ const StudyView = observer((props: any & WithStyles) => {
         }
     ];
 
-    const PROTOCOL_SELECTIONS = [
-        {
-            value: '1.0',
-            label: 'latest'
-        }
-    ];
-
     const { study, classes, studyIsNew } = props;
     if (study) {
         const {
@@ -197,7 +188,6 @@ const StudyView = observer((props: any & WithStyles) => {
             studyId,
             fields,
             surveyors,
-            protocolVersion,
             status,
             type,
             map,
@@ -386,29 +376,40 @@ const StudyView = observer((props: any & WithStyles) => {
                                 )
                             }}
                         />
-                        <div>
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        color="primary"
-                                        checked={studyIsCompleted}
-                                        onChange={() => {
-                                            applicationState.studies[studyId].status =
-                                                status === 'active' ? 'completed' : 'active';
-                                        }}
-                                    />
-                                }
-                                label="Completed"
-                            />
-                        </div>
+                        {!studyIsNew && (
+                            <div>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            color="primary"
+                                            checked={studyIsCompleted}
+                                            onChange={() => {
+                                                applicationState.studies[studyId].status =
+                                                    status === 'active' ? 'completed' : 'active';
+                                            }}
+                                        />
+                                    }
+                                    label="Completed"
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
                 <div className={classes.footer}>
-                    {!!datapoints.length && (
+                    {!studyIsNew && (
                         <Button
                             variant="contained"
                             color="secondary"
-                            className={classes.csvButton}
+                            className={classes.footerButton}
+                            onClick={() => uiState.modalStack.push('deleteStudy')}
+                        >
+                            Delete Study
+                        </Button>
+                    )}
+                    {!!datapoints.length && (
+                        <Button
+                            variant="contained"
+                            className={classes.footerButton}
                             onClick={() => downloadDataAsCsv(studyId)}
                         >
                             Download Study Data As CSV
