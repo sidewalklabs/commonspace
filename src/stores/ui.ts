@@ -8,6 +8,7 @@ interface AvailableLocation {
 export type AvailableModals =
     | 'studyFields'
     | 'study'
+    | 'deleteStudy'
     | 'surveyors'
     | 'surveys'
     | 'error'
