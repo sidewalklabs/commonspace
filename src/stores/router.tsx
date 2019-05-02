@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { observable, autorun } from 'mobx';
 import pathToRegexp from 'path-to-regexp';
-import { init } from './applicationState';
+import { init, initCurrentStudy } from './applicationState';
+import parse from 'url-parse';
 
 type BooleanFunction = (...args: any[]) => boolean;
 type ElementFunction = (...props: any[]) => JSX.Element;
@@ -37,6 +38,27 @@ export function addSideEffectRoute<T>(
     } else {
         return null;
     }
+}
+
+// Parses a query string into a key/value dictionary
+export function queryParamsParse(queryString: string) {
+    const asArr = queryString.substr(1).split('&');
+    // put them into a dictionary
+    return asArr.reduce((acc, s) => {
+        const [key, value] = s.split('=');
+        const next = {};
+        let nextValue = value;
+
+        if (value === 'true' || value === 'false') {
+            nextValue = JSON.parse(String(value));
+        }
+
+        next[key] = nextValue;
+        return {
+            ...acc,
+            ...next
+        };
+    }, {});
 }
 
 window.addEventListener(
@@ -88,8 +110,15 @@ const router: Router = observable({
 });
 
 autorun(async () => {
-    if (router.uri === '/studies') {
+    const uri = parse(router.uri);
+    const { pathname, query } = uri;
+
+    if (pathname === '/studies') {
         await init();
+    } else if (pathname === '/study') {
+        // @ts-ignore
+        const { studyId } = queryParamsParse(query);
+        await initCurrentStudy(studyId);
     }
 });
 

@@ -68,7 +68,7 @@ async function downloadUserData() {
 
 // This is a stopgap until client knows about auth state reliably
 interface AppBarProps {
-    rightHeaderType?: 'login' | 'account-menu';
+    rightHeaderType?: 'login' | 'account-menu' | 'none';
 }
 
 const CustomAppBar = observer((props: AppBarProps & WithStyles) => {

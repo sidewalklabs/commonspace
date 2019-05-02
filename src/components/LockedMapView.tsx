@@ -48,7 +48,6 @@ const styles = theme => ({
         position: 'relative',
         width: '100%',
         flex: 1,
-        marginTop: theme.spacing.unit * 3,
         overflow: 'auto'
     },
     map: {

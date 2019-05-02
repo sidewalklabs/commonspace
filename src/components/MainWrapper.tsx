@@ -17,10 +17,17 @@ import SignUpView from './SignUpView';
 import SplashView from './SplashView';
 import TermsView from './TermsView';
 import PageNotFoundView from './PageNotFoundView';
+import PublicDataPortalView from './PublicDataPortalView';
 
 import { ApplicationState } from '../stores/applicationState';
 import { UiState } from '../stores/ui';
-import { Router, addSideEffectRoute, assignComponentToRoute, navigate } from '../stores/router';
+import {
+    Router,
+    addSideEffectRoute,
+    assignComponentToRoute,
+    navigate,
+    queryParamsParse
+} from '../stores/router';
 import { getRest } from '../client';
 
 interface MainProps {
@@ -36,26 +43,6 @@ const styles = theme => ({
         overflow: 'auto'
     }
 });
-
-function queryParamsParse(queryString: string) {
-    const asArr = queryString.substr(1).split('&');
-    // put them into a dictionary
-    return asArr.reduce((acc, s) => {
-        const [key, value] = s.split('=');
-        const next = {};
-        let nextValue = value;
-
-        if (value === 'true' || value === 'false') {
-            nextValue = JSON.parse(String(value));
-        }
-
-        next[key] = nextValue;
-        return {
-            ...acc,
-            ...next
-        };
-    }, {});
-}
 
 const BASE_URL_MATCH = /^\/([^\/]*).*$/;
 
@@ -96,7 +83,13 @@ const MainWrapper = observer((props: MainProps & WithStyles) => {
         }),
         studies: assignComponentToRoute('/studies', () => (
             <MainView applicationState={applicationState} />
-        ))
+        )),
+        study: assignComponentToRoute('/study', () => {
+            const { query } = parse(uri);
+            // @ts-ignore
+            const { studyId } = queryParamsParse(query);
+            return <PublicDataPortalView studyId={studyId} />;
+        })
     };
 
     const { pathname } = parse(uri);
