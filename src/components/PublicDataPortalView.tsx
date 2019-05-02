@@ -159,7 +159,7 @@ const PublicDataPortal = observer((props: PublicDataPortalProps & WithStyles & W
         createdAt
     } = currentStudy;
     // Hardcoded for now, will be passed in with currentStudy
-    const isPublic = true;
+    const isPublic = false;
     const { latitude, longitude } = getMapCenterForStudy(studyId);
     const startDate = new Date(surveys[surveys.length - 1].start_date).toLocaleDateString();
     const endDate = new Date(surveys[0].start_date).toLocaleDateString();
