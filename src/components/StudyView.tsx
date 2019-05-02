@@ -16,6 +16,7 @@ import LockedMapView from './LockedMapView';
 
 import uiState, { closeModalIfVisible } from '../stores/ui';
 import applicationState, {
+    downloadDataAsCsv,
     saveNewStudy,
     updateStudy,
     Study,
@@ -55,6 +56,11 @@ const styles = theme => ({
     map: {
         width: '300px',
         height: '300px'
+    },
+    mapContainer: {
+        marginTop: theme.spacing.unit * 2,
+        flex: 1,
+        display: 'flex'
     },
     undisabled: {
         // this component is disabled to prevent text input interaction and UI feedback
@@ -99,25 +105,6 @@ async function create(study) {
 interface CreateOrUpdateButtonProps {
     study: Study;
     studyIsNew: boolean;
-}
-
-async function downloadDataAsCsv(studyId: string) {
-    const response = await fetch(`/api/studies/${studyId}/download`, {
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'same-origin',
-        redirect: 'follow',
-        referrer: 'no-referrer',
-        headers: {
-            Accept: 'text/csv'
-        }
-    });
-    const url = window.URL.createObjectURL(await response.blob());
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'data.csv');
-    document.body.appendChild(link);
-    link.click();
 }
 
 // @ts-ignore
@@ -248,13 +235,15 @@ const StudyView = observer((props: any & WithStyles) => {
                 <div className={classes.columns}>
                     <div className={classes.column}>
                         <StudyTypeField />
-                        <LockedMapView
-                            isEditable
-                            showOverlay={!features.length}
-                            lat={latitude}
-                            lng={longitude}
-                            featureCollection={map}
-                        />
+                        <div className={classes.mapContainer}>
+                            <LockedMapView
+                                isEditable
+                                showOverlay={!features.length}
+                                lat={latitude}
+                                lng={longitude}
+                                featureCollection={map}
+                            />
+                        </div>
                     </div>
                     <div className={classes.column}>
                         <TextField

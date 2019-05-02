@@ -367,4 +367,38 @@ export function getMapCenterForStudy(studyId: string) {
     return { latitude, longitude };
 }
 
+export async function initCurrentStudy(studyId: string) {
+    try {
+        const studies = camelcaseKeys(await getRest('/api/studies?type=admin'));
+        // TODO: Replace this with a request to public study
+        studies.forEach(study => {
+            if (study.studyId === studyId) {
+                applicationState.currentStudy = study;
+            }
+        });
+    } catch (error) {
+        setSnackBar('error', `Unable to get study data!`);
+        throw error;
+    }
+}
+
+export async function downloadDataAsCsv(studyId: string) {
+    const response = await fetch(`/api/studies/${studyId}/download`, {
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        redirect: 'follow',
+        referrer: 'no-referrer',
+        headers: {
+            Accept: 'text/csv'
+        }
+    });
+    const url = window.URL.createObjectURL(await response.blob());
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'data.csv');
+    document.body.appendChild(link);
+    link.click();
+}
+
 export default applicationState;
