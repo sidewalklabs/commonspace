@@ -158,168 +158,146 @@ const PublicDataPortal = observer((props: PublicDataPortalProps & WithStyles & W
         // isPublic,
         createdAt
     } = currentStudy;
-    // Hardcoded for now, will be passed in with currentStudy
-    const isPublic = false;
     const { latitude, longitude } = getMapCenterForStudy(studyId);
     const startDate = new Date(surveys[surveys.length - 1].start_date).toLocaleDateString();
     const endDate = new Date(surveys[0].start_date).toLocaleDateString();
 
     return (
         <div className={classes.root}>
-            <AppBar rightHeaderType={!isPublic ? 'none' : 'account-menu'} />
+            <AppBar rightHeaderType="account-menu" />
             <div className={classes.mainBody}>
-                {!isPublic && (
-                    <div className={classes.header}>
-                        <Typography variant="h6"> Study is not public.</Typography>
-                    </div>
-                )}
-                {isPublic && (
-                    <Fragment>
-                        <Paper className={classes.paperContainer}>
-                            <div className={classes.row}>
-                                <div>
-                                    <Typography
-                                        component="h1"
-                                        variant="h5"
-                                        color="inherit"
-                                        noWrap
-                                        gutterBottom
-                                        className={classes.title}
-                                    >
-                                        {title}
-                                    </Typography>
-                                    <div className={classes.subheader}>
-                                        <Typography color="textSecondary" variant="subtitle2">
-                                            {startDate} - {endDate}
-                                        </Typography>
-                                    </div>
-                                    <div className={classes.subheader}>
-                                        <Typography color="textSecondary" variant="subtitle2">
-                                            Study Status: {status}
-                                        </Typography>
-                                    </div>
-                                </div>
-                                <div>
-                                    {isWidthUp('sm', width) && (
-                                        <Button
-                                            color="primary"
-                                            className={classes.iconLinks}
-                                            onClick={() => downloadDataAsCsv(studyId)}
-                                            disabled={!datapoints.length}
-                                        >
-                                            <DownloadIcon className={classes.downloadIcon} />
-                                            Download Data
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-                            <Divider variant="middle" />
-                            <div className={classes.row}>
-                                <div className={classes.description}>
-                                    <Typography variant="body2">{description}</Typography>
-                                </div>
-                            </div>
-                            <div className={classes.row}>
-                                <div className={classes.iconList}>
-                                    <div className={classes.iconContainer}>
-                                        <div className={classes.halo}>
-                                            <StationaryIcon
-                                                color="primary"
-                                                className={classes.icon}
-                                            />
-                                        </div>
-                                        <Typography color="primary" variant="body2">
-                                            {type === 'stationary' && 'Stationary Count'}
-                                            {type === 'movement' && 'Line of Sight'}
-                                        </Typography>
-                                    </div>
-                                    <div className={classes.iconContainer}>
-                                        <div className={classes.halo}>
-                                            <ShiftsIcon color="primary" className={classes.icon} />
-                                        </div>
-                                        <Typography color="primary" variant="body2">
-                                            {surveys.length} Survey
-                                            {surveys.length === 1 && ' Shift'}
-                                            {surveys.length > 1 && ' Shifts'}
-                                        </Typography>
-                                    </div>
-                                    <div className={classes.iconContainer}>
-                                        <div className={classes.halo}>
-                                            <ActivitiesIcon
-                                                color="primary"
-                                                className={classes.icon}
-                                            />
-                                        </div>
-                                        <Typography color="primary" variant="body2">
-                                            {fields.length - 1} Activities
-                                        </Typography>
-                                    </div>
-                                    <div className={classes.iconContainer}>
-                                        <div className={classes.halo}>
-                                            <PeopleIcon color="primary" className={classes.icon} />
-                                        </div>
-                                        <Typography color="primary" variant="body2">
-                                            {datapoints.length} Data Points
-                                        </Typography>
-                                    </div>
-                                </div>
-                            </div>
-                            <Divider variant="middle" />
-                            <div className={classes.row}>
-                                <div className={classes.map}>
-                                    <LockedMapView
-                                        isEditable={false}
-                                        showOverlay={false}
-                                        lat={latitude}
-                                        lng={longitude}
-                                        featureCollection={map}
-                                        className={classes.mapEdit}
-                                    />
-                                </div>
-                            </div>
-                        </Paper>
-                        <Paper className={classes.paperContainer}>
-                            <div className={classes.row}>
-                                <Typography
-                                    component="h1"
-                                    variant="h6"
-                                    color="inherit"
-                                    noWrap
-                                    gutterBottom
-                                    className={classes.title}
-                                >
-                                    Organizers
+                <Paper className={classes.paperContainer}>
+                    <div className={classes.row}>
+                        <div>
+                            <Typography
+                                component="h1"
+                                variant="h5"
+                                color="inherit"
+                                noWrap
+                                gutterBottom
+                                className={classes.title}
+                            >
+                                {title}
+                            </Typography>
+                            <div className={classes.subheader}>
+                                <Typography color="textSecondary" variant="subtitle2">
+                                    {startDate} - {endDate}
                                 </Typography>
                             </div>
-                            <Divider variant="fullWidth" />
-                            <div className={classes.row}>
-                                <div className={classes.subheader}>
-                                    <Typography variant="subtitle2"> {author} </Typography>
-                                </div>
-                                <div>
-                                    <Typography color="textSecondary" variant="subtitle2">
-                                        Last Updated: {new Date(lastUpdated).toLocaleDateString()}
-                                    </Typography>
-                                    <Typography color="textSecondary" variant="subtitle2">
-                                        Created Study: {new Date(createdAt).toLocaleDateString()}
-                                    </Typography>
-                                </div>
-                                <div style={{ maxWidth: '300px' }}>
-                                    <a href={authorUrl} target="_blank">
-                                        <Typography
-                                            noWrap
-                                            gutterBottom
-                                            color="inherit"
-                                            variant="subtitle2"
-                                        >
-                                            {authorUrl}
-                                        </Typography>
-                                    </a>
-                                </div>
+                            <div className={classes.subheader}>
+                                <Typography color="textSecondary" variant="subtitle2">
+                                    Study Status: {status}
+                                </Typography>
                             </div>
-                        </Paper>
-                    </Fragment>
-                )}
+                        </div>
+                        <div>
+                            {isWidthUp('sm', width) && (
+                                <Button
+                                    color="primary"
+                                    className={classes.iconLinks}
+                                    onClick={() => downloadDataAsCsv(studyId)}
+                                    disabled={!datapoints.length}
+                                >
+                                    <DownloadIcon className={classes.downloadIcon} />
+                                    Download Data
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                    <Divider variant="middle" />
+                    <div className={classes.row}>
+                        <div className={classes.description}>
+                            <Typography variant="body2">{description}</Typography>
+                        </div>
+                    </div>
+                    <div className={classes.row}>
+                        <div className={classes.iconList}>
+                            <div className={classes.iconContainer}>
+                                <div className={classes.halo}>
+                                    <StationaryIcon color="primary" className={classes.icon} />
+                                </div>
+                                <Typography color="primary" variant="body2">
+                                    {type === 'stationary' && 'Stationary Count'}
+                                    {type === 'movement' && 'Line of Sight'}
+                                </Typography>
+                            </div>
+                            <div className={classes.iconContainer}>
+                                <div className={classes.halo}>
+                                    <ShiftsIcon color="primary" className={classes.icon} />
+                                </div>
+                                <Typography color="primary" variant="body2">
+                                    {surveys.length} Survey
+                                    {surveys.length === 1 && ' Shift'}
+                                    {surveys.length > 1 && ' Shifts'}
+                                </Typography>
+                            </div>
+                            <div className={classes.iconContainer}>
+                                <div className={classes.halo}>
+                                    <ActivitiesIcon color="primary" className={classes.icon} />
+                                </div>
+                                <Typography color="primary" variant="body2">
+                                    {fields.length - 1} Activities
+                                </Typography>
+                            </div>
+                            <div className={classes.iconContainer}>
+                                <div className={classes.halo}>
+                                    <PeopleIcon color="primary" className={classes.icon} />
+                                </div>
+                                <Typography color="primary" variant="body2">
+                                    {datapoints.length} Data Points
+                                </Typography>
+                            </div>
+                        </div>
+                    </div>
+                    <Divider variant="middle" />
+                    <div className={classes.row}>
+                        <div className={classes.map}>
+                            <LockedMapView
+                                isEditable={false}
+                                showOverlay={false}
+                                lat={latitude}
+                                lng={longitude}
+                                featureCollection={map}
+                                className={classes.mapEdit}
+                            />
+                        </div>
+                    </div>
+                </Paper>
+                <Paper className={classes.paperContainer}>
+                    <div className={classes.row}>
+                        <Typography
+                            component="h1"
+                            variant="h6"
+                            color="inherit"
+                            noWrap
+                            gutterBottom
+                            className={classes.title}
+                        >
+                            Organizers
+                        </Typography>
+                    </div>
+                    <Divider variant="fullWidth" />
+                    <div className={classes.row}>
+                        <div className={classes.subheader}>
+                            <Typography variant="subtitle2"> {author} </Typography>
+                        </div>
+                        <div>
+                            <Typography color="textSecondary" variant="subtitle2">
+                                Last Updated: {new Date(lastUpdated).toLocaleDateString()}
+                            </Typography>
+                            <Typography color="textSecondary" variant="subtitle2">
+                                Created Study: {new Date(createdAt).toLocaleDateString()}
+                            </Typography>
+                        </div>
+                        <div style={{ maxWidth: '300px' }}>
+                            <a href={authorUrl} target="_blank">
+                                <Typography noWrap gutterBottom color="inherit" variant="subtitle2">
+                                    {authorUrl}
+                                </Typography>
+                            </a>
+                        </div>
+                    </div>
+                </Paper>
             </div>
         </div>
     );
