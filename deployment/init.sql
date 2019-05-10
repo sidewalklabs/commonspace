@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS study
     state_date TIMESTAMP WITH TIME ZONE,
     end_date TIMESTAMP WITH TIME ZONE,
     scale studyScale,
+    is_public BOOLEAN DEFAULT FALSE,
     user_id UUID REFERENCES public.users(user_id) NOT NULL,
     protocol_version TEXT NOT NULL,
     study_type studyType NOT NULL,

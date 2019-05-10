@@ -78,4 +78,5 @@ export interface Study {
     created_at?: any;
     last_updated?: any;
     data_points?: DataPoint[];
+    is_public?: boolean;
 }

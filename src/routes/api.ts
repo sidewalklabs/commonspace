@@ -3,6 +3,7 @@ import cookieParser from 'cookie-parser';
 import express, { Request, Response } from 'express';
 import moment from 'moment';
 import { parse as json2csv } from 'json2csv';
+import pathToRegexp from 'path-to-regexp';
 import passport from 'passport';
 import { NOT_NULL_VIOLATION, UNIQUE_VIOLATION } from 'pg-error-constants';
 import uuid from 'uuid';
@@ -33,6 +34,7 @@ import {
     userIdIsAdminOfStudy,
     usersSurveysForStudy,
     returnStudyMetadata,
+    returnDataPortalStudyMetadata,
     getSurveyorsForStudy,
     deleteSurveyorFromStudy
 } from '../datastore/study';
@@ -50,6 +52,13 @@ import {
 } from './errors';
 
 import { DataPoint, Study, Survey } from './api_types';
+import { url } from 'inspector';
+
+const PUBLIC_ROUTES: RegExp[] = [
+    '/studies/:studyId/portal',
+    '/studies/:studyId/datapoints',
+    '/studies/:studyId/download'
+].map(value => pathToRegexp(value));
 
 const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org/reverse?format=json';
 
@@ -80,7 +89,30 @@ const router = express.Router();
 
 router.use(cookieParser());
 
-router.use(passport.authenticate('jwt', { session: false }));
+function isPublicRoute(url: string) {
+    return PUBLIC_ROUTES.reduce((acc, re) => {
+        if (acc) {
+            return acc;
+        } else if (re.exec(url)) {
+            return true;
+        } else {
+            return false;
+        }
+    }, false);
+}
+
+router.use(function(req, res, next) {
+    passport.authenticate('jwt', { session: false }, function(err, user, info) {
+        req.user = user;
+        if (info && info.toString() === 'Error: No auth token') {
+            if (isPublicRoute(req.url)) {
+                req.user = { user_id: null };
+            }
+            return next();
+        }
+        next();
+    })(req, res, next);
+});
 
 router.use(checkAgainstTokenBlacklist);
 
@@ -144,7 +176,8 @@ router.get(
     '/studies/download',
     return500OnError(async (req: Request, res: Response) => {
         const { user_id: userId } = req.user;
-        const studies: Study[] = await returnStudiesForAdmin(DbPool, userId);
+
+        const studies = await returnStudiesForAdmin(DbPool, userId);
         const studiesWithDataPoints = await Promise.all(
             studies.map(async study => {
                 const surveyIdToSurvey = await Promise.all(
@@ -188,7 +221,8 @@ async function saveStudyForUser(userId: string, inputStudy: Study) {
         surveys = [],
         map,
         fields,
-        description
+        description,
+        is_public: isPublic = false
     } = inputStudy;
     const { lastUpdated, createdAt } = await createStudy(DbPool, {
         studyId,
@@ -202,7 +236,8 @@ async function saveStudyForUser(userId: string, inputStudy: Study) {
         map,
         location,
         fields,
-        description
+        description,
+        isPublic
     });
     const newUserIds = await Promise.all(
         surveyors.map(async email => {
@@ -277,6 +312,7 @@ router.get(
                     studyId: study_id,
                     authorUrl: author_url,
                     protocolVersion: protocol_version,
+                    isPublic: is_public,
                     title,
                     author,
                     type,
@@ -299,7 +335,8 @@ router.get(
                     location,
                     map,
                     description,
-                    surveyors
+                    surveyors,
+                    is_public
                 };
                 res.status(200).send(study);
             })
@@ -323,10 +360,61 @@ router.delete(
     )
 );
 
+// Selected data to be used for Data Portal view
+router.get(
+    '/studies/:studyId/portal',
+    return500OnError(
+        return404OnIdDoesNotExist(async (req: Request, res: Response) => {
+            const { studyId } = req.params;
+            const { user_id: userId } = req.user;
+
+            let studyMetadataForPortal;
+            if (await userIdIsAdminOfStudy(DbPool, studyId, userId)) {
+                studyMetadataForPortal = await returnStudyMetadata(DbPool, studyId);
+            } else {
+                studyMetadataForPortal = await returnDataPortalStudyMetadata(DbPool, studyId);
+            }
+
+            const {
+                author_url,
+                protocol_version,
+                title,
+                author,
+                type,
+                status,
+                fields,
+                location,
+                map,
+                description,
+                isPublic,
+                createdAt,
+                lastUpdated
+            } = studyMetadataForPortal;
+            const studyForDataPortal = {
+                studyId,
+                author_url,
+                protocol_version,
+                title,
+                author,
+                type,
+                status,
+                fields,
+                location,
+                map,
+                description,
+                isPublic,
+                createdAt,
+                lastUpdated
+            };
+            res.status(200).send(studyForDataPortal);
+        })
+    )
+);
+
 router.get(
     '/studies/:studyId/download',
     return500OnError(
-        return401OnUnauthorizedError(async (req: Request, res: Response) => {
+        return404OnIdDoesNotExist(async (req: Request, res: Response) => {
             if (req.headers['accept'] && req.headers['accept'] === 'text/csv') {
                 const { user_id: userId } = req.user;
                 const { studyId } = req.params;
@@ -334,6 +422,7 @@ router.get(
                     throw new UnauthorizedError(req.route, userId);
                     return;
                 }
+
                 const dataPoints = await getDataPointsCSV(DbPool, userId, studyId);
                 const csv = json2csv(dataPoints);
                 res.set('Content-Type', 'text/csv');
@@ -351,6 +440,8 @@ router.get(
             const { studyId } = req.params;
             if (!(await userIdIsAdminOfStudy(DbPool, studyId, userId))) {
                 throw new UnauthorizedError(req.route, userId);
+                return;
+            } else if (!userId) {
                 return;
             }
             const dataPoints = await getDataPointsForStudy(DbPool, userId, studyId);
