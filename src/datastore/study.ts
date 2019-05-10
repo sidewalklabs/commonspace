@@ -36,6 +36,9 @@ export interface Study {
     scale?: StudyScale;
     areas?: any;
     userId: string;
+    isPublic: boolean;
+    createdAt?: string;
+    lastUpdated?: string;
     type: StudyType;
     map?: FeatureCollection;
     status: StudyStatus;
@@ -110,11 +113,14 @@ export async function returnStudyMetadata(
                        stu.author_url,
                        stu.status,
                        stu.protocol_version,
+                       stu.is_public,
                        stu.study_type,
                        stu.fields,
                        stu.location,
                        stu.map,
                        stu.description,
+                       stu.created_at,
+                       stu.last_updated,
                        sas.emails
                    FROM data_collection.study stu
                    LEFT JOIN study_and_surveyors sas
@@ -129,6 +135,9 @@ export async function returnStudyMetadata(
         const {
             author_url: authorUrl,
             protocol_version: protocolVersion,
+            is_public: isPublic,
+            created_at: createdAt,
+            last_updated: lastUpdated,
             study_type: type,
             emails: surveyors
         } = rows[0];
@@ -137,6 +146,9 @@ export async function returnStudyMetadata(
             ...study,
             authorUrl,
             protocolVersion,
+            isPublic,
+            createdAt,
+            lastUpdated,
             type,
             studyId,
             surveyors
@@ -184,6 +196,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                         stu.title,
                         stu.author,
                         stu.author_url,
+                        stu.is_public,
                         stu.description,
                         stu.protocol_version,
                         stu.map,
@@ -210,6 +223,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                 author,
                 author_url: authorUrl,
                 description,
+                is_public,
                 location,
                 protocol_version,
                 study_type: type,
@@ -229,6 +243,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
                     author,
                     authorUrl,
                     description,
+                    is_public,
                     protocol_version,
                     map,
                     location,
@@ -257,7 +272,7 @@ export async function returnStudiesForAdmin(pool: pg.Pool, userId: string) {
 }
 
 export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: string) {
-    const query = `SELECT stu.study_id, stu.title as study_title, stu.author, stu.author_url, stu.description, stu.location, stu.protocol_version, stu.study_type, stu.status, stu.fields, stu.map, svy.survey_id, svy.title as survey_title, svy.start_date, svy.end_date, ST_AsGeoJSON(loc.geometry)::json as survey_location, created_at, last_updated
+    const query = `SELECT stu.study_id, stu.title as study_title, stu.author, stu.author_url, stu.description, stu.location, stu.protocol_version, stu.is_public, stu.study_type, stu.status, stu.fields, stu.map, svy.survey_id, svy.title as survey_title, svy.start_date, svy.end_date, ST_AsGeoJSON(loc.geometry)::json as survey_location, created_at, last_updated
                  FROM data_collection.survey as svy
                  JOIN data_collection.study as stu
                  ON svy.study_id = stu.study_id
@@ -274,6 +289,7 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
                 author,
                 author_url: authorUrl,
                 description,
+                is_public: isPublic,
                 location,
                 protocol_version,
                 fields,
@@ -305,6 +321,7 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
                     author,
                     authorUrl,
                     description,
+                    isPublic,
                     type,
                     status,
                     map,
@@ -322,6 +339,64 @@ export async function returnStudiesUserIsAssignedTo(pool: pg.Pool, userId: strin
         return Object.values(studiesAndSurveys);
     } catch (error) {
         console.error(`[sql ${query}] ${error}`);
+        throw error;
+    }
+}
+
+// Should only be called if access
+export async function returnDataPortalStudyMetadata(
+    pool: pg.Pool,
+    studyId: string
+): Promise<Study> {
+    const query = `SELECT
+                        study_id,
+                        title,
+                        author,
+                        author_url,
+                        is_public,
+                        description,
+                        protocol_version,
+                        map,
+                        status,
+                        study_type,
+                        fields,
+                        location,
+                        created_at,
+                        last_updated
+                    FROM
+                        data_collection.study
+                    WHERE
+                        study_id=$1`;
+    const values = [studyId];
+    try {
+        const { rows, rowCount } = await pool.query(query, values);
+        if (rowCount !== 1) {
+            throw new IdDoesNotExist(studyId);
+        }
+        const {
+            author_url: authorUrl,
+            is_public: isPublic,
+            created_at: createdAt,
+            last_updated: lastUpdated,
+            protocol_version: protocolVersion,
+            study_type: type
+        } = rows[0];
+        if (!isPublic) {
+            throw new IdDoesNotExist(studyId);
+        }
+        const study = rows[0] as Study;
+        return {
+            ...study,
+            authorUrl,
+            isPublic,
+            createdAt,
+            lastUpdated,
+            protocolVersion,
+            type,
+            studyId
+        };
+    } catch (error) {
+        console.error(`[sql ${query}][values ${JSON.stringify(values)}] ${error}`);
         throw error;
     }
 }
@@ -527,7 +602,7 @@ export async function createStudy(
 export async function getFieldsAndTablenameForStudy(
     pool: pg.Pool,
     studyId: string,
-    userId: string
+    userId?: string
 ): Promise<{ fields: string[]; tablename: string }> {
     const query = `SELECT study_id, fields, tablename
                    FROM data_collection.study
@@ -554,6 +629,7 @@ export async function updateStudy(pool: pg.Pool, study: Study) {
         author,
         authorUrl,
         description,
+        isPublic,
         protocolVersion,
         type,
         status,
@@ -563,12 +639,12 @@ export async function updateStudy(pool: pg.Pool, study: Study) {
     } = study;
     const studyTablename = studyIdToTablename(studyId);
     const lastUpdated = Date.now() / 1000;
-    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, author, author_url, description, protocol_version, study_type, status, fields, tablename, map, location, last_updated)
-VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, to_timestamp($14))`;
+    const newStudyMetadataQuery = `INSERT INTO data_collection.study(study_id, title, user_id, author, author_url, description, is_public, protocol_version, study_type, status, fields, tablename, map, location, last_updated)
+VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, to_timestamp($15))`;
     const query = `${newStudyMetadataQuery}
                    ON CONFLICT (study_id)
-                   DO UPDATE SET (title, author, author_url, description, protocol_version, status, fields, map, location, last_updated)
-                       = ($15, $16, $17, $18, $19, $20, $21, $22, $23, to_timestamp($24))
+                   DO UPDATE SET (title, author, author_url, description, is_public, protocol_version, status, fields, map, location, last_updated)
+                       = ($16, $17, $18, $19, $20, $21, $22, $23, $24, $25, to_timestamp($26))
                        RETURNING last_updated`;
     const values = [
         studyId,
@@ -577,6 +653,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, to_timestamp($14)
         author,
         authorUrl,
         description,
+        isPublic,
         protocolVersion,
         type,
         status,
@@ -589,6 +666,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, to_timestamp($14)
         author,
         authorUrl,
         description,
+        isPublic,
         protocolVersion,
         status,
         fields,

@@ -185,6 +185,25 @@ describe('create/delete/modify studies', async () => {
         expect(multipleStudies.length).toBe(saveMultipleStudies.length);
     });
 
+    test('should be able to take a study that is not public and make it public', async () => {
+        const publicStudy = {
+            ...SeaBassFishCountStudy,
+            is_public: true
+        };
+
+        await putRest<Study, any>(
+            API_SERVER + `/api/studies/${publicStudy.study_id}`,
+            publicStudy,
+            adminToken
+        );
+
+        const study = await getRest<Study>(
+            API_SERVER + `/api/studies/${publicStudy.study_id}`,
+            adminToken
+        );
+        expect(study.is_public).toBeTruthy();
+    });
+
     test('save data points to a survey if user is a surveyor', async () => {
         const surveyorSurvey = SeaBassFishCountStudy.surveys.filter(({ email }) => {
             return email === surveyorUser.email;

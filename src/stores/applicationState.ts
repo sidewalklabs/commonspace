@@ -46,6 +46,7 @@ export interface Study {
     author: string;
     authorUrl: string;
     description: string;
+    isPublic: boolean;
     protocolVersion: string;
     surveys: { [key: string]: any };
     surveyors: string[];
@@ -238,6 +239,7 @@ export function studyEmptySkeleton(): Study {
         authorUrl: '',
         description: '',
         location: '',
+        isPublic: false,
         protocolVersion: '1.0',
         status: 'active',
         surveys: {},
@@ -369,13 +371,20 @@ export function getMapCenterForStudy(studyId: string) {
 
 export async function initCurrentStudy(studyId: string) {
     try {
-        const studies = camelcaseKeys(await getRest('/api/studies?type=admin'));
-        // TODO: Replace this with a request to public study
-        studies.forEach(study => {
-            if (study.studyId === studyId) {
-                applicationState.currentStudy = study;
+        applicationState.currentStudy = camelcaseKeys(
+            await getRest(`/api/studies/${studyId}/portal`)
+        );
+
+        if (applicationState.currentStudy) {
+            try {
+                applicationState.currentStudy.datapoints = camelcaseKeys(
+                    await getRest(`/api/studies/${studyId}/datapoints`)
+                );
+            } catch (error) {
+                setSnackBar('error', `Unable to get study datapoints!`);
+                throw error;
             }
-        });
+        }
     } catch (error) {
         setSnackBar('error', `Unable to get study data!`);
         throw error;

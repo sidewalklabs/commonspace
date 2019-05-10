@@ -147,20 +147,16 @@ const PublicDataPortal = observer((props: PublicDataPortalProps & WithStyles & W
         authorUrl,
         description,
         fields,
-        surveys = {},
-        surveyors,
         status,
         title,
         map,
         type,
         datapoints = [],
+        createdAt,
         lastUpdated,
-        // isPublic,
-        createdAt
+        isPublic
     } = currentStudy;
     const { latitude, longitude } = getMapCenterForStudy(studyId);
-    const startDate = new Date(surveys[surveys.length - 1].start_date).toLocaleDateString();
-    const endDate = new Date(surveys[0].start_date).toLocaleDateString();
 
     return (
         <div className={classes.root}>
@@ -179,11 +175,6 @@ const PublicDataPortal = observer((props: PublicDataPortalProps & WithStyles & W
                             >
                                 {title}
                             </Typography>
-                            <div className={classes.subheader}>
-                                <Typography color="textSecondary" variant="subtitle2">
-                                    {startDate} - {endDate}
-                                </Typography>
-                            </div>
                             <div className={classes.subheader}>
                                 <Typography color="textSecondary" variant="subtitle2">
                                     Study Status: {status}
@@ -219,16 +210,6 @@ const PublicDataPortal = observer((props: PublicDataPortalProps & WithStyles & W
                                 <Typography color="primary" variant="body2">
                                     {type === 'stationary' && 'Stationary Count'}
                                     {type === 'movement' && 'Line of Sight'}
-                                </Typography>
-                            </div>
-                            <div className={classes.iconContainer}>
-                                <div className={classes.halo}>
-                                    <ShiftsIcon color="primary" className={classes.icon} />
-                                </div>
-                                <Typography color="primary" variant="body2">
-                                    {surveys.length} Survey
-                                    {surveys.length === 1 && ' Shift'}
-                                    {surveys.length > 1 && ' Shifts'}
                                 </Typography>
                             </div>
                             <div className={classes.iconContainer}>

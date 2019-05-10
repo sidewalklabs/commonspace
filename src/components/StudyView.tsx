@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { withStyles, WithStyles } from '@material-ui/core/styles';
@@ -112,7 +112,17 @@ const CreateOrUpdateButton = withStyles(styles)((props: CreateOrUpdateButtonProp
     const { studyIsNew, study } = props;
     // Prevent users from creating incomplete studies, since sometimes that causes weird things to happen
     // TODO: add real validation
-    const { title, description, author, authorUrl, fields, surveyors, surveys, map } = study;
+    const {
+        title,
+        description,
+        author,
+        authorUrl,
+        fields,
+        surveyors,
+        surveys,
+        map,
+        isPublic
+    } = study;
     const disabled =
         !title ||
         !description ||
@@ -175,6 +185,7 @@ const StudyView = observer((props: any & WithStyles) => {
             studyId,
             fields,
             surveyors,
+            isPublic,
             status,
             type,
             map,
@@ -182,6 +193,7 @@ const StudyView = observer((props: any & WithStyles) => {
         } = study;
         const { latitude, longitude } = getMapCenterForStudy(studyId);
         const features = map && map.features ? map.features : [];
+        const studyIsPublic = isPublic === true;
         const studyIsCompleted = status === 'completed';
         const StudyTypeField = props =>
             studyIsNew ? (
@@ -365,8 +377,21 @@ const StudyView = observer((props: any & WithStyles) => {
                                 )
                             }}
                         />
-                        {!studyIsNew && (
-                            <div>
+                        <div>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        color="primary"
+                                        checked={studyIsPublic}
+                                        onChange={e => {
+                                            applicationState.currentStudy.isPublic =
+                                                isPublic === false ? true : false;
+                                        }}
+                                    />
+                                }
+                                label="Open to the Public"
+                            />
+                            {!studyIsNew && (
                                 <FormControlLabel
                                     control={
                                         <Checkbox
@@ -380,20 +405,30 @@ const StudyView = observer((props: any & WithStyles) => {
                                     }
                                     label="Completed"
                                 />
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
                 </div>
                 <div className={classes.footer}>
                     {!studyIsNew && (
-                        <Button
-                            variant="contained"
-                            color="secondary"
-                            className={classes.footerButton}
-                            onClick={() => uiState.modalStack.push('deleteStudy')}
-                        >
-                            Delete Study
-                        </Button>
+                        <Fragment>
+                            <Button
+                                variant="contained"
+                                color="secondary"
+                                className={classes.footerButton}
+                                href={`/study?studyId=${studyId}`}
+                            >
+                                Open Data Portal
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color="secondary"
+                                className={classes.footerButton}
+                                onClick={() => uiState.modalStack.push('deleteStudy')}
+                            >
+                                Delete Study
+                            </Button>
+                        </Fragment>
                     )}
                     {!!datapoints.length && (
                         <Button
