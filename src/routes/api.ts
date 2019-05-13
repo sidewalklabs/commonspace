@@ -239,9 +239,9 @@ async function saveStudyForUser(userId: string, inputStudy: Study) {
         description,
         isPublic
     });
-    const newUserIds = await Promise.all(
+    await Promise.all(
         surveyors.map(async email => {
-            const [_, newUserId] = await giveUserStudyAccess(DbPool, email, studyId);
+            const newUserId = await giveUserStudyAccess(DbPool, email, studyId);
             return newUserId;
         })
     );
@@ -635,8 +635,9 @@ router.put(
                 throw new UnauthorizedError(req.route, userId);
                 return;
             }
-            const { surveys } = study;
+            const { surveys, surveyors } = study;
             const updatedStudy = await updateStudy(DbPool, { ...study, userId });
+            await Promise.all(surveyors.map(s => giveUserStudyAccess(DbPool, s, studyId)));
             if (surveys) {
                 await Promise.all(
                     surveys.map(s => updateSurvey(DbPool, camelcaseKeys({ studyId, ...s })))
@@ -658,7 +659,7 @@ router.post(
                 throw new UnauthorizedError(req.route, userId);
                 return;
             }
-            const [_, newUserId] = await giveUserStudyAccess(DbPool, email, studyId);
+            const newUserId = await giveUserStudyAccess(DbPool, email, studyId);
             res.send({ email, studyId, newUserId });
         })
     )
@@ -686,7 +687,7 @@ router.put(
             // return if it worked well
             const newUsers = await Promise.all(
                 usersToAdd.map(async email => {
-                    const [_, newUserId] = await giveUserStudyAccess(DbPool, email, studyId);
+                    const newUserId = await giveUserStudyAccess(DbPool, email, studyId);
                     return { email, newUserId };
                 })
             );

@@ -238,9 +238,13 @@ const signupStrategy = new LocalStrategy(
     { passReqToCallback: true, usernameField: 'email' },
     async (req, email, password, done) => {
         try {
-            const userId = uuid.v4();
-            const user = { email, password: checkPasswordRequirements(password), userId, name: '' };
-            await createUserWithPassword(DbPool, user);
+            const user = {
+                email,
+                password: checkPasswordRequirements(password),
+                userId: uuid.v4(),
+                name: ''
+            };
+            const userId = await createUserWithPassword(DbPool, user);
             return done(null, { user_id: userId, email });
         } catch (error) {
             if (error instanceof EntityAlreadyExists) {
