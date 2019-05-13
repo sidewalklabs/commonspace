@@ -684,7 +684,18 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, to_timestamp
     }
 }
 
-export async function giveUserStudyAccess(pool: pg.Pool, userEmail: string, studyId: string) {
+/**
+ * Idempotent operation, does not fail if the user is already in the database as a surveyor.
+ * Has the side effect of creating a user in the users table associating the email with a new
+ * userId. The user will have the empty string as a password to denote they have been autocreated
+ * ahead of time. Returns null if there is no user created as a side effect, and returns the
+ * new userId if a new user is created.
+ */
+export async function giveUserStudyAccess(
+    pool: pg.Pool,
+    userEmail: string,
+    studyId: string
+): Promise<null | string> {
     const query = `INSERT INTO data_collection.surveyors
                    (SELECT coalesce
                       ((SELECT pu.user_id FROM public.users pu WHERE pu.email = $1),
@@ -693,12 +704,15 @@ export async function giveUserStudyAccess(pool: pg.Pool, userEmail: string, stud
     const values = [userEmail, studyId];
     try {
         const pgRes = await pool.query(query, values);
-        return [pgRes, null];
+        return null;
     } catch (error) {
         if (error.code === FOREIGN_KEY_VIOLATION) {
             const newUserId = await createUserFromEmail(pool, userEmail);
-            const pgRes2 = await pool.query(query, values);
-            return [pgRes2, newUserId];
+            await pool.query(query, values);
+            return newUserId;
+        }
+        if (error.constraint === 'surveyors_pkey' && error.code === UNIQUE_VIOLATION) {
+            return null;
         }
         console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
         throw error;
