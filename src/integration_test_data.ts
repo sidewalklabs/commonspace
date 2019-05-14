@@ -298,6 +298,8 @@ const pandanantaWashingtonSurvey = {
     title: 'lincoln memorial'
 };
 
+// this isn't how it's supposed to work, but turns out you can save polygons to movement counts surveys as their locations
+// todo fix this behavior, validate on backend, and throw some errors
 export const MarchOnWashington: Study = {
     study_id: marchOnWashingtonCountConfig.studyId,
     title: 'March on Washington for Jobs and Freedom',
@@ -308,8 +310,8 @@ export const MarchOnWashington: Study = {
     location: 'Lincoln Memorial',
     protocol_version: '1.0',
     status: 'active',
-    type: 'stationary',
-    fields: ['age', 'posture', 'notes'],
+    type: 'movement',
+    fields: ['age', 'gender', 'notes'],
     surveyors: [
         'pandananta@gmail.com',
         'releasetheseabass@gmail.com',
@@ -322,6 +324,21 @@ export const MarchOnWashington: Study = {
     ],
     map: washingtonMall
 };
+
+export const marchOnWashingtonDataPoints = [
+    {
+        gender: 'male',
+        age: '65+',
+        data_point_id: '5719f1b5-961b-44ab-9711-19dde22ecef0',
+        date: moment().toISOString()
+    },
+    {
+        gender: 'female',
+        age: '25-64',
+        data_point_id: 'e40dba28-97b2-4644-ba5b-2b6f312aa3fc',
+        date: moment().toISOString()
+    }
+];
 
 export const SampleDataPointOne: DataPoint = {
     data_point_id: '8e6c8475-6812-41d0-ad27-3795b8897ea8',

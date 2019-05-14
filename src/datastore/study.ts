@@ -603,8 +603,8 @@ export async function getFieldsAndTablenameForStudy(
     pool: pg.Pool,
     studyId: string,
     userId?: string
-): Promise<{ fields: string[]; tablename: string }> {
-    const query = `SELECT study_id, fields, tablename
+): Promise<{ fields: string[]; studyType: StudyType; tablename: string }> {
+    const query = `SELECT study_id, study_type, fields, tablename
                    FROM data_collection.study
                    WHERE study_id = $1 and user_id =$2`;
     const values = [studyId, userId];
@@ -614,8 +614,8 @@ export async function getFieldsAndTablenameForStudy(
             throw new IdDoesNotExist(studyId);
         }
 
-        const { fields, tablename } = rows[0];
-        return { fields, tablename };
+        const { fields, tablename, study_type: studyType } = rows[0];
+        return { fields, tablename, studyType };
     } catch (error) {
         console.error(`[query ${query}][values ${JSON.stringify(values)}]: ${error}`);
     }

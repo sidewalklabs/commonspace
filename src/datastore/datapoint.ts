@@ -275,7 +275,11 @@ export async function getDataPointsCSV(
     userId: string,
     studyId: string
 ): Promise<DataPointPg & { zone: string }[]> {
-    const { fields, tablename } = await getFieldsAndTablenameForStudy(pool, studyId, userId);
+    const { fields, tablename, studyType } = await getFieldsAndTablenameForStudy(
+        pool,
+        studyId,
+        userId
+    );
     const tableRefName = 'tbl';
     // "default" columns that we want to return for every data point
     // location is a weird one, because we usually want it, but sometimes zone data might be what's important and super granualarity no longer matters
@@ -285,8 +289,10 @@ export async function getDataPointsCSV(
             // we need postgres to serialize some of data so we can work with it
             if (field === 'activities') {
                 return `array_to_json(${tableRefName}.activities) as activities`;
-            } else if (field === 'location') {
+            } else if (field === 'location' && studyType === 'stationary') {
                 return `ST_AsGeoJSON(${tableRefName}.location)::json as coordinates`;
+            } else if (field === 'location' && studyType === 'movement') {
+                return `ST_AsGeoJSON(loc.geometry)::json as coordinates`;
             } else {
                 return tableRefName + '.' + field;
             }
