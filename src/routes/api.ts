@@ -40,9 +40,8 @@ import {
 } from '../datastore/study';
 import { userIdIsSurveyor, createNewSurveyForStudy, updateSurvey } from '../datastore/survey';
 import { userIsAdminOfStudy, deleteUser } from '../datastore/user';
-import { createLocation } from '../datastore/location';
+import { createLocation, saveGeoJsonFeatureAsLocation } from '../datastore/location';
 import DbPool from '../database';
-import { Feature, FeatureCollection, Point } from 'geojson';
 import { snakecasePayload } from '../utils';
 import { accountIsVerified, tokenIsBlacklisted } from '../auth';
 import {
@@ -59,8 +58,6 @@ const PUBLIC_ROUTES: RegExp[] = [
     '/studies/:studyId/datapoints',
     '/studies/:studyId/download'
 ].map(value => pathToRegexp(value));
-
-const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org/reverse?format=json';
 
 const STUDY_FIELDS: StudyField[] = [
     'gender',
@@ -79,7 +76,7 @@ async function checkAgainstTokenBlacklist(req: Request, res: Response, next) {
         const errorMessage = 'token invalid';
         res.clearCookie('commonspacejwt');
         res.statusMessage = errorMessage;
-        res.status(401).send({ error_message: errorMessage });
+        res.sendStatus(401).send({ error_message: errorMessage });
         return;
     }
     next();
@@ -103,6 +100,10 @@ function isPublicRoute(url: string) {
 
 router.use(function(req, res, next) {
     passport.authenticate('jwt', { session: false }, function(err, user, info) {
+        if (!user) {
+            res.clearCookie('commonspacejwt');
+            return res.sendStatus(401);
+        }
         req.user = user;
         if (info && info.toString() === 'Error: No auth token') {
             if (isPublicRoute(req.url)) {
@@ -246,7 +247,7 @@ async function saveStudyForUser(userId: string, inputStudy: Study) {
         })
     );
     if (map) {
-        const surveyZoneIds = await Promise.all(map.features.map(saveGeoJsonFeatureAsLocation));
+        await Promise.all(map.features.map(f => saveGeoJsonFeatureAsLocation(DbPool, f)));
     }
     await Promise.all(
         surveys.map(async survey => {
@@ -268,6 +269,7 @@ router.post(
     return500OnError(async (req: Request, res: Response) => {
         const { user_id: userId } = req.user;
         try {
+            console.log('body: ', req.body);
             if (Array.isArray(req.body)) {
                 const datetimes = await Promise.all(
                     req.body.map(async (s: Study) => {
@@ -450,36 +452,6 @@ router.get(
     )
 );
 
-async function saveGeoJsonFeatureAsLocation(x: Feature | FeatureCollection) {
-    if (x.type === 'Feature' && x.geometry.type === 'Polygon') {
-        const { geometry, properties } = x;
-        const { location_id: locationId, name: namePrimary } = properties;
-        const { coordinates } = geometry;
-        const [lngs, lats] = geometry.coordinates[0].reduce(
-            ([lngs, lats], [lng, lat]) => {
-                return [lngs + lng, lats + lat];
-            },
-            [0, 0]
-        );
-        const lngCenterApprox = lngs / geometry.coordinates[0].length;
-        const latCenterApprox = lats / geometry.coordinates[0].length;
-        const url = NOMINATIM_BASE_URL + `&lat=${latCenterApprox}&lon=${lngCenterApprox}`;
-        //const response = await fetch(url);
-        //const body = await response.json();
-        const city = '';
-        const country = '';
-        const subdivision = '';
-        return createLocation(DbPool, {
-            locationId,
-            namePrimary,
-            city,
-            country,
-            subdivision,
-            geometry
-        });
-    }
-}
-
 async function saveDataPoint(req: Request, res: Response) {
     const { user_id: userId } = req.user;
     const { surveyId, dataPointId } = req.params;
@@ -516,6 +488,19 @@ router.get(
     )
 );
 
+async function addNewDataPoint(surveyId: string, datapoint: DataPoint) {
+    if (datapoint.creation_date && !datapoint.last_updated) {
+        datapoint.last_updated = datapoint.creation_date;
+    } else {
+        datapoint.date = datapoint.date ? datapoint.date : moment().toISOString();
+        datapoint.creation_date = datapoint.creation_date
+            ? datapoint.creation_date
+            : datapoint.date;
+        datapoint.last_updated = datapoint.last_updated ? datapoint.last_updated : datapoint.date;
+    }
+    await addNewDataPointToSurveyNoStudyId(DbPool, surveyId, datapoint);
+}
+
 router.post(
     '/surveys/:surveyId/datapoints',
     return500OnError(
@@ -527,19 +512,12 @@ router.post(
                 throw new UnauthorizedError(req.route, userId);
                 return;
             }
-            const datapoint = req.body;
-            if (datapoint.creation_date && !datapoint.last_updated) {
-                datapoint.last_updated = datapoint.creation_date;
+            const ds: DataPoint | DataPoint[] = req.body;
+            if (Array.isArray(ds)) {
+                await Promise.all(ds.map(d => addNewDataPoint(surveyId, d)));
             } else {
-                datapoint.date = datapoint.date ? datapoint.date : moment().toISOString();
-                datapoint.creation_date = datapoint.creation_date
-                    ? datapoint.creation_date
-                    : datapoint.date;
-                datapoint.last_updated = datapoint.last_updated
-                    ? datapoint.last_updated
-                    : datapoint.date;
+                await addNewDataPoint(surveyId, ds);
             }
-            await addNewDataPointToSurveyNoStudyId(DbPool, surveyId, datapoint);
             res.status(200).send();
         })
     )

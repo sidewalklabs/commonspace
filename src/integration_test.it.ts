@@ -9,7 +9,8 @@ import {
     SeaBassFishCountDataPoints,
     SeaBassFishCountStudy,
     MarchOnWashington,
-    SampleDataPointOne
+    SampleDataPointOne,
+    marchOnWashingtonDataPoints
 } from './integration_test_data';
 import { snakecasePayload } from './utils';
 import dotenv from 'dotenv';
@@ -314,7 +315,26 @@ describe('create/delete/modify studies', async () => {
         ).toBeTruthy();
     });
 
-    test('saving the same datapoint id a second time should raise an error', async () => {
+    test('save an array of data points to the movement counts', async () => {
+        const surveyorSurvey = MarchOnWashington.surveys.filter(({ email }) => {
+            return email === surveyorUser.email;
+        })[0];
+        const { survey_id } = surveyorSurvey;
+        await postRest<DataPoint[]>(
+            API_SERVER + `/api/surveys/${survey_id}/datapoints`,
+            marchOnWashingtonDataPoints,
+            surveyorToken
+        );
+
+        const dataPoints = await getRest<DataPoint[]>(
+            API_SERVER + `/api/surveys/${survey_id}/datapoints`,
+            surveyorToken
+        );
+
+        expect(dataPoints).toHaveLength(marchOnWashingtonDataPoints.length);
+    });
+
+    test('saving the same data point id a second time should raise an error', async () => {
         const surveyorSurvey = SeaBassFishCountStudy.surveys.filter(({ email }) => {
             return email === surveyorUser.email;
         })[0];

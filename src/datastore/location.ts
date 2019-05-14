@@ -1,6 +1,8 @@
-import * as pg from 'pg';
-import { Polygon } from 'geojson';
+import { Pool } from 'pg';
+import { Feature, FeatureCollection, Point, Polygon } from 'geojson';
 import { IdDoesNotExist } from './utils';
+
+const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org/reverse?format=json';
 
 export interface Location {
     locationId: string;
@@ -11,7 +13,7 @@ export interface Location {
     geometry: Polygon;
 }
 
-export async function createLocation(pool: pg.Pool, location: Location): Promise<Location> {
+export async function createLocation(pool: Pool, location: Location): Promise<Location> {
     const {
         locationId,
         namePrimary,
@@ -33,7 +35,7 @@ export async function createLocation(pool: pg.Pool, location: Location): Promise
     }
 }
 
-export async function deleteLocation(pool: pg.Pool, locationId: string): Promise<void> {
+export async function deleteLocation(pool: Pool, locationId: string): Promise<void> {
     const query = `DELETE
                    FROM data_collection.location
                    WHERE location_id = $1`;
@@ -46,5 +48,41 @@ export async function deleteLocation(pool: pg.Pool, locationId: string): Promise
     } catch (error) {
         console.error(`[query ${query}][values ${JSON.stringify(values)}] ${error}`);
         throw error;
+    }
+}
+
+export async function saveGeoJsonFeatureAsLocation(pool: Pool, x: Feature) {
+    const { geometry, properties } = x;
+    const { location_id: locationId, name: namePrimary } = properties;
+    let shape;
+    if (geometry.type === 'Polygon') {
+        shape = geometry.coordinates[0];
+    }
+    if (geometry.type === 'LineString') {
+        shape = geometry.coordinates;
+    }
+    if (x.type === 'Feature' && geometry.type === 'Polygon') {
+        const [lngs, lats] = shape.reduce(
+            ([lngs, lats], [lng, lat]) => {
+                return [lngs + lng, lats + lat];
+            },
+            [0, 0]
+        );
+        const lngCenterApprox = lngs / geometry.coordinates[0].length;
+        const latCenterApprox = lats / geometry.coordinates[0].length;
+        const url = NOMINATIM_BASE_URL + `&lat=${latCenterApprox}&lon=${lngCenterApprox}`;
+        //const response = await fetch(url);
+        //const body = await response.json();
+        const city = '';
+        const country = '';
+        const subdivision = '';
+        return createLocation(pool, {
+            locationId,
+            namePrimary,
+            city,
+            country,
+            subdivision,
+            geometry
+        });
     }
 }
