@@ -253,7 +253,7 @@ export async function getDataPointsForStudy(
     userId: string,
     studyId: string
 ): Promise<DataPoint[]> {
-    const { fields, tablename } = await getFieldsAndTablenameForStudy(pool, studyId, userId);
+    const { fields, tablename } = await getFieldsAndTablenameForStudy(pool, studyId);
     const formattedFields = fields.map(field => {
         return field === 'activities' ? `array_to_json(activities) as activities` : field;
     });
