@@ -100,16 +100,16 @@ function isPublicRoute(url: string) {
 
 router.use(function(req, res, next) {
     passport.authenticate('jwt', { session: false }, function(err, user, info) {
-        if (!user) {
-            res.clearCookie('commonspacejwt');
-            return res.sendStatus(401);
-        }
         req.user = user;
         if (info && info.toString() === 'Error: No auth token') {
             if (isPublicRoute(req.url)) {
                 req.user = { user_id: null };
             }
             return next();
+        }
+        if (!user) {
+            res.clearCookie('commonspacejwt');
+            return res.sendStatus(401);
         }
         next();
     })(req, res, next);
