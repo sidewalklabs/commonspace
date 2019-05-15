@@ -440,7 +440,7 @@ router.get(
         return401OnUnauthorizedError(async (req: Request, res: Response) => {
             const { user_id: userId } = req.user;
             const { studyId } = req.params;
-            if (await userIdIsAdminOfStudy(DbPool, studyId, userId) || userId === null) {
+            if ((await userIdIsAdminOfStudy(DbPool, studyId, userId)) || userId === null) {
                 // if the user id is null, it was purposefully set that way by the middleware because this is public route
                 const dataPoints = await getDataPointsForStudy(DbPool, userId, studyId);
                 res.status(200).send(dataPoints);
