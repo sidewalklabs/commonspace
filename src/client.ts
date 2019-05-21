@@ -8,6 +8,7 @@ export interface User {
     password: string;
 }
 
+export class ForbiddenResourceError extends Error {}
 export class UnauthorizedError extends Error {}
 export class ResourceNotFoundError extends Error {}
 
@@ -73,6 +74,14 @@ function handle404(f: HttpFunction): HttpFunction {
     };
 }
 
+function handle403(f: HttpFunction): HttpFunction {
+    return async (...args) => {
+        const response = await f(...args);
+        if (response.status === 403) throw new ForbiddenResourceError(`Forbidden: ${response.url}`);
+        return response;
+    };
+}
+
 function handle401(f: HttpFunction): HttpFunction {
     return async (...args) => {
         const response = await f(...args);
@@ -82,7 +91,7 @@ function handle401(f: HttpFunction): HttpFunction {
 }
 
 const handleAllHttpErrors: (f: HttpFunction) => HttpFunction = f => (...args) =>
-    throwGenericErrorIfNot200(handle401(handle404(f)))(...args);
+    throwGenericErrorIfNot200(handle401(handle403(handle404(f))))(...args);
 
 function throwGenericErrorIfNot200(f: HttpFunction): HttpFunction {
     return async (...args) => {

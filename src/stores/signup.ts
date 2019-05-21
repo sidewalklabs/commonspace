@@ -142,7 +142,7 @@ export async function signUpUser() {
         if (error instanceof GenericHttpError && error.errorMessage) {
             setSnackBar('error', error.errorMessage);
         } else {
-            setSnackBar('error', `Unable to sign sign ${error}`);
+            setSnackBar('error', `Unable to sign up ${error}`);
         }
     } finally {
         resetSignupState();

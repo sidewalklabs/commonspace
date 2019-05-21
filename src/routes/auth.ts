@@ -15,7 +15,7 @@ import {
     sendSignupVerificationEmail
 } from '../auth';
 import DbPool from '../database';
-import { User } from '../datastore/user';
+import { User, UnverifiedUserError } from '../datastore/user';
 import { checkUserIsWhitelistApproved } from '../datastore/whitelist';
 import { return401OnUnauthorizedError, UnauthorizedError } from './errors';
 
@@ -55,6 +55,18 @@ function respondWithAuthentication(req: Request, res: Response, user: { user_id:
     }
 }
 
+async function sendVerificationEmail(email: string, host: string) {
+    try {
+        const token = await createRandomStringForTokenUse();
+        await saveTokenForEmailVerification(DbPool, email, token);
+        await sendSignupVerificationEmail(host, email, token);
+    } catch (error) {
+        if (error === 'Missing credentials for "PLAIN"' && process.env.NODE_ENV === 'STAGING') {
+            console.warn('Email Not Setup');
+        }
+    }
+}
+
 async function createRandomStringForTokenUse(nBytes: number = N_RAND_BYTES) {
     const buffer = await randomBytes(nBytes);
     return buffer.toString('hex');
@@ -84,19 +96,8 @@ router.post('/signup', (req, res, next) => {
                 res.status(400).send({ error_message: errorMessage });
                 return;
             }
-            try {
-                const { email, user_id: userId } = user;
-                const token = await createRandomStringForTokenUse();
-                await saveTokenForEmailVerification(DbPool, userId, token);
-                await sendSignupVerificationEmail(req.get('host'), email, token);
-            } catch (error) {
-                if (
-                    error === 'Missing credentials for "PLAIN"' &&
-                    process.env.NODE_ENV === 'STAGING'
-                ) {
-                    console.warn('Email Not Setup');
-                }
-            }
+            const { email } = user;
+            sendVerificationEmail(email, req.get('host'));
             return respondWithAuthentication(req, res, user);
         }
     )(req, res, next);
@@ -118,13 +119,18 @@ router.post('/login', (req, res, next) => {
         return;
     }
     passport.authenticate('login', { session: false }, (err, user) => {
-        if (err) {
+        if (err instanceof UnverifiedUserError) {
+            const errorMessage = `${err}`;
+            res.statusMessage = errorMessage.toString();
+            res.status(403).send({ error_message: errorMessage });
+        } else if (err) {
             const errorMessage = `${err}`;
             res.statusMessage = errorMessage.toString();
             res.status(400).send({ error_message: errorMessage });
             return;
+        } else {
+            return respondWithAuthentication(req, res, user);
         }
-        return respondWithAuthentication(req, res, user);
     })(req, res, next);
 });
 
@@ -168,6 +174,15 @@ router.post(
         await addToBlackList(DbPool, userId, req);
         res.clearCookie('commonspacejwt');
         res.status(200).send();
+    })
+);
+
+router.post(
+    '/resend_verification',
+    return500OnError(async function(req, res) {
+        const { email } = req.body;
+        await sendVerificationEmail(email, req.get('host'));
+        res.sendStatus(200);
     })
 );
 
