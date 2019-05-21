@@ -18,6 +18,13 @@ export interface UserDb {
     is_verified: boolean;
 }
 
+export class UnverifiedUserError extends Error {
+    constructor(email) {
+        super();
+        this.message = `Email unverified: ${email}`;
+    }
+}
+
 export async function userIsAdminOfStudy(pool: pg.Pool, studyId: string, userId: string) {
     const query = `SELECT * from data_collection.study
                    WHERE user_id=$1 and study_id=$2`;
@@ -52,7 +59,7 @@ export async function findUserByEmail(pool: pg.Pool, email: string): Promise<Use
 export async function findVerifiedUser(pool: pg.Pool, email: string): Promise<UserDb> {
     const user = await findUserByEmail(pool, email);
     if (!user.is_verified) {
-        throw new Error(`Email ${email} not verified.`);
+        throw new UnverifiedUserError(email);
         return;
     }
     return user;

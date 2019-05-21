@@ -17,7 +17,8 @@ import {
     findUserWithPassword,
     findUserById,
     User,
-    changeUserPassword
+    changeUserPassword,
+    UnverifiedUserError
 } from './datastore/user';
 import DbPool from './database';
 
@@ -47,16 +48,18 @@ const SMTP_TRANSPORT = nodemailer.createTransport({
 
 export async function saveTokenForEmailVerification(
     pool: Pool,
-    userId: string,
+    email: string,
     token: string
 ): Promise<void> {
     const query = `INSERT INTO account_verification (user_id, token)
-                   VALUES ($1, $2)
+                   SELECT user_id, $1
+                   FROM users WHERE email = $2
                    ON CONFLICT (user_id)
                    DO
                      UPDATE
-                     SET token = $3`;
-    const values = [userId, token, token];
+                     SET token = $3
+                   RETURNING token`;
+    const values = [token, email, token];
     try {
         await pool.query(query, values);
     } catch (error) {

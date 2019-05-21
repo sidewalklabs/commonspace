@@ -10,7 +10,9 @@ import Typography from '@material-ui/core/Typography';
 import { observer } from 'mobx-react';
 
 import { navigate } from '../stores/router';
-import logInState, { logInUser } from '../stores/login';
+import logInState, { logInUser, resendVerificationEmail } from '../stores/login';
+import { red100 } from 'material-ui/styles/colors';
+import loginState from '../stores/login';
 
 const styles = theme => ({
     root: {
@@ -45,6 +47,9 @@ const styles = theme => ({
     buttonLabel: {
         textTransform: 'none'
     },
+    resendButton: {
+        color: 'red'
+    },
     textField: {
         margin: theme.spacing.unit,
         width: '100%',
@@ -69,6 +74,7 @@ const LoginWithEmailView = withStyles(styles)(
                 <TextField
                     id="login-email"
                     label="Email"
+                    value={logInState.email}
                     onChange={e => (logInState.email = e.target.value)}
                     error={logInState.emailErrorMessage ? true : false}
                     className={classes.textField}
@@ -91,6 +97,11 @@ const LoginWithEmailView = withStyles(styles)(
                 >
                     Log In
                 </Fab>
+                {logInState.resendVerificationButtonIsShowing ? (
+                    <Button className={classes.resendButton} onClick={resendVerificationEmail}>
+                        Resend Verification Email
+                    </Button>
+                ) : null}
                 <Button onClick={() => navigate('/reset')}>Forgot Password</Button>
                 <Button onClick={() => navigate('/signup')}>Sign Up</Button>
             </Paper>

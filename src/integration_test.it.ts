@@ -22,7 +22,6 @@ import {
     clearLocationsFromApi,
     getStudiesForAdmin,
     loginJwt,
-    signupJwt,
     User,
     UnauthorizedError,
     ResourceNotFoundError
