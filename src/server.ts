@@ -1,6 +1,4 @@
 import dotenv from 'dotenv';
-import helmet from 'helmet';
-import hsts from 'hsts';
 import path from 'path';
 dotenv.config({
     path: process.env.DOTENV_CONFIG_DIR ? path.join(process.env.DOTENV_CONFIG_DIR, '.env') : ''
@@ -15,35 +13,13 @@ import apiRouter from './routes/api';
 import authRouter from './routes/auth';
 
 const PORT = process.env.NODE_PORT ? process.env.NODE_PORT : 3000;
-const SIXTY_DAYS_IN_SECONDS = 60 * 60 * 24 * 60;
 
 const app = express();
-
-app.use(
-    helmet.hsts({
-        maxAge: SIXTY_DAYS_IN_SECONDS
-    })
-);
 
 auth(passport);
 app.use(passport.initialize());
 
 app.use(bodyParser.json());
-
-app.use(function(req, res, next) {
-    // Request methods you wish to allow
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-
-    // Request headers you wish to allow
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-
-    // Set to true if you need the website to include cookies in the requests sent
-    // to the API (e.g. in case you use sessions)
-    //res.setHeader('Access-Control-Allow-Credentials', true);
-
-    // Pass to next layer of middleware
-    next();
-});
 
 app.use('/auth', authRouter);
 app.use('/api', apiRouter);
