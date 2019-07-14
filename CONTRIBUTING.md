@@ -9,8 +9,8 @@ If you want to make a large change that is specific to your use case, we may sug
 ## Getting Started
 The CommonSpace ecosystem consists of three pieces, all part of this repo.
 1. A web-based admin interface for creating and managing public life studies
-1. A React Native app for participating in studies
-1. A REST API that serves the admin and the app.
+2. A React Native app for participating in studies
+3. A REST API that serves the admin and the app.
 
 ### Running the CommonSpace Admin and API
 1. Download Packer, Docker and Yarn
@@ -18,28 +18,29 @@ The CommonSpace ecosystem consists of three pieces, all part of this repo.
 * Docker - https://www.docker.com/
 * Yarn - https://yarnpkg.com/en/
 
-1. Configure your app 
-Fill out the file at development.env, then in your terminal run 
+2. Configure your app
+
+Fill out the file at development.env, then in your terminal run
 ```
 ln -s config/development.env .env
 ```
 
-1. Install Dependencies
+3. Install dependencies
 ```
 yarn
 ```
 
-1. Run the develop script
+4. Run the develop script
 ```
 cd /deployment && ./develop.sh
 ```
 
-1. In another terminal tab, bundle the front end app
+5. In another terminal tab, bundle the front end app
 ```
 yarn watch
 ```
 
-1. In a third tab, run the server
+6. In a third tab, run the server
 ```
 ts-node src/server.ts
 ```
@@ -51,25 +52,25 @@ The admin app will be available at http://localhost:3000
 * Expo - https://docs.expo.io/
 * Yarn - https://yarnpkg.com/en/
 
-1. Navigate to the expo_project
+2. Navigate to the expo_project
 ```
 cd expo_project
 ```
-1. Install Dependencies
+3. Install dependencies
 ```
 yarn
 ```
 
-1. Create an app.json file. 
+4. Create an app.json file.
 Copy the contents of app.json.example into app.json, and adjust as necessary.
 To use Google authentication and Google Maps, you may have to generate your own API keys.
 Expo has instructions for generating and storing these keys https://docs.expo.io/versions/latest/sdk/map-view/.
 
-1. Run the app
+5. Run the app
 ```
-expo start 
+expo start
 ```
 The Expo CLI interface should run in a browser and offer you the options to run the app in an ios or android emulator if you have one installed, or provide a QR code to run on a device via the Expo app. For more information check out the Expo "up and runnning" guide https://docs.expo.io/versions/latest/workflow/up-and-running/
 
-## License 
+## License
 CommonSpace is free for anyone to use and modify for any purpose under the Apache 2.0 license.

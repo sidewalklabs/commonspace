@@ -54,7 +54,7 @@ const AboutView = observer((props: AboutViewProps & WithStyles) => {
                     standard known as the Public Life Data Protocol.
                 </Typography>
                 <Typography variant="body1" paragraph>
-                    Afterwards, study organizers are able to download the data, and are able select
+                    Afterwards, study organizers are able to download the data and can select
                     a toggle to post their study and publish the underlying data on a public data
                     portal.
                 </Typography>
@@ -139,7 +139,7 @@ const AboutView = observer((props: AboutViewProps & WithStyles) => {
                             and worksheets that make it easier to design and conduct public life
                             studies. In 2017, they partnered with the Gehl practice, Copenhagen
                             Municipality, San Francisco City Planning, and Seattle Department of
-                            Transportation to public the Public Life Data Protocol, a data standard
+                            Transportation to publish the Public Life Data Protocol, a data standard
                             for collecting public life data.
                         </Typography>
                     </li>

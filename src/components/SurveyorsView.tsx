@@ -65,7 +65,7 @@ const SurveyorsView = observer((props: SurveyorsViewProps & WithStyles) => {
                     Add Surveyors
                 </Typography>
                 <Typography variant="subtitle1" color="inherit" gutterBottom>
-                    Enter the email addresses for all surveyors your intend to add to this study,
+                    Enter the email addresses for all surveyors you intend to add to this study,
                     including your own if you would like to test out your study.
                 </Typography>
             </div>
