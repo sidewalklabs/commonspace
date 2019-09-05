@@ -22,18 +22,95 @@ spec:
       - name: commons-config
         secret:
           secretName: commons-config
+      - name: commonspace-secrets
+        secret:
+          secretName: commonspace-secrets
       containers:
       - name: commons-server
         image: swl-eng/commons-server:latest
         ports:
           - containerPort: 3000
-        # The following environment variables will contain the database host,
-        # user and password to connect to the PostgreSQL instance.
         command: ["node", "/commons/build/server.js"]
         volumeMounts:
           - name: commons-config
             mountPath: /etc/commons
             readOnly: true
+        env:
+          - name: DB_HOST
+            valueFrom:
+              secretKeyRef:
+                name: commonspace-secrets
+                key: DB_HOST
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: commonspace-secrets
+                key: DB_USER
+          - name: DB_PASS
+            valueFrom:
+              secretKeyRef:
+                name: commonspace-secrets
+                key: DB_PASS
+          - name: DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: commonspace-secrets
+                key: DB_NAME
+          - name: DB_PORT
+            valueFrom:
+              secretKeyRef:
+                name: commonspace-secrets
+                key: DB_PORT
+          - name: JWT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: commonspace-secrets
+                key: JWT_SECRET
+          - name: SERVER_HOSTNAME
+            valueFrom:
+              secretKeyRef:
+                name: commonspace-secrets
+                key: SERVER_HOSTNAME
+          - name: GOOGLE_AUTH_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: commonspace-secrets
+                key: GOOGLE_AUTH_CLIENT_ID
+          - name: GOOGLE_AUTH_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: commonspace-secrets
+                key: GOOGLE_AUTH_CLIENT_SECRET
+          - name: DOTENV_CONFIG_DIR
+            valueFrom:
+              configMapKeyRef:
+                name: commons-config
+                key: DOTENV_CONFIG_DIR
+          - name: DB_POOL_SIZE
+            valueFrom:
+              configMapKeyRef:
+                name: commons-config
+                key: DB_POOL_SIZE
+          - name: DB_CLIENT_TIMEOUT
+            valueFrom:
+              configMapKeyRef:
+                name: commons-config
+                key: DB_CLIENT_TIMEOUT
+          - name: NODE_ENV
+            valueFrom:
+              configMapKeyRef:
+                name: commons-config
+                key: NODE_ENV
+          - name: JWT_EXPIRATION_MS
+            valueFrom:
+              configMapKeyRef:
+                name: commons-config
+                key: JWT_EXPIRATION_MS
+          - name: TILE_SERVER_URL
+            valueFrom:
+              configMapKeyRef:
+                name: commons-config
+                key: TILE_SERVER_URL
       - name: commons-nginx
         image: swl-eng/commons-nginx:latest
         ports:
@@ -44,6 +121,27 @@ spec:
           - /commons.nginx.conf
           - -g
           - 'daemon off;'
+        env:
+          - name: GOOGLE_AUTH_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: commonspace-secrets
+                key: GOOGLE_AUTH_CLIENT_ID
+          - name: CLIENT_ENV
+            valueFrom:
+              configMapKeyRef:
+                name: commons-config
+                key: CLIENT_ENV
+          - name: NODE_ENV
+            valueFrom:
+              configMapKeyRef:
+                name: commons-config
+                key: NODE_ENV
+          - name: TILE_SERVER_URL
+            valueFrom:
+              configMapKeyRef:
+                name: commons-config
+                key: TILE_SERVER_URL
       - name: cloudsql-proxy
         image: gcr.io/cloudsql-docker/gce-proxy:1.11
         command: ["/cloud_sql_proxy",

@@ -1,5 +1,11 @@
 version: 2
 
+# important circle ci variables to set
+# GCP_PROJECT_NAME
+# GCP_SERVICE_ACCOUNT_KEY - (https://circleci.com/docs/2.0/google-auth/ https://cloud.google.com/sdk/docs/authorizing#authorizing_with_a_service_account)
+# SERVER_HOSTNAME - eg. commonspace.sidewalklabs.com
+
+# https://circleci.com/docs/2.0/deployment-integrations/#google-cloud
 jobs:
 
   validate:
@@ -35,7 +41,7 @@ jobs:
 
   build-admin-server-image:
     docker:
-      - image: californianseabass/gcloud-packer-docker:v0.0.1
+      - image: californianseabass/gcloud-packer-docker:v0.0.2
 
     steps:
         - run:
@@ -45,9 +51,9 @@ jobs:
         - run: &setup_gcloud
            name: authenticate gcloud service account
            command: |
-              echo "${GCP_SERVICE_ACCOUNT_KEY}" > ${HOME}/gcp-key.json
-              gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
-              gcloud --quiet config set project nyc-tlc-1225
+                echo "${GCP_SERVICE_ACCOUNT_KEY}" > ${HOME}/gcp-key.json
+                gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
+                gcloud --quiet config set project ${GCP_PROJECT_NAME}
 
         - checkout
 
@@ -56,12 +62,12 @@ jobs:
         - run:
            name: build and push commons server image to GC Registry for k8s to have access
            command: |
-              docker login -u _json_key -p "${GCP_SERVICE_ACCOUNT_KEY}" https://gcr.io
-              packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-server -var SERVER_HOSTNAME="${SERVER_HOSTNAME}" -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" -var NODE_ENV=production deployment/commons_server.json
+                jq '."post-processors"[0][1] |= . + { "type":"docker-push","login": true,"login_username":"_json_key","login_password":"{{user `gcloud_json_key`}}","login_server":"https://gcr.io"}' deployment/commons_server.json > deployment/commons_server.json.tmp && mv deployment/commons_server.json.tmp deployment/commons_server.json
+                packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-server -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" deployment/commons_server.json
 
   build-nginx-image:
     docker:
-      - image: californianseabass/gcloud-packer-docker:v0.0.1
+      - image: californianseabass/gcloud-packer-docker:v0.0.2
 
     steps:
         - run:
@@ -73,7 +79,7 @@ jobs:
            command: |
                 echo "${GCP_SERVICE_ACCOUNT_KEY}" > ${HOME}/gcp-key.json
                 gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
-                gcloud --quiet config set project nyc-tlc-1225
+                gcloud --quiet config set project ${GCP_PROJECT_NAME}
 
         - checkout
 
@@ -82,23 +88,20 @@ jobs:
         - run:
             name: build and push nginx image to GC Registry for k8s to have access
             command: |
-                packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-nginx -var GOOGLE_AUTH_CLIENT_ID="${GOOGLE_AUTH_CLIENT_ID}" -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" -var TILE_SERVER_URL=https://{s}.tile.osm.org/{z}/{x}/{y}.png -var NODE_ENV=production -var CLIENT_ENV=production deployment/commons_nginx.json
+                jq '."post-processors"[0][1] |= . + { "type":"docker-push","login": true,"login_username":"_json_key","login_password":"{{user `gcloud_json_key`}}","login_server":"https://gcr.io"}' deployment/commons_nginx.json > deployment/commons_nginx.json.tmp && mv deployment/commons_nginx.json.tmp deployment/commons_nginx.json
+                packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-nginx -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" deployment/commons_nginx.json
 
   patch-k8s:
       docker:
-        - image: californianseabass/gcloud-packer-docker:v0.0.1
+        - image: californianseabass/gcloud-packer-docker:v0.0.2
 
       steps:
           - run:
              name: setup docker
              command: echo y | gcloud auth configure-docker
 
-          - run: &setup_gcloud
-             name: authenticate gcloud service account
-             command: |
-                echo "${GCP_SERVICE_ACCOUNT_KEY}" > ${HOME}/gcp-key.json
-                gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
-                gcloud --quiet config set project nyc-tlc-1225
+          - run:
+              <<: *setup_gcloud
 
           - checkout
 

@@ -91,14 +91,16 @@
       "type": "shell",
       "inline": [
         "cd commons/",
-	"npm install -g -s --no-progress yarn",
-	"yarn install",
+        "npm install -g -s --no-progress yarn",
+        "yarn install",
         "yarn build --env.SERVER_HOSTNAME={{ user `SERVER_HOSTNAME` }} --env.TILE_SERVER_URL={{ user `TILE_SERVER_URL` }} --mode=production"
       ]
     },
     {
       "type": "shell",
-      "inline": ["cp -r /commons/dist/ /commons/build/"]
+      "inline": [
+        "cp -r /commons/dist/ /commons/build/"
+      ]
     }
   ],
   "post-processors": [
@@ -107,7 +109,8 @@
         "type": "docker-tag",
         "repository": "{{user `container_image_name`}}",
         "tag": "{{user `version`}}"
-      }, {
+      },
+      {
         "type": "docker-push",
         "login": true,
         "login_username": "_json_key",

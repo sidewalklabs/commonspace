@@ -2,8 +2,7 @@
   "variables": {
     "container_image_name": "us.gcr.io/nyc-tlc-1225/commons-server",
     "version": "v0.0.1",
-    "gcloud_json_key": "key",
-    "GOOGLE_AUTH_CLIENT_ID": "my-id",
+    "GOOGLE_AUTH_CLIENT_ID": "NEEDS_ANY_VALUE_TO_ALLOW_WEBPACK_TO_COMPILE",
     "GOOGLE_AUTH_CLIENT_SECRET": "my-secret",
     "DB_USER": "postgres",
     "DB_PASS": "postgres",
@@ -13,7 +12,6 @@
     "DB_POOL_SIZE": "8",
     "DB_CLIENT_TIMEOUT": "8000",
     "SERVER_HOSTNAME": "localhost:3000",
-    "JWT_SECRET": "B5PgrJs/WrTaJ4mUvPpREu",
     "NODE_ENV": "development",
     "NODE_PORT": "3000",
     "JWT_EXPIRATION_MS": "300000",
@@ -27,7 +25,6 @@
       "commit": true,
       "changes": [
         "ENV NODE_ENV {{ user `NODE_ENV` }}",
-        "ENV JWT_SECRET {{ user `JWT_SECRET`}}",
         "ENV DOTENV_CONFIG_DIR {{ user `DOTENV_CONFIG_DIR` }}",
         "EXPOSE {{ user `NODE_PORT` }} {{ user `NODE_PORT` }}"
       ]
@@ -91,8 +88,9 @@
       "type": "shell",
       "inline": [
         "cd commons/",
-	"npm install -g -s --no-progress yarn",
-	"yarn install",
+        "touch .env",
+        "npm install -g -s --no-progress yarn",
+        "yarn install",
         "yarn build --mode={{ user `NODE_ENV` }}"
       ]
     }
@@ -103,12 +101,6 @@
         "type": "docker-tag",
         "repository": "{{user `container_image_name`}}",
         "tag": "{{user `version`}}"
-      }, {
-        "type": "docker-push",
-        "login": true,
-        "login_username": "_json_key",
-        "login_password": "{{user `gcloud_json_key`}}",
-        "login_server": "https://gcr.io"
       }
     ]
   ]
