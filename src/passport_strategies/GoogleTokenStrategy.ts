@@ -11,7 +11,6 @@ export default class GoogleTokenStrategy extends Strategy {
     _tokenFromRequest = 'header';
     _passReqToCallback = false;
     _verify = null;
-
     constructor(options: GoogleTokenStrategyOptions, verify) {
         super();
         if (!verify) {
@@ -31,8 +30,6 @@ export default class GoogleTokenStrategy extends Strategy {
             `https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${token}`
         );
         const body = await response.json();
-        const { email, email_verified: emailVerified } = body;
-
         const self = this;
 
         function verified(err, user, info) {
@@ -45,6 +42,7 @@ export default class GoogleTokenStrategy extends Strategy {
             self.success(user, info);
         }
 
+        const { email } = body;
         if (self._passReqToCallback) {
             this._verify(req, email, verified);
         } else {

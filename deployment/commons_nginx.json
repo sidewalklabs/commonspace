@@ -1,10 +1,9 @@
 {
   "variables": {
-    "container_image_name": "us.gcr.io/nyc-tlc-1225/commons-nginx",
+    "container_image_name": "sidewalklabs/commons-nginx",
     "version": "v0.0.1",
-    "CLIENT_ENV": "development",
+    "MAP_ATTRIBUTION": "\"&copy; <a href=\"http://osm.org/copyright\">OpenStreetMap</a> contributors\"",
     "NODE_ENV": "development",
-    "gcloud_json_key": "",
     "TILE_SERVER_URL": "http://{s}.tile.osm.org/{z}/{x}/{y}.png",
     "GOOGLE_AUTH_CLIENT_ID": "NEEDS_ANY_VALUE_TO_ALLOW_WEBPACK_TO_COMPILE"
   },
@@ -55,11 +54,6 @@
     },
     {
       "type": "file",
-      "source": "googleaa1e3a1a700a74d0.html",
-      "destination": "commons/googleaa1e3a1a700a74d0.html"
-    },
-    {
-      "type": "file",
       "source": "yarn.lock",
       "destination": "commons/yarn.lock"
     },
@@ -72,16 +66,17 @@
       "type": "shell",
       "inline": [
         "cd commons/",
-	"npm install -g -s --no-progress yarn",
-	"yarn",
-        "yarn build --env.GOOGLE_AUTH_CLIENT_ID={{ user `GOOGLE_AUTH_CLIENT_ID` }} --env.TILE_SERVER_URL={{ user `TILE_SERVER_URL` }} --env.CLIENT_ENV={{ user `CLIENT_ENV` }} --mode={{ user `NODE_ENV` }}"
+        "touch .env",
+        "npm install -g -s --no-progress yarn",
+        "yarn",
+        "yarn build --env.GOOGLE_AUTH_CLIENT_ID={{ user `GOOGLE_AUTH_CLIENT_ID` }} --env.TILE_SERVER_URL={{ user `TILE_SERVER_URL` }} --env.MAP_ATTRIBUTION={{ user `MAP_ATTRIBUTION` }}  --mode={{ user `NODE_ENV` }}"
       ]
     },
     {
       "type": "shell",
       "inline": [
         "apt-get update",
-        "apt-get install nginx -y"  
+        "apt-get install nginx -y"
       ]
     },
     {
@@ -96,12 +91,6 @@
         "type": "docker-tag",
         "repository": "{{user `container_image_name`}}",
         "tag": "{{user `version`}}"
-      }, {
-        "type": "docker-push",
-        "login": true,
-        "login_username": "_json_key",
-        "login_password": "{{user `gcloud_json_key`}}",
-        "login_server": "https://gcr.io"
       }
     ]
   ]

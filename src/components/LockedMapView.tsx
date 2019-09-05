@@ -14,9 +14,10 @@ import uiState from '../stores/ui';
 
 const { TILE_SERVER_URL } = process.env;
 //    'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png';
-const MAP_ATTRIBUTION = process.env.MAP_ATTRIBUTION
-    ? process.env.MAP_ATTRIBUTION
-    : '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors';
+const MAP_ATTRIBUTION = process.env.MAP_ATTRIBUTION;
+if (!MAP_ATTRIBUTION) {
+    console.log('warning: missing map attribution');
+}
 
 const styles = theme => ({
     container: {

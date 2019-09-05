@@ -47,7 +47,7 @@ export function checkEmailInput(email: string): string {
 export async function logInUserGoogleOAuth(response) {
     const { profileObj, accessToken } = response;
     const { email } = profileObj;
-    if (process.env.CLIENT_ENV === 'staging' || process.env.CLIENT_ENV === 'production') {
+    if (process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'production') {
         try {
             await postRest(`/auth/check_whitelist`, { email });
         } catch (error) {
@@ -116,7 +116,7 @@ export async function signUpUser() {
         }
         return;
     }
-    if (process.env.CLIENT_ENV === 'staging' || process.env.CLIENT_ENV === 'production') {
+    if (process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'production') {
         try {
             await postRest(`/auth/check_whitelist`, { email });
         } catch (error) {

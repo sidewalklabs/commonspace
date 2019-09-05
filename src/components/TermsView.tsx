@@ -41,8 +41,14 @@ const TermsView = observer((props: TermsViewProps & WithStyles) => {
                 <Typography variant="body2" paragraph>
                     Please read these terms of use carefully before using the Services (as defined
                     below) as they represent a binding agreement between each user of our Services
-                    (“<b>you</b>”, “<b>your</b>”) and Sidewalk Labs Employees, LLC (referred to as “
-                    <b>Sidewalk</b>”, “<b>we</b>”, “<b>us</b>”, or “<b>our</b>”).
+                    (“
+                    <b>you</b>
+                    ”, “<b>your</b>
+                    ”) and Sidewalk Labs Employees, LLC (referred to as “<b>Sidewalk</b>
+                    ”, “<b>we</b>
+                    ”, “<b>us</b>
+                    ”, or “<b>our</b>
+                    ”).
                 </Typography>
                 <Typography variant="subtitle2" paragraph>
                     You agree to our Terms of Use by installing, accessing, or using our CommonSpace
@@ -71,13 +77,16 @@ const TermsView = observer((props: TermsViewProps & WithStyles) => {
                 </Typography>
                 <Typography variant="body2" paragraph>
                     The Services are intended to be used by (1) study administrators (“
-                    <b>Study Administrators</b>”) who (a) are provided with an administrator’s login
-                    by Sidewalk; and (b) utilize the Portal and App to design, organize, conduct and
-                    administer public life surveys (the “<b>Permitted Use</b>”); and (2) surveyors
-                    who (x) download and access the App at the invitation of and on behalf of a
-                    Study Administrator; and (y) are granted access to a public life survey through
-                    the App by a Study Administrator in order to conduct such public life survey on
-                    behalf of the Study Administrator (“<b>Surveyors</b>”).
+                    <b>Study Administrators</b>
+                    ”) who (a) are provided with an administrator’s login by Sidewalk; and (b)
+                    utilize the Portal and App to design, organize, conduct and administer public
+                    life surveys (the “<b>Permitted Use</b>
+                    ”); and (2) surveyors who (x) download and access the App at the invitation of
+                    and on behalf of a Study Administrator; and (y) are granted access to a public
+                    life survey through the App by a Study Administrator in order to conduct such
+                    public life survey on behalf of the Study Administrator (“
+                    <b>Surveyors</b>
+                    ”).
                 </Typography>
                 <Typography variant="body2" paragraph>
                     If you are a Study Administrator, Sidewalk grants you (as a permitted user) a
@@ -105,14 +114,15 @@ const TermsView = observer((props: TermsViewProps & WithStyles) => {
                 </Typography>
                 <Typography variant="body2" paragraph>
                     In addition, Sidewalk has made the source code for the App and the Portal (the “
-                    <b>Source Code</b>”) available at &nbsp;
+                    <b>Source Code</b>
+                    ”) available at &nbsp;
                     <a href="https://github.com/sidewalklabs/commonspace" target="_blank">
                         https://github.com/sidewalklabs/commonspace
                     </a>{' '}
                     &nbsp; for download and use pursuant to the Apache License, Version 2.0 (the “
-                    <b>Open Source License</b>”). You may not use the Source Code except in
-                    compliance with the Open Source License. You may obtain a copy of the Open
-                    Source License at
+                    <b>Open Source License</b>
+                    ”). You may not use the Source Code except in compliance with the Open Source
+                    License. You may obtain a copy of the Open Source License at
                     <a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank">
                         http://www.apache.org/licenses/LICENSE-2.0
                     </a>
@@ -136,34 +146,35 @@ const TermsView = observer((props: TermsViewProps & WithStyles) => {
                 </Typography>
                 <Typography variant="body2" paragraph>
                     Our Services contain content including, but not limited to, all text, audio,
-                    images and other materials or elements (collectively the “<b>Content</b>”).
-                    Certain Content is produced utilizing the Public Life Data Protocols established
-                    by the Gehl Institute and its partners (available at:
+                    images and other materials or elements (collectively the “<b>Content</b>
+                    ”). Certain Content is produced utilizing the Public Life Data Protocols
+                    established by the Gehl Institute and its partners (available at:
                     <a
                         href="https://gehlinstitute.org/tool/public-life-data-protocol/"
                         target="_blank"
                     >
                         https://gehlinstitute.org/tool/public-life-data-protocol/
                     </a>
-                    ) (the “<b>Protocol</b>”). With the exception of the Protocol, and subject to
-                    the provision of the Source Code pursuant to the Open Source License, the
-                    Content displayed on or through our Services is protected by copyright, pursuant
-                    to copyrights laws, and international conventions. Specifically excluding the
-                    Protocol, and subject to the provision of the Source Code pursuant to the Open
-                    Source License, any reproduction, modification, creation of derivative works
-                    from or redistribution of our Services, and/or copying or reproducing any of our
-                    Services or any portion thereof to any other server or location for further
-                    reproduction or redistribution is strictly prohibited without the express
-                    written consent of Sidewalk.
+                    ) (the “<b>Protocol</b>
+                    ”). With the exception of the Protocol, and subject to the provision of the
+                    Source Code pursuant to the Open Source License, the Content displayed on or
+                    through our Services is protected by copyright, pursuant to copyrights laws, and
+                    international conventions. Specifically excluding the Protocol, and subject to
+                    the provision of the Source Code pursuant to the Open Source License, any
+                    reproduction, modification, creation of derivative works from or redistribution
+                    of our Services, and/or copying or reproducing any of our Services or any
+                    portion thereof to any other server or location for further reproduction or
+                    redistribution is strictly prohibited without the express written consent of
+                    Sidewalk.
                 </Typography>
                 <Typography variant="body2" paragraph>
                     Certain names, graphics, logos, icons, designs, words, titles and phrases in our
                     Services constitute trademarks, trade names, trade dress and brand names of
-                    Sidewalk (collectively the “<b>Marks</b>”) and are protected in the United
-                    States of America and internationally. Any reproduction, modification, creation
-                    of derivative works or any other use of the Marks contrary to these Terms of
-                    Use, in whole or in part, is strictly prohibited without the express written
-                    consent of Sidewalk
+                    Sidewalk (collectively the “<b>Marks</b>
+                    ”) and are protected in the United States of America and internationally. Any
+                    reproduction, modification, creation of derivative works or any other use of the
+                    Marks contrary to these Terms of Use, in whole or in part, is strictly
+                    prohibited without the express written consent of Sidewalk
                 </Typography>
                 <Typography variant="body2" paragraph>
                     You further agree to abide by any and all copyright and trademark notices
@@ -181,13 +192,14 @@ const TermsView = observer((props: TermsViewProps & WithStyles) => {
                 <Typography variant="body2" paragraph>
                     Sidewalk disclaims ownership of the data and content prepared, generated,
                     developed or otherwise obtained by or through your use of the Services (the “
-                    <b>Data</b>”). Although Sidewalk does not claim ownership of content and data
-                    that its users input and generate through the Services, by providing feedback to
-                    Sidewalk or posting content to any area of our Services that is accessible to
-                    all users, you automatically grant, and you represent and warrant that you have
-                    the right to grant, to Sidewalk an irrevocable, perpetual, non-exclusive, fully
-                    paid, worldwide license to use the Data for the limited purpose of delivering
-                    and improving the Services.
+                    <b>Data</b>
+                    ”). Although Sidewalk does not claim ownership of content and data that its
+                    users input and generate through the Services, by providing feedback to Sidewalk
+                    or posting content to any area of our Services that is accessible to all users,
+                    you automatically grant, and you represent and warrant that you have the right
+                    to grant, to Sidewalk an irrevocable, perpetual, non-exclusive, fully paid,
+                    worldwide license to use the Data for the limited purpose of delivering and
+                    improving the Services.
                 </Typography>
                 <Typography variant="body2" paragraph>
                     Subject to our right to terminate the Services in accordance with these Terms of

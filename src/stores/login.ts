@@ -25,7 +25,7 @@ export async function logInUser() {
     };
 
     try {
-        if (process.env.CLIENT_ENV === 'staging' || process.env.CLIENT_ENV === 'production') {
+        if (process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'production') {
             try {
                 await postRest(`/auth/check_whitelist`, { email });
             } catch (error) {

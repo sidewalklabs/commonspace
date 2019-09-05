@@ -11,7 +11,6 @@ import {
     studyIdToTablename,
     StudyField
 } from './utils';
-import { string } from 'prop-types';
 
 export type StudyScale =
     | 'district'
@@ -622,6 +621,7 @@ export async function getFieldsAndTablenameForStudy(
             throw new IdDoesNotExist(studyId);
         }
 
+        // @ts-ignore
         const { fields, tablename, study_type: studyType } = rows[0];
         return { fields, tablename, studyType };
     } catch (error) {

@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CompressionPlugin = require('compression-webpack-plugin');
 
 module.exports = env => {
   const envKeys = Object.keys(env).reduce((acc, next) => {
@@ -64,10 +65,10 @@ module.exports = env => {
       new CopyWebpackPlugin([
         {from: 'css/styles.css', to: 'css/'},
         {from: 'assets/', to: 'assets/'},
-        {from: 'googleaa1e3a1a700a74d0.html', to: 'googleaa1e3a1a700a74d0.html'},
         {from: 'node_modules/react-leaflet-search/lib/react-leaflet-search.css', to: 'css/'}
       ]),
-      new webpack.DefinePlugin(envKeys)
+      new webpack.DefinePlugin(envKeys),
+      new CompressionPlugin()
     ]
   }];
 };

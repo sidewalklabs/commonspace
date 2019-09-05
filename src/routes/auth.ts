@@ -61,8 +61,11 @@ async function sendVerificationEmail(email: string, host: string) {
         await saveTokenForEmailVerification(DbPool, email, token);
         await sendSignupVerificationEmail(host, email, token);
     } catch (error) {
-        if (error === 'Missing credentials for "PLAIN"' && process.env.NODE_ENV === 'STAGING') {
-            console.warn('Email Not Setup');
+        if (
+            error === 'Missing credentials for "PLAIN"' &&
+            process.env.NODE_ENV !== 'developement'
+        ) {
+            console.warn('Email Verification Not Setup');
         }
     }
 }

@@ -40,9 +40,8 @@ import {
 } from '../datastore/study';
 import { userIdIsSurveyor, createNewSurveyForStudy, updateSurvey } from '../datastore/survey';
 import { userIsAdminOfStudy, deleteUser } from '../datastore/user';
-import { createLocation, saveGeoJsonFeatureAsLocation } from '../datastore/location';
+import { saveGeoJsonFeatureAsLocation } from '../datastore/location';
 import DbPool from '../database';
-import { snakecasePayload } from '../utils';
 import { accountIsVerified, tokenIsBlacklisted } from '../auth';
 import {
     return404OnIdDoesNotExist,
