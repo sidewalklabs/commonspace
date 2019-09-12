@@ -51,7 +51,9 @@ const MainWrapper = observer((props: MainProps & WithStyles) => {
     const { uri } = router;
     const { snackBar } = uiState;
 
+    // centralize all clientside routing logic
     const routeConfig = {
+        roxanne: assignComponentToRoute('/roxanne', LoginView),
         login: assignComponentToRoute('/login', LoginView),
         signup: assignComponentToRoute('/signup', SignUpView),
         loginWithEmail: assignComponentToRoute('/loginWithEmail', LoginWithEmailView),
