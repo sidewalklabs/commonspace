@@ -4,13 +4,15 @@ import { withStyles, WithStyles } from '@material-ui/core/styles';
 import Fab from '@material-ui/core/Fab';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import { GoogleLogin } from 'react-google-login';
+import firebase from 'firebase';
+import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
 
 import { observer } from 'mobx-react';
 
-import { logInUserGoogleOAuth } from '../stores/signup';
+import initializeFirebase from '../initialize_firebase';
 import { navigate } from '../stores/router';
 import { setSnackBar } from '../stores/ui';
+import { postRest, ForbiddenResourceError } from '../client';
 
 const styles = theme => ({
     root: {
@@ -72,13 +74,61 @@ const styles = theme => ({
     }
 });
 
-const responseGoogleFailure = response => {
-    console.error(response);
+const responseGoogleFailure = ({ error }) => {
+    if (error === 'popup_closed_by_user') {
+        return;
+    }
+    console.error(error);
     const errorMessage =
-        response.error === 'idpiframe_initialization_failed'
+        error === 'idpiframe_initialization_failed'
             ? 'Google OAuth not available, contact commonspace@sidewalklabs.com'
             : 'Unable to authenticate with Google OAuth';
     setSnackBar('error', errorMessage);
+};
+
+initializeFirebase();
+
+firebase.auth().onAuthStateChanged(async function(user) {
+    if (user && !user.emailVerified) {
+        console.warn('user has not verfied with firebase');
+        await user.sendEmailVerification();
+        setSnackBar(
+            'error',
+            'Email is not verified, must click on verification link in sent email'
+        );
+        firebase.auth().signOut();
+    } else if (user && user.emailVerified) {
+        const firebaseJwt = await user.getIdToken();
+        try {
+            await postRest('/auth/firebase/token', { firebase_id_token: firebaseJwt });
+            navigate('/studies');
+            return;
+        } catch (error) {
+            if (error instanceof ForbiddenResourceError) {
+                setSnackBar(
+                    'error',
+                    'Email is not verified, must click on verification link from email'
+                );
+            } else {
+                setSnackBar(
+                    'error',
+                    'unable to login verified account, contact commonspace@sidewalklabs.com'
+                );
+                console.error(error);
+            }
+            firebase.auth().signOut();
+            navigate('/login');
+        }
+    }
+});
+
+// https://github.com/firebase/firebaseui-web#configuration
+const uiConfig = {
+    signInFlow: 'popup',
+    signInOptions: [
+        firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+        firebase.auth.EmailAuthProvider.PROVIDER_ID
+    ]
 };
 
 // @ts-ignore
@@ -99,37 +149,7 @@ const LoginView = withStyles(styles)(
                     <Typography variant="caption" align="center">
                         If you are a beta tester, log in below.
                     </Typography>
-                    <GoogleLogin
-                        clientId={process.env.GOOGLE_AUTH_CLIENT_ID}
-                        onSuccess={logInUserGoogleOAuth}
-                        onFailure={responseGoogleFailure}
-                        render={renderProps => (
-                            <Fab
-                                variant="extended"
-                                onClick={renderProps.onClick}
-                                classes={{
-                                    root: classes.button,
-                                    label: classes.buttonLabel
-                                }}
-                            >
-                                Continue with Google
-                            </Fab>
-                        )}
-                    />
-                    <Typography variant="caption" align="center">
-                        OR
-                    </Typography>
-                    <Fab
-                        variant="extended"
-                        color="secondary"
-                        onClick={() => navigate('/loginWithEmail')}
-                        classes={{
-                            root: classes.oulinedButton,
-                            label: classes.buttonLabel
-                        }}
-                    >
-                        Continue with Email
-                    </Fab>
+                    <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={firebase.auth()} />
                     <Typography variant="caption" align="center" gutterBottom>
                         By continuing, you agree to CommonSpace <a href="/terms">terms</a> and{' '}
                         <a href="/privacy">privacy</a>

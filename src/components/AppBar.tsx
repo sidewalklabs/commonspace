@@ -11,10 +11,10 @@ import MenuItem from '@material-ui/core/MenuItem';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 
 import { observer } from 'mobx-react';
-
 import { observable } from 'mobx';
+
 import { navigate } from '../stores/router';
-import { postRest } from '../client';
+import { logoutUser } from '../client';
 import { resetApplicationState } from '../stores/applicationState';
 import { resetLoginState } from '../stores/login';
 import { resetSignupState } from '../stores/signup';
@@ -31,7 +31,7 @@ const styles = theme => ({
 });
 
 async function handleLogOut() {
-    (await postRest('/auth/logout', {})) as {};
+    logoutUser();
     resetApplicationState();
     resetLoginState();
     resetSignupState();
@@ -40,7 +40,7 @@ async function handleLogOut() {
 }
 
 async function handleResetPassword() {
-    (await postRest('/auth/logout', {})) as {};
+    logoutUser();
     resetApplicationState();
     resetLoginState();
     resetSignupState();

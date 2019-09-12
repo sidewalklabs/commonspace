@@ -1,7 +1,8 @@
 import { observable } from 'mobx';
 
-import { navigate } from './router';
-import uiState, { setSnackBar } from './ui';
+import firebase from 'firebase/app';
+import router, { navigate } from './router';
+import { setSnackBar } from './ui';
 import { postRest, GenericHttpError, UnauthorizedError, ForbiddenResourceError } from '../client';
 
 export async function resendVerificationEmail() {
@@ -19,11 +20,6 @@ export async function resendVerificationEmail() {
 
 export async function logInUser() {
     const { password, email } = loginState;
-    const data = {
-        password,
-        email
-    };
-
     try {
         if (process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'production') {
             try {
@@ -40,6 +36,20 @@ export async function logInUser() {
                 return;
             }
         }
+        // // once firebase returns, have it do a callback to switch out firebase token with jwt from the server
+        // if (router.uri == 'secretLogin') {
+        //     console.log(toJS(router));
+        // }
+        // await firebase
+        //     .auth()
+        //     .signInWithEmailAndPassword(email, password)
+        //     .catch(function(error) {
+        //         // Handle Errors here.
+        //         const { code, message } = error;
+        //         console.log(`${code}: ${message}`);
+        //         setSnackBar('error', `Unable to log in, are email and password correct?`);
+        //         resetLoginState();
+        //     });
         await postRest(`/auth/login`, { password, email });
         loginState.resendVerificationButtonIsShowing = false;
         resetLoginState();

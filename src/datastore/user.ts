@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import pg, { Pool } from 'pg';
-import * as uuid from 'uuid';
+import uuid from 'uuid';
 import { UNIQUE_VIOLATION } from 'pg-error-constants';
 
 import { EntityAlreadyExists, IdDoesNotExist } from './utils';

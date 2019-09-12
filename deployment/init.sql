@@ -191,18 +191,25 @@ CREATE OR REPLACE VIEW survey_to_tablename AS
  INNER JOIN survey as sr
  ON st.study_id = sr.study_id;
 
--- the protocol doesn't make use of what
+DROP FUNCTION IF EXISTS get_datapoints_across_studies();
 
--- respond to an email that allows someone with super special rights to grant access to a user
--- that user must have their own password to postgres that is super secret and kept hashed in some public databse
--- for now anyone can create a new table and cuase everyone is the same postgres user right now then everyone can see everything
--- there needs to be an outside databse, in firestore that will inject the password into the cloud function or a public table with hashed keys might do
+CREATE OR REPLACE FUNCTION get_datapoints_across_studies()
+	RETURNS TABLE (data_point_id UUID) AS $$
+DECLARE
+    table_name text;
+    retval uuid;
+BEGIN
+    DROP TABLE IF EXISTS tmptable;
+    CREATE TEMPORARY TABLE IF NOT EXISTS tmptable (data_point_id UUID );
+	
+    FOR table_name IN
+		SELECT tablename from data_collection.study
+	LOOP
+		EXECUTE format('insert into tmptable select data_point_id from %s', table_name);
+	END LOOP;
 
--- signing up for a study gives you read access
-
-
--- INSERT INTO datacollection.study (study_id, title, userId, protocolVersion)
---   VALUES (
---     uuid_generate_v4(),
---     'Throncliffe Park Friday Night Markets',
---   )
+    RETURN QUERY
+        SELECT * FROM tmptable;
+END;
+$$
+LANGUAGE PLPGSQL;

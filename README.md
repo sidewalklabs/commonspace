@@ -83,6 +83,11 @@ favorite http server from the root directory.
 python -m http.server
 ```
 
+#### Firebase Functions
+
+##### Deployment
+[Connect your ci system.](https://firebase.google.com/docs/cli#cli-ci-systems)
+
 ### SQL
 
 #### Local Development -- Backend

@@ -1,1 +1,16 @@
 /* We need this folder since we move react-leaflet-search.css here */
+.firebaseui-idp-password {
+    background-color: #0271cd !important;
+    width: 100% !important;
+    max-width: 400px !important;
+    box-shadow: none !important;
+    border: 1px solid #e0e0e0 !important;
+}
+
+.firebaseui-idp-google {
+    background-color: #FFFFFF !important;
+    width: 100% !important;
+    max-width: 400px !important;
+    box-shadow: none !important;
+    border: 1px solid #e0e0e0 !important;
+}

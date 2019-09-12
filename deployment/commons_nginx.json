@@ -3,6 +3,11 @@
     "container_image_name": "sidewalklabs/commons-nginx",
     "version": "v0.0.1",
     "MAP_ATTRIBUTION": "\"&copy; <a href=\"http://osm.org/copyright\">OpenStreetMap</a> contributors\"",
+    "FIREBASE_WEB_API_KEY": "",
+    "FIREBASE_AUTH_DOMAIN": "",
+    "FIREBASE_API_ID": "",
+    "FIREBASE_PROJECT_ID": "",
+    "FIREBASE_APP_ID": "",
     "NODE_ENV": "development",
     "TILE_SERVER_URL": "http://{s}.tile.osm.org/{z}/{x}/{y}.png",
     "GOOGLE_AUTH_CLIENT_ID": "NEEDS_ANY_VALUE_TO_ALLOW_WEBPACK_TO_COMPILE"
@@ -69,7 +74,7 @@
         "touch .env",
         "npm install -g -s --no-progress yarn",
         "yarn",
-        "yarn build --env.GOOGLE_AUTH_CLIENT_ID={{ user `GOOGLE_AUTH_CLIENT_ID` }} --env.TILE_SERVER_URL={{ user `TILE_SERVER_URL` }} --env.MAP_ATTRIBUTION={{ user `MAP_ATTRIBUTION` }}  --mode={{ user `NODE_ENV` }}"
+        "yarn build --env.TILE_SERVER_URL={{ user `TILE_SERVER_URL` }}  --env.MAP_ATTRIBUTION={{ user `MAP_ATTRIBUTION` }} --env.FIREBASE_API_KEY={{ user `FIREBASE_API_KEY` }} --env.FIREBASE_AUTH_DOMAIN={{ user `FIREBASE_AUTH_DOMAIN` }} --env.FIREBASE_PROJECT_ID={{ user `FIREBASE_PROJECT_ID` }} --env.FIREBASE_APP_ID={{ user `FIREBASE_APP_ID` }} --mode={{ user `NODE_ENV` }}"
       ]
     },
     {

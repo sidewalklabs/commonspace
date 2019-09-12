@@ -1,23 +1,32 @@
 import cookieParser from 'cookie-parser';
 import { randomBytes } from 'crypto';
+import fs from 'fs';
 import express, { Request, Response } from 'express';
-import * as jwt from 'jsonwebtoken';
+import admin from 'firebase-admin';
+import jwt from 'jsonwebtoken';
 import passport from 'passport';
 import { return500OnError } from './utils';
 import {
     resetPassword,
     sendEmailResetLink,
     addToBlackList,
-    emailForResetToken,
     saveTokenForPasswordReset,
     validateEmail,
     saveTokenForEmailVerification,
     sendSignupVerificationEmail
 } from '../auth';
 import DbPool from '../database';
-import { User, UnverifiedUserError } from '../datastore/user';
+import { UnverifiedUserError, findUserById } from '../datastore/user';
 import { checkUserIsWhitelistApproved } from '../datastore/whitelist';
-import { return401OnUnauthorizedError, UnauthorizedError } from './errors';
+import { IdDoesNotExist } from '../datastore/utils';
+
+// TODO https://firebase.google.com/docs/admin/setup#initialize_the_sdk
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+const app = admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+});
+
+const firestoreDb = app.firestore();
 
 const N_RAND_BYTES = 32;
 
@@ -182,7 +191,7 @@ router.post(
 
 router.post(
     '/resend_verification',
-    return500OnError(async function(req, res) {
+    return500OnError(async function(req: Request, res: Response) {
         const { email } = req.body;
         await sendVerificationEmail(email, req.get('host'));
         res.sendStatus(200);
@@ -191,7 +200,7 @@ router.post(
 
 router.get(
     '/verify',
-    return500OnError(async function(req, res) {
+    return500OnError(async function(req: Request, res: Response) {
         const { token } = req.query;
         const userId = await validateEmail(DbPool, token);
         if (userId) {
@@ -238,6 +247,43 @@ if (process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'production')
         (req: Request, res: Response) => {
             return respondWithAuthentication(req, res, req.user);
         }
+    );
+    router.post(
+        '/firebase/token',
+        return500OnError(async function(req: Request, res: Response) {
+            const { firebase_id_token: token } = req.body;
+            let decodedToken;
+            try {
+                decodedToken = await admin.auth().verifyIdToken(token);
+            } catch (error) {
+                res.status(401).send({ error_message: 'invalid firebase jwt' });
+                return;
+            }
+            const { uid: firebaseUid } = decodedToken;
+            // get the pg user id from firestore and create a payload to send
+            const docRef = firestoreDb.collection('users').doc(firebaseUid.toString());
+            let firestoreUserMapping;
+            firestoreUserMapping = await docRef.get();
+            if (!firestoreUserMapping.exists) {
+                console.error(`could not find firebase user in firestore: ${firebaseUid}`);
+                res.status(409).send();
+                return;
+            }
+            const firestoreData = firestoreUserMapping.data();
+            try {
+                const { user_id } = await findUserById(DbPool, firestoreData.postgresId);
+                return respondWithAuthentication(req, res, { user_id });
+            } catch (error) {
+                if (error instanceof IdDoesNotExist) {
+                    res.status(409).send({
+                        error_message: `user not found for firebase user: ${firestoreData}`
+                    });
+                } else {
+                    console.error(`error fetching user from postgres db: ${firestoreData}`);
+                    throw error;
+                }
+            }
+        })
     );
 }
 

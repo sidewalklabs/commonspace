@@ -451,7 +451,6 @@ router.get(
 );
 
 async function saveDataPoint(req: Request, res: Response) {
-    const { user_id: userId } = req.user;
     const { surveyId, dataPointId } = req.params;
 
     const dataPointFromBody = req.body as DataPoint;
