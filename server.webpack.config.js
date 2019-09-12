@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const nodeExternals = require("webpack-node-externals");
 
 module.exports = {
     name: 'api-server',
@@ -29,6 +30,7 @@ module.exports = {
       ]
     },
     plugins: [
-      new webpack.IgnorePlugin(/^pg-native$/)
-    ]
+      new webpack.IgnorePlugin(/^pg-native$/),
+    ],
+    externals: [nodeExternals()]
 };

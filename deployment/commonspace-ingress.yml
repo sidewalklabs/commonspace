@@ -1,0 +1,20 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: commons-staging
+  labels:
+    app: swl-commons
+    contact: essoto
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: $IP_ADDRESS
+    networking.gke.io/managed-certificates: commonspace-certificate
+
+spec:
+  rules:
+  - host: commonspace-staging.sidewalklabs.com
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: commons-nginx-service
+          servicePort: 80

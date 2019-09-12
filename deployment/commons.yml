@@ -74,6 +74,11 @@ spec:
               secretKeyRef:
                 name: commonspace-secrets
                 key: GOOGLE_AUTH_CLIENT_SECRET
+          - name: FIREBASE_SERVICE_ACCOUNT_KEY
+            valueFrom:
+              secretKeyRef:
+                name: commonspace-secrets
+                key: FIREBASE_SERVICE_ACCOUNT_KEY
           - name: DOTENV_CONFIG_DIR
             valueFrom:
               configMapKeyRef:
