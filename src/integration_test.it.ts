@@ -81,11 +81,7 @@ describe('create/delete/modify studies', async () => {
     });
 
     test('create a new study', async () => {
-        const study = await postRest<Study>(
-            API_SERVER + '/api/studies',
-            SeaBassFishCountStudy,
-            adminToken
-        );
+        await postRest<Study, any>(API_SERVER + '/api/studies', SeaBassFishCountStudy, adminToken);
 
         const studiesForAdmin = await getRest<Study[]>(
             API_SERVER + '/api/studies?type=surveyor',
@@ -168,7 +164,7 @@ describe('create/delete/modify studies', async () => {
 
     test('post /studies Study[], returns last_updated, created_at fields ', async () => {
         const saveMultipleStudies = [SeaBassFishCountStudy, MarchOnWashington];
-        const studies = await postRest<Study[]>(
+        const studies = await postRest<Study[], any>(
             API_SERVER + '/api/studies',
             saveMultipleStudies,
             adminToken
@@ -212,7 +208,7 @@ describe('create/delete/modify studies', async () => {
         //const dataPoint = SeaBassFishCountDataPoints[0]
         await Promise.all(
             SeaBassFishCountDataPoints.map(dataPoint => {
-                return postRest<DataPoint>(
+                return postRest<DataPoint, any>(
                     API_SERVER + `/api/surveys/${survey_id}/datapoints`,
                     dataPoint,
                     surveyorToken
@@ -253,7 +249,7 @@ describe('create/delete/modify studies', async () => {
         const { survey_id } = surveyorSurvey;
         const dataPoint = SeaBassFishCountDataPoints[0];
         await expect(
-            postRest<DataPoint>(
+            postRest<DataPoint, any>(
                 API_SERVER + `/api/surveys/${survey_id}/datapoints`,
                 dataPoint,
                 adminToken
@@ -292,7 +288,7 @@ describe('create/delete/modify studies', async () => {
             return email === surveyorUser.email;
         })[0];
         const { survey_id } = surveyorSurvey;
-        await postRest<DataPoint>(
+        await postRest<DataPoint, any>(
             API_SERVER + `/api/surveys/${survey_id}/datapoints`,
             SampleDataPointOne,
             surveyorToken
@@ -319,7 +315,7 @@ describe('create/delete/modify studies', async () => {
             return email === surveyorUser.email;
         })[0];
         const { survey_id } = surveyorSurvey;
-        await postRest<DataPoint[]>(
+        await postRest<DataPoint[], any>(
             API_SERVER + `/api/surveys/${survey_id}/datapoints`,
             marchOnWashingtonDataPoints,
             surveyorToken
@@ -340,7 +336,7 @@ describe('create/delete/modify studies', async () => {
         const { survey_id } = surveyorSurvey;
 
         await expect(
-            postRest<DataPoint>(
+            postRest<DataPoint, any>(
                 API_SERVER + `/api/surveys/${survey_id}/datapoints`,
                 SampleDataPointOne,
                 surveyorToken
@@ -390,7 +386,7 @@ describe('create/delete/modify studies', async () => {
     });
 
     test('once a user logout out using a token, the token should result in a 401', async () => {
-        await postRest<{}>(API_SERVER + '/auth/logout', {}, surveyorToken);
+        await postRest<{}, any>(API_SERVER + '/auth/logout', {}, surveyorToken);
         await expect(
             getRest<Study[]>(API_SERVER + '/api/studies?type=surveyor', surveyorToken)
         ).rejects.toThrow(UnauthorizedError);

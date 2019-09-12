@@ -4,6 +4,7 @@ version: 2
 # GCP_PROJECT_NAME
 # GCP_SERVICE_ACCOUNT_KEY - (https://circleci.com/docs/2.0/google-auth/ https://cloud.google.com/sdk/docs/authorizing#authorizing_with_a_service_account)
 # SERVER_HOSTNAME - eg. commonspace.sidewalklabs.com
+# FIREBASE_TOKEN - 
 
 # https://circleci.com/docs/2.0/deployment-integrations/#google-cloud
 jobs:
@@ -39,6 +40,34 @@ jobs:
           name: prettier
           command: yarn prettier-check
 
+  deploy-cloud-function:
+    docker:
+      - image: californianseabass/gcloud-node:v0.0.1
+
+    steps:
+        - run:
+           name: setup docker
+           command: echo y | gcloud auth configure-docker
+
+        - run: &setup_gcloud
+           name: authenticate gcloud service account
+           command: |
+                echo "${GCP_SERVICE_ACCOUNT_KEY}" > ${HOME}/gcp-key.json
+                gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
+                gcloud --quiet config set project ${GCP_PROJECT_NAME}
+
+        - checkout
+
+        - setup_remote_docker
+
+        - run:
+           name: build and push commons server image to GC Registry for k8s to have access
+           command: |
+                npm install -g node-gyp firebase-tools
+                cd functions/ && npm install && cd ..
+                firebase deploy --only functions --token "${FIREBASE_TOKEN}"
+
+
   build-admin-server-image:
     docker:
       - image: californianseabass/gcloud-packer-docker:v0.0.2
@@ -63,7 +92,7 @@ jobs:
            name: build and push commons server image to GC Registry for k8s to have access
            command: |
                 jq '."post-processors"[0][1] |= . + { "type":"docker-push","login": true,"login_username":"_json_key","login_password":"{{user `gcloud_json_key`}}","login_server":"https://gcr.io"}' deployment/commons_server.json > deployment/commons_server.json.tmp && mv deployment/commons_server.json.tmp deployment/commons_server.json
-                packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-server -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" deployment/commons_server.json
+                packer build -var container_image_name=us.gcr.io/${GCP_PROJECT_NAME}/commons-server -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" deployment/commons_server.json
 
   build-nginx-image:
     docker:
@@ -89,7 +118,7 @@ jobs:
             name: build and push nginx image to GC Registry for k8s to have access
             command: |
                 jq '."post-processors"[0][1] |= . + { "type":"docker-push","login": true,"login_username":"_json_key","login_password":"{{user `gcloud_json_key`}}","login_server":"https://gcr.io"}' deployment/commons_nginx.json > deployment/commons_nginx.json.tmp && mv deployment/commons_nginx.json.tmp deployment/commons_nginx.json
-                packer build -var container_image_name=us.gcr.io/nyc-tlc-1225/commons-nginx -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" deployment/commons_nginx.json
+                packer build -var container_image_name=us.gcr.io/${GCP_PROJECT_NAME}/commons-nginx -var version=$(git rev-parse --short=8 HEAD) -var gcloud_json_key="${GCP_SERVICE_ACCOUNT_KEY}" -var FIREBASE_API_KEY="${FIREBASE_WEB_API_KEY}" -var FIREBASE_AUTH_DOMAIN="${FIREBASE_AUTH_DOMAIN}" -var FIREBASE_PROJECT_ID="${FIREBASE_PROJECT_ID}" -var FIREBASE_APP_ID="${FIREBASE_APP_ID}" deployment/commons_nginx.json
 
   patch-k8s:
       docker:
@@ -105,31 +134,20 @@ jobs:
 
           - checkout
 
+
           - run:
               name: patch K8s configs
               command: |
                 mkdir /tmp/k8s
-                kubectl patch --local -o yaml -p \ '
-                  {
-                    "spec": {
-                       "template": {
-                            "spec": {
-                              "containers": [
-                                    {
-                                        "name": "commons-nginx",
-                                        "image": "us.gcr.io/nyc-tlc-1225/commons-nginx:'$(git rev-parse --short=8 HEAD)'"
-                                    },
-                                    {
-                                        "name": "commons-server",
-                                        "image": "us.gcr.io/nyc-tlc-1225/commons-server:'$(git rev-parse --short=8 HEAD)'"
-                                    }
-                                ]
-                            }
-                        }
-                      }
-                  }' -f deployment/commons.yml > /tmp/k8s/commons.yml
+                PATCH_JSON=$(jq ".spec.template.spec.containers[0]={\"name\": \"commons-nginx\",\"image\": \"us.gcr.io/${GCP_PROJECT_NAME}/commons-nginx:$(git rev-parse --short=8 HEAD)\"}" <<< '{"spec": {"template": {"spec": {"containers": [ ] } } } }' | jq ".spec.template.spec.containers[1]={\"name\": \"commons-server\",\"image\": \"us.gcr.io/${GCP_PROJECT_NAME}/commons-server:$(git rev-parse --short=8 HEAD)\"}")
+                kubectl patch --local -o yaml -p "$PATCH_JSON" -f deployment/commons.yml > /tmp/k8s/commons.tmp.yml
+                yq ".spec.template.spec.containers[2].command[1]=\"-instances=${SQL_INSTANCE_CONNECTION_NAME}=tcp:5432\"" /tmp/k8s/commons.tmp.yml > /tmp/k8s/commons-staging.yml
+                yq ".spec.template.spec.containers[2].command[1]=\"-instances=${SQL_INSTANCE_CONNECTION_NAME_PROD}=tcp:5432\"" /tmp/k8s/commons.tmp.yml > /tmp/k8s/commons-production.yml
+                rm /tmp/k8s/commons.tmp.yml
                 cp deployment/commons_nginx_service.yml /tmp/k8s/
                 cp deployment/commons_server_service.yml /tmp/k8s/
+                yq ".spec.domains[0]=\"${STAGING_DOMAIN_NAME}\"" deployment/staging-certificate.yml > /tmp/k8s/staging-certificate.yml
+                yq ".spec.rules[0].host=\"${STAGING_DOMAIN_NAME}\"" deployment/commons-ingress-staging.yml > /tmp/k8s/commons-ingress-staging.yml
 
           - persist_to_workspace:
               root: /tmp/
@@ -149,21 +167,28 @@ jobs:
       - run:
           name: Apply K8s configs
           command: |
-            gcloud container clusters get-credentials staging --zone=us-east1-b
-            kubectl apply -f /tmp/k8s/commons.yml
+            gcloud container clusters get-credentials canadian-staging-1 --zone=${STAGING_ZONE}
+            kubectl apply -f /tmp/k8s/commons-staging.yml
             kubectl apply -f /tmp/k8s/commons_nginx_service.yml
             kubectl apply -f /tmp/k8s/commons_server_service.yml
+            kubectl apply -f /tmp/k8s/staging-certificate.yml
+            kubectl apply -f /tmp/k8s/commons-ingress-staging.yml
 
-  run-integration-test:
+  deploy-production:
     docker:
-      - image: node:10.15
-
+      - image: google/cloud-sdk
     steps:
-      - checkout
-
-      - run: yarn install
-
-      - run: yarn it
+      - attach_workspace:
+          at: /tmp
+      - run:
+          <<: *setup_gcloud
+      - run:
+          name: Apply K8s configs
+          command: |
+            gcloud container clusters get-credentials prod --zone=${PROD_ZONE}
+            kubectl apply -f /tmp/k8s/commons-production.yml
+            kubectl apply -f /tmp/k8s/commons_nginx_service.yml
+            kubectl apply -f /tmp/k8s/commons_server_service.yml
 
 workflows:
   version: 2
@@ -188,6 +213,10 @@ workflows:
             - build-admin-server-image
             - build-nginx-image
             - patch-k8s
-      - run-integration-test:
+      - hold:
+          type: approval
           requires:
-             - deploy-staging
+            - deploy-staging
+      - deploy-production:
+          requires:
+            - hold

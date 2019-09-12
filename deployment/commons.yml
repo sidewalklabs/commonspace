@@ -19,9 +19,6 @@ spec:
       - name: cloudsql-commons-credentials
         secret:
           secretName: cloudsql-commons-credentials
-      - name: commons-config
-        secret:
-          secretName: commons-config
       - name: commonspace-secrets
         secret:
           secretName: commonspace-secrets
@@ -31,10 +28,6 @@ spec:
         ports:
           - containerPort: 3000
         command: ["node", "/commons/build/server.js"]
-        volumeMounts:
-          - name: commons-config
-            mountPath: /etc/commons
-            readOnly: true
         env:
           - name: DB_HOST
             valueFrom:
@@ -81,6 +74,11 @@ spec:
               secretKeyRef:
                 name: commonspace-secrets
                 key: GOOGLE_AUTH_CLIENT_SECRET
+          - name: FIREBASE_SERVICE_ACCOUNT_KEY
+            valueFrom:
+              secretKeyRef:
+                name: commonspace-secrets
+                key: FIREBASE_SERVICE_ACCOUNT_KEY
           - name: DOTENV_CONFIG_DIR
             valueFrom:
               configMapKeyRef:
@@ -106,11 +104,7 @@ spec:
               configMapKeyRef:
                 name: commons-config
                 key: JWT_EXPIRATION_MS
-          - name: TILE_SERVER_URL
-            valueFrom:
-              configMapKeyRef:
-                name: commons-config
-                key: TILE_SERVER_URL
+      # the environment variables get used during the build step of this container by webpack
       - name: commons-nginx
         image: swl-eng/commons-nginx:latest
         ports:
@@ -121,31 +115,10 @@ spec:
           - /commons.nginx.conf
           - -g
           - 'daemon off;'
-        env:
-          - name: GOOGLE_AUTH_CLIENT_ID
-            valueFrom:
-              secretKeyRef:
-                name: commonspace-secrets
-                key: GOOGLE_AUTH_CLIENT_ID
-          - name: CLIENT_ENV
-            valueFrom:
-              configMapKeyRef:
-                name: commons-config
-                key: CLIENT_ENV
-          - name: NODE_ENV
-            valueFrom:
-              configMapKeyRef:
-                name: commons-config
-                key: NODE_ENV
-          - name: TILE_SERVER_URL
-            valueFrom:
-              configMapKeyRef:
-                name: commons-config
-                key: TILE_SERVER_URL
       - name: cloudsql-proxy
         image: gcr.io/cloudsql-docker/gce-proxy:1.11
         command: ["/cloud_sql_proxy",
-                  "-instances=nyc-tlc-1225:us-central1:gehl-data-collector-central=tcp:5432",
+                  "-instances=<INSTANCE_CONNECTION_NAME>=tcp:5432",
                   "-credential_file=/secrets/cloudsql/credentials.json"]
         securityContext:
           runAsUser: 2  # non-root user

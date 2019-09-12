@@ -3,6 +3,7 @@ import { observable, autorun } from 'mobx';
 import pathToRegexp from 'path-to-regexp';
 import { init, initCurrentStudy } from './applicationState';
 import parse from 'url-parse';
+import { logoutUser } from '../client';
 
 type BooleanFunction = (...args: any[]) => boolean;
 type ElementFunction = (...props: any[]) => JSX.Element;
@@ -75,7 +76,7 @@ export function navigate(route: string) {
 }
 
 export function logoutIfError<T>(
-    eC: Function,
+    e: Function,
     f: (...args: any[]) => Promise<T>
 ): (...args: any[]) => Promise<T> {
     return async (...args) => {
@@ -83,7 +84,8 @@ export function logoutIfError<T>(
             const result = await f(...args);
             return result;
         } catch (error) {
-            if (error instanceof eC) {
+            if (error instanceof e) {
+                logoutUser();
                 navigate('/login');
             }
         }

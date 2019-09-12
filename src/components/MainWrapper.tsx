@@ -53,7 +53,6 @@ const MainWrapper = observer((props: MainProps & WithStyles) => {
 
     // centralize all clientside routing logic
     const routeConfig = {
-        roxanne: assignComponentToRoute('/roxanne', LoginView),
         login: assignComponentToRoute('/login', LoginView),
         signup: assignComponentToRoute('/signup', SignUpView),
         loginWithEmail: assignComponentToRoute('/loginWithEmail', LoginWithEmailView),
@@ -96,6 +95,8 @@ const MainWrapper = observer((props: MainProps & WithStyles) => {
 
     const { pathname } = parse(uri);
     let Component = routeConfig[pathname.substr(1)];
+    console.log('pathname: ', pathname);
+    console.log('config: ', routeConfig);
     if (!Component && pathname !== '/') {
         Component = assignComponentToRoute(pathname, PageNotFoundView);
     }

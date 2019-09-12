@@ -1,6 +1,9 @@
 import camelcaseKeys from 'camelcase-keys';
+import firebase from 'firebase';
 import { FeatureCollection } from 'geojson';
 import fetch from 'isomorphic-fetch';
+
+import initializeFirebase from './initialize_firebase';
 import { snakecasePayload } from './utils';
 
 export interface User {
@@ -39,6 +42,15 @@ export class GenericHttpError extends Error {
         this.code = code;
         this.url = url;
         this.message = `[url ${url}] [status ${code}] [errorMessage ${message}]`;
+    }
+}
+
+export async function logoutUser() {
+    initializeFirebase();
+    if (firebase.auth().currentUser) {
+        firebase.auth().signOut();
+    } else {
+        await postRest<{}, {}>('/auth/logout', {});
     }
 }
 
@@ -125,9 +137,14 @@ export const deleteRest: (uri: string, token?: string) => Promise<Response> = ha
     }
 );
 
-export const postRest: <T>(
+/**
+ * @param uri destination of request
+ * @param data payload to be sent
+ * @param token optional jwt token to use as Bearer Auth
+ */
+export const postRest: <S, T>(
     uri: string,
-    data: any,
+    data: S,
     token?: string
 ) => Promise<T> = extractBodyFromResponse(
     handleAllHttpErrors(async (uri, data, token) => {
@@ -222,8 +239,13 @@ export async function clearLocationsFromApi(
 }
 
 export async function getStudiesForAdmin(token?: string) {
-    const studiesFromApi = await getRest('/api/studies?type=admin', token);
-    return camelcaseKeys(studiesFromApi);
+    try {
+        const studiesFromApi = await getRest('/api/studies?type=admin', token);
+        return camelcaseKeys(studiesFromApi);
+    } catch (error) {
+        console.log('caught: ', error);
+        throw error;
+    }
 }
 
 export async function signupJwt(hostname: string, user: User) {

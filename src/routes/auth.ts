@@ -1,6 +1,8 @@
 import cookieParser from 'cookie-parser';
 import { randomBytes } from 'crypto';
+import fs from 'fs';
 import express, { Request, Response } from 'express';
+import admin from 'firebase-admin';
 import * as jwt from 'jsonwebtoken';
 import passport from 'passport';
 import { return500OnError } from './utils';
@@ -15,9 +17,17 @@ import {
     sendSignupVerificationEmail
 } from '../auth';
 import DbPool from '../database';
-import { User, UnverifiedUserError } from '../datastore/user';
+import { User, UnverifiedUserError, findUserById } from '../datastore/user';
 import { checkUserIsWhitelistApproved } from '../datastore/whitelist';
-import { return401OnUnauthorizedError, UnauthorizedError } from './errors';
+import { IdDoesNotExist } from '../datastore/utils';
+
+// TODO https://firebase.google.com/docs/admin/setup#initialize_the_sdk
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+});
+
+const firestoreDb = admin.firestore();
 
 const N_RAND_BYTES = 32;
 
@@ -61,8 +71,11 @@ async function sendVerificationEmail(email: string, host: string) {
         await saveTokenForEmailVerification(DbPool, email, token);
         await sendSignupVerificationEmail(host, email, token);
     } catch (error) {
-        if (error === 'Missing credentials for "PLAIN"' && process.env.NODE_ENV === 'STAGING') {
-            console.warn('Email Not Setup');
+        if (
+            error === 'Missing credentials for "PLAIN"' &&
+            process.env.NODE_ENV !== 'developement'
+        ) {
+            console.warn('Email Verification Not Setup');
         }
     }
 }
@@ -179,7 +192,7 @@ router.post(
 
 router.post(
     '/resend_verification',
-    return500OnError(async function(req, res) {
+    return500OnError(async function(req: Request, res: Response) {
         const { email } = req.body;
         await sendVerificationEmail(email, req.get('host'));
         res.sendStatus(200);
@@ -188,7 +201,7 @@ router.post(
 
 router.get(
     '/verify',
-    return500OnError(async function(req, res) {
+    return500OnError(async function(req: Request, res: Response) {
         const { token } = req.query;
         const userId = await validateEmail(DbPool, token);
         if (userId) {
@@ -217,6 +230,7 @@ router.post(
     })
 );
 
+console.log('env: ', process.env.NODE_ENV);
 if (process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'production') {
     router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
     router.get(
@@ -235,6 +249,50 @@ if (process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'production')
         (req: Request, res: Response) => {
             return respondWithAuthentication(req, res, req.user);
         }
+    );
+    console.log('router add firebase token');
+    router.post(
+        '/firebase/token',
+        return500OnError(async function(req: Request, res: Response) {
+            console.log('received body: ', JSON.stringify(req.body));
+            const { firebase_id_token: token } = req.body;
+            let decodedToken;
+            try {
+                decodedToken = await admin.auth().verifyIdToken(token);
+            } catch (error) {
+                res.status(401).send({ error_message: 'invalid firebase jwt' });
+                return;
+            }
+            const { uid: firebaseUid } = decodedToken;
+            console.log('firebase id: ', firebaseUid);
+            // todo from firestore get the pg database user id and create a payload to send
+            const firestoreUserMapping = await firestoreDb
+                .collection('users')
+                .doc(firebaseUid)
+                .get();
+            console.log('does this exist: ', firestoreUserMapping.exists);
+            if (!firestoreUserMapping.exists) {
+                console.error(`could not find firebase user in firestore: ${firebaseUid}`);
+                res.status(409).send();
+                return;
+            }
+            const firestoreData = firestoreUserMapping.data();
+            console.log('firestore data: ', firestoreData);
+            try {
+                const { user_id } = await findUserById(DbPool, firestoreData.postgresId);
+                console.log('postgres user id: ', user_id);
+                return respondWithAuthentication(req, res, { user_id });
+            } catch (error) {
+                if (error instanceof IdDoesNotExist) {
+                    res.status(409).send({
+                        error_message: `user not found for firebase user: ${firestoreData}`
+                    });
+                } else {
+                    console.error(`error fetching user from postgres db: ${firestoreData}`);
+                    throw error;
+                }
+            }
+        })
     );
 }
 

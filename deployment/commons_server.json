@@ -12,7 +12,7 @@
     "DB_POOL_SIZE": "8",
     "DB_CLIENT_TIMEOUT": "8000",
     "SERVER_HOSTNAME": "localhost:3000",
-    "NODE_ENV": "development",
+    "NODE_ENV": "production",
     "NODE_PORT": "3000",
     "JWT_EXPIRATION_MS": "300000",
     "DOTENV_CONFIG_DIR": "/etc/commons",
