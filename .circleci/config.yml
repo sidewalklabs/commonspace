@@ -224,25 +224,16 @@ workflows:
             - build-admin-server-image
             - build-nginx-image
             - patch-k8s
-          filters:
-            only:
-              branch: master
       - deploy-firebase-functions:
           requires:
             - build-admin-server-image
             - build-nginx-image
             - patch-k8s
-          filters:
-            only:
-              branch: master
       - deploy-staging:
           requires:
             - build-admin-server-image
             - build-nginx-image
             - patch-k8s
-          filters:
-            only:
-              branch: master
       - hold:
           type: approval
           requires:
