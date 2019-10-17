@@ -58,8 +58,8 @@ jobs:
            command: |
                 npm install -g node-gyp firebase-tools
                 cd functions/ && npm install && cd ..
-                firebase functions:config:set gcp.cloud_functions_host="${CLOUD_FUNCTIONS_HOST}" --token "${FIREBASE_TOKEN}"
-                firebase deploy --only functions --token "${FIREBASE_TOKEN}"
+                firebase functions:config:set  gcp.cloud_functions_host="${CLOUD_FUNCTIONS_HOST}"  --project "${FIREBASE_PROJECT_ID}" --token "${FIREBASE_TOKEN}"
+                firebase deploy --only functions --project "${FIREBASE_PROJECT_ID}" --token "${FIREBASE_TOKEN}"
 
   build-admin-server-image:
     docker:
