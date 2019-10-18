@@ -19,7 +19,7 @@ import TermsView from './TermsView';
 import PageNotFoundView from './PageNotFoundView';
 import PublicDataPortalView from './PublicDataPortalView';
 
-import { ApplicationState } from '../stores/applicationState';
+import { ApplicationState, init, initCurrentStudy } from '../stores/applicationState';
 import { UiState } from '../stores/ui';
 import {
     Router,
@@ -98,7 +98,25 @@ const MainWrapper = observer((props: MainProps & WithStyles) => {
         Component = assignComponentToRoute(pathname, PageNotFoundView);
     }
 
-    addSideEffectRoute<void>(
+    addSideEffectRoute('/', () => {
+        window.location.pathname = '/welcome';
+        return;
+    });
+
+    addSideEffectRoute('/studies', async () => {
+        await init();
+    });
+
+    addSideEffectRoute('/study', async () => {
+        const { query } = parse(uri);
+        console.log('query: ', query);
+        // @ts-ignore
+        const { studyId } = queryParamsParse(query);
+        console.log('study id from params: ');
+        await initCurrentStudy(studyId);
+    });
+
+    addSideEffectRoute(
         () => {
             const { pathname } = parse(uri);
             return pathname === '/verify';
@@ -109,6 +127,7 @@ const MainWrapper = observer((props: MainProps & WithStyles) => {
             navigate('/studies');
         }
     );
+
     return (
         <div className={classes.root}>
             <CssBaseline />
