@@ -308,6 +308,7 @@ export async function getDataPointsCSV(
                              LEFT JOIN data_collection.location loc
                              ON sur.location_id = loc.location_id`;
     try {
+        console.log('debug: ', dataPointsQuery);
         const { rows: datapoints } = await pool.query(dataPointsQuery);
         return datapoints as DataPointPg & { zone: string }[];
     } catch (error) {
