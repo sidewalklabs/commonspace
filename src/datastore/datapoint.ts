@@ -292,7 +292,7 @@ export async function getDataPointsCSV(
             } else if (field === 'location' && studyType === 'stationary') {
                 return `ST_AsGeoJSON(${tableRefName}.location)::json as coordinates`;
             } else if (field === 'location' && studyType === 'movement') {
-                return `ST_AsGeoJSON(loc.geometry)::json as coordinates`;
+                return `ST_AsGeoJSON(sur.geometry)::json as coordinates`;
             } else {
                 return tableRefName + '.' + field;
             }
