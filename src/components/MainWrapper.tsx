@@ -8,7 +8,6 @@ import ErrorDisplay from './ErrorDisplay';
 
 import AboutView from './AboutView';
 import LoginView from './LoginView';
-import LoginWithEmailView from './LoginWithEmailView';
 import MainView from './Main';
 import PrivacyView from './PrivacyView';
 import ResetView from './ResetView';
@@ -54,7 +53,6 @@ const MainWrapper = observer((props: MainProps & WithStyles) => {
     const routeConfig = {
         login: assignComponentToRoute('/login', LoginView),
         signup: assignComponentToRoute('/signup', SignUpView),
-        loginWithEmail: assignComponentToRoute('/loginWithEmail', LoginWithEmailView),
         reset: assignComponentToRoute('/reset', ResetView),
         welcome: assignComponentToRoute('/welcome', SplashView),
         reset_password: assignComponentToRoute('/reset_password', () => {

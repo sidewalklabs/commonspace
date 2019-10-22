@@ -268,7 +268,6 @@ router.post(
     return500OnError(async (req: Request, res: Response) => {
         const { user_id: userId } = req.user;
         try {
-            console.log('body: ', req.body);
             if (Array.isArray(req.body)) {
                 const datetimes = await Promise.all(
                     req.body.map(async (s: Study) => {
