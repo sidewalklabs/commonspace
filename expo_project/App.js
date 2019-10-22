@@ -1,8 +1,10 @@
 import React from 'react';
-import { StatusBar, View } from 'react-native';
-import { AppLoading, Font, Icon } from 'expo';
+import { AsyncStorage, NavigationActions, StatusBar, View } from 'react-native';
+import { AppLoading, Constants, Font, Icon } from 'expo';
+import firebase from 'firebase';
 import { Provider as PaperProvider } from 'react-native-paper';
 import AppNavigator from './navigation/AppNavigator';
+import { logInUserWithFirebaseAccessToken } from './lib/commonsClient';
 import Theme from './constants/Theme';
 
 export default class App extends React.Component {
@@ -14,7 +16,7 @@ export default class App extends React.Component {
   }
 
   loadResourcesAsync = async () =>
-    Font.loadAsync({
+    await Font.loadAsync({
       ...Icon.Ionicons.font,
       ...Icon.MaterialIcons.font,
       ...Icon.MaterialCommunityIcons.font,
@@ -27,7 +29,24 @@ export default class App extends React.Component {
       'product-italic': require('./assets/fonts/GoogleSans-Italic.ttf'),
     });
 
+
   handleFinishLoading = async () => {
+    const { firebaseConfig } = Constants.manifest.extra;
+
+    firebase.initializeApp(firebaseConfig);
+
+    firebase.auth().onAuthStateChanged(async function(user) {
+      if (user && !user.emailVerified) {
+          console.warn('user has not verfied with firebase');
+          await user.sendEmailVerification();
+          firebase.auth().signOut();
+      } else if (user && user.emailVerified) {
+          const firebaseAccessToken = await user.getIdToken();
+          const jwtToken = await logInUserWithFirebaseAccessToken(firebaseAccessToken);
+          await AsyncStorage.multiSet([['token', jwtToken], ['email', user.email]]);
+          NavigationActions.navigate('App');
+      }
+  });
     this.setState({ isLoadingComplete: true });
   };
 

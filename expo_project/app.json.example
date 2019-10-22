@@ -56,6 +56,12 @@
       }
     },
     "extra": {
+      "firebaseConfig": {
+        "apiKey": "FROM_FIREBASE_CONSOLE_SETTINGS",
+        "authDomain": "FROM_FIREBASE_CONSOLE_SETTINGS",
+        "projectId": "FROM_FIREBASE_CONSOLE_SETTINGS",
+        "appId": "FROM_FIREBASE_CONSOLE_SETTINGS"
+      },
       "googleAuthClientId": {
         "expo": {
           "android": "603386649315-vp4revvrcgrcjme51ebuhbkbspl048l9.apps.googleusercontent.com",

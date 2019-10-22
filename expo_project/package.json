@@ -12,6 +12,7 @@
     "camelcase-keys": "^5.0.0",
     "color": "^3.1.0",
     "expo": "^32.0.0",
+    "firebase": "^7.2.1",
     "lodash": "^4.17.11",
     "moment": "^2.22.2",
     "prop-types": "^15.6.2",
@@ -23,8 +24,8 @@
     "whatwg-fetch": "^2.0.4"
   },
   "devDependencies": {
-    "babel-preset-expo": "^5.0.0",
     "babel-eslint": "^10.0.1",
+    "babel-preset-expo": "^5.0.0",
     "eslint": "^5.12.1",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.16.0",

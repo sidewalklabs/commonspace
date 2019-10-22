@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import { WebBrowser } from 'expo';
+import firebase from 'firebase';
 import color from 'color';
 import BackArrow from '../components/BackArrow';
 import SharedGradient from '../components/SharedGradient';
@@ -32,14 +33,12 @@ class LogInWithEmailScreen extends React.Component {
   }
 
   _login = async () => {
+    this.setState({ fetching: true });
+    const { email, password } = this.state;
     try {
-      this.setState({ fetching: true });
-      const { email, password } = this.state;
-      const token = await logInUser(email, password);
-      await AsyncStorage.multiSet([['token', token], ['email', email]]);
-      this.props.navigation.navigate('App');
-    } catch (error) {
-      Alert.alert(error.name, error.message, [{ text: 'OK' }]);
+      await firebase.auth().signInWithEmailAndPassword(email, password);
+    } catch ({code, message}) {
+      Alert.alert(code, message, [{ text: 'OK' }]);
     }
     this.setState({ fetching: false });
   };

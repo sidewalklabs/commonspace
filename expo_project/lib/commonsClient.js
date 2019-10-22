@@ -53,6 +53,28 @@ export async function logOut(token) {
   }
 }
 
+export async function logInUserWithFirebaseAccessToken(accessToken) {
+  const body = JSON.stringify({ firebase_id_token: accessToken });
+  const response = await fetch(`${urls.apiBase}/auth/firebase/token`, {
+    ...fetchParams,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      Accept: 'application/bearer.token+json',
+    },
+    body
+  });
+  const { status } = response;
+  if (status !== 200) {
+    const { statusText } = response;
+    console.error(`[http code ${status}][test ${statusText}]`);
+    throw new Error('Unable to Log In');
+  } else {
+    const { token } = await response.json();
+    return token;
+  }
+}
+
 export async function logInUserWithGoogleAccessToken(accessToken) {
   const response = await fetch(`${urls.apiBase}/auth/google/token`, {
     ...fetchParams,
@@ -62,11 +84,11 @@ export async function logInUserWithGoogleAccessToken(accessToken) {
       'access-token': `${accessToken}`,
     },
   });
-  const body = await response.json();
   if (response.status !== 200) {
     throw new Error(`Unable to Log In: ${body.error_message}`);
   } else {
-    return body.token;
+    const { token } = await response.json();
+    return token;
   }
 }
 

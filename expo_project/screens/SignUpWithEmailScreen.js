@@ -1,11 +1,11 @@
 import React from 'react';
-import { AsyncStorage, Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { withNavigation } from 'react-navigation';
+import { Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { NavigationActions, withNavigation } from 'react-navigation';
 import { WebBrowser } from 'expo';
+import firebase from 'firebase';
 import color from 'color';
 import BackArrow from '../components/BackArrow';
 import SharedGradient from '../components/SharedGradient';
-import { signUpUser } from '../lib/commonsClient';
 import authStyles from '../stylesheets/auth';
 import urls from '../config/urls';
 
@@ -27,13 +27,13 @@ class SignUpWithEmailScreen extends React.Component {
   _signUp = async () => {
     const { email, password, confirmPassword } = this.state;
     if (password === confirmPassword) {
+      this.setState({ fetching: true });
       try {
-        this.setState({ fetching: true });
-        const token = await signUpUser(email, password);
-        await AsyncStorage.multiSet([['token', token], ['email', email]]);
-        this.props.navigation.navigate('App');
-      } catch (error) {
-        Alert.alert(error.name, error.message, [{ text: 'OK' }]);
+        await firebase.auth().createUserWithEmailAndPassword(email, password);
+        Alert.alert('Verify Email', 'Check email to verify account.', [{ text: 'OK' }]);
+        NavigationAtions.navigate('LogInWithEmailScreen');
+      } catch ({code, message}) {
+        Alert.alert(code, message, [{ text: 'OK' }]);
       }
     } else {
       Alert.alert('Error', 'Password confirmation must match Password', [{ text: 'OK' }]);
