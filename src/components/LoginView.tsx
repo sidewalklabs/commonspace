@@ -12,7 +12,7 @@ import { observer } from 'mobx-react';
 import initializeFirebase from '../initialize_firebase';
 import { navigate } from '../stores/router';
 import { setSnackBar } from '../stores/ui';
-import { postRest, ForbiddenResourceError } from '../client';
+import { postRest, ForbiddenResourceError, UnauthorizedError } from '../client';
 
 const styles = theme => ({
     root: {
@@ -89,6 +89,23 @@ const responseGoogleFailure = ({ error }) => {
 initializeFirebase();
 
 firebase.auth().onAuthStateChanged(async function(user) {
+    const { email } = user;
+    if (email) {
+        try {
+            await postRest(`/auth/check_whitelist`, { email });
+        } catch (error) {
+            if (error instanceof UnauthorizedError) {
+                setSnackBar(
+                    'error',
+                    'User has not been whitelisted, contact commonspace@sidewalklabs.com'
+                );
+            } else {
+                console.error('unable to access whitelist from backend');
+                throw error;
+            }
+        }
+    }
+
     if (user && !user.emailVerified) {
         console.warn('user has not verfied with firebase');
         await user.sendEmailVerification();
