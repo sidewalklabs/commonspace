@@ -2,11 +2,14 @@ import React from 'react';
 import { Alert, AsyncStorage, Image, Platform, TouchableHighlight, Text, View } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import { AppAuth, Constants, WebBrowser } from 'expo';
+import firebase from 'firebase';
 import color from 'color';
 import SharedGradient from '../components/SharedGradient';
 import authStyles from '../stylesheets/auth';
 import urls from '../config/urls';
 import { logInUserWithGoogleAccessToken } from '../lib/commonsClient';
+
+const provider = new firebase.auth.GoogleAuthProvider();
 
 class AuthScreen extends React.Component {
   static navigationOptions = {
@@ -16,6 +19,15 @@ class AuthScreen extends React.Component {
   };
 
   _signInWithGoogleAsync = async () => {
+    try {
+      const {user, token} = await firebase.auth().signInWithPopup(provider);
+      console.log(`user: ${user} :: token: ${token}`);
+    } catch ({code, message, credential, email}) {
+      console.error()
+    }
+
+    
+
     // TODO: switch to Expo's GoogleSignIn component once it's documented and stable
     try {
       // Workaround: OAuthRedirect uses the our bundle id redirect back to the app, but gets confused with mixed case
