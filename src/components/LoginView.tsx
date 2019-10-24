@@ -99,10 +99,12 @@ firebase.auth().onAuthStateChanged(async function(user) {
                     'error',
                     'User has not been whitelisted, contact commonspace@sidewalklabs.com'
                 );
+                throw error;
             } else {
                 console.error('unable to access whitelist from backend');
                 throw error;
             }
+            return;
         }
     }
 
