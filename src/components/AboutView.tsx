@@ -34,7 +34,7 @@ const AboutView = observer((props: AboutViewProps & WithStyles) => {
             {!webview && <AppBar rightHeaderType="login" />}
             <div className={classes.content}>
                 <Typography variant="h6" gutterBottom>
-                    CommonSpace is in beta
+                    CommonSpace is in closed beta
                 </Typography>
                 <Typography variant="body1" paragraph>
                     CommonSpace is currently in beta. If you're interested in conducting a public
