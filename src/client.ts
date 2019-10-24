@@ -47,7 +47,9 @@ export class GenericHttpError extends Error {
 
 export async function logoutUser() {
     initializeFirebase();
+    console.log('here we are: ', firebase.auth().currentUser);
     if (firebase.auth().currentUser) {
+        console.log('logging out');
         firebase.auth().signOut();
     } else {
         await postRest<{}, {}>('/auth/logout', {});

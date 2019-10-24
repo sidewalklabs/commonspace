@@ -30,6 +30,7 @@ export async function logInUser() {
                         'error',
                         'User has not been whitelisted, contact commonspace@sidewalklabs.com'
                     );
+                    throw error;
                 } else {
                     throw error;
                 }
