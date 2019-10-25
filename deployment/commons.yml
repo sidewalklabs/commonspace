@@ -104,6 +104,16 @@ spec:
               configMapKeyRef:
                 name: commons-config
                 key: JWT_EXPIRATION_MS
+          - name: GMAIL_USER
+            valueFrom:
+              configMapKeyRef:
+                name: commons-secrets
+                key: GMAIL_USER
+          - name: GMAIL_PASSWORD
+            valueFrom:
+              configMapKeyRef:
+                name: commons-secrets
+                key: GMAIL_PASSWORD
       # the environment variables get used during the build step of this container by webpack
       - name: commons-nginx
         image: swl-eng/commons-nginx:latest
