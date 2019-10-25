@@ -240,9 +240,6 @@ workflows:
             - build-admin-server-image
             - build-nginx-image
             - patch-k8s
-          filters:
-            branches:
-              only: master
       - hold:
           type: approval
           requires:

@@ -39,12 +39,15 @@ const MIN_PASSWORD_LENGTH = 7;
 const SPECIAL_CHARACTERS = ['!', '@', '#', '$', '%', '^', '&', '*', '?'];
 
 const SMTP_TRANSPORT = nodemailer.createTransport({
-    service: 'Gmail',
+    host: 'smtp.gmail.com',
     auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_PASSWORD
     }
 });
+
+console.log('debug: ', process.env.GMAIL_USER);
+console.log('debug: ', process.env.GMAIL_PASSWORD);
 
 export async function saveTokenForEmailVerification(
     pool: Pool,
