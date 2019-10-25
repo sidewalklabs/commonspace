@@ -56,6 +56,12 @@
       }
     },
     "extra": {
+        "firebaseConfig": {
+        "apiKey": "",
+        "authDomain": "",
+        "projectId": "",
+        "appId": ""
+      },
       "googleAuthClientId": {
         "expo": {
           "android": "603386649315-vp4revvrcgrcjme51ebuhbkbspl048l9.apps.googleusercontent.com",
