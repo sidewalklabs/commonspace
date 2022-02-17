@@ -99,7 +99,7 @@
     "react-leaflet-search": "^0.6.0",
     "snakecase-keys": "^1.2.0",
     "style-loader": "^0.23.1",
-    "url-parse": "^1.4.4",
+    "url-parse": "^1.5.6",
     "uuid": "^3.3.2",
     "yarn": "^1.12.3"
   }
