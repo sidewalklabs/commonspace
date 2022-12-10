@@ -64,7 +64,7 @@
     "css-loader": "^2.1.0",
     "csvtojson": "^2.0.8",
     "dotenv": "^6.0.0",
-    "express": "^4.16.3",
+    "express": "^4.17.3",
     "firebase": "7.0.0",
     "firebase-admin": "^8.5.0",
     "firebase-functions": "^3.2.0",
